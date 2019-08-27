@@ -6,7 +6,6 @@
 
 namespace MWR::C3
 {
-
 	/// Template class handling registration of Interface before main function.
 	/// @tparam Iface. Interface to be registered.
 	template <typename Iface, typename AbstractType, HashT clousureConnectorHash = 0>
@@ -104,56 +103,59 @@ namespace MWR::C3
 	constexpr HashT Register<T, T2, u32>::s_InterfaceHash = Hash::Fnv1aType<T>();
 #pragma warning( pop )
 
-	/// Specialization of Registration mechanism for Channel type Interface.
-	template <typename Iface>
-	class Channel : public Register<Iface, AbstractChannel>
+	namespace Interfaces
 	{
-	public:
-		constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-		constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
-
-		Channel()
+		/// Specialization of Registration mechanism for Channel type Interface.
+		template <typename Iface>
+		class Channel : public Register<Iface, AbstractChannel>
 		{
-			static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-			m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-			m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
-		}
-	};
+		public:
+			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+
+			Channel()
+			{
+				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
+				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
+				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+			}
+		};
 
 #ifdef C3_IS_GATEWAY
-	/// Specialization of Registration mechanism for Connector type Interface.
-	template <typename Iface>
-	class Connector : public Register<Iface, AbstractConnector>
-	{
-	public:
-		// connector in fact does not need those values. They are here to satisfy template requirements.
-		constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 0ms;
-		constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 0ms;
-	};
+		/// Specialization of Registration mechanism for Connector type Interface.
+		template <typename Iface>
+		class Connector : public Register<Iface, AbstractConnector>
+		{
+		public:
+			// connector in fact does not need those values. They are here to satisfy template requirements.
+			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 0ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 0ms;
+		};
 #else
-	/// Don't register the connectors in node builds
-	template <typename Iface>
-	class Connector : public AbstractConnector
-	{
-	};
+		/// Don't register the connectors in node builds
+		template <typename Iface>
+		class Connector : public AbstractConnector
+		{
+		};
 #endif C3_IS_GATEWAY
 
 #pragma warning( push )
 #pragma warning( disable : 4307)
-	/// Specialization of Registration mechanism for Peripheral type Interface.
-	template <typename Iface, typename Closure>
-	class Peripheral : public Register<Iface, AbstractPeripheral, Hash::Fnv1aType<Closure>()>
-	{
-	public:
-		constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-		constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
-
-		Peripheral()
+		/// Specialization of Registration mechanism for Peripheral type Interface.
+		template <typename Iface, typename Closure>
+		class Peripheral : public Register<Iface, AbstractPeripheral, Hash::Fnv1aType<Closure>()>
 		{
-			static_assert(Iface::s_MinUpdateFrequency >= 30ms &&   Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-			m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-			m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
-		}
-	};
+		public:
+			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+
+			Peripheral()
+			{
+				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
+				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
+				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+			}
+		};
 #pragma warning( pop )
+	}
 }
