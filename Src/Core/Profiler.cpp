@@ -860,7 +860,7 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 				initialPacket[interfaceType][idToErase].erase("create");
 				initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::Close) }, {"arguments", json::array()} });
 				if (isDevice)
-					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::UpdateJitter) },
+					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::UpdateJitter) },
 						{"arguments", {
 							{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
 							{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}
