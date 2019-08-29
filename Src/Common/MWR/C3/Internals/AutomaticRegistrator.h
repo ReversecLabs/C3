@@ -42,21 +42,7 @@ namespace MWR::C3
 			template <>
 			static std::string GetCapability<false>()
 			{
-				return R"_(
-{
-	"create":
-	{
-		"arguments":
-		[
-			{
-				"type": "binary",
-				"description": "Blob of data that will be provided to Channel constructor.",
-				"name": "arguments"
-			}
-		]
-	},
-	"commands": []
-})_";
+				return "{}";
 			}
 
 			template <>
