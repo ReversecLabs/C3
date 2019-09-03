@@ -213,10 +213,14 @@ ByteVector TestCommand(ByteView args)
 
 The `TestCommand` method adds a debug text entry to C3’s *Log*. `DebugInformation` is used which is rendered in a Relay’s console window only when compiled in debug mode. The message consists of two elements: a hard-coded text "Custom Command : " and a string that is provided by a user in the UI. Note the use of the `OBF` macro, this is used to encrypt strings at compile-time, which are decrypted at run-time only when required. Also of note is that the `TestCommand` handler returns an empty `MWR::ByteVector` as there’s nothing to send back to the Gateway.
 
+**Note:** The `GetCapability` method is compiled only when building Gateway’s executable and therefor it’s not required to use the `OBF` macro to obfuscate its strings. 
+
 After rebuilding the solution once again and launching C3 the Test Command becomes available in `MyChannel’s` Command Center:
 
 ![C3](Res/ContributionGuide/11.png)
 ![C3](Res/ContributionGuide/12.png)
+
+**Note:** C3 can be launched in a debug mode by running `dotnet run -c Debug` console command from the *Src/WebController/Backend* location. Debug mode enables Node Relay’s console window, allowing to read their local C3 *Log*.
 
 ### Putting it all Together
 
