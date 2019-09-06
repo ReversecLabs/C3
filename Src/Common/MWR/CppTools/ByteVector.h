@@ -69,7 +69,6 @@ namespace MWR
 			return *this;
 		}
 
-
 		/// Write content of of provided objects.
 		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
 		/// Do not write header with size for types that can have undefined buffer.. Recipient must know size in advance to read, therefore should use Read<ByteArray<someSize>>.
@@ -80,6 +79,36 @@ namespace MWR
 		{
 			Store<T...>(false, args...);
 			return *this;
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Write and ByteVector::Concat for more informations.
+		template <bool preferWriteOverConcat = true, typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector Create(T... args)
+		{
+			if constexpr (preferWriteOverConcat)
+				return CreateByWrite(args...);
+			else
+				return CreateByConcat(args...);
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Write for more informations.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector CreateByWrite(T... args)
+		{
+			return ByteVector{}.Write(args...);
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Concat for more informations.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector CreateByConcat(T... args)
+		{
+			return ByteVector{}.Concat(args...);
 		}
 
 		// Enable methods.
