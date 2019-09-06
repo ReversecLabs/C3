@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\NamedPipe.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\MockServer.cpp" />
@@ -34,6 +35,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CppRestSdk\include\cpprest\http_client.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\OneDrive365RestFile.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Outlook365RestTask.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.h" />
