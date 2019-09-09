@@ -46,7 +46,7 @@ namespace MWR::C3
 		/// Called every time Relay wants to send a packet through this Channel Device. Should always be called from the same thread for every sender (so it would be safe to use thread_local vars).
 		/// @param blob buffer containing data to send.
 		/// @remarks this method is used only to pass internal (C3) packets through the C3 network, thus it won't be called for any other types of Devices than Channels.
-		virtual size_t  OnSendToChannel(ByteView packet) = 0;
+		virtual size_t  OnSendToChannelInternal(ByteView packet) = 0;
 
 		/// Fired by Relay to pass by provided Command from Connector.
 		/// @param command full Command with arguments.
@@ -85,8 +85,8 @@ namespace MWR::C3
 	struct AbstractChannel : Device
 	{
 		/// Callback that is periodically called for every Device to update itself. Might be called from a separate thread. The Device should perform all necessary actions and leave as soon as possible.
-		/// @return ByteVector that contains a single packet retrieved from Channel.
-		virtual ByteVector OnReceiveFromChannel() = 0;
+		/// @return std::vector<ByteVector> that contains all packets retrieved from Channel.
+		virtual std::vector<ByteVector> OnReceiveFromChannelInternal() = 0;
 
 		/// Tells that this Device type is a Channel.
 		bool IsChannel() const override { return true; }
@@ -116,7 +116,7 @@ namespace MWR::C3
 
 		/// This method unconditionally throws std::logic_error as calling it is illegal (Peripherals are not a Channels). @see DeviceDevice::OnSendToChannel.
 		/// @throw This method unconditionally throws std::logic_error.
-		size_t OnSendToChannel(ByteView) override final
+		size_t OnSendToChannelInternal(ByteView) override final
 		{
 			throw std::logic_error{ OBF("Tried to send a C3 packet through a Peripheral.") };
 		}
