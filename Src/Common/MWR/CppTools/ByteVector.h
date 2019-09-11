@@ -426,3 +426,16 @@ namespace MWR
 		ByteVector operator "" _b(const wchar_t* data, size_t size);
 	}
 }
+
+namespace std
+{
+	/// Add hashing function for ByteVector.
+	template <>
+	struct hash<MWR::ByteVector>
+	{
+		size_t operator()(MWR::ByteVector const& bv) const
+		{
+			return std::hash<std::string_view>{}(std::string_view{ reinterpret_cast<const char*>(bv.data()), bv.size() });
+		}
+	};
+}

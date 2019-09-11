@@ -329,3 +329,16 @@ namespace MWR
 		return bytes.ToStringArray<expectedSize, copy, false>();
 	}
 }
+
+namespace std
+{
+	/// Add hashing function for ByteView.
+	template <>
+	struct hash<MWR::ByteView>
+	{
+		size_t operator()(MWR::ByteView const& bv) const
+		{
+			return std::hash<std::string_view>{}(bv);
+		}
+	};
+}
