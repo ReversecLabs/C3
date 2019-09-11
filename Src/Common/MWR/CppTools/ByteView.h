@@ -96,6 +96,46 @@ namespace MWR
 		/// Allow cast to std::string_view.
 		operator std::string_view() const;
 
+		/// Create a sub-string from this ByteView.
+/// @param offset. 	Position of the first byte.
+/// @param count. Requested length
+/// @returns ByteView. View of the substring
+		ByteView SubString(const size_type offset = 0, size_type count = npos) const;
+
+		// Enable methods.
+		using std::basic_string_view<ByteVector::value_type>::basic_string_view;
+		using Super::operator=;
+		using Super::begin;
+		using Super::cbegin;
+		using Super::end;
+		using Super::cend;
+		using Super::rbegin;
+		using Super::crbegin;
+		using Super::rend;
+		using Super::crend;
+		using Super::operator[];
+		using Super::at;
+		using Super::front;
+		using Super::back;
+		using Super::data;
+		using Super::size;
+		using Super::length;
+		using Super::max_size;
+		using Super::empty;
+		using Super::remove_prefix;
+		using Super::remove_suffix;
+		using Super::swap;
+		using Super::copy;
+		using Super::compare;
+		using Super::find;
+		using Super::rfind;
+		using Super::find_first_of;
+		using Super::find_last_of;
+		using Super::find_first_not_of;
+		using Super::find_last_not_of;
+		using Super::npos;
+		using Super::value_type;
+
 		/// @returns ByteVector. Owning container with the read bytes.
 		/// @param byteCount. How many bytes should be read.
 		/// @remarks Read is not compatible with Read<ByteVector>.
@@ -106,7 +146,7 @@ namespace MWR
 		/// Read bytes and remove them from ByteView.
 		/// @remarks Read is not compatible with Read<ByteVector>.
 		/// Data stored in ByteVector with Write<ByteVector> should be accessed with Read<ByteVector>
-		/// @returns ByteVector. Owning container with the read bytes.
+		/// @returns T. Owning container with the read bytes.
 		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
 		template<typename T = ByteVector>
 		std::enable_if_t<(std::is_same_v<T, ByteVector> || std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>), T> Read()
@@ -121,6 +161,25 @@ namespace MWR
 			T retVal;
 			retVal.resize(elementCount);
 			std::memcpy(retVal.data(), data(), byteCount);
+			remove_prefix(byteCount);
+			return retVal;
+		}
+
+		/// Read bytes and remove them from ByteView.
+		/// This function will return non owning container. It is helpful to prevent coping large buffers, if user know that original container is still valid.
+		/// @returns T. Non owning container with the read bytes.
+		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
+		template<typename T>
+		std::enable_if_t<(std::is_same_v<T, ByteView> || std::is_same_v<T, std::string_view> || std::is_same_v<T, std::wstring_view>), T> Read()
+		{
+			if (sizeof(uint32_t) > size())
+				throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
+
+			auto elementCount = *reinterpret_cast<const uint32_t*>(data());
+			auto byteCount = elementCount * sizeof(T::value_type);
+			remove_prefix(sizeof(uint32_t));
+
+			auto retVal = T{reinterpret_cast<T::value_type const*>(data()), elementCount};
 			remove_prefix(byteCount);
 			return retVal;
 		}
@@ -199,46 +258,6 @@ namespace MWR
 
 			return retValue;
 		}
-
-		/// Create a sub-string from this ByteView.
-		/// @param offset. 	Position of the first byte.
-		/// @param count. Requested length
-		/// @returns ByteView. View of the substring
-		ByteView SubString(const size_type offset = 0, size_type count = npos) const;
-
-		// Enable methods.
-		using std::basic_string_view<ByteVector::value_type>::basic_string_view;
-		using Super::operator=;
-		using Super::begin;
-		using Super::cbegin;
-		using Super::end;
-		using Super::cend;
-		using Super::rbegin;
-		using Super::crbegin;
-		using Super::rend;
-		using Super::crend;
-		using Super::operator[];
-		using Super::at;
-		using Super::front;
-		using Super::back;
-		using Super::data;
-		using Super::size;
-		using Super::length;
-		using Super::max_size;
-		using Super::empty;
-		using Super::remove_prefix;
-		using Super::remove_suffix;
-		using Super::swap;
-		using Super::copy;
-		using Super::compare;
-		using Super::find;
-		using Super::rfind;
-		using Super::find_first_of;
-		using Super::find_last_of;
-		using Super::find_first_not_of;
-		using Super::find_last_not_of;
-		using Super::npos;
-		using Super::value_type;
 
 	private:
 		/// Delegate to class idiom.
