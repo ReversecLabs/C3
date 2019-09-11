@@ -108,6 +108,7 @@ namespace MWR
 		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
 		ByteVector & Write(T const& ...args)
 		{
+			reserve(size() + CalculateStoreSize<T...>(true, args...));
 			Store<T...>(true, args...);
 			return *this;
 		}
@@ -120,6 +121,7 @@ namespace MWR
 		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
 		ByteVector & Concat(T const& ...args)
 		{
+			reserve(size() + CalculateStoreSize<T...>(false, args...));
 			Store<T...>(false, args...);
 			return *this;
 		}
@@ -219,7 +221,7 @@ namespace MWR
 		/// @remarks This function is called only for two or more arguments.
 		/// @remarks Each type in parameter pack must have corresponding Write method for one argument.
 		template <typename ...T, typename std::enable_if_t<(sizeof...(T) > 1), int> = 0>
-		ByteVector & Store(bool storeSize, T const ...args)
+		ByteVector & Store(bool storeSize, T const& ...args)
 		{
 			VariadicStoreHelper<T...>::Store(*this, storeSize, args...);
 			return *this;
@@ -236,6 +238,64 @@ namespace MWR
 			return *this;
 		}
 
+		/// Calculate the size that the argument will take in memory
+		/// @param storeSizeHeader. If true function will add four byte header with size for those types.
+		/// @param arg. argument to be stored. Supported types are ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<
+			(
+				std::is_same_v<T, ByteVector>
+				|| std::is_same_v<T, ByteView>
+				|| std::is_same_v<T, std::string>
+				|| std::is_same_v<T, std::string_view>
+				|| std::is_same_v<T, std::wstring>
+				|| std::is_same_v<T, std::wstring_view>
+				), int> = 0>
+		static size_t CalculateStoreSize(bool storeSizeHeader, T const& arg)
+		{
+			return storeSizeHeader ? arg.size() + sizeof(uint32_t) : arg.size();
+		}
+
+		/// Calculate the size that the argument will take in memory
+		/// @param unused. Supports finding this function in template calls.
+		/// @param arg. argument to be stored. Supports ByteArray type.
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<IsByteArray<T>, int> = 0>
+		static size_t CalculateStoreSize(bool unused, T const& arg)
+		{
+			return arg.size();
+		}
+
+		/// Calculate the size that the argument will take in memory
+		/// @param unused. Supports finding this function in template calls.
+		/// @param arg. argument to be stored. Supports arithmetic types.
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
+		static size_t CalculateStoreSize(bool unused, T const& arg)
+		{
+			return sizeof(T);
+		}
+
+		/// Calculate the size that the arguments will take in memory. This function is responsible for unwrapping variadic arguments calls.
+		/// @param storeSizeHeader. If true function writes 4 bytes header with size for types that have variable buffer length.
+		/// @param args. arguments to be stored.
+		/// @return size_t number of bytes needed.
+		template <typename ...T, typename std::enable_if_t<(sizeof...(T) > 1), int> = 0>
+		static size_t CalculateStoreSize(bool storeSizeHeader, T const& ...args)
+		{
+			return VariadicStoreHelper<T...>::CalculateStoreSize(storeSizeHeader, args...);
+		}
+
+		/// Calculate the size that the arguments will take in memory. This function is responsible for unwrapping calls with tuple type.
+		/// @param storeSizeHeader. If true function writes 4 bytes header with size for types that have variable buffer length.
+		/// @param arg. arguments to be stored in form of tuple.
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<IsTuple<T>, int> = 0>
+		static size_t CalculateStoreSize(bool storeSizeHeader, T const& arg)
+		{
+			return StoreHelper<T>::CalculateStoreSize(storeSizeHeader, arg);
+		}
+
 		/// Delegate to class idiom.
 		/// Function templates cannot be partially specialized.
 		/// @tparam T. First type from parameter pack. Each recursive call will unfold one type.
@@ -244,17 +304,25 @@ namespace MWR
 		struct VariadicStoreHelper
 		{
 			/// Function responsible for recursively packing data to ByteVector.
-			/// @param storeSize if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
 			/// @param self. Reference to ByteVector object using VariadicWriter.
 			/// @note Template used here should remove function if one of types cannot be stored.
 			/// Compiler should mark error of compilation in code location where function was used with wrong parameters.
 			/// Becouse of MSVC SFINAE bug compiler can mark this function with std::enable_if_t<false... error.
 			/// If you see this error examine ByteVector::Write and ByteVector::Concat usages for potential invalid parameters.
 			template <typename std::enable_if_t<CanStoreType<T>::value, int> = 0>
-			static void Store(ByteVector& self, bool storeSize, T const& current, Rest const& ...rest)
+			static void Store(ByteVector& self, bool storeSizeHeader, T const& current, Rest const& ...rest)
 			{
-				self.Store(storeSize, current);
-				VariadicStoreHelper<Rest...>::Store(self, storeSize, rest...);
+				self.Store(storeSizeHeader, current);
+				VariadicStoreHelper<Rest...>::Store(self, storeSizeHeader, rest...);
+			}
+
+			/// Function responsible for recursively calculating buffer size needed for call with variadic argument list.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @return size_t number of bytes needed.
+			static size_t CalculateStoreSize(bool storeSizeHeader, T const& current, Rest const& ...rest)
+			{
+				return ByteVector::CalculateStoreSize(storeSizeHeader, current) + VariadicStoreHelper<Rest...>::CalculateStoreSize(storeSizeHeader, rest...);
 			}
 		};
 
@@ -270,12 +338,20 @@ namespace MWR
 		struct VariadicStoreHelper<T>
 		{
 			/// Function responsible for recursively packing data to ByteVector.
-			/// @param storeSize if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
 			/// @param self. Reference to ByteVector object using VariadicWriter.
 			template <typename std::enable_if_t<CanStoreType<T>::value, int> = 0>
-			static void Store(ByteVector& self, bool storeSize, T const& current)
+			static void Store(ByteVector& self, bool storeSizeHeader, T const& current)
 			{
-				self.Store(storeSize, current);
+				self.Store(storeSizeHeader, current);
+			}
+
+			/// Function responsible for recursively calculating buffer size needed for call with variadic argument list.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @return size_t number of bytes needed.
+			static size_t CalculateStoreSize(bool storeSizeHeader, T const& current)
+			{
+				return ByteVector::CalculateStoreSize(storeSizeHeader, current);
 			}
 		};
 
@@ -288,17 +364,25 @@ namespace MWR
 		{
 			/// Function responsible for recursively packing data to ByteVector.
 			/// @param self. Reference to ByteVector object using VariadicWriter.
-			/// @param storeSize if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
 			/// @param t. reference to tuple.
 			/// @note Template used here should remove function if one of types cannot be stored.
 			/// Compiler should mark error of compilation in code location where function was used with wrong parameters.
 			/// Becouse of MSVC SFINAE bug compiler can mark this function with std::enable_if_t<false... error.
 			/// If you see this error examine ByteVector::Write and ByteVector::Concat usages for potential invalid parameters.
 			template <typename std::enable_if_t<CanStoreType<decltype(std::get<std::tuple_size_v<T> -N>(t))>::value, int> = 0>
-			static auto Store(ByteVector& self, bool storeSize, T const& t)
+			static void Store(ByteVector& self, bool storeSizeHeader, T const& t)
 			{
-				self.Store(storeSize, std::get<std::tuple_size_v<T> -N>(t));
-				StoreHelper<T, N - 1>::Store(self, storeSize, t);
+				self.Store(storeSizeHeader, std::get<std::tuple_size_v<T> - N>(t));
+				StoreHelper<T, N - 1>::Store(self, storeSizeHeader, t);
+			}
+
+			/// Function responsible for recursively calculating buffer size needed for call with tuple argument.
+			/// @param storeSizeHeader if true four byte header will be added to types in T that does not have size defined at compile time.
+			/// @return size_t number of bytes needed.
+			static size_t CalculateStoreSize(bool storeSize, T const& t)
+			{
+				return ByteVector::CalculateStoreSize(storeSizeHeader, std::get<std::tuple_size_v<T> - N>(t)) + StoreHelper<T, N - 1>::CalculateStoreSize(storeSizeHeader, t);
 			}
 		};
 
@@ -312,7 +396,13 @@ namespace MWR
 			/// Closing function, does nothing.
 			static void Store(ByteVector&, bool, T const&)
 			{
+				// Do nothing.
+			}
 
+			/// Closing function, returns 0.
+			static size_t CalculateStoreSize(bool, T const&)
+			{
+				return 0;
 			}
 		};
 	};
