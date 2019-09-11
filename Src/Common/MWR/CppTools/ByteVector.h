@@ -2,7 +2,6 @@
 
 #include "ByteArray.h"
 
-// TODO Examine forwarding pattern in Write methods.
 namespace MWR
 {
 	/// Forward declaration
@@ -56,61 +55,6 @@ namespace MWR
 		/// @param other. Object to copy.
 		ByteVector(std::vector<uint8_t> other);
 
-
-		/// Write content of of provided objects.
-		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
-		/// Writes 4 Bytes header with size for types that can have undefined buffer.
-		/// @tparam T. Types to be stored.
-		/// @return itself to allow chaining.
-		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
-		ByteVector & Write(T... args)
-		{
-			Store<T...>(true, args...);
-			return *this;
-		}
-
-		/// Write content of of provided objects.
-		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
-		/// Do not write header with size for types that can have undefined buffer.. Recipient must know size in advance to read, therefore should use Read<ByteArray<someSize>>.
-		/// @tparam T. Types to be stored.
-		/// @return itself to allow chaining.
-		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
-		ByteVector & Concat(T... args)
-		{
-			Store<T...>(false, args...);
-			return *this;
-		}
-
-		/// Create new ByteVector with Variadic list of parameters.
-		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
-		/// @see ByteVector::Write and ByteVector::Concat for more informations.
-		template <bool preferWriteOverConcat = true, typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
-		static ByteVector Create(T... args)
-		{
-			if constexpr (preferWriteOverConcat)
-				return CreateByWrite(args...);
-			else
-				return CreateByConcat(args...);
-		}
-
-		/// Create new ByteVector with Variadic list of parameters.
-		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
-		/// @see ByteVector::Write for more informations.
-		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
-		static ByteVector CreateByWrite(T... args)
-		{
-			return ByteVector{}.Write(args...);
-		}
-
-		/// Create new ByteVector with Variadic list of parameters.
-		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
-		/// @see ByteVector::Concat for more informations.
-		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
-		static ByteVector CreateByConcat(T... args)
-		{
-			return ByteVector{}.Concat(args...);
-		}
-
 		// Enable methods.
 		using Super::vector;
 		using Super::value_type;
@@ -156,6 +100,60 @@ namespace MWR
 		using Super::pop_back;
 		using Super::resize;
 
+		/// Write content of of provided objects.
+		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
+		/// Writes 4 Bytes header with size for types that have variable buffer length.
+		/// @tparam T. Types to be stored.
+		/// @return itself to allow chaining.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		ByteVector & Write(T const& ...args)
+		{
+			Store<T...>(true, args...);
+			return *this;
+		}
+
+		/// Write content of of provided objects.
+		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
+		/// Does not write header with size for types that have variable buffer length. Recipient must know size in advance to read, therefore should use Read<ByteArray<someSize>>.
+		/// @tparam T. Types to be stored.
+		/// @return itself to allow chaining.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		ByteVector & Concat(T const& ...args)
+		{
+			Store<T...>(false, args...);
+			return *this;
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Write and ByteVector::Concat for more informations.
+		template <bool preferWriteOverConcat = true, typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector Create(T const& ...args)
+		{
+			if constexpr (preferWriteOverConcat)
+				return CreateByWrite(args...);
+			else
+				return CreateByConcat(args...);
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Write for more informations.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector CreateByWrite(T const& ...args)
+		{
+			return ByteVector{}.Write(args...);
+		}
+
+		/// Create new ByteVector with Variadic list of parameters.
+		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
+		/// @see ByteVector::Concat for more informations.
+		template <typename ...T, typename std::enable_if_t<CanStoreType<T...>::value, int> = 0>
+		static ByteVector CreateByConcat(T const& ...args)
+		{
+			return ByteVector{}.Concat(args...);
+		}
+
 	private:
 		/// Store content of of provided object.
 		/// @param storeSize. If true function will add four byte header with size for those types.
@@ -170,7 +168,7 @@ namespace MWR
 				|| std::is_same_v<T, std::wstring>
 				|| std::is_same_v<T, std::wstring_view>
 				), int> = 0>
-			ByteVector & Store(bool storeSize, T arg)
+			ByteVector & Store(bool storeSize, T const& arg)
 		{
 			auto oldSize = size();
 			if (storeSize)
@@ -192,7 +190,7 @@ namespace MWR
 		/// @tparam T. Type to be stored. Supported types are ByteArray.
 		/// @return itself to allow chaining.
 		template<typename T, typename std::enable_if_t<IsByteArray<T>, int> = 0>
-		ByteVector & Store(bool unused, T arg)
+		ByteVector & Store(bool unused, T const& arg)
 		{
 			auto oldSize = size();
 			resize(oldSize + arg.size());
@@ -205,7 +203,7 @@ namespace MWR
 		/// tparam T. Type to be stored.
 		/// @return itself to allow chaining.
 		template<typename T,  typename std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
-		ByteVector & Store(bool unused, T arg)
+		ByteVector & Store(bool unused, T const& arg)
 		{
 			auto oldSize = size();
 			resize(oldSize + sizeof(T));
@@ -221,7 +219,7 @@ namespace MWR
 		/// @remarks This function is called only for two or more arguments.
 		/// @remarks Each type in parameter pack must have corresponding Write method for one argument.
 		template <typename ...T, typename std::enable_if_t<(sizeof...(T) > 1), int> = 0>
-		ByteVector & Store(bool storeSize, T... args)
+		ByteVector & Store(bool storeSize, T const ...args)
 		{
 			VariadicStoreHelper<T...>::Store(*this, storeSize, args...);
 			return *this;
@@ -232,7 +230,7 @@ namespace MWR
 		/// tparam T. Tuple type to be stored.
 		/// @return itself to allow chaining.
 		template<typename T, typename std::enable_if_t<IsTuple<T>, int> = 0>
-		ByteVector & Store(bool storeSize, T arg)
+		ByteVector & Store(bool storeSize, T const& arg)
 		{
 			StoreHelper<T>::Store(*this, storeSize, arg);
 			return *this;
@@ -253,7 +251,7 @@ namespace MWR
 			/// Becouse of MSVC SFINAE bug compiler can mark this function with std::enable_if_t<false... error.
 			/// If you see this error examine ByteVector::Write and ByteVector::Concat usages for potential invalid parameters.
 			template <typename std::enable_if_t<CanStoreType<T>::value, int> = 0>
-			static void Store(ByteVector& self, bool storeSize, T current, Rest... rest)
+			static void Store(ByteVector& self, bool storeSize, T const& current, Rest const& ...rest)
 			{
 				self.Store(storeSize, current);
 				VariadicStoreHelper<Rest...>::Store(self, storeSize, rest...);
@@ -275,7 +273,7 @@ namespace MWR
 			/// @param storeSize if true four byte header will be added to types in T that does not have size defined at compile time.
 			/// @param self. Reference to ByteVector object using VariadicWriter.
 			template <typename std::enable_if_t<CanStoreType<T>::value, int> = 0>
-			static void Store(ByteVector& self, bool storeSize, T current)
+			static void Store(ByteVector& self, bool storeSize, T const& current)
 			{
 				self.Store(storeSize, current);
 			}
