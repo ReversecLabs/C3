@@ -36,7 +36,7 @@ namespace MWR::C3::Interfaces::Connectors
 
 	private:
 		/// Represents a single C3 <-> Team Server connection, as well as each beacon in network.
-		struct Connection
+		struct Connection : std::enable_shared_from_this<Connection>
 		{
 			/// Constructor.
 			/// @param listeningPostAddress adders of TeamServer.
@@ -116,7 +116,7 @@ namespace MWR::C3::Interfaces::Connectors
 		std::mutex  m_SendMutex;
 
 		/// Map of all connections.
-		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
+		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 	};
 }
 
@@ -352,12 +352,13 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::Connection::Receive
 void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSeparateThread()
 {
 	m_SecondThreadStarted = true;
-	std::thread([&]()
+	std::thread([this]()
 	{
 		// Lock pointers.
 		auto owner = m_Owner.lock();
 		auto bridge = owner->GetBridge();
-		while (bridge->IsAlive())
+		auto self = shared_from_this();
+		while (bridge->IsAlive() && self.use_count() > 1)
 		{
 			try
 			{
@@ -365,9 +366,9 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSep
 				if (auto packet = Receive(); !packet.empty())
 				{
 					if (packet.size() == 1u && packet[0] == 0u)
-						Send(packet);
+						Send(packet); // is it safe.
 					else
-						bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
+						bridge->PostCommandToBinder(m_Id, packet);
 				}
 			}
 			catch (std::exception& e)
@@ -375,6 +376,7 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSep
 				bridge->Log({ e.what(), LogMessage::Severity::Error});
 			}
 		}
+		std::cout << "end" << std::endl;
 	}).detach();
 }
 

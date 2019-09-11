@@ -39,8 +39,13 @@ namespace MWR::C3::Interfaces::Connectors
 		/// @returns ByteVector response for command.
 		ByteVector TestErrorCommand(ByteView arg);
 
+		/// Close desired connection
+		/// @arguments arguments for command. connection Id in string form.
+		/// @returns ByteVector empty vector.
+		MWR::ByteVector CloseConnection(ByteView arguments);
+
 		/// Represents a single connection with implant.
-		struct Connection
+		struct Connection : std::enable_shared_from_this<Connection>
 		{
 			/// Constructor.
 			/// @param owner weak pointer to connector object.
@@ -63,7 +68,7 @@ namespace MWR::C3::Interfaces::Connectors
 		std::mutex m_ConnectionMapAccess;
 
 		/// Map of all connections.
-		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
+		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 	};
 }
 
@@ -97,17 +102,18 @@ MWR::C3::Interfaces::Connectors::MockServer::Connection::Connection(std::weak_pt
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Interfaces::Connectors::MockServer::Connection::StartUpdatingInSeparateThread()
 {
-	std::thread([&]()
+	std::thread([&, id = m_Id]()
 		{
 			// Lock pointers.
 			auto owner = m_Owner.lock();
 			auto bridge = owner->GetBridge();
-			while (bridge->IsAlive())
+			auto self = shared_from_this();
+			while (bridge->IsAlive() && self.use_count() > 1)
 			{
 				// Post something to Binder and wait a little.
 				try
 				{
-					bridge->PostCommandToBinder(m_Id, ByteView(OBF("Beep")));
+					bridge->PostCommandToBinder(id, ByteView(OBF("Beep")));
 				}
 				catch (...)
 				{
@@ -125,9 +131,18 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::OnRunCommand(ByteVi
 	{
 	case 0:
 		return TestErrorCommand(command);
+	case 1:
+		return CloseConnection(command);
 	default:
 		return AbstractConnector::OnRunCommand(commandCopy);
 	}
+}
+
+MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::CloseConnection(ByteView arguments)
+{
+	auto id = arguments.Read<std::string>();
+	m_ConnectionMap.erase(id);
+	return {};
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

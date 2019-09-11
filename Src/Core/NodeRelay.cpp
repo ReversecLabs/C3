@@ -109,7 +109,7 @@ void MWR::C3::Core::NodeRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<D
 	}
 	catch (std::exception& exception)
 	{
-		throw std::runtime_error{ OBF_STR("Failed to parse G2A packet. ") + exception.what() };
+		throw std::runtime_error{ OBF_STR("Failed to parse G2R packet. ") + exception.what() };
 	}
 }
 
