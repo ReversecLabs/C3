@@ -29,7 +29,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Called every time new implant is being created.
 		/// @param connectionId unused.
 		/// @param data unused. Prints debug information if not empty.
-		/// @para isX64 unused.
+		/// @param isX64 unused.
 		/// @returns ByteVector copy of data.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
@@ -40,9 +40,9 @@ namespace MWR::C3::Interfaces::Connectors
 		ByteVector TestErrorCommand(ByteView arg);
 
 		/// Close desired connection
-		/// @arguments arguments for command. connection Id in string form.
+		/// @param connectionId id of connection (RouteId) in string form.
 		/// @returns ByteVector empty vector.
-		MWR::ByteVector CloseConnection(ByteView arguments) override;
+		MWR::ByteVector CloseConnection(ByteView connectionId) override;
 
 		/// Represents a single connection with implant.
 		struct Connection : std::enable_shared_from_this<Connection>

@@ -142,12 +142,12 @@ namespace MWR::C3
 		/// Called every time new peripheral is being created.
 		/// @param connectionId adders of peripheral in C3 network .
 		/// @param data all parameters used to create peripheral. Specific for each connector.
-		/// @para isX64 indicates if relay staging peripheral is x64.
+		/// @param isX64 indicates if relay staging peripheral is x64.
 		/// @returns ByteVector correct command that will be used to stage peripheral.
 		virtual ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64 = false) = 0;
 
 		/// Close desired connection
-		/// @arguments connectionId for command. connection Id in string form.
+		/// @param connectionId id of connection (RouteId) in string form.
 		/// @returns ByteVector empty vector.
 		virtual ByteVector CloseConnection(ByteView connectionId) = 0;
 

@@ -26,7 +26,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Called every time new implant is being created.
 		/// @param connectionId adders of beacon in C3 network .
 		/// @param data parameters used to create implant. If payload is empty, new one will be generated.
-		/// @para isX64 indicates if relay staging beacon is x64.
+		/// @param isX64 indicates if relay staging beacon is x64.
 		/// @returns ByteVector correct command that will be used to stage beacon.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
@@ -91,9 +91,9 @@ namespace MWR::C3::Interfaces::Connectors
 		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, bool arch64, uint32_t block);
 
 		/// Close desired connection
-		/// @arguments arguments for command. connection Id in string form.
+		/// @param connectionId id of connection (RouteId) in string form.
 		/// @returns ByteVector empty vector.
-		MWR::ByteVector CloseConnection(ByteView arguments) override;
+		MWR::ByteVector CloseConnection(ByteView connectionId) override;
 
 		/// Initializes Sockets library. Can be called multiple times, but requires corresponding number of calls to DeinitializeSockets() to happen before closing the application.
 		/// @return value forwarded from WSAStartup call (zero if successful).
