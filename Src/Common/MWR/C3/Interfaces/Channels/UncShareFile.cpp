@@ -94,39 +94,40 @@ size_t MWR::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView dat
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::Interfaces::Channels::UncShareFile::OnReceiveFromChannel()
+std::vector<MWR::ByteVector> MWR::C3::Interfaces::Channels::UncShareFile::OnReceiveFromChannel()
 {
 	// Read a single packet from the oldest file that belongs to this channel
 
 	std::vector<std::filesystem::path> channelFiles;
 	for (auto&& directoryEntry : std::filesystem::directory_iterator(m_FilesystemPath))
-	{
 		if (BelongToChannel(directoryEntry.path()))
 			channelFiles.emplace_back(directoryEntry.path());
-	}
 
-	if (channelFiles.empty())
-		return {};
 
-	auto oldestFile = std::min_element(channelFiles.begin(), channelFiles.end(), [](auto const& a, auto const& b) -> bool { return std::filesystem::last_write_time(a) < std::filesystem::last_write_time(b); });
+	std::sort(channelFiles.begin(), channelFiles.end(), [](auto const& a, auto const& b) -> bool { return std::filesystem::last_write_time(a) < std::filesystem::last_write_time(b); });
 
-	// Get the contents of the file and pass on. Return the packet even if removing the file failed.
-	ByteVector packet;
-	try
+	std::vector<ByteVector> ret;
+	ret.reserve(channelFiles.size());
+	for (auto&& file : channelFiles)
 	{
+		ByteVector packet;
+		try
 		{
-			std::ifstream readFile(oldestFile->generic_string(), std::ios::binary);
+			auto readFile = std::ifstream(file, std::ios::binary);
 			packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
+			readFile.close();
+			RemoveFile(file);
+		}
+		catch (std::exception& exception)
+		{
+			Log({ OBF("Caught a std::exception when processing contents of filename: ") + file.generic_string() + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
+			break;
 		}
 
-		RemoveFile(*oldestFile);
-	}
-	catch (std::exception& exception)
-	{
-		Log({ OBF("Caught a std::exception when processing contents of filename: ") + oldestFile->generic_string() + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
+		ret.push_back(std::move(packet));
 	}
 
-	return packet;
+	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

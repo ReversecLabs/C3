@@ -56,7 +56,7 @@ void MWR::C3::Core::DeviceBridge::OnPassNetworkPacket(ByteView packet)
 
 	if (m_IsNegotiationChannel) // negotiation channel does not support chunking. Just pass packet and leave.
 	{
-		auto sent = GetDevice()->OnSendToChannel(packet);
+		auto sent = GetDevice()->OnSendToChannelInternal(packet);
 		if (sent != packet.size())
 			throw std::runtime_error{OBF("Negotiation channel does not support chunking. Packet size: ") + std::to_string(packet.size()) + OBF(" Channel sent: ") + std::to_string(sent)};
 
@@ -69,7 +69,7 @@ void MWR::C3::Core::DeviceBridge::OnPassNetworkPacket(ByteView packet)
 	while (!packet.empty())
 	{
 		auto data = ByteVector{}.Write(messageId, chunkId, oryginalSize).Concat(packet);
-		auto sent = GetDevice()->OnSendToChannel(data);
+		auto sent = GetDevice()->OnSendToChannelInternal(data);
 
 		if (sent >= QualityOfService::s_MinFrameSize || sent == data.size()) // if this condition were not channel must resend data.
 		{
