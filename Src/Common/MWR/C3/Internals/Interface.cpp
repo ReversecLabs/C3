@@ -22,32 +22,32 @@ void MWR::C3::AbstractChannel::OnReceive()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Device::SetUpdateFrequency(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs)
+void MWR::C3::Device::SetUpdateDelay(std::chrono::milliseconds minUpdateDelayInMs, std::chrono::milliseconds maxUpdateDelayInMs)
 {
 	// Sanity checks.
-	if (minUpdateFrequencyInMs > maxUpdateFrequencyInMs)
-		throw std::invalid_argument{ OBF("maxUpdateFrequency must be greater or equal to minUpdateFrequency.") };
-	if (minUpdateFrequencyInMs < 30ms)
-		throw std::invalid_argument{ OBF("minUpdateFrequency must be greater or equal to 30ms.") };
+	if (minUpdateDelayInMs > maxUpdateDelayInMs)
+		throw std::invalid_argument{ OBF("maxUpdateDelay must be greater or equal to minUpdateDelay.") };
+	if (minUpdateDelayInMs < 30ms)
+		throw std::invalid_argument{ OBF("minUpdateDelay must be greater or equal to 30ms.") };
 
-	std::lock_guard<std::mutex> guard(m_UpdateFrequencyMutex);
-	m_MinUpdateFrequency = minUpdateFrequencyInMs;
-	m_MaxUpdateFrequency = maxUpdateFrequencyInMs;
+	std::lock_guard<std::mutex> guard(m_UpdateDelayMutex);
+	m_MinUpdateDelay = minUpdateDelayInMs;
+	m_MaxUpdateDelay = maxUpdateDelayInMs;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Device::SetUpdateFrequency(std::chrono::milliseconds frequencyInMs)
+void MWR::C3::Device::SetUpdateDelay(std::chrono::milliseconds frequencyInMs)
 {
-	std::lock_guard<std::mutex> guard(m_UpdateFrequencyMutex);
-	m_MinUpdateFrequency = frequencyInMs;
-	m_MaxUpdateFrequency = m_MinUpdateFrequency;
+	std::lock_guard<std::mutex> guard(m_UpdateDelayMutex);
+	m_MinUpdateDelay = frequencyInMs;
+	m_MaxUpdateDelay = m_MinUpdateDelay;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::chrono::milliseconds MWR::C3::Device::GetUpdateFrequency() const
+std::chrono::milliseconds MWR::C3::Device::GetUpdateDelay() const
 {
-	std::lock_guard<std::mutex> guard(m_UpdateFrequencyMutex);
-	return m_MinUpdateFrequency != m_MaxUpdateFrequency ? MWR::Utils::GenerateRandomValue(m_MinUpdateFrequency, m_MaxUpdateFrequency) : m_MinUpdateFrequency;
+	std::lock_guard<std::mutex> guard(m_UpdateDelayMutex);
+	return m_MinUpdateDelay != m_MaxUpdateDelay ? MWR::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay) : m_MinUpdateDelay;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ MWR::ByteVector MWR::C3::Device::OnRunCommand(ByteView command)
 	case static_cast<uint16_t>(MWR::C3::Core::Relay::Command::UpdateJitter) :
 	{
 		auto [minVal, maxVal] = command.Read<float, float>();
-		return SetUpdateFrequency(MWR::Utils::ToMilliseconds(minVal), MWR::Utils::ToMilliseconds(maxVal)), ByteVector{};
+		return SetUpdateDelay(MWR::Utils::ToMilliseconds(minVal), MWR::Utils::ToMilliseconds(maxVal)), ByteVector{};
 	}
 	default:
 		throw std::runtime_error(OBF("Device received an unknown command"));

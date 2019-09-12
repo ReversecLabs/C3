@@ -58,7 +58,7 @@ namespace MWR::C3
 			InterfaceFactory::InterfaceData<AbstractType> ret;
 			ret.m_Builder = [](ByteView bv) { return std::shared_ptr<AbstractType>{ new Iface{ bv } }; };
 			ret.m_ClousureConnectorHash = clousureConnectorHash;
-			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateFrequency, Iface::s_MaxUpdateFrequency);
+			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateDelay, Iface::s_MaxUpdateDelay);
 #ifdef		C3_IS_GATEWAY
 			ret.m_Name = GetInterfaceName<Iface>();
 			ret.m_Capability = EnsureDefaultCapability<Iface>::GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
@@ -96,14 +96,14 @@ namespace MWR::C3
 		class Channel : public Register<Iface, AbstractChannel>
 		{
 		public:
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 30ms;
 
 			Channel()
 			{
-				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
+				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 
@@ -114,8 +114,8 @@ namespace MWR::C3
 		{
 		public:
 			// connector in fact does not need those values. They are here to satisfy template requirements.
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 0ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 0ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 0ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 0ms;
 		};
 #else
 		/// Don't register the connectors in node builds
@@ -132,14 +132,14 @@ namespace MWR::C3
 		class Peripheral : public Register<Iface, AbstractPeripheral, Hash::Fnv1aType<Closure>()>
 		{
 		public:
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 30ms;
 
 			Peripheral()
 			{
-				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
+				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 #pragma warning( pop )

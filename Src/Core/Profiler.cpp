@@ -243,7 +243,7 @@ void MWR::C3::Core::Profiler::RestoreFromSnapshot()
 			);
 
 			auto jitter = std::pair{ MWR::Utils::ToMilliseconds(channel["jitter"][0].get<float>()), MWR::Utils::ToMilliseconds(channel["jitter"][1].get<float>()) };
-			device->SetUpdateFrequency(jitter.first, jitter.second);
+			device->SetUpdateDelay(jitter.first, jitter.second);
 			auto profile = Get(); // we need to take profile each time, as it is also taken in CreateAndAttachDevice and that would lead to deadlock.
 			auto channelProfile = profile.m_Gateway.m_Channels.Find(did);
 			channelProfile->m_StartupArguments = channel["startupCommand"];
