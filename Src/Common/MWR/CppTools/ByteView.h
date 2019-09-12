@@ -40,6 +40,10 @@ namespace MWR
 	/// @returns std::vector<std::string> tokenized string.
 	std::vector<std::string> SplitAndCopy(std::string_view stringToBeSplitted, std::string_view delimiter);
 
+	/// Idiom for detecting ByteView::Get.
+	template <typename X>
+	constexpr bool IsGetter = false;
+
 	/// Non owning container.
 	class ByteView : std::basic_string_view<ByteVector::value_type>
 	{
@@ -136,6 +140,7 @@ namespace MWR
 		using Super::npos;
 		using Super::value_type;
 
+
 		/// @returns ByteVector. Owning container with the read bytes.
 		/// @param byteCount. How many bytes should be read.
 		/// @remarks Read is not compatible with Read<ByteVector>.
@@ -187,7 +192,7 @@ namespace MWR
 		/// Read bytes and remove them from ByteView.
 		/// @returns ByteArray. Owning container with the read bytes.
 		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
-		template<typename T, typename std::enable_if_t<IsByteArray<T>, int> = 0>
+		template<typename T>
 		std::enable_if_t<IsByteArray<T>, T> Read()
 		{
 			if (std::tuple_size<typename T>::value > size())
@@ -221,6 +226,35 @@ namespace MWR
 		std::enable_if_t<IsTuple<T>, T> Read()
 		{
 			return TupleGenerator<T>::Generate(*this);
+		}
+
+		/// Class allowing reading N bytes without coping data like in ByeView::Read<ByteArray<N>> or ByteView::Reed(size_t).
+		template <size_t N>
+		class Get
+		{
+		public:
+			/// Define size marker.
+			static constexpr size_t size = N;
+			static constexpr size_t Size = size;
+
+		private:
+			/// Private constructor.
+			/// This class should never be instantiated.
+			Get() = default;
+		};
+
+		/// Read bytes and remove them from ByteView.
+		/// @returns ByteView. Non owning container with the read bytes.
+		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
+		template<typename T>
+		std::enable_if_t<IsGetter<T>, ByteView> Read()
+		{
+			if (T::Size > size())
+				throw std::out_of_range{ OBF(": Cannot read data from ByteView") };
+
+			auto retVal = SubString(0, T::Size);
+			remove_prefix(T::Size);
+			return retVal;
 		}
 
 		/// Read tuple and remove bytes from ByteView.
@@ -273,7 +307,7 @@ namespace MWR
 			{
 				auto current = std::make_tuple(self.Read<T>());
 				auto rest = VariadicTupleGenerator<Rest...>::Generate(self);
-				return std::tuple_cat(current, rest);
+				return std::tuple_cat(std::move(current), std::move(rest));
 			}
 		};
 
@@ -324,6 +358,14 @@ namespace MWR
 			}
 		};
 	};
+
+	/// Specialization of idiom for detecting ByteView::Get.
+	template<size_t N>
+	constexpr bool IsGetter<ByteView::Get<N>> = true;
+
+	/// Alias for simpler use of ByteView::Get.
+	template<size_t N>
+	using Bytes = ByteView::Get<N>;
 
 	namespace Literals
 	{

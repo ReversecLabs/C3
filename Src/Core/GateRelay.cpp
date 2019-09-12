@@ -47,7 +47,7 @@ void MWR::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<D
 	try
 	{
 		auto decrypted = MWR::Crypto::DecryptFromAnonymous(packet0.SubString(1), m_AuthenticationKey, m_DecryptionKey);
-		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, ByteArray<RouteId::BinarySize>, int32_t>();
+		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t>();
 		if (!m_Profiler->Get().m_Gateway.ConnectionExist(RouteId::FromByteView(rid).GetAgentId()))
 			throw std::runtime_error{ "S2G packet received from not connected source." };
 
@@ -274,10 +274,10 @@ void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 	auto readView = ByteView{ decryptedPacket };
 	auto newRelayBuildId = BuildId{ readView.Read<BuildId::UnderlyingIntegerType>() };
 	// todo prepending fixed-size key with 4 byte length is unnecessary, (remember to change writing, not only reading)
-	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteVector>() };
+	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
 	auto lastSeen = readView.Read<int32_t>();
-	HostInfo hostInfo(ByteView{ readView.Read<ByteVector>() });
+	HostInfo hostInfo(readView.Read<ByteView>());
 
 	auto receivedFrom = query.GetSenderChannel().lock();
 	if (!receivedFrom)
@@ -299,17 +299,17 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 	auto readView = ByteView{ decryptedPacket };
 
 	// part of message created by parent Node
-	auto [procedureID, parentRid, timestamp, childRid, childSideDid] = readView.Read<ProceduresUnderlyingType, ByteArray<RouteId::BinarySize>, int32_t, ByteArray<RouteId::BinarySize>, ByteArray<DeviceId::BinarySize>>();
+	auto [procedureID, parentRid, timestamp, childRid, childSideDid] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, Bytes<RouteId::BinarySize>, Bytes<DeviceId::BinarySize>>();
 
 	// part of message from new relay. encrypted once again because it was blob for parent relay.
 	auto childPacket = Crypto::DecryptFromAnonymous(readView, m_AuthenticationKey, m_DecryptionKey);
 	readView = ByteView{ childPacket };
 
 	auto newRelayBuildId = BuildId{ readView.Read<BuildId::UnderlyingIntegerType>() }; // todo blocking
-	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteVector>() };
+	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
 	auto lastSeen = readView.Read<int32_t>();
-	HostInfo hostInfo(ByteView{ readView.Read<ByteVector>() });
+	HostInfo hostInfo(readView.Read<ByteView>());
 
 	auto receivedFrom = query.GetSenderChannel().lock();
 	if (!receivedFrom)
@@ -337,9 +337,9 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 	auto readView = ByteView{ decryptedPacket };
 
 	auto unusedProtocolId = readView.Read<int8_t>();
-	auto senderRid = RouteId::FromByteView(readView.Read<ByteArray<RouteId::BinarySize>>());
+	auto senderRid = RouteId::FromByteView(readView.Read<Bytes<RouteId::BinarySize>>());
 	auto timestamp = readView.Read<int32_t>();
-	auto deviceId = readView.Read<ByteArray<DeviceId::BinarySize>>();
+	auto deviceId = readView.Read<Bytes<DeviceId::BinarySize>>();
 	auto connectorHash = readView.Read<HashT>();
 
 	auto connector = m_Connectors.Find([&](auto const& e){ return e->GetNameHash() == connectorHash; });
@@ -372,7 +372,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 {
 	auto decryptedPacket = response.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, deviceId, deviceTypeHash, flags] = readView.Read<ProceduresUnderlyingType, ByteArray<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, HashT, std::uint8_t>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, deviceId, deviceTypeHash, flags] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, HashT, std::uint8_t>();
 	bool isChannel = flags & 1;
 	bool isNegotiationChannel = flags & (1 << 1);
 
@@ -393,7 +393,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 void MWR::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
-	auto newOutputId = readView.Read<ByteVector>();
+	auto newOutputId = readView.Read<ByteView>();
 
 	auto newInputId = MWR::Utils::GenerateRandomString(newOutputId.size());
 	auto sender = query.GetSenderChannel().lock();
@@ -426,7 +426,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotificatio
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, newDeviceId, negotiatorId, inId, outId] = readView.Read<ProceduresUnderlyingType, ByteArray<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, DeviceId::UnderlyingIntegerType, std::string, std::string>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, newDeviceId, negotiatorId, inId, outId] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, DeviceId::UnderlyingIntegerType, std::string, std::string>();
 
 	auto agent = m_Profiler->Get().m_Gateway.m_Agents.Find(query.GetSenderRouteId().GetAgentId());
 	if (!agent)
@@ -448,7 +448,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, blob] = readView.Read<ProceduresUnderlyingType, ByteArray<RouteId::BinarySize>, int32_t, ByteVector>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, blob] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, ByteView>();
 	// blob has not defined structure. Currently Notification is used as ping response.
 
 	auto agent = m_Profiler->Get().m_Gateway.m_Agents.Find(query.GetSenderRouteId().GetAgentId());
