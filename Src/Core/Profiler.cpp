@@ -819,9 +819,8 @@ void MWR::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jCommandEl
 							if (!profilerElement)
 								throw std::runtime_error{ "Device not found" };
 
-							commandReadView.remove_prefix(sizeof(uint16_t)); // command id
-							profilerElement->m_Jitter.first = MWR::Utils::ToMilliseconds(commandReadView.Read<float>());
-							profilerElement->m_Jitter.second = MWR::Utils::ToMilliseconds(commandReadView.Read<float>());
+							profilerElement->m_Jitter.first = MWR::Utils::ToMilliseconds(localView.Read<float>());
+							profilerElement->m_Jitter.second = MWR::Utils::ToMilliseconds(localView.Read<float>());
 							break;
 						}
 						case MWR::C3::Core::Relay::Command::Close:
