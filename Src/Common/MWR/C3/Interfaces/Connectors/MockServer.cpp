@@ -42,7 +42,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
 		/// @returns ByteVector empty vector.
-		MWR::ByteVector CloseConnection(ByteView arguments);
+		MWR::ByteVector CloseConnection(ByteView arguments) override;
 
 		/// Represents a single connection with implant.
 		struct Connection : std::enable_shared_from_this<Connection>
@@ -140,8 +140,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::OnRunCommand(ByteVi
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::CloseConnection(ByteView arguments)
 {
-	auto id = arguments.Read<std::string>();
-	m_ConnectionMap.erase(id);
+	m_ConnectionMap.erase(arguments);
 	return {};
 }
 
@@ -181,6 +180,19 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::MockServer::GetCapability()
 				{
 					"name": "Error message",
 					"description": "Error set on connector. Send empty to clean up error"
+				}
+			]
+		},
+		{
+			"name": "Close connection",
+			"description": "Close socket connection with TeamServer if beacon is not available",
+			"id": 1,
+			"arguments":
+			[
+				{
+					"name": "Route Id",
+					"min": 1,
+					"description": "Id associated to beacon"
 				}
 			]
 		}

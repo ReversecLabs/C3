@@ -137,6 +137,11 @@ namespace MWR::C3
 
 		virtual ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) { return data; }
 
+		/// Close desired connection
+		/// @arguments connectionId for command. connection Id in string form.
+		/// @returns ByteVector empty vector.
+		virtual ByteVector CloseConnection(ByteView connectionId) = 0;
+
 	protected:
 		/// Close Connector.
 		virtual void TurnOff();

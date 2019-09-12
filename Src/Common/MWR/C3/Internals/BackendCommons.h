@@ -139,7 +139,17 @@ namespace MWR::C3
 		/// @return Command result.
 		virtual ByteVector RunCommand(ByteView command) = 0;
 
+		/// Called every time new peripheral is being created.
+		/// @param connectionId adders of peripheral in C3 network .
+		/// @param data all parameters used to create peripheral. Specific for each connector.
+		/// @para isX64 indicates if relay staging peripheral is x64.
+		/// @returns ByteVector correct command that will be used to stage peripheral.
 		virtual ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64 = false) = 0;
+
+		/// Close desired connection
+		/// @arguments connectionId for command. connection Id in string form.
+		/// @returns ByteVector empty vector.
+		virtual ByteVector CloseConnection(ByteView connectionId) = 0;
 
 		/// Logs a message. Used by internal mechanisms to report errors, warnings, informations and debug messages.
 		/// @param message information to log.

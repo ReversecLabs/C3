@@ -553,7 +553,7 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 							return;
 
 						// Remove connection.
-						connector->RunCommand(ByteVector{}.Write(uint16_t{ 1 }, RouteId{ m_Id, *deviceId }.ToByteVector()));
+						connector->CloseConnection(RouteId{ m_Id, *deviceId }.ToByteVector());
 					}
 				};
 				break;
@@ -633,12 +633,11 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 					break;
 
 				// Remove connection.
-				connector->RunCommand(ByteVector{}.Write(uint16_t{ 1 }, RouteId{ m_Id, element.m_Id }.ToByteVector()));
+				connector->CloseConnection(RouteId{ m_Id, element.m_Id }.ToByteVector());
 			}
 
 			m_Peripherals.Clear();
 			owner->Get().m_Gateway.m_Agents.Remove(m_Id);
-			//here
 		};
 		break;
 	}
@@ -837,7 +836,7 @@ void MWR::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jCommandEl
 								break;
 
 							// Remove connection.
-							connector->RunCommand(ByteVector{}.Write(uint16_t{ 1 }, RouteId{ m_Id, device->GetDid() }.ToByteVector()));
+							connector->CloseConnection(RouteId{ m_Id, device->GetDid() }.ToByteVector());
 
 							break;
 						}

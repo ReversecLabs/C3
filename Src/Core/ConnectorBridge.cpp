@@ -88,3 +88,8 @@ MWR::ByteVector MWR::C3::Core::ConnectorBridge::PeripheralCreationCommand(ByteVi
 {
 	return m_Connector->PeripheralCreationCommand(connectionId, data, isX64);
 }
+
+MWR::ByteVector MWR::C3::Core::ConnectorBridge::CloseConnection(ByteView connectionId)
+{
+	return m_Connector->CloseConnection(connectionId);
+}

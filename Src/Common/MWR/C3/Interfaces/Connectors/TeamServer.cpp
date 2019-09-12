@@ -93,7 +93,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
 		/// @returns ByteVector empty vector.
-		MWR::ByteVector CloseConnection(ByteView arguments);
+		MWR::ByteVector CloseConnection(ByteView arguments) override;
 
 		/// Initializes Sockets library. Can be called multiple times, but requires corresponding number of calls to DeinitializeSockets() to happen before closing the application.
 		/// @return value forwarded from WSAStartup call (zero if successful).
@@ -188,8 +188,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::GeneratePayload(Byt
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::CloseConnection(ByteView arguments)
 {
-	auto id = arguments.Read<std::string>();
-	m_ConnectionMap.erase(id);
+	m_ConnectionMap.erase(arguments);
 	return {};
 }
 
@@ -366,7 +365,7 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSep
 				if (auto packet = Receive(); !packet.empty())
 				{
 					if (packet.size() == 1u && packet[0] == 0u)
-						Send(packet); // is it safe.
+						Send(packet);
 					else
 						bridge->PostCommandToBinder(m_Id, packet);
 				}
@@ -376,7 +375,6 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSep
 				bridge->Log({ e.what(), LogMessage::Severity::Error});
 			}
 		}
-		std::cout << "end" << std::endl;
 	}).detach();
 }
 

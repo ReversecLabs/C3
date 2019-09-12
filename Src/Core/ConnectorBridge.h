@@ -77,6 +77,11 @@ namespace MWR::C3::Core
 		/// @returns ByteVector correct command that will be used to stage peripheral.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64 = false) override;
 
+		/// Close desired connection
+		/// @arguments connectionId for command. connection Id in string form.
+		/// @returns ByteVector empty vector.
+		ByteVector CloseConnection(ByteView connectionId) override;
+
 	protected:
 		/// Connector object getter.
 		/// @return Connector this object binds GateRelay with.
