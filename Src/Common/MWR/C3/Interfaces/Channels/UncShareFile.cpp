@@ -83,7 +83,6 @@ size_t MWR::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView dat
 		}
 		std::filesystem::rename(tmpFilePath, filePath);
 
-		Log({ OBF("OnSend() called for UncShareFile carrying ") + std::to_string(data.size()) + OBF(" bytes"), LogMessage::Severity::DebugInformation });
 		return data.size();
 	}
 	catch (std::exception& exception)

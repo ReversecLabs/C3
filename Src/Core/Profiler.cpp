@@ -117,7 +117,7 @@ MWR::ByteVector MWR::C3::Core::Profiler::TranslateArguments(json const& argument
 		if (!argument.is_array())
 			translate(argument);
 		else
-			for (auto subargument : argument)
+			for (auto const subargument : argument)
 				translate(subargument);
 	}
 
@@ -821,6 +821,20 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 	// Construct the InitialPacket.
 	json initialPacket = json::parse(gateway->m_InterfaceFactory.GetCapability());
 
+	for (auto& interface : initialPacket["channels"])
+		if (!interface.contains("create"))
+			interface["create"] = json::parse(R"(
+			{
+				"arguments" :
+					[
+						{
+							"type": "binary",
+							"description": "Blob of data that will be provided to Channel constructor.",
+							"name": "arguments"
+						}
+					]
+			})");
+
 	// Create method in interface is constructor. It must be a relay/gateway command.
 	// initialPacket is copied to original to prevent iterator invalidation.
 	// last 256 commands will be reserved for common commands.
@@ -829,14 +843,13 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 		auto idToErase = 0;
 		std::vector<std::unordered_map<std::string, std::vector<json>>> buffer;
 		buffer.resize(prefix.size());
-		for (auto&& e : oryginal[interfaceType])
+		for (auto&& element : oryginal[interfaceType])
 		{
 			try
 			{
 				for (auto i = 0u; i < prefix.size(); ++i)
 				{
-
-					auto arguments = e.at("create").at("arguments");
+					auto arguments = element.at("create").at("arguments");
 					if (i) // NegotiationChannel command
 					{
 						if (arguments.empty() || arguments[0].size() != 2)
@@ -846,7 +859,7 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 					}
 
 					for (auto&& relayType : relayTypes)
-						buffer[i][relayType].push_back(json{ {"name", prefix[i] + e["name"].get<std::string>()}, {"arguments", arguments}, {"id", id} });
+						buffer[i][relayType].push_back(json{ {"name", prefix[i] + element["name"].get<std::string>()}, {"arguments", arguments}, {"id", id} });
 
 					m_CreateCommands.push_back({ id, initialPacket[interfaceType][idToErase]["type"].get<uint32_t>(), isDevice, !!i }); // store command id and hash.
 					--id;
@@ -856,7 +869,7 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 				initialPacket[interfaceType][idToErase].erase("create");
 				initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::Close) }, {"arguments", json::array()} });
 				if (isDevice)
-					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::UpdateJitter) },
+					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::UpdateJitter) },
 						{"arguments", {
 							{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
 							{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}

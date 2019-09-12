@@ -23,9 +23,6 @@ std::string MWR::C3::InterfaceFactory::GetCapability()
 			{
 				json entry;
 				entry["type"] = e.first;
-				if (e.second.m_Capability.empty() || e.second.m_Name.empty())
-					continue;
-
 				entry["name"] = e.second.m_Name;
 				auto pin = json::parse(e.second.m_Capability);
 				for (const auto& j : pin.items())
