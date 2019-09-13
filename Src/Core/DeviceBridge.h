@@ -102,14 +102,14 @@ namespace MWR::C3::Core
 		/// Creates the receiving thread.
 		virtual void StartUpdatingInSeparateThread();
 
-		/// Modifies the duration and jitter of OnReceive() calls. If minUpdateFrequencyInMs != maxUpdateFrequencyInMs then update frequency is randomized in range between those values.
-		/// @param minUpdateFrequencyInMs minimum update frequency.
-		/// @param maxUpdateFrequencyInMs maximum update frequency.
-		void SetUpdateFrequency(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs) override;
+		/// Modifies the duration and jitter of OnReceive() calls. If minUpdateDelayInMs != maxUpdateDelayInMs then update frequency is randomized in range between those values.
+		/// @param minUpdateDelayInMs minimum update frequency.
+		/// @param maxUpdateDelayInMs maximum update frequency.
+		void SetUpdateDelay(std::chrono::milliseconds minUpdateDelayInMs, std::chrono::milliseconds maxUpdateDelayInMs) override;
 
 		/// Sets time span between OnReceive() calls to a fixed value.
 		/// @param frequencyInMs frequency of OnReceive() calls.
-		void SetUpdateFrequency(std::chrono::milliseconds frequencyInMs) override;
+		void SetUpdateDelay(std::chrono::milliseconds frequencyInMs) override;
 
 		/// "Parent" Relay getter.
 		/// @return Relay this Device is attached to.

@@ -56,17 +56,17 @@ namespace MWR::C3
 		/// @return true if Device is a Channel.
 		virtual bool IsChannel() const { return false; }
 
-		/// Modifies the duration and jitter of OnReceive() calls. If minUpdateFrequencyInMs != maxUpdateFrequencyInMs then update frequency is randomized in range between those values.
-		/// @param minUpdateFrequencyInMs minimum update frequency.
-		/// @param maxUpdateFrequencyInMs maximum update frequency.
-		virtual void SetUpdateFrequency(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs);
+		/// Modifies the duration and jitter of OnReceive() calls. If minUpdateDelayInMs != maxUpdateDelayInMs then update frequency is randomized in range between those values.
+		/// @param minUpdateDelayInMs minimum update frequency.
+		/// @param maxUpdateDelayInMs maximum update frequency.
+		virtual void SetUpdateDelay(std::chrono::milliseconds minUpdateDelayInMs, std::chrono::milliseconds maxUpdateDelayInMs);
 
 		/// Sets time span between OnReceive() calls to a fixed value.
 		/// @param frequencyInMs frequency of OnReceive() calls.
-		virtual void SetUpdateFrequency(std::chrono::milliseconds frequencyInMs);
+		virtual void SetUpdateDelay(std::chrono::milliseconds frequencyInMs);
 
 		/// Gets update frequency. If min and max variables have different values then generates random value in their range.
-		virtual std::chrono::milliseconds GetUpdateFrequency() const;
+		virtual std::chrono::milliseconds GetUpdateDelay() const;
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.
@@ -77,8 +77,8 @@ namespace MWR::C3
 		/// Close device.
 		virtual void Close();
 
-		mutable std::mutex m_UpdateFrequencyMutex;																		///< Mutex to synchronize changes in frequency update members.
-		std::chrono::milliseconds m_MinUpdateFrequency, m_MaxUpdateFrequency;											///< Receive loop moderator (if m_MaxUpdateFrequencyJitter != m_MinUpdateFrequency. then update frequency is randomized in range between those values).
+		mutable std::mutex m_UpdateDelayMutex;																		///< Mutex to synchronize changes in frequency update members.
+		std::chrono::milliseconds m_MinUpdateDelay, m_MaxUpdateDelay;											///< Receive loop moderator (if m_MaxUpdateDelayJitter != m_MinUpdateDelay. then update frequency is randomized in range between those values).
 	};
 
 	/// An abstract structure representing all Channels.
