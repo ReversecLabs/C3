@@ -14,10 +14,10 @@
 
 #include "Common/ADVobfuscator/MetaString.h"
 
+#include "Utils.h"																										//< For common functions.
 #include "ByteArray.h"																									//< For ByteArray.
 #include "ByteVector.h"																									//< For ByteVector.
 #include "ByteView.h"																									//< For ByteView.
-#include "Utils.h"																										//< For common functions.
 
 
 // Literals.

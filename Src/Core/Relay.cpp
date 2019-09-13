@@ -41,7 +41,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::CreateAndAtta
 		if (isNegotiationChannel)
 		{
 			auto readView = commandLine;
-			auto negotiationId = readView.Read<ByteVector>();
+			auto negotiationId = readView.Read<ByteView>();
 			helper.reserve(commandLine.size() + negotiationId.size() + sizeof(std::uint32_t));
 			auto generatedId = MWR::Utils::GenerateRandomString(negotiationId.size());
 			if (negotiationClient)

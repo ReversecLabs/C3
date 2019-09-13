@@ -40,6 +40,10 @@ namespace MWR
 	/// @returns std::vector<std::string> tokenized string.
 	std::vector<std::string> SplitAndCopy(std::string_view stringToBeSplitted, std::string_view delimiter);
 
+	/// Idiom for detecting ByteView::Get.
+	template <typename X>
+	constexpr bool IsGetter = false;
+
 	/// Non owning container.
 	class ByteView : std::basic_string_view<ByteVector::value_type>
 	{
@@ -96,6 +100,47 @@ namespace MWR
 		/// Allow cast to std::string_view.
 		operator std::string_view() const;
 
+		/// Create a sub-string from this ByteView.
+/// @param offset. 	Position of the first byte.
+/// @param count. Requested length
+/// @returns ByteView. View of the substring
+		ByteView SubString(const size_type offset = 0, size_type count = npos) const;
+
+		// Enable methods.
+		using std::basic_string_view<ByteVector::value_type>::basic_string_view;
+		using Super::operator=;
+		using Super::begin;
+		using Super::cbegin;
+		using Super::end;
+		using Super::cend;
+		using Super::rbegin;
+		using Super::crbegin;
+		using Super::rend;
+		using Super::crend;
+		using Super::operator[];
+		using Super::at;
+		using Super::front;
+		using Super::back;
+		using Super::data;
+		using Super::size;
+		using Super::length;
+		using Super::max_size;
+		using Super::empty;
+		using Super::remove_prefix;
+		using Super::remove_suffix;
+		using Super::swap;
+		using Super::copy;
+		using Super::compare;
+		using Super::find;
+		using Super::rfind;
+		using Super::find_first_of;
+		using Super::find_last_of;
+		using Super::find_first_not_of;
+		using Super::find_last_not_of;
+		using Super::npos;
+		using Super::value_type;
+
+
 		/// @returns ByteVector. Owning container with the read bytes.
 		/// @param byteCount. How many bytes should be read.
 		/// @remarks Read is not compatible with Read<ByteVector>.
@@ -106,7 +151,7 @@ namespace MWR
 		/// Read bytes and remove them from ByteView.
 		/// @remarks Read is not compatible with Read<ByteVector>.
 		/// Data stored in ByteVector with Write<ByteVector> should be accessed with Read<ByteVector>
-		/// @returns ByteVector. Owning container with the read bytes.
+		/// @returns T. Owning container with the read bytes.
 		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
 		template<typename T = ByteVector>
 		std::enable_if_t<(std::is_same_v<T, ByteVector> || std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>), T> Read()
@@ -126,9 +171,28 @@ namespace MWR
 		}
 
 		/// Read bytes and remove them from ByteView.
+		/// This function will return non owning container. It is helpful to prevent coping large buffers, if user know that original container is still valid.
+		/// @returns T. Non owning container with the read bytes.
+		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
+		template<typename T>
+		std::enable_if_t<(std::is_same_v<T, ByteView> || std::is_same_v<T, std::string_view> || std::is_same_v<T, std::wstring_view>), T> Read()
+		{
+			if (sizeof(uint32_t) > size())
+				throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
+
+			auto elementCount = *reinterpret_cast<const uint32_t*>(data());
+			auto byteCount = elementCount * sizeof(T::value_type);
+			remove_prefix(sizeof(uint32_t));
+
+			auto retVal = T{reinterpret_cast<T::value_type const*>(data()), elementCount};
+			remove_prefix(byteCount);
+			return retVal;
+		}
+
+		/// Read bytes and remove them from ByteView.
 		/// @returns ByteArray. Owning container with the read bytes.
 		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
-		template<typename T, typename std::enable_if_t<IsByteArray<T>, int> = 0>
+		template<typename T>
 		std::enable_if_t<IsByteArray<T>, T> Read()
 		{
 			if (std::tuple_size<typename T>::value > size())
@@ -162,6 +226,35 @@ namespace MWR
 		std::enable_if_t<IsTuple<T>, T> Read()
 		{
 			return TupleGenerator<T>::Generate(*this);
+		}
+
+		/// Class allowing reading N bytes without coping data like in ByeView::Read<ByteArray<N>> or ByteView::Reed(size_t).
+		template <size_t N>
+		class Get
+		{
+		public:
+			/// Define size marker.
+			static constexpr size_t size = N;
+			static constexpr size_t Size = size;
+
+		private:
+			/// Private constructor.
+			/// This class should never be instantiated.
+			Get() = default;
+		};
+
+		/// Read bytes and remove them from ByteView.
+		/// @returns ByteView. Non owning container with the read bytes.
+		/// @throws std::out_of_range. If ByteView is too short to hold size of object to return.
+		template<typename T>
+		std::enable_if_t<IsGetter<T>, ByteView> Read()
+		{
+			if (T::Size > size())
+				throw std::out_of_range{ OBF(": Cannot read data from ByteView") };
+
+			auto retVal = SubString(0, T::Size);
+			remove_prefix(T::Size);
+			return retVal;
 		}
 
 		/// Read tuple and remove bytes from ByteView.
@@ -200,46 +293,6 @@ namespace MWR
 			return retValue;
 		}
 
-		/// Create a sub-string from this ByteView.
-		/// @param offset. 	Position of the first byte.
-		/// @param count. Requested length
-		/// @returns ByteView. View of the substring
-		ByteView SubString(const size_type offset = 0, size_type count = npos) const;
-
-		// Enable methods.
-		using std::basic_string_view<ByteVector::value_type>::basic_string_view;
-		using Super::operator=;
-		using Super::begin;
-		using Super::cbegin;
-		using Super::end;
-		using Super::cend;
-		using Super::rbegin;
-		using Super::crbegin;
-		using Super::rend;
-		using Super::crend;
-		using Super::operator[];
-		using Super::at;
-		using Super::front;
-		using Super::back;
-		using Super::data;
-		using Super::size;
-		using Super::length;
-		using Super::max_size;
-		using Super::empty;
-		using Super::remove_prefix;
-		using Super::remove_suffix;
-		using Super::swap;
-		using Super::copy;
-		using Super::compare;
-		using Super::find;
-		using Super::rfind;
-		using Super::find_first_of;
-		using Super::find_last_of;
-		using Super::find_first_not_of;
-		using Super::find_last_not_of;
-		using Super::npos;
-		using Super::value_type;
-
 	private:
 		/// Delegate to class idiom.
 		/// Function templates cannot be partially specialized.
@@ -254,7 +307,7 @@ namespace MWR
 			{
 				auto current = std::make_tuple(self.Read<T>());
 				auto rest = VariadicTupleGenerator<Rest...>::Generate(self);
-				return std::tuple_cat(current, rest);
+				return std::tuple_cat(std::move(current), std::move(rest));
 			}
 		};
 
@@ -306,6 +359,14 @@ namespace MWR
 		};
 	};
 
+	/// Specialization of idiom for detecting ByteView::Get.
+	template<size_t N>
+	constexpr bool IsGetter<ByteView::Get<N>> = true;
+
+	/// Alias for simpler use of ByteView::Get.
+	template<size_t N>
+	using Bytes = ByteView::Get<N>;
+
 	namespace Literals
 	{
 		/// Create ByteView with syntax ""_bvec
@@ -328,4 +389,17 @@ namespace MWR
 	{
 		return bytes.ToStringArray<expectedSize, copy, false>();
 	}
+}
+
+namespace std
+{
+	/// Add hashing function for ByteView.
+	template <>
+	struct hash<MWR::ByteView>
+	{
+		size_t operator()(MWR::ByteView const& bv) const
+		{
+			return std::hash<std::string_view>{}(bv);
+		}
+	};
 }

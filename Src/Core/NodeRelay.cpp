@@ -247,7 +247,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnAgentQuery query)
 void MWR::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 {
 	auto recipient = query.GetRecipientRouteId();
-	auto [newRouteBA, directionDidBA] = ByteView{ query.GetPacketBody() }.Read<ByteArray<RouteId::BinarySize>, ByteArray<DeviceId::BinarySize>>();
+	auto [newRouteBA, directionDidBA] = ByteView{ query.GetPacketBody() }.Read<Bytes<RouteId::BinarySize>, Bytes<DeviceId::BinarySize>>();
 	auto newRoute = RouteId::FromByteView(newRouteBA);
 	auto directionDid = DeviceId(directionDidBA);
 	std::shared_ptr<DeviceBridge> bridge;
@@ -301,7 +301,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::DeliverToBinder query)
 void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
-	auto newOutputId = readView.Read<ByteVector>();
+	auto newOutputId = readView.Read<ByteView>();
 
 	auto newInputId = MWR::Utils::GenerateRandomString(newOutputId.size());
 	auto sender = query.GetSenderChannel().lock();
@@ -324,7 +324,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
-	auto newOutputId = readView.Read<ByteVector>();
+	auto newOutputId = readView.Read<ByteView>();
 
 	auto sender = query.GetSenderChannel().lock();
 
@@ -334,7 +334,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
 
 	ByteVector args = sender->GetChannelParameters();
 	auto hash = sender->GetTypeNameHash();
-	auto newInputId = ByteVector{ sender->GetInputId() };
+	auto newInputId = sender->GetInputId() ;
 	DetachDevice(sender->GetDid());
 	sender.reset();
 	// Don't use sender below;

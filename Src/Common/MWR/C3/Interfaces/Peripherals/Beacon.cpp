@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 {
-	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials, payload] = arguments.Read<std::string, uint16_t, uint16_t, ByteVector>();
+	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials, payload] = arguments.Read<std::string, uint16_t, uint16_t, ByteView>();
 
 	// Arguments validation.
 	if (payload.empty())

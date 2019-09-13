@@ -385,7 +385,7 @@ bool MWR::C3::Interfaces::Connectors::TeamServer::Connection::SecondThreadStarte
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials/*, payload*/] = data.Read<std::string, uint16_t, uint16_t/*, ByteVector*/>();
+	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials/*, payload*/] = data.Read<std::string, uint16_t, uint16_t/*, ByteView*/>();
 
 	// custom payload is removed from release.
 	//if (!payload.empty())

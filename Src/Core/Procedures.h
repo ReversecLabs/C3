@@ -74,7 +74,7 @@ namespace MWR::C3::Core
 			/// @return buffer containing whole packet.
 			ByteVector ComposeQueryPacket() const override
 			{
-				return CompileProtocolHeader().Concat(CompileQueryHeader()).Concat(m_QueryPacketBody);
+				return CompileProtocolHeader().Concat(CompileQueryHeader(), m_QueryPacketBody);
 			}
 
 			/// Get decrypted query body.
@@ -325,7 +325,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<InitializeRouteQuery> Create(RouteId rid, int32_t timestamp, RouteId senderRid, DeviceId senderSideDid, ByteVector encryptedBlob, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<InitializeRouteQuery>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteVector()).Write(timestamp).Concat(senderRid.ToByteVector()).Concat(senderSideDid.ToByteVector()).Concat(encryptedBlob), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteVector(), timestamp, senderRid.ToByteVector(), senderSideDid.ToByteVector(), encryptedBlob), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -360,7 +360,7 @@ namespace MWR::C3::Core
 			{
 				auto query = std::make_unique<AddDeviceResponse>(rid, timestamp, ResponseType::None);
 				std::uint8_t flags = static_cast<std::uint8_t>(isChannel) | (static_cast<std::uint8_t>(isNegotiationChannel) << 1);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray()).Write(timestamp).Concat(newDeviceId.ToByteVector()).Write(deviceTypeHash, flags), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray(), timestamp, newDeviceId.ToByteVector(), deviceTypeHash, flags), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -382,7 +382,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<DeliverToBinder> Create(RouteId rid, int32_t timestamp, DeviceId peripheralId, HashT connectorHash, ByteView blobFromPeripheral, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<DeliverToBinder>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray()).Write(timestamp).Concat(peripheralId.ToByteVector()).Write(connectorHash).Concat(blobFromPeripheral), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray(), timestamp, peripheralId.ToByteVector(), connectorHash, blobFromPeripheral), gatewayPublicEncryptionKey);
 				return query;
 			}
 

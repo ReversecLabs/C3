@@ -17,7 +17,7 @@ void MWR::C3::AbstractPeripheral::OnReceive()
 void MWR::C3::AbstractChannel::OnReceive()
 {
 	if (auto bridge = GetBridge(); bridge)
-		if (auto packet = OnReceiveFromChannel(); !packet.empty())
+		for (auto&& packet : OnReceiveFromChannelInternal())
 			bridge->PassNetworkPacket(packet);
 }
 
