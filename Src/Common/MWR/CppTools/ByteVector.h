@@ -35,6 +35,9 @@ namespace MWR
 		/// Type of stored values.
 		using ValueType = Super::value_type;
 
+		/// Destructor zeroing memory.
+		~ByteVector();
+
 		/// Copy constructor.
 		/// @param other. Object to copy.
 		ByteVector(ByteVector const& other);
