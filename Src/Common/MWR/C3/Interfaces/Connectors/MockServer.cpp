@@ -29,7 +29,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Called every time new implant is being created.
 		/// @param connectionId unused.
 		/// @param data unused. Prints debug information if not empty.
-		/// @para isX64 unused.
+		/// @param isX64 unused.
 		/// @returns ByteVector copy of data.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
@@ -39,8 +39,13 @@ namespace MWR::C3::Interfaces::Connectors
 		/// @returns ByteVector response for command.
 		ByteVector TestErrorCommand(ByteView arg);
 
+		/// Close desired connection
+		/// @param connectionId id of connection (RouteId) in string form.
+		/// @returns ByteVector empty vector.
+		MWR::ByteVector CloseConnection(ByteView connectionId) override;
+
 		/// Represents a single connection with implant.
-		struct Connection
+		struct Connection : std::enable_shared_from_this<Connection>
 		{
 			/// Constructor.
 			/// @param owner weak pointer to connector object.
@@ -63,7 +68,7 @@ namespace MWR::C3::Interfaces::Connectors
 		std::mutex m_ConnectionMapAccess;
 
 		/// Map of all connections.
-		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
+		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 	};
 }
 
@@ -97,17 +102,18 @@ MWR::C3::Interfaces::Connectors::MockServer::Connection::Connection(std::weak_pt
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Interfaces::Connectors::MockServer::Connection::StartUpdatingInSeparateThread()
 {
-	std::thread([&]()
+	std::thread([&, id = m_Id]()
 		{
 			// Lock pointers.
 			auto owner = m_Owner.lock();
 			auto bridge = owner->GetBridge();
-			while (bridge->IsAlive())
+			auto self = shared_from_this();
+			while (bridge->IsAlive() && self.use_count() > 1)
 			{
 				// Post something to Binder and wait a little.
 				try
 				{
-					bridge->PostCommandToBinder(m_Id, ByteView(OBF("Beep")));
+					bridge->PostCommandToBinder(id, ByteView(OBF("Beep")));
 				}
 				catch (...)
 				{
@@ -125,9 +131,17 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::OnRunCommand(ByteVi
 	{
 	case 0:
 		return TestErrorCommand(command);
+	case 1:
+		return CloseConnection(command);
 	default:
 		return AbstractConnector::OnRunCommand(commandCopy);
 	}
+}
+
+MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::CloseConnection(ByteView arguments)
+{
+	m_ConnectionMap.erase(arguments);
+	return {};
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +180,19 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::MockServer::GetCapability()
 				{
 					"name": "Error message",
 					"description": "Error set on connector. Send empty to clean up error"
+				}
+			]
+		},
+		{
+			"name": "Close connection",
+			"description": "Close socket connection with TeamServer if beacon is not available",
+			"id": 1,
+			"arguments":
+			[
+				{
+					"name": "Route Id",
+					"min": 1,
+					"description": "Id associated to beacon"
 				}
 			]
 		}

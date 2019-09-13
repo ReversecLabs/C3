@@ -26,7 +26,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Called every time new implant is being created.
 		/// @param connectionId adders of beacon in C3 network .
 		/// @param data parameters used to create implant. If payload is empty, new one will be generated.
-		/// @para isX64 indicates if relay staging beacon is x64.
+		/// @param isX64 indicates if relay staging beacon is x64.
 		/// @returns ByteVector correct command that will be used to stage beacon.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
@@ -36,7 +36,7 @@ namespace MWR::C3::Interfaces::Connectors
 
 	private:
 		/// Represents a single C3 <-> Team Server connection, as well as each beacon in network.
-		struct Connection
+		struct Connection : std::enable_shared_from_this<Connection>
 		{
 			/// Constructor.
 			/// @param listeningPostAddress adders of TeamServer.
@@ -91,9 +91,9 @@ namespace MWR::C3::Interfaces::Connectors
 		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, bool arch64, uint32_t block);
 
 		/// Close desired connection
-		/// @arguments arguments for command. connection Id in string form.
+		/// @param connectionId id of connection (RouteId) in string form.
 		/// @returns ByteVector empty vector.
-		MWR::ByteVector CloseConnection(ByteView arguments);
+		MWR::ByteVector CloseConnection(ByteView connectionId) override;
 
 		/// Initializes Sockets library. Can be called multiple times, but requires corresponding number of calls to DeinitializeSockets() to happen before closing the application.
 		/// @return value forwarded from WSAStartup call (zero if successful).
@@ -116,7 +116,7 @@ namespace MWR::C3::Interfaces::Connectors
 		std::mutex  m_SendMutex;
 
 		/// Map of all connections.
-		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
+		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 	};
 }
 
@@ -188,8 +188,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::GeneratePayload(Byt
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::CloseConnection(ByteView arguments)
 {
-	auto id = arguments.Read<std::string>();
-	m_ConnectionMap.erase(id);
+	m_ConnectionMap.erase(arguments);
 	return {};
 }
 
@@ -352,12 +351,13 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::Connection::Receive
 void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSeparateThread()
 {
 	m_SecondThreadStarted = true;
-	std::thread([&]()
+	std::thread([this]()
 	{
 		// Lock pointers.
 		auto owner = m_Owner.lock();
 		auto bridge = owner->GetBridge();
-		while (bridge->IsAlive())
+		auto self = shared_from_this();
+		while (bridge->IsAlive() && self.use_count() > 1)
 		{
 			try
 			{
@@ -367,7 +367,7 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingInSep
 					if (packet.size() == 1u && packet[0] == 0u)
 						Send(packet);
 					else
-						bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
+						bridge->PostCommandToBinder(m_Id, packet);
 				}
 			}
 			catch (std::exception& e)

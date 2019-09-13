@@ -509,6 +509,10 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 
 	auto commandWithArgs = base64::decode<ByteVector>(jCommandElement["Command"]["ByteForm"].get<std::string>());
 
+	auto gateRelay = profiler->m_Gateway->m_Gateway.lock();
+	if (!gateRelay)
+		return; // probably shutting down
+
 	if (deviceId)
 	{
 		std::function<void()> finalizer = []() {};
@@ -521,9 +525,32 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 			switch (static_cast<MWR::C3::Core::Relay::Command>(commandId))
 			{
 			case MWR::C3::Core::Relay::Command::Close:
-				finalizer = [this, deviceId, deviceIsChannel]()
+				finalizer = [&]()
 				{
-					deviceIsChannel ? m_Channels.TryRemove(*deviceId) : m_Peripherals.TryRemove(*deviceId);
+					if (deviceIsChannel)
+					{
+						m_Channels.TryRemove(*deviceId);
+					}
+					else
+					{
+						// Find connector hash
+						auto element = m_Peripherals.Find(*deviceId);
+						if (!element)
+							return;
+
+						auto connectorHash = profiler->GetBinderTo(element->m_TypeHash);
+
+						// remove peripheral
+						m_Peripherals.TryRemove(*deviceId);
+
+						// Get connector
+						auto connector = gateRelay->m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
+						if (!connector)
+							return;
+
+						// Remove connection.
+						connector->CloseConnection(RouteId{ m_Id, *deviceId }.ToByteVector());
+					}
 				};
 				break;
 			case MWR::C3::Core::Relay::Command::UpdateJitter:
@@ -539,10 +566,6 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 				break;
 			}
 		}
-
-		auto gateRelay = profiler->m_Gateway->m_Gateway.lock();
-		if (!gateRelay)
-			return; // probably shutting down
 
 		auto route = gateRelay->FindRoute(m_Id);
 		if (!route)
@@ -590,12 +613,26 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 	{
 	case NodeRelay::Command::Close:
 	{
-		finalizer = [this]()
+		finalizer = [&]()
 		{
 			auto owner = m_Owner.lock();
 			if (!owner)
 				throw std::runtime_error{ "Cannot obtain owner" };
+
 			m_Channels.Clear();
+			for (auto&& element : m_Peripherals.GetUnderlyingContainer())
+			{
+				auto connectorHash = profiler->GetBinderTo(element.m_TypeHash);
+
+				auto connector = gateRelay->m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
+				if (!connector)
+					break;
+
+				// Remove connection.
+				connector->CloseConnection(RouteId{ m_Id, element.m_Id }.ToByteVector());
+			}
+
+			m_Peripherals.Clear();
 			owner->Get().m_Gateway.m_Agents.Remove(m_Id);
 		};
 		break;
@@ -766,21 +803,43 @@ void MWR::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jCommandEl
 				auto gateway = m_Gateway.lock();
 				if (auto device = gateway->FindDevice(MWR::Utils::SafeCast<DeviceId::UnderlyingIntegerType>(id)); device)
 				{
-					device->RunCommand(commandReadView);
-					if (auto localView = commandReadView; localView.Read<std::uint16_t>() == static_cast<std::uint16_t>(MWR::C3::Core::Relay::Command::UpdateJitter))
+					auto localView = commandReadView;
+					switch (MWR::C3::Core::Relay::Command(localView.Read<std::uint16_t>()))
 					{
-						Device* profilerElement = m_Channels.Find(device->GetDid());
-						if (!profilerElement)
-							profilerElement = m_Channels.Find(device->GetDid());
+						case MWR::C3::Core::Relay::Command::UpdateJitter:
+						{
+							Device* profilerElement = m_Channels.Find(device->GetDid());
+							if (!profilerElement)
+								profilerElement = m_Peripherals.Find(device->GetDid());
 
-						if (!profilerElement)
-							throw std::runtime_error{ "Device not found" };
+							if (!profilerElement)
+								throw std::runtime_error{ "Device not found" };
 
-						commandReadView.remove_prefix(sizeof(uint16_t)); // command id
-						profilerElement->m_Jitter.first = MWR::Utils::ToMilliseconds(commandReadView.Read<float>());
-						profilerElement->m_Jitter.second = MWR::Utils::ToMilliseconds(commandReadView.Read<float>());
+							profilerElement->m_Jitter.first = MWR::Utils::ToMilliseconds(localView.Read<float>());
+							profilerElement->m_Jitter.second = MWR::Utils::ToMilliseconds(localView.Read<float>());
+							break;
+						}
+						case MWR::C3::Core::Relay::Command::Close:
+						{
+							auto profilerElement = m_Peripherals.Find(device->GetDid());
+							if (!profilerElement)
+								break;
+
+							auto connectorHash = m_Owner.lock()->GetBinderTo(profilerElement->m_TypeHash);
+							auto connector = m_Gateway.lock()->m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
+							if (!connector)
+								break;
+
+							// Remove connection.
+							connector->CloseConnection(RouteId{ m_Id, device->GetDid() }.ToByteVector());
+
+							break;
+						}
+						default:
+							break;
 					}
 
+					device->RunCommand(commandReadView);
 					return true;
 				}
 
