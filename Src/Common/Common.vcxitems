@@ -34,6 +34,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Sockets\Socket.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\AbstractService.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\HostInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\Pipe.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\Proxy.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\Services.cpp" />
@@ -92,6 +93,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\Sockets\Sockets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\AbstractService.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\HostInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\Pipe.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\Proxy.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\PrecompiledHeader.hpp" />

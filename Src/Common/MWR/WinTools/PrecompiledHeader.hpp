@@ -9,3 +9,4 @@
 #include "Proxy.h"
 #include "StructuredExceptionHandling.h"
 #include "HostInfo.h"
+#include "InjectionBuffer.h"

