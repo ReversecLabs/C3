@@ -20,13 +20,11 @@ namespace MWR::C3
 
 		/// Creates a RouteId object from a hex string.
 		/// @param textId text containing the identifier.
-		/// @return Identifier object.
-		static RouteId FromString(std::string_view textId) noexcept(false);
+		RouteId(std::string_view textId);
 
 		/// Creates a RouteId object from a vector of bytes.
 		/// @param byteId a ByteView containing the identifier.
-		/// @return Identifier object.
-		static RouteId FromByteView(ByteView byteId);
+		RouteId(ByteView byteId);
 
 		/// Creates a RouteId object with a random ("unique") value.
 		/// @return Identifier object.
@@ -102,7 +100,7 @@ namespace MWR
 
 		static C3::RouteId From(ByteView& bv)
 		{
-			auto ret = C3::RouteId::FromByteView(bv.SubString(0, C3::RouteId::BinarySize));
+			auto ret = C3::RouteId(bv.SubString(0, C3::RouteId::BinarySize));
 			bv.remove_prefix(C3::RouteId::BinarySize);
 			return ret;
 		}

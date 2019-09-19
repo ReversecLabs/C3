@@ -641,8 +641,8 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
-			auto [ridStr, didStr, isNbr] = commandReadView.Read<std::string, std::string, bool>();
-			ReAddRoute(RouteId::FromString(ridStr), DeviceId{ didStr }, isNbr);
+			auto [ridStr, didStr, isNbr] = commandReadView.Read<std::string_view, std::string_view, bool>();
+			ReAddRoute(ridStr, didStr, isNbr);
 		};
 		break;
 	}
@@ -650,7 +650,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
-			ReRemoveRoute(RouteId::FromString(commandReadView.Read<std::string>()));
+			ReRemoveRoute(commandReadView.Read<std::string_view>());
 		};
 		break;
 	}
@@ -658,7 +658,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
-			auto did = DeviceId{ commandReadView.Read<std::string>() };
+			auto did = DeviceId{ commandReadView.Read<std::string_view>() };
 			if (!m_Channels.Find(did))
 				throw std::runtime_error{ "Channel not found" };
 
@@ -1014,14 +1014,14 @@ void MWR::C3::Core::Profiler::Gateway::RunCommand(ByteView commandWithArguments)
 	case GateRelay::Command::CreateRoute:
 	{
 		pin->CreateRoute(commandWithArguments);
-		auto [ridStr, didStr, isNbr] = commandWithArguments.Read<std::string, std::string, bool>();
-		ReAddRoute(RouteId::FromString(ridStr), DeviceId{ didStr }, isNbr);
+		auto [ridStr, didStr, isNbr] = commandWithArguments.Read<std::string_view, std::string_view, bool>();
+		ReAddRoute(ridStr, didStr, isNbr);
 		break;
 	}
 	case GateRelay::Command::RemoveRoute:
 	{
 		pin->RemoveRoute(commandWithArguments);
-		ReRemoveRoute(RouteId::FromString(commandWithArguments.Read<std::string>()));
+		ReRemoveRoute(commandWithArguments.Read<std::string_view>());
 		break;
 	}
 	case GateRelay::Command::ClearNetwork:

@@ -66,16 +66,13 @@ void MWR::C3::Core::NodeRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<D
 	{
 		// Verify message.
 		auto veryfiedMessage = Crypto::VerifyMessage(packet0.SubString(1), m_GatewaySignature);
-		if (veryfiedMessage.size() < RouteId::BinarySize + 1 /* procedure number */)
-			throw std::invalid_argument{ OBF("G2A packet too short.") };
+		auto msgView = ByteView{ veryfiedMessage };
 
 		// Parse recipient identifier.
-		auto routeId = RouteId::FromByteView(veryfiedMessage);
-
-		if (routeId.GetAgentId() == m_AgentId)
+		if (auto routeId = msgView.Read<RouteId>(); routeId.GetAgentId() == m_AgentId)
 		{
 			// addressed to me
-			auto decryptedMessage = Crypto::DecryptAndAuthenticate({ veryfiedMessage, RouteId::BinarySize }, m_GatewayEncryptionKey, m_DecryptionKey);
+			auto decryptedMessage = Crypto::DecryptAndAuthenticate(msgView, m_GatewayEncryptionKey, m_DecryptionKey);
 			ProceduresG2X::RequestHandler::ParseRequestAndHandleIt(sender, routeId, decryptedMessage);
 		}
 		else
@@ -96,12 +93,11 @@ void MWR::C3::Core::NodeRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<D
 	{
 		// Verify message.
 		auto veryfiedMessage = Crypto::VerifyMessage(packet0.SubString(1), m_GatewaySignature);
-		if (veryfiedMessage.size() < RouteId::BinarySize + 1 /* procedure number */)
-			throw std::invalid_argument{ OBF("G2A packet too short.") };
+		auto msgView = ByteView{ veryfiedMessage };
 
 		// Parse recipient identifier.
-		auto routeId = RouteId::FromByteView(veryfiedMessage);
-		ProceduresG2X::RequestHandler::ParseRequestAndHandleIt(sender, routeId, { veryfiedMessage, RouteId::BinarySize });
+		auto routeId = msgView.Read<RouteId>();
+		ProceduresG2X::RequestHandler::ParseRequestAndHandleIt(sender, routeId, msgView);
 
 		if (routeId.GetAgentId() != m_AgentId)
 			// I'm not the final recipient -> packet needs to be passed further.
@@ -247,9 +243,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnAgentQuery query)
 void MWR::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 {
 	auto recipient = query.GetRecipientRouteId();
-	auto [newRouteBA, directionDidBA] = ByteView{ query.GetPacketBody() }.Read<Bytes<RouteId::BinarySize>, Bytes<DeviceId::BinarySize>>();
-	auto newRoute = RouteId::FromByteView(newRouteBA);
-	auto directionDid = DeviceId(directionDidBA);
+	auto [newRoute, directionDid] = ByteView{ query.GetPacketBody() }.Read<RouteId, DeviceId>();
 	std::shared_ptr<DeviceBridge> bridge;
 	if (recipient.GetAgentId() == GetAgentId())
 	{

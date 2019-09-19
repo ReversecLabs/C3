@@ -69,7 +69,7 @@ void MWR::C3::Core::Distributor::OnProtocolN2N(ByteView packet0, std::shared_ptr
 			throw std::invalid_argument{ OBF("N2N packet too short.") };
 
 		// Parse neighbor identifier and check whether is banned.
-		auto neighborRouteId = RouteId::FromByteView(packet0.SubString(1));
+		auto neighborRouteId = RouteId(packet0.SubString(1));
 		if (IsAgentBanned(neighborRouteId.GetAgentId()))
 			return Log({ OBF("Received packet from a banned Agent ") + neighborRouteId.ToString() + OBF("."), LogMessage::Severity::Warning });
 

@@ -47,11 +47,11 @@ void MWR::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<D
 	try
 	{
 		auto decrypted = MWR::Crypto::DecryptFromAnonymous(packet0.SubString(1), m_AuthenticationKey, m_DecryptionKey);
-		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t>();
-		if (!m_Profiler->Get().m_Gateway.ConnectionExist(RouteId::FromByteView(rid).GetAgentId()))
+		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, RouteId, int32_t>();
+		if (!m_Profiler->Get().m_Gateway.ConnectionExist(rid.GetAgentId()))
 			throw std::runtime_error{ "S2G packet received from not connected source." };
 
-		ProceduresS2G::RequestHandler::ParseRequestAndHandleIt(sender, procedure, RouteId::FromByteView(rid), timestamp, packet0.SubString(1));
+		ProceduresS2G::RequestHandler::ParseRequestAndHandleIt(sender, procedure, rid, timestamp, packet0.SubString(1));
 	}
 	catch (std::exception& exception)
 	{
@@ -299,7 +299,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 	auto readView = ByteView{ decryptedPacket };
 
 	// part of message created by parent Node
-	auto [procedureID, parentRid, timestamp, childRid, childSideDid] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, Bytes<RouteId::BinarySize>, Bytes<DeviceId::BinarySize>>();
+	auto [procedureID, parentRid, timestamp, childRid, childSideDid] = readView.Read<ProceduresUnderlyingType, RouteId, int32_t, RouteId, DeviceId>();
 
 	// part of message from new relay. encrypted once again because it was blob for parent relay.
 	auto childPacket = Crypto::DecryptFromAnonymous(readView, m_AuthenticationKey, m_DecryptionKey);
@@ -315,17 +315,16 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 	if (!receivedFrom)
 		return; // TODO signalize error
 
-	auto parent = RouteId::FromByteView(parentRid), child = RouteId::FromByteView(childRid);
 	//Add route.
-	AddRoute(child, receivedFrom);
+	AddRoute(childRid, receivedFrom);
 
 	//update profiler
-	m_Profiler->Get().m_Gateway.ReAddRemoteAgent(child, newRelayBuildId, newRelayPublicKey, RouteId{ parent.GetAgentId(), DeviceId(childSideDid) }, hash, lastSeen, hostInfo);
-	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(parent.GetAgentId(), timestamp);
-	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ parent.GetAgentId(), DeviceId(childSideDid) });
+	m_Profiler->Get().m_Gateway.ReAddRemoteAgent(childRid, newRelayBuildId, newRelayPublicKey, RouteId{ parentRid.GetAgentId(), childSideDid }, hash, lastSeen, hostInfo);
+	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(parentRid.GetAgentId(), timestamp);
+	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ parentRid.GetAgentId(), childSideDid });
 
 	//send update message across route.
-	auto&& packet = ProceduresG2X::AddRoute::Create(RouteId::FromByteView(parentRid), m_Signature, child.ToByteVector().Concat(childSideDid));
+	auto&& packet = ProceduresG2X::AddRoute::Create(parentRid, m_Signature, childRid.ToByteVector().Concat(childSideDid));
 	LockAndSendPacket(packet->ComposeQueryPacket(), receivedFrom);
 }
 
@@ -337,16 +336,16 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 	auto readView = ByteView{ decryptedPacket };
 
 	auto unusedProtocolId = readView.Read<int8_t>();
-	auto senderRid = RouteId::FromByteView(readView.Read<Bytes<RouteId::BinarySize>>());
+	auto senderRid = readView.Read<RouteId>();
 	auto timestamp = readView.Read<int32_t>();
-	auto deviceId = readView.Read<Bytes<DeviceId::BinarySize>>();
+	auto deviceId = readView.Read<DeviceId>();
 	auto connectorHash = readView.Read<HashT>();
 
 	auto connector = m_Connectors.Find([&](auto const& e){ return e->GetNameHash() == connectorHash; });
 	if (!connector)
 		throw std::runtime_error{ "Connector not found" };
 
-	auto binder = RouteId{ senderRid.GetAgentId(), DeviceId{deviceId} }.ToByteVector();
+	auto binder = RouteId{ senderRid.GetAgentId(), deviceId }.ToByteVector();
 	connector->OnCommandFromBinder(binder, readView);
 
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(senderRid.GetAgentId(), timestamp);
@@ -356,7 +355,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 	if (!agent)
 		return;
 
-	auto peripheral = agent->m_Peripherals.Find(DeviceId{ deviceId });
+	auto peripheral = agent->m_Peripherals.Find(deviceId);
 	if (!peripheral || peripheral->m_StartupArguments.is_null())
 		return;
 
@@ -372,7 +371,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 {
 	auto decryptedPacket = response.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, deviceId, deviceTypeHash, flags] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, HashT, std::uint8_t>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, deviceId, deviceTypeHash, flags] = readView.Read<ProceduresUnderlyingType, RouteId, int32_t, DeviceId, HashT, std::uint8_t>();
 	bool isChannel = flags & 1;
 	bool isNegotiationChannel = flags & (1 << 1);
 
@@ -386,7 +385,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 		agent->ReAddPeripheral(deviceId, deviceTypeHash);
 
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(response.GetSenderRouteId().GetAgentId(), timestamp);
-	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ response.GetSenderRouteId().GetAgentId(), DeviceId{deviceId} });
+	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ response.GetSenderRouteId().GetAgentId(), deviceId });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -426,7 +425,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotificatio
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, newDeviceId, negotiatorId, inId, outId] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, DeviceId::UnderlyingIntegerType, DeviceId::UnderlyingIntegerType, std::string, std::string>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, newDeviceId, negotiatorId, inId, outId] = readView.Read<ProceduresUnderlyingType, RouteId, int32_t, DeviceId::UnderlyingIntegerType, DeviceId, std::string, std::string>();
 
 	auto agent = m_Profiler->Get().m_Gateway.m_Agents.Find(query.GetSenderRouteId().GetAgentId());
 	if (!agent)
@@ -434,7 +433,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotificatio
 
 	auto negotiator = agent->m_Channels.Find(negotiatorId);
 	if (!negotiator)
-		throw std::runtime_error("Received new negotiated channel notification, but unknown with unknown Negotiator DeviceId" + DeviceId{ negotiatorId }.ToString());
+		throw std::runtime_error("Received new negotiated channel notification, but unknown with unknown Negotiator DeviceId" + negotiatorId.ToString());
 
 	agent->ReAddChannel(newDeviceId, negotiator->m_TypeHash, false, false);
 	agent->UpdateFromNegotiationChannel(negotiatorId, newDeviceId, inId, outId);
@@ -448,7 +447,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
-	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, blob] = readView.Read<ProceduresUnderlyingType, Bytes<RouteId::BinarySize>, int32_t, ByteView>();
+	auto [unsusedProcedureNo, unusedSenderRouteId, timestamp, blob] = readView.Read<ProceduresUnderlyingType, RouteId, int32_t, ByteView>();
 	// blob has not defined structure. Currently Notification is used as ping response.
 
 	auto agent = m_Profiler->Get().m_Gateway.m_Agents.Find(query.GetSenderRouteId().GetAgentId());

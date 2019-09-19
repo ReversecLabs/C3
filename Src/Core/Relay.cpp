@@ -121,17 +121,17 @@ void MWR::C3::Core::Relay::Join()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Core::Relay::CreateRoute(ByteView args)
 {
-	auto [ridStr, didStr] = args.Read<std::string, std::string>();
+	auto [ridStr, didStr] = args.Read<std::string_view, std::string_view>();
 	auto channel = m_Devices.Find([did = DeviceId{ didStr }](auto const& e) { auto l = e.lock(); return l ? l->GetDid() == did : false; }).lock();
 	if (!channel)
 		throw std::runtime_error{ OBF("Device not found") };
 
-	AddRoute(RouteId::FromString(ridStr), channel);
+	AddRoute(ridStr, channel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Core::Relay::RemoveRoute(ByteView args)
 {
-	auto rid = RouteId::FromString(args.Read<std::string>());
-	RouteManager::RemoveRoute(rid);
+	auto ridStr = args.Read<std::string_view>();
+	RouteManager::RemoveRoute(ridStr);
 }
