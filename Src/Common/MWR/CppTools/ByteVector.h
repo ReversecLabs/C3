@@ -216,6 +216,14 @@ namespace MWR
 			return ByteVector{}.Concat(args...);
 		}
 
+		/// Proxy function to ByteView::Read.
+		/// This function is added for convenience, but it does not change the state of ByteVector in a way ByteView::Read moves to next stored element after each Read.
+		template<typename ...T, typename = std::void_t<decltype(std::declval<ByteView>().Read<T...>())>>
+		auto Read() const
+		{
+			return ByteView{ *this }.Read<T...>();
+		}
+
 	private:
 		/// Store content of of provided object.
 		/// @param storeSize. If true function will add four byte header with size for those types.
