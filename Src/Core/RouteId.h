@@ -83,3 +83,29 @@ namespace MWR::C3
 		DeviceId m_InterfaceId;																						///< IID part of the connection.
 	};
 }
+
+namespace MWR
+{
+	/// Specialize ByteConverter for RouteId.
+	template <>
+	struct ByteConverter <C3::RouteId>
+	{
+		static ByteVector To(C3::RouteId const& obj)
+		{
+			return obj.ToByteVector();
+		}
+
+		static size_t Size(C3::RouteId const& obj)
+		{
+			return C3::RouteId::BinarySize;
+		}
+
+		static C3::RouteId From(ByteView& bv)
+		{
+			auto ret = C3::RouteId::FromByteView(bv.SubString(0, C3::RouteId::BinarySize));
+			bv.remove_prefix(C3::RouteId::BinarySize);
+			return ret;
+		}
+	};
+
+}
