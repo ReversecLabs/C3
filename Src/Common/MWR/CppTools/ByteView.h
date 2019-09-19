@@ -219,6 +219,15 @@ namespace MWR
 			return retVal;
 		}
 
+		/// Read custom type and remove it from ByteView.
+		/// @tparam T. Type to return;
+		/// @returns T.
+		template<typename T>
+		std::enable_if_t < std::is_same_v<decltype(MWR::ByteConverter<T>::From(std::declval<ByteView>())), T > , T > Read()
+		{
+			return ByteConverter<T>::From(*this);
+		}
+
 		/// Read tuple type.
 		/// @tparam T. Tuple type to return;
 		/// @returns T. Owning container with the read bytes.

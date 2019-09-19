@@ -8,6 +8,52 @@ namespace MWR
 	class ByteView;
 	class ByteVector;
 
+	/// Empty template of class that can convert data from and to byte form.
+	/// @tparam T. Custom type that will work with byte containers using this converter type.
+	/// Specialize this class to add methods:
+	/// static ByteVector To(T const&);
+	/// Used to write data.
+	/// static T From(ByteView&);
+	/// Used to retrieve data.
+	/// Function must move ByteView& argument to position after the data that was retrieved.
+	/// static size_t Size(T const&);
+	/// Used to calculate size that type will need to be stored in ByteVector.
+	/// This function is not mandatory. If not provided function `To` will be called twice.
+	/// Once to calculate size for ByteVector allocation, and a second time to copy data.
+	template <typename T>
+	struct ByteConverter {};
+
+	/// Example code of specializing ByteConverter for custom type A.
+	//struct A
+	//{
+	//	uint16_t m_a, m_b;
+
+	//	A(uint16_t a, uint16_t b) : m_a(a), m_b(b) {}
+	//};
+
+	//namespace MWR
+	//{
+	//	template <>
+	//	struct ByteConverter<A>
+	//	{
+	//		static ByteVector To(A const& a)
+	//		{
+	//			return ByteVector::Create(a.m_a, a.m_b);
+	//		}
+
+	//		static size_t Size(A const& a)
+	//		{
+	//			return 2 * sizeof(uint16_t);
+	//		}
+
+	//		static A From(ByteView& bv)
+	//		{
+	//			auto [a, b] = bv.Read<uint16_t, uint16_t>();
+	//			return A(a, b);
+	//		}
+	//	};
+	//}
+
 	/// Idiom for detecting tuple types.
 	template <typename T>
 	constexpr bool IsTuple = false;
@@ -24,6 +70,17 @@ namespace MWR
 	/// Expresion CanStoreType<SomeCustomType>::value will be false.
 	template<class...Ts>
 	using CanStoreType = MWR::Utils::CanApply<StoreReturnType, ByteVector, Ts...>;
+
+	/// Check if MWR namespace has function to get size of type T when it is stored to ByteVector.
+	template <typename T>
+	class GotByteSize
+	{
+		template <typename C> static uint8_t test(decltype(MWR::ByteConverter<T>::Size(std::declval<T>())));
+		template <typename C> static uint16_t test(...);
+
+	public:
+		enum { value = sizeof(test<T>(0)) == sizeof(uint8_t) };
+	};
 
 	/// An owning container.
 	class ByteVector : std::vector<std::uint8_t>
@@ -217,6 +274,16 @@ namespace MWR
 			return *this;
 		}
 
+		/// Store custom type.
+		/// tparam T. Type to be stored. There must exsist MWR::ToBytes(T const&) method avalible to store custom type.
+		/// @return itself to allow chaining.
+		template<typename T, typename std::enable_if_t<std::is_same_v<decltype(MWR::ByteConverter<T>::To(std::declval<T>())), MWR::ByteVector >, int> = 0>
+		ByteVector & Store(bool unused, T const& arg)
+		{
+			Concat(MWR::ByteConverter<T>::To(arg));
+			return *this;
+		}
+
 		/// Store all arguments at the end of ByteVector.
 		/// @param storeSize if true four byte header will be added to types in T that does not have size defined at compile time.
 		/// @tparam T. Parameter pack to be written. Types are deduced from function call.
@@ -277,6 +344,24 @@ namespace MWR
 		static size_t CalculateStoreSize(bool unused, T const& arg)
 		{
 			return sizeof(T);
+		}
+
+		/// Calculate the size that the argument will take in memory
+		/// tparam T. Type to be stored. There must exsist MWR::ByteConverter<T>::To(T const&) function and MWR::ByteConverter<T>::Size(T const&)
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<std::is_same_v<decltype(MWR::ByteConverter<T>::To(std::declval<T>())), ByteVector> && GotByteSize<T>::value, int> = 0>
+		static size_t CalculateStoreSize(bool unused, T const& arg)
+		{
+			return MWR::ByteConverter<T>::Size(arg);
+		}
+
+		/// Calculate the size that the argument will take in memory
+		/// tparam T. Type to be stored. There must exsist MWR::ByteConverter<T>::To(T const&) method avalible to store custom type.
+		/// @return size_t number of bytes needed.
+		template<typename T, typename std::enable_if_t<std::is_same_v<decltype(MWR::ByteConverter<T>::To(std::declval<T>())), ByteVector> && !GotByteSize<T>::value, int> = 0>
+		static size_t CalculateStoreSize(bool unused, T const& arg)
+		{
+			return MWR::ByteConverter<T>::To(arg).size();
 		}
 
 		/// Calculate the size that the arguments will take in memory. This function is responsible for unwrapping variadic arguments calls.
