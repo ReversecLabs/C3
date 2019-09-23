@@ -18,6 +18,9 @@ namespace MWR::C3::Interfaces::Peripherals
 		/// @param arguments view of arguments prepared by Connector.
 		Beacon(ByteView arguments);
 
+		/// Destructor
+		~Beacon();
+
 		/// Sending callback implementation.
 		/// @param packet to send to the Implant.
 		void OnCommandFromConnector(ByteView packet) override;
@@ -29,6 +32,11 @@ namespace MWR::C3::Interfaces::Peripherals
 		/// Return json with commands.
 		/// @return ByteView Commands description in JSON format.
 		static ByteView GetCapability();
+
+		/// Close Peripheral Beacon
+		/// Calls superclass Close and prepares to exit without deadlocking
+		void Close() override;
+
 
 	private:
 		/// Check if data is no-op.
@@ -48,5 +56,11 @@ namespace MWR::C3::Interfaces::Peripherals
 
 		/// Used to support beacon chunking data.
 		bool m_ReadingState = true;
+
+		/// Used to exit
+		bool m_Close = false;
+
+		/// A handle to a beacon thread
+		HANDLE m_BeaconThread = INVALID_HANDLE_VALUE;
 	};
 }

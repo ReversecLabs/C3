@@ -25,6 +25,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Slack.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\HostInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\StructuredExceptionHandling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -86,5 +87,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\HostInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)C3_BUILD_VERSION_HASH_PART.hxx" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.h" />
   </ItemGroup>
 </Project>
