@@ -39,17 +39,11 @@ namespace MWR::C3
 		/// Return information about Interface for required hash.
 		/// @param hash. Used as a key for registration.
 		/// @return Interface information if found or nullptr otherwise.
-		template <typename T>
+		template<typename T, std::enable_if_t<std::is_same_v<T, AbstractChannel> or std::is_same_v<T, AbstractPeripheral> or std::is_same_v<T, AbstractConnector>, int> = 0>
 		InterfaceData<T> const* GetInterfaceData(HashT hash)
 		{
-			try
-			{
-				return &Find<T>(hash)->second;
-			}
-			catch (...)
-			{
-				return nullptr;
-			}
+			auto it = GetMap<T>().find(hash);
+			return it != GetMap<T>().end() ? &it->second : nullptr;
 		}
 
 		/// Find iterator to object associated to interface hash.
