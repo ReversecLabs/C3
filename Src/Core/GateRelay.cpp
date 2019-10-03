@@ -136,21 +136,33 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 					}.dump()} ,m_SessionKeys.second)
 				});
 
-			connection.StartReceiving([self = std::static_pointer_cast<GateRelay>(shared_from_this()), &connection](ByteView encryptedMessagePacket)
+			// Keep started messageHandlers to make sure that connection outlives them
+			std::list<std::future<void>> messageHandlers;
+			connection.StartReceiving([self = std::static_pointer_cast<GateRelay>(shared_from_this()), &connection, &messageHandlers](ByteVector encryptedMessagePacket)
 			{
-				try
+				messageHandlers.emplace_back(std::async(std::launch::async, [&connection, &self, encryptedMessagePacket = std::move(encryptedMessagePacket)]()
+					{
+						try
+						{
+							auto decrypted = Crypto::Decrypt(encryptedMessagePacket, self->m_SessionKeys.first);
+							ByteView messagePacket = decrypted;
+							self->Log({ "Received message: " + std::string{messagePacket} , MWR::C3::LogMessage::Severity::DebugInformation });
+							auto response = self->HandleMessage(json::parse(std::string{ messagePacket }));
+							if (!response.is_null())
+								connection.Send(ByteView{ Crypto::Encrypt(ByteView{response.dump()}, self->m_SessionKeys.second) });
+						}
+						catch (std::exception& exception)
+						{
+							self->Log({ "Caught an exception while processing message from Controller. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
+						}
+					}
+				));
+
+				// remove finished actions
+				messageHandlers.remove_if( [](std::future<void> const& t)
 				{
-					auto decrypted = Crypto::Decrypt(encryptedMessagePacket, self->m_SessionKeys.first);
-					ByteView messagePacket = decrypted;
-					self->Log({ "Received message: " + std::string{messagePacket} , MWR::C3::LogMessage::Severity::DebugInformation });
-					auto response = self->HandleMessage(json::parse(std::string{ messagePacket }));
-					if (!response.is_null())
-						connection.Send(ByteView{ Crypto::Encrypt(ByteView{response.dump()}, self->m_SessionKeys.second) });
-				}
-				catch (std::exception& exception)
-				{
-					self->Log({ "Caught an exception while processing Controller socket. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
-				}
+					return t.wait_for(1ns) == std::future_status::ready;
+				});
 			});
 
 			Log({ "API bridge connection established on " + std::string{apiBrigdeIp} +':' + std::to_string(apiBrigdePort), MWR::C3::LogMessage::Severity::Information });

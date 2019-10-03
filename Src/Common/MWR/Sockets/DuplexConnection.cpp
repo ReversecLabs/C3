@@ -62,7 +62,7 @@ MWR::ByteVector MWR::DuplexConnection::Receive()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::DuplexConnection::StartReceiving(std::function<void(ByteView)> callback)
+void MWR::DuplexConnection::StartReceiving(std::function<void(ByteVector)> callback)
 {
 	m_IsReceiving = true;
 	m_ReceivingThread = std::thread([this, callback]()
@@ -82,7 +82,7 @@ void MWR::DuplexConnection::StartReceiving(std::function<void(ByteView)> callbac
 				auto message = Receive();
 				if (!m_IsReceiving || message.empty())
 					break;
-				callback(message);
+				callback(std::move(message));
 			}
 		}
 		catch (MWR::SocketsException&)
