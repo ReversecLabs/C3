@@ -87,5 +87,31 @@ namespace MWR::C3
 	using BuildId = Identifier<std::uint32_t>;																			///< ID of Relay's configuration.
 }
 
+namespace MWR
+{
+	/// Specialize ByteConverter for identifiers.
+	template <typename T>
+	struct ByteConverter <C3::Identifier<T>>
+	{
+		static ByteVector To(C3::Identifier<T> const& obj)
+		{
+			return obj.ToByteVector();
+		}
+
+		static size_t Size(C3::Identifier<T> const& obj)
+		{
+			return C3::Identifier<T>::BinarySize;
+		}
+
+		static C3::Identifier<T> From(ByteView& bv)
+		{
+			auto ret = C3::Identifier<T>(bv.SubString(0, C3::Identifier<T>::BinarySize));
+			bv.remove_prefix(C3::Identifier<T>::BinarySize);
+			return ret;
+		}
+	};
+
+}
+
 // Include template's implementation.
 #include "Identifiers.hxx"

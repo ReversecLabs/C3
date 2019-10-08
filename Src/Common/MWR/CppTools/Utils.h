@@ -83,4 +83,35 @@ namespace MWR::Utils
 		using namespace std::chrono;
 		return ceil<milliseconds>(FloatSeconds{ seconds });
 	}
+
+	/// Namespace storing internal implementation of features.
+	/// Symbols declared in this namespace should not be used directly
+	namespace Details
+	{
+		/// Check out MWR::Utils::CanApply
+		/// This basic template will be used as default if instantiation of function searching idiom failed.
+		template<template<class...>class T, class, class...>
+		struct CanApply : std::false_type {};
+
+		/// Check out MWR::Utils::CanApply.
+		/// This specialized template will be used if instantiation of function searching idiom succeeded.
+		template<template<class...>class T, class...Ts>
+		struct CanApply<T, std::void_t<T<Ts...>>, Ts...> : std::true_type {};
+	}
+
+	/// Template way to look for functions in classes using variadic argument list.
+	/// CanApply::value will be true if method was found.
+	/// @example
+	/// Create alias that gives type of Foo call.
+	///	template<class T, class...Ts>
+	///	using FooReturnType = decltype(std::declval<T>().Foo(std::declval<Ts>()...));
+	///
+	/// Create alias to CanApply that will be used to test if some type has method Foo.
+	///	template<class T, class...Ts>
+	///	using HasFoo = MWR::Utils::CanApply<FooReturnType, T, Ts...>;
+	///
+	/// Test type Bar can it call foo with int, double arguments.
+	/// HasFoo<Bar&, int, double>::value
+	template<template<class...>class T, class...Ts>
+	using CanApply = Details::CanApply<T, void, Ts...>;
 }

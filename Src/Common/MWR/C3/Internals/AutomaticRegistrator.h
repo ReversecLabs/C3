@@ -58,7 +58,7 @@ namespace MWR::C3
 			InterfaceFactory::InterfaceData<AbstractType> ret;
 			ret.m_Builder = [](ByteView bv) { return std::shared_ptr<AbstractType>{ new Iface{ bv } }; };
 			ret.m_ClousureConnectorHash = clousureConnectorHash;
-			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateFrequency, Iface::s_MaxUpdateFrequency);
+			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateDelay, Iface::s_MaxUpdateDelay);
 #ifdef		C3_IS_GATEWAY
 			ret.m_Name = GetInterfaceName<Iface>();
 			ret.m_Capability = EnsureDefaultCapability<Iface>::GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
@@ -96,14 +96,86 @@ namespace MWR::C3
 		class Channel : public Register<Iface, AbstractChannel>
 		{
 		public:
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 30ms;
 
+			/// Constructor setting default update frequency for channel
 			Channel()
 			{
-				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
+				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+			}
+
+			/// Callback that is periodically called for every Device to update itself.
+			/// This is point where dynamic polymorphisms is replaced by static one with recognition of returned value.
+			/// Types using Channel CRTP should implement MWR::ByteVector OnReceiveFromChannel(), or std::vector<MWR::ByteVector> OnReceiveFromChannel()
+			/// @return std::vector<ByteVector> that contains all packets retrieved from Channel.
+			std::vector<ByteVector> OnReceiveFromChannelInternal() override final
+			{
+				static_assert(CanRecive<>::value, "OnReceiveFromChannel is not implemented");
+				static_assert(std::is_same_v<ReceiveReturnType<Iface>, ByteVector> || std::is_same_v<ReceiveReturnType<Iface>, std::vector<ByteVector>>, "OnReceiveFromChannel should return ByteVector or std::vector<ByteVector>");
+				return ReceiveWrapper<Iface>();
+			}
+
+			/// Called every time Relay wants to send a packet through this Channel Device.
+			/// This is point where dynamic polymorphisms is replaced by static one.
+			/// Types using Channel CRTP should implement size_t OnSendToChannel(ByteView).
+			/// @param blob buffer containing data to send.
+			size_t  OnSendToChannelInternal(ByteView packet) override final
+			{
+				static_assert(CanSend<ByteView>::value, "OnSendToChannel is not implemented");
+				auto self = static_cast<Iface*>(this);
+				return self->OnSendToChannel(packet);
+			}
+
+		private:
+			/// Alias to get result of OnReceiveFromChannel call.
+			/// Use in form ReceiveReturnType<Iface> to obtain type.
+			/// Can fail if function is not implemented.
+			template<class T, class...Ts>
+			using ReceiveReturnType = decltype(std::declval<T>().OnReceiveFromChannel(std::declval<Ts>()...));
+
+			/// Alias to test if OnReceiveFromChannel is implemented.
+			/// Use in form CanRecive<Iface>::value to obtain bool value with information.
+			template<class...Ts>
+			using CanRecive = MWR::Utils::CanApply<ReceiveReturnType, Iface, Ts...>;
+
+			/// Alias to get result of OnSendToChannel call.
+			/// Use in form SendReturnType<Iface, ByteView> to obtain type.
+			/// Can fail if function is not implemented.
+			template<class T, class...Ts>
+			using SendReturnType = decltype(std::declval<T>().OnSendToChannel(std::declval<Ts>()...));
+
+			/// Alias to test if OnSendToChannel is implemented.
+			/// Use in form CanSend<Iface>::value to obtain bool value with information.
+			template<class...Ts>
+			using CanSend = MWR::Utils::CanApply<SendReturnType, Iface, Ts...>;
+
+			/// Virtual OnSendToChannelInternal cannot be templated.
+			/// This function will be available for call if OnReceiveFromChannel returns ByteVector.
+			/// @returns std::vector<ByteVector> one packet pushed on collection if it is not empty..
+			template <typename T>
+			std::enable_if_t<std::is_same_v<ReceiveReturnType<T>, ByteVector>, std::vector<ByteVector>> ReceiveWrapper()
+			{
+				auto self = static_cast<Iface*>(this);
+				std::vector<ByteVector> ret;
+				if (auto packet = self->OnReceiveFromChannel(); !packet.empty())
+					ret.push_back(std::move(packet));
+
+				return ret;
+			}
+
+			/// Virtual OnSendToChannelInternal cannot be templated.
+			/// This function will be available for call if OnReceiveFromChannel returns std::vector<ByteVector>.
+			/// @returns std::vector<ByteVector> many packets that are not empty.
+			template <typename T>
+			std::enable_if_t<std::is_same_v<ReceiveReturnType<T>, std::vector<ByteVector>>, std::vector<ByteVector>> ReceiveWrapper()
+			{
+				auto self = static_cast<Iface*>(this);
+				auto ret = self->OnReceiveFromChannel();
+				static_cast<void>(std::remove_if(ret.begin(), ret.end(), [](auto&& e) { return e.empty(); }));
+				return ret;
 			}
 		};
 
@@ -114,8 +186,8 @@ namespace MWR::C3
 		{
 		public:
 			// connector in fact does not need those values. They are here to satisfy template requirements.
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 0ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 0ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 0ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 0ms;
 		};
 #else
 		/// Don't register the connectors in node builds
@@ -132,14 +204,14 @@ namespace MWR::C3
 		class Peripheral : public Register<Iface, AbstractPeripheral, Hash::Fnv1aType<Closure>()>
 		{
 		public:
-			constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 30ms;
-			constexpr static std::chrono::milliseconds s_MaxUpdateFrequency = 30ms;
+			constexpr static std::chrono::milliseconds s_MinUpdateDelay = 30ms;
+			constexpr static std::chrono::milliseconds s_MaxUpdateDelay = 30ms;
 
 			Peripheral()
 			{
-				static_assert(Iface::s_MinUpdateFrequency >= 30ms && Iface::s_MinUpdateFrequency <= Iface::s_MaxUpdateFrequency, "The frequency is set incorrectly");
-				m_MinUpdateFrequency = Iface::s_MinUpdateFrequency;
-				m_MaxUpdateFrequency = Iface::s_MaxUpdateFrequency;
+				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
+				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 #pragma warning( pop )

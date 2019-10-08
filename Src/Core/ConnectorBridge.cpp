@@ -26,7 +26,7 @@ void MWR::C3::Core::ConnectorBridge::Detach()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Core::ConnectorBridge::PostCommandToBinder(ByteView binderId, ByteView command)
 {
-	return GetGateRelay()->PostCommandToPeripheral(command, RouteId::FromByteView(binderId));
+	return GetGateRelay()->PostCommandToPeripheral(command, RouteId(binderId));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,4 +87,9 @@ std::string MWR::C3::Core::ConnectorBridge::GetErrorStatus()
 MWR::ByteVector MWR::C3::Core::ConnectorBridge::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
 	return m_Connector->PeripheralCreationCommand(connectionId, data, isX64);
+}
+
+MWR::ByteVector MWR::C3::Core::ConnectorBridge::CloseConnection(ByteView connectionId)
+{
+	return m_Connector->CloseConnection(connectionId);
 }

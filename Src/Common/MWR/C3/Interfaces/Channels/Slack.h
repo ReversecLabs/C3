@@ -13,11 +13,11 @@ namespace MWR::C3::Interfaces::Channels
 		/// OnSend callback implementation.
 		/// @param packet data to send to Channel.
 		/// @returns size_t number of bytes successfully written.
-		size_t OnSendToChannel(ByteView packet) override;
+		size_t OnSendToChannel(ByteView packet);
 
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		ByteVector OnReceiveFromChannel() override;
+		ByteVector OnReceiveFromChannel();
 
 		/// Get channel capability.
 		/// @returns ByteView view of channel capability.
@@ -25,7 +25,7 @@ namespace MWR::C3::Interfaces::Channels
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise slack rate limit will heavily impact channel.
-		constexpr static std::chrono::milliseconds s_MinUpdateFrequency = 3500ms, s_MaxUpdateFrequency = 6500ms;
+		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 3500ms, s_MaxUpdateDelay = 6500ms;
 
 	protected:
 		/// The inbound direction name of data

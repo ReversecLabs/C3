@@ -73,9 +73,14 @@ namespace MWR::C3::Core
 		/// Called every time new peripheral is being created.
 		/// @param connectionId adders of peripheral in C3 network .
 		/// @param data all parameters used to create peripheral. Specific for each connector.
-		/// @para isX64 indicates if relay staging peripheral is x64.
+		/// @param isX64 indicates if relay staging peripheral is x64.
 		/// @returns ByteVector correct command that will be used to stage peripheral.
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64 = false) override;
+
+		/// Close desired connection
+		/// @param connectionId id of connection (RouteId) in string form.
+		/// @returns ByteVector empty vector.
+		ByteVector CloseConnection(ByteView connectionId) override;
 
 	protected:
 		/// Connector object getter.
