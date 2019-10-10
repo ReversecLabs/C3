@@ -15,14 +15,14 @@ namespace MWR::C3::Interfaces::Channels
 		/// OnSend callback implementation.
 		/// @param packet data to send to Channel.
 		/// @returns size_t number of bytes successfully written.
-		size_t OnSendToChannel(ByteView packet) override
+		size_t OnSendToChannel(ByteView packet)
 		{
 			return m_Pipe.Write(packet);
 		}
 
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		ByteVector OnReceiveFromChannel() override
+		ByteVector OnReceiveFromChannel()
 		{
 			return m_Pipe.Read();
 		}

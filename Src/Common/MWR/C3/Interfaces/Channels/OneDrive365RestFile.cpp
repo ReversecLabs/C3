@@ -40,7 +40,7 @@ MWR::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(ByteView
 size_t MWR::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(ByteView data)
 {
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
-		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateFrequency, m_MaxUpdateFrequency));
+		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
 	try
 	{
@@ -87,7 +87,7 @@ size_t MWR::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(ByteV
 MWR::ByteVector MWR::C3::Interfaces::Channels::OneDrive365RestFile::OnReceiveFromChannel()
 {
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
-		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateFrequency, m_MaxUpdateFrequency));
+		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
 	ByteVector packet;
 	try

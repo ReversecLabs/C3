@@ -39,7 +39,7 @@ MWR::C3::Interfaces::Channels::Outlook365RestTask::Outlook365RestTask(ByteView a
 size_t MWR::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(ByteView data)
 {
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
-		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateFrequency, m_MaxUpdateFrequency));
+		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
 	try
 	{
@@ -90,7 +90,7 @@ size_t MWR::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(ByteVi
 MWR::ByteVector MWR::C3::Interfaces::Channels::Outlook365RestTask::OnReceiveFromChannel()
 {
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
-		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateFrequency, m_MaxUpdateFrequency));
+		std::this_thread::sleep_until(s_TimePoint.load() + MWR::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
 	ByteVector packet;
 	try

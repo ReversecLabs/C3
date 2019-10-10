@@ -16,11 +16,11 @@ namespace MWR::C3::Interfaces::Channels
 		/// Sending callback implementation.
 		/// @param blob packet to send to the Channel.
 		/// @returns size_t number of bytes successfully written.
-		size_t OnSendToChannel(ByteView blob) noexcept(false) override;
+		size_t OnSendToChannel(ByteView blob) noexcept(false);
 
 		/// Receiving callback implementation.
 		/// @returns ByteVector received blob of data.
-		ByteVector OnReceiveFromChannel() override;
+		ByteVector OnReceiveFromChannel();
 
 		/// Get channel capability.
 		/// @returns ByteView view of channel capability.
