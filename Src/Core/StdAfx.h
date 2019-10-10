@@ -10,6 +10,7 @@
 #include <optional>																										//< For std::optional.
 #include <type_traits>																									//< For traits.
 #include <iostream>																										//< For std::cout. Parts that are common for NodeRelay and GateRelay should not use it.
+#include <future>																										//< For async
 
 // External dependencies.
 #include "Common/json/json.hpp"																							//< For json.

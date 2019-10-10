@@ -34,7 +34,7 @@ namespace MWR
 		ByteVector Receive();
 
 		/// Start processing received data in separate thread
-		void StartReceiving(std::function<void(ByteView)> callback);
+		void StartReceiving(std::function<void(ByteVector)> callback);
 
 		/// Stop sending and receiving
 		void Stop();
