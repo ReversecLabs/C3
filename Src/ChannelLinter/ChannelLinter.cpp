@@ -73,6 +73,12 @@ try
 	json createParams2 = form.FillForm(ch2Args);
 	auto ch2 = C3::Linter::MakeDevice(createParams2, chInfo);
 
+	//  test write and read
+	auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
+	channel->OnSendToChannel(data);
+	auto rcv = ch2->OnReceiveFromChannel();
+	if (data != rcv)
+		throw std::exception("data sent and received mismatch");
 }
 catch (std::exception & e)
 {
