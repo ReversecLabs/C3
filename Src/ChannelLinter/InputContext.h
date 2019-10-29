@@ -1,23 +1,29 @@
 #pragma once
+#include "argparse.hpp"
+#include <optional>
 
 namespace MWR::C3::Linter
 {
-	struct InputError : public std::exception
-	{
-		using std::exception::exception;
-		using std::exception::what;
-	};
+	using StringVector = std::vector<std::string>;
 
 	class InputContext {
 	public:
-		InputContext(int argc, char* argv[]);
+		InputContext(int argc, char** argv);
 
-		std::string_view GetChannelName() const;
+		std::string GetUsage();
 
-		static std::string_view GetUsage();
+		struct Config {
+			std::string m_ChannelName;
+			StringVector m_ChannelArguments;
+			std::optional<StringVector> m_ComplementaryChannelArguments;
+		};
+
+		Config const& GetConfig() const { return m_Config; }
 
 	private:
-		std::string m_ChannelName;
+		void AddOptions();
+		argparse::ArgumentParser m_ArgParser;
+		Config m_Config;
 	};
 }
 
