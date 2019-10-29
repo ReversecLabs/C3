@@ -10,6 +10,10 @@ namespace MWR::C3::Linter
 			InputContext::Config config;
 			config.m_ChannelName = parser.retrieve<std::string>("name");
 			config.m_ChannelArguments = parser.retrieve<std::vector<std::string>>("args");
+
+			if (parser.exists("complementary"))
+				config.m_ComplementaryChannelArguments = parser.retrieve<std::vector<std::string>>("complementary");
+
 			return config;
 		}
 	}
@@ -25,7 +29,7 @@ namespace MWR::C3::Linter
 	{
 		m_ArgParser.addArgument("-n", "--name", 1, false);
 		m_ArgParser.addArgument("-a", "--args", '*', false);
-
+		m_ArgParser.addArgument("-c", "--complementary", '*');
 	}
 
 	std::string InputContext::GetUsage()

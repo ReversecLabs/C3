@@ -36,4 +36,25 @@ namespace MWR::C3::Linter
 			throw std::runtime_error("Failed to create channel: not enough arguments given");
 		}
 	}
+
+	StringVector Form::GetComplementaryArgs(json const& form)
+	{
+		std::vector<std::string> args;
+		for (auto const& arg : form)
+		{
+			if (arg.is_array())
+			{
+				for (size_t j = 0; j < arg.size(); ++j)
+				{
+					auto rotateRight = [s = arg.size()](size_t index) { return (index + 1) % s; };
+					args.emplace_back(arg[rotateRight(j)].at("value").get<std::string>());
+				}
+			}
+			else
+			{
+				args.emplace_back(arg["value"].get<std::string>());
+			}
+		}
+		return args;
+	}
 }

@@ -9,6 +9,8 @@ namespace MWR::C3::Linter
 
 		json FillForm(InputVector input);
 
+		StringVector GetComplementaryArgs(json const& form);
+
 	private:
 		json m_ArgumentsForm;
 	};
