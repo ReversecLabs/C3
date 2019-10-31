@@ -35,7 +35,9 @@ namespace MWR::C3::Linter
 	auto MakeDevice(MWR::json const& createParams, const T& chInfo)
 	{
 		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
-		return chInfo.m_Builder(blob);
+		auto channelBridge = std::make_shared<C3::Linter::MockDeviceBridge>(chInfo.m_Builder(blob));
+		channelBridge->OnAttach();
+		return channelBridge;
 	}
 }
 
@@ -68,6 +70,7 @@ try
 	auto createParams = form.FillForm(config.m_ChannelArguments);
 	auto channel = C3::Linter::MakeDevice(createParams, chInfo);
 
+
 	std::cout << "Create channel 2" << std::endl;
 	auto const& ch2Args = config.m_ComplementaryChannelArguments ? *config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(config.m_ChannelArguments);
 	json createParams2 = form.FillForm(ch2Args);
@@ -75,8 +78,8 @@ try
 
 	//  test write and read
 	auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
-	channel->OnSendToChannel(data);
-	auto rcv = ch2->OnReceiveFromChannel();
+	channel->GetDevice()->OnSendToChannel(data);
+	auto rcv = std::static_pointer_cast<C3::AbstractChannel>(ch2->GetDevice())->OnReceiveFromChannel();
 	if (data != rcv)
 		throw std::exception("data sent and received mismatch");
 }

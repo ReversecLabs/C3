@@ -21,3 +21,4 @@ using json = nlohmann::json;
 #include "InputVector.h"
 #include "FormElement.hpp"
 #include "Form.h"
+#include "MockDeviceBridge.h"
