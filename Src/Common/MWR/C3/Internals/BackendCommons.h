@@ -70,6 +70,9 @@ namespace MWR::C3
 		/// Detaches the Device.
 		virtual void Detach() = 0;
 
+		/// Notify the relay that this bridge should be closed
+		virtual void Close() = 0;
+
 		/// Callback periodically fired by Relay for Device to update it's state. Might be called from a separate thread. Device should perform all necessary actions and leave as soon as possible.
 		virtual void OnReceive() = 0;
 
@@ -123,6 +126,9 @@ namespace MWR::C3
 
 		/// Detaches the Connector.
 		virtual void Detach() = 0;
+
+		/// Notify the gateway to turn off the connector
+		virtual void TurnOff() = 0;
 
 		/// Called whenever Connector wants to send a Command to its Peripheral Binder.
 		/// @param binderId Identifier of Peripheral who sends the Command.
