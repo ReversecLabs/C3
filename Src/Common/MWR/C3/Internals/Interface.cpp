@@ -1,9 +1,5 @@
 #include "StdAfx.h"
 #include "Interface.h"
-#include "Core/DeviceBridge.h" // TODO it would be great to remove core dependency. PTAL Close method
-#include "Core/ConnectorBridge.h"
-#include "Core/Relay.h"
-#include "Core/GateRelay.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::AbstractPeripheral::OnReceive()
@@ -55,9 +51,9 @@ MWR::ByteVector MWR::C3::Device::OnRunCommand(ByteView command)
 {
 	switch (command.Read<uint16_t>())
 	{
-		case static_cast<uint16_t>(MWR::C3::Core::Relay::Command::Close):
+		case static_cast<uint16_t>(MWR::C3::Command::Close):
 		return Close(), ByteVector{};
-	case static_cast<uint16_t>(MWR::C3::Core::Relay::Command::UpdateJitter) :
+	case static_cast<uint16_t>(MWR::C3::Command::UpdateJitter) :
 	{
 		auto [minVal, maxVal] = command.Read<float, float>();
 		return SetUpdateDelay(MWR::Utils::ToMilliseconds(minVal), MWR::Utils::ToMilliseconds(maxVal)), ByteVector{};
@@ -80,17 +76,13 @@ MWR::ByteVector MWR::C3::AbstractConnector::OnRunCommand(ByteView command)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Device::Close() // Closing mechanism was not originaly ment for device itself. It must call relay methods to remove itself. New mechanism that does not need to know relay must be introduced.
+void MWR::C3::Device::Close()
 {
-	auto bridge = std::static_pointer_cast<Core::DeviceBridge>(GetBridge());
-	auto relay = std::static_pointer_cast<Core::Relay>(bridge->GetRelay());
-	relay->DetachDevice(bridge->GetDid());
+	GetBridge()->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::AbstractConnector::TurnOff()
 {
-	auto bridge = std::static_pointer_cast<Core::ConnectorBridge>(GetBridge());
-	auto gateway = std::static_pointer_cast<Core::GateRelay>(bridge->GetGateRelay());
-	gateway->TurnOffConnector(bridge->GetNameHash());
+	GetBridge()->TurnOff();
 }

@@ -36,6 +36,9 @@ namespace MWR::C3::Core
 		/// Detaches the Device.
 		void Detach() override;
 
+		/// Notify the relay that this bridge should be closed
+		void Close() override;
+
 		/// Callback periodically fired by Relay for Device to update it's state. Might be called from a separate thread. Device should perform all necessary actions and leave as soon as possible.
 		void OnReceive() override;
 

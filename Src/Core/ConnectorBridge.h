@@ -30,6 +30,9 @@ namespace MWR::C3::Core
 		/// Detaches the Connector.
 		void Detach() override;
 
+		/// Notify the gateway to turn off the connector
+		void TurnOff() override;
+
 		/// Called whenever Connector wants to send a Command to its Peripheral Binder.
 		/// @param binderId Identifier of Peripheral who sends the Command.
 		/// @param command full Command with arguments.
