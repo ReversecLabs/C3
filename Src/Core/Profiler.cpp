@@ -522,9 +522,9 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 		if (commandId > static_cast<std::uint16_t>(-256))
 		{
 			// generic interface commands
-			switch (static_cast<MWR::C3::Core::Relay::Command>(commandId))
+			switch (static_cast<MWR::C3::Command>(commandId))
 			{
-			case MWR::C3::Core::Relay::Command::Close:
+			case MWR::C3::Command::Close:
 				finalizer = [&]()
 				{
 					if (deviceIsChannel)
@@ -553,7 +553,7 @@ void MWR::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommandElem
 					}
 				};
 				break;
-			case MWR::C3::Core::Relay::Command::UpdateJitter:
+			case MWR::C3::Command::UpdateJitter:
 				finalizer = [this, deviceId, deviceIsChannel, commandReadView]() mutable
 				{
 					Device* device = deviceIsChannel ? m_Channels.Find(*deviceId) : m_Peripherals.Find(*deviceId);
@@ -609,9 +609,9 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 		throw std::runtime_error("Failed to find route to agent id = " + m_Id.ToString());
 
 	std::function<void()> finalizer = []() {};
-	switch (static_cast<NodeRelay::Command>(commandId))
+	switch (static_cast<Command>(commandId))
 	{
-	case NodeRelay::Command::Close:
+	case Command::Close:
 	{
 		finalizer = [&]()
 		{
@@ -637,7 +637,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 		};
 		break;
 	}
-	case NodeRelay::Command::CreateRoute:
+	case Command::CreateRoute:
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
@@ -646,7 +646,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 		};
 		break;
 	}
-	case NodeRelay::Command::RemoveRoute:
+	case Command::RemoveRoute:
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
@@ -654,7 +654,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 		};
 		break;
 	}
-	case NodeRelay::Command::SetGRC:
+	case Command::SetGRC:
 	{
 		finalizer = [this, commandReadView]() mutable
 		{
@@ -667,7 +667,7 @@ void MWR::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArguments)
 		};
 		break;
 	}
-	case NodeRelay::Command::Ping:
+	case Command::Ping:
 		break;
 	default:
 		throw std::runtime_error("Profiler received an unknown command for agent id: " + m_Id.ToString());
@@ -713,7 +713,7 @@ void MWR::C3::Core::Profiler::Agent::PerformCreateCommand(json const& jCommandEl
 	// it is a create command
 	DeviceId newDeviceId = ++m_LastDeviceId;
 	ByteVector repacked;
-	repacked.Concat(static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::AddDevice), newDeviceId.ToByteVector(), command->m_IsNegotiableChannel, command->m_Hash);
+	repacked.Concat(static_cast<std::underlying_type_t<Command>>(Command::AddDevice), newDeviceId.ToByteVector(), command->m_IsNegotiableChannel, command->m_Hash);
 	if (auto binder = profiler->GetBinderTo(command->m_Hash); binder && command->m_IsDevice) // peripheral, check if payload is needed.
 	{
 		auto connector = profiler->m_Gateway->m_Gateway.lock()->GetConnector(binder);
@@ -804,9 +804,9 @@ void MWR::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jCommandEl
 				if (auto device = gateway->FindDevice(MWR::Utils::SafeCast<DeviceId::UnderlyingIntegerType>(id)); device)
 				{
 					auto localView = commandReadView;
-					switch (MWR::C3::Core::Relay::Command(localView.Read<std::uint16_t>()))
+					switch (MWR::C3::Command(localView.Read<std::uint16_t>()))
 					{
-						case MWR::C3::Core::Relay::Command::UpdateJitter:
+						case MWR::C3::Command::UpdateJitter:
 						{
 							Device* profilerElement = m_Channels.Find(device->GetDid());
 							if (!profilerElement)
@@ -819,7 +819,7 @@ void MWR::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jCommandEl
 							profilerElement->m_Jitter.second = MWR::Utils::ToMilliseconds(localView.Read<float>());
 							break;
 						}
-						case MWR::C3::Core::Relay::Command::Close:
+						case MWR::C3::Command::Close:
 						{
 							auto profilerElement = m_Peripherals.Find(device->GetDid());
 							if (!profilerElement)
@@ -926,9 +926,9 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 
 				// modify initial Packet with extra entries.
 				initialPacket[interfaceType][idToErase].erase("create");
-				initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::Close) }, {"arguments", json::array()} });
+				initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
 				if (isDevice)
-					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::UpdateJitter) },
+					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<Command>>(Command::UpdateJitter) },
 						{"arguments", {
 							{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
 							{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}
@@ -961,25 +961,25 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 		for (auto&& relayType : relayTypes)
 			initialPacket[relayType]["commands"].push_back(newCommand);
 	};
-	addRelayCommand({ "gateway", "relay" }, json{ {"name", "Close"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::Close) }, {"arguments", json::array()} });
+	addRelayCommand({ "gateway", "relay" }, json{ {"name", "Close"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
 
-	addRelayCommand({ "gateway", "relay" }, json{ {"name", "CreateRoute"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::CreateRoute) }, {"arguments", {
+	addRelayCommand({ "gateway", "relay" }, json{ {"name", "CreateRoute"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::CreateRoute) }, {"arguments", {
 						{{"type", "string"}, {"name", "RouteID"}, {"description", "Id of route in string form."}, {"min", 1}},
 						{{"type", "string"}, {"name", "DeviceId"}, {"description", "Id of device in string form."}, {"min", 1}},
 						{{"type", "boolean"}, {"name", "Neighbor"}, {"description", "Informs if relay is direct neighbor."}, {"defaultValue", true}}
 					}} });
 
-	addRelayCommand({ "gateway", "relay" }, json{ {"name", "RemoveRoute"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::RemoveRoute) }, {"arguments", {
+	addRelayCommand({ "gateway", "relay" }, json{ {"name", "RemoveRoute"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::RemoveRoute) }, {"arguments", {
 					{{"type", "string"}, {"name", "RouteID"}, {"description", "Id of route in string form."}, {"min", 1}}
 				}} });
 
-	addRelayCommand({ "relay" }, json{ {"name", "SetGatewayReturnChannel"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::SetGRC) }, {"arguments", {
+	addRelayCommand({ "relay" }, json{ {"name", "SetGatewayReturnChannel"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::SetGRC) }, {"arguments", {
 				{{"type", "string"}, {"name", "DeviceID"}, {"description", "Id of device in string form."}, {"min", 1}}
 			}} });
 
-	addRelayCommand({ "relay" }, json{ {"name", "Ping"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::Ping) }, {"arguments", json::array() } });
+	addRelayCommand({ "relay" }, json{ {"name", "Ping"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Ping) }, {"arguments", json::array() } });
 
-	addRelayCommand({ "gateway" }, json{ {"name", "ClearNetwork"}, {"id", static_cast<std::underlying_type_t<NodeRelay::Command>>(NodeRelay::Command::ClearNetwork) }, {"arguments", {
+	addRelayCommand({ "gateway" }, json{ {"name", "ClearNetwork"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::ClearNetwork) }, {"arguments", {
 					{{"type", "boolean"}, {"name", "Are you sure?"}, {"description", "Confirm clearing the network. All network state will be lost, this can not be undone."}, {"default", false}}
 				}} });
 
@@ -1006,25 +1006,25 @@ void MWR::C3::Core::Profiler::Gateway::RunCommand(ByteView commandWithArguments)
 	if (!pin)
 		return;
 
-	switch (static_cast<GateRelay::Command>(commandWithArguments.Read<std::underlying_type_t<GateRelay::Command>>()))
+	switch (static_cast<Command>(commandWithArguments.Read<std::underlying_type_t<Command>>()))
 	{
-	case GateRelay::Command::Close:
+	case Command::Close:
 		pin->Close();
 		break;
-	case GateRelay::Command::CreateRoute:
+	case Command::CreateRoute:
 	{
 		pin->CreateRoute(commandWithArguments);
 		auto [ridStr, didStr, isNbr] = commandWithArguments.Read<std::string_view, std::string_view, bool>();
 		ReAddRoute(ridStr, didStr, isNbr);
 		break;
 	}
-	case GateRelay::Command::RemoveRoute:
+	case Command::RemoveRoute:
 	{
 		pin->RemoveRoute(commandWithArguments);
 		ReRemoveRoute(commandWithArguments.Read<std::string_view>());
 		break;
 	}
-	case GateRelay::Command::ClearNetwork:
+	case Command::ClearNetwork:
 	{
 		// Clear real gateway
 		pin->Reset();

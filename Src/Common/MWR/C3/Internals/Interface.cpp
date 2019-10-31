@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "Interface.h"
-#include "Core/Relay.h" // TODO remove core dependency by moving Command enum somewhere else
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::AbstractPeripheral::OnReceive()
@@ -52,9 +51,9 @@ MWR::ByteVector MWR::C3::Device::OnRunCommand(ByteView command)
 {
 	switch (command.Read<uint16_t>())
 	{
-		case static_cast<uint16_t>(MWR::C3::Core::Relay::Command::Close):
+		case static_cast<uint16_t>(MWR::C3::Command::Close):
 		return Close(), ByteVector{};
-	case static_cast<uint16_t>(MWR::C3::Core::Relay::Command::UpdateJitter) :
+	case static_cast<uint16_t>(MWR::C3::Command::UpdateJitter) :
 	{
 		auto [minVal, maxVal] = command.Read<float, float>();
 		return SetUpdateDelay(MWR::Utils::ToMilliseconds(minVal), MWR::Utils::ToMilliseconds(maxVal)), ByteVector{};
