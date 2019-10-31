@@ -6,6 +6,8 @@
 // Standard library includes.
 #include <iostream>
 #include <optional>
+#include <string_view>
+#include <charconv>
 
 // C3 inclusion.
 #include "Common/MWR/C3/Sdk.hpp"
@@ -13,6 +15,9 @@
 
 using json = nlohmann::json;
 
+#include "Common/CppCodec/base64_default_rfc4648.hpp"
+
 #include "InputContext.h"
 #include "InputVector.h"
+#include "FormElement.hpp"
 #include "Form.h"

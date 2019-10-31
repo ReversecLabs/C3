@@ -26,4 +26,16 @@ namespace MWR::C3::Linter
 			throw std::out_of_range("Input vector has no more elements");
 		return *m_Current++;
 	}
+
+	void InputVector::Reset()
+	{
+		m_Current = m_Input.cbegin();
+	}
+
+	std::optional<std::string> InputVector::GetOptionalNext()
+	{
+		if (m_Current == m_Input.cend())
+			return {};
+		return *m_Current++;
+	}
 }

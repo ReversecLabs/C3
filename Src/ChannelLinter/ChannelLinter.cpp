@@ -69,7 +69,7 @@ try
 	auto channel = C3::Linter::MakeDevice(createParams, chInfo);
 
 	std::cout << "Create channel 2" << std::endl;
-	auto const& ch2Args = config.m_ComplementaryChannelArguments ? *config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(createParams);
+	auto const& ch2Args = config.m_ComplementaryChannelArguments ? *config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(config.m_ChannelArguments);
 	json createParams2 = form.FillForm(ch2Args);
 	auto ch2 = C3::Linter::MakeDevice(createParams2, chInfo);
 

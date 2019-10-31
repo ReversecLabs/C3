@@ -297,6 +297,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Form.h" />
+    <ClInclude Include="FormElement.hpp" />
     <ClInclude Include="InputContext.h" />
     <ClInclude Include="InputVector.h" />
     <ClInclude Include="StdAfx.h" />
