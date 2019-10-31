@@ -8,18 +8,6 @@ namespace MWR::C3::Core
 	/// Last base layer class for both Relay types.
 	struct Relay : Distributor, MWR::C3::Relay
 	{
-		enum class Command : std::uint16_t
-		{
-			AddDevice = 0,
-			Close = static_cast<std::uint16_t>(-1), // for relays and interfaces last 256 commands are reserved for general commands.
-			UpdateJitter = static_cast<std::uint16_t>(-2),
-			CreateRoute = static_cast<std::uint16_t>(-3),
-			RemoveRoute = static_cast<std::uint16_t>(-4),
-			SetGRC = static_cast<std::uint16_t>(-5),
-			Ping = static_cast<std::uint16_t>(-6),
-			ClearNetwork = static_cast<std::uint16_t>(-7),
-		};
-
 		/// Called whenever an attached Binder Peripheral wants to send a Command to its Connector Binder.
 		/// @param command full Command with arguments.
 		/// @param sender Interface that is sending the Command.
