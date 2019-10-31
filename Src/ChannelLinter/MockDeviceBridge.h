@@ -29,9 +29,9 @@ namespace MWR::C3::Linter
 
 		void Log(LogMessage const& message) override;
 
-		void SetUpdateFrequency(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs) override;
+		void SetUpdateDelay(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs) override;
 
-		void SetUpdateFrequency(std::chrono::milliseconds frequencyInMs) override;
+		void SetUpdateDelay(std::chrono::milliseconds frequencyInMs) override;
 
 		void SetErrorStatus(std::string_view errorMessage) override;
 

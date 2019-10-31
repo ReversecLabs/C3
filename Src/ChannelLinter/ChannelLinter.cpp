@@ -78,9 +78,9 @@ try
 
 	//  test write and read
 	auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
-	channel->GetDevice()->OnSendToChannel(data);
-	auto rcv = std::static_pointer_cast<C3::AbstractChannel>(ch2->GetDevice())->OnReceiveFromChannel();
-	if (data != rcv)
+	std::static_pointer_cast<C3::AbstractChannel>(channel->GetDevice())->OnSendToChannelInternal(data);
+	auto rcv = std::static_pointer_cast<C3::AbstractChannel>(ch2->GetDevice())->OnReceiveFromChannelInternal();
+	if (data != rcv.at(0))
 		throw std::exception("data sent and received mismatch");
 }
 catch (std::exception & e)

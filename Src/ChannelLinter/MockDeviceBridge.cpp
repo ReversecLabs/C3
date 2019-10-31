@@ -65,12 +65,12 @@ namespace MWR::C3::Linter
 		std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText("", message, nullptr) << std::endl;
 	}
 
-	void MockDeviceBridge::SetUpdateFrequency(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs)
+	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs)
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}
 
-	void MockDeviceBridge::SetUpdateFrequency(std::chrono::milliseconds frequencyInMs)
+	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds frequencyInMs)
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}
