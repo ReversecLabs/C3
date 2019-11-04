@@ -19,9 +19,15 @@ namespace MWR::WinTools
 		/// @throws std::runtime_error on any WinAPI errors occurring during writing to the named pipe.
 		ByteVector Read();
 
+		///Covenant specific implementation of Read
+		ByteVector ReadCov();
+
 		/// Retrieves data from the pipe.
 		/// @throws std::runtime_error on any WinAPI errors occurring during reading from the named pipe.
 		size_t Write(ByteView data);
+
+		///Covenant specific implementation of Write
+		size_t WriteCov(ByteView data);
 	private:
 		/// Name of the Pipe used to communicate with the implant.
 		std::string m_PipeName;
@@ -107,6 +113,7 @@ namespace MWR::WinTools
 		/// @throws std::runtime_error if conection was closed from other side during transmision.
 		ByteVector Read();
 
+		
 		/// Connects pipe and writes whole message to pipe.
 		///
 		/// @param data to be written.
@@ -114,11 +121,11 @@ namespace MWR::WinTools
 		/// @throws std::runtime_error if data.size() cannot be stored in uint32_t. This condition is highly unlikly in normal use.
 		/// @throws std::runtime_error if conection was closed from other side during transmision.
 		size_t Write(ByteView data);
-
+		
 	private:
 		/// Input pipe.
 		ReadPipe m_InputPipe;
-
+		
 		/// Output pipe.
 		WritePipe m_OutputPipe;
 	};

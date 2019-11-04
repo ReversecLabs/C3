@@ -14,6 +14,14 @@ namespace MWR::WinTools::StructuredExceptionHandling
 	/// @returns 0.
 	DWORD WINAPI SehWrapper(CodePointer func);
 
+	/// Arguments to be passed to RuntimeV4Host
+	typedef struct gruntArgs { std::function<void(PBYTE, size_t)> func;	PBYTE gruntStager;	size_t len; }GRUNTARGS, * PGRUNTARGS;
+
+	/// Covenant specific SEH Wrapper
+	/// @param args a struct containing the arguments for the execution of an SMB grunt in memory.
+	/// @returns 0
+	DWORD WINAPI SehWrapperCov(PGRUNTARGS args);
+
 	/// Wrap call in SEH handler
 	/// @param func - function to call
 	/// @param closure - handler called when func throws SE
@@ -24,3 +32,4 @@ namespace MWR::WinTools
 {
 	namespace SEH = StructuredExceptionHandling;
 }
+
