@@ -378,6 +378,10 @@ namespace MWR::C3::Core
 			/// @return Network Profile in JSON format.
 			json CreateProfileSnapshot() const override;
 
+			static void EnsureCreateExists(json& interface);
+
+			static void AddBuildInCommands(json& def, bool isDevice);
+
 			/// Get JSON representing available Commands.
 			/// @return Network's Capability in JSON format.
 			json GetCapability();

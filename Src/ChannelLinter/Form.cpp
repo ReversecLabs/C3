@@ -47,7 +47,7 @@ namespace MWR::C3::Linter
 				else
 					AddParameterMessage(arg);
 			}
- 			throw std::runtime_error("Failed to create channel: not enough arguments given.\nRequired parameter > received argument\n" + message);
+ 			throw std::runtime_error("Failed to fill from arguments: not enough arguments given.\nRequired parameter > received argument\n" + message);
 		}
 	}
 

@@ -22,8 +22,10 @@ namespace MWR::C3::Linter
 	{
 		try
 		{
-			return json::parse(channelInfo.m_Capability);
-			// TODO add build-in commands, and defaulted 'create'
+			auto ret =  json::parse(channelInfo.m_Capability);
+			C3::Core::Profiler::Gateway::EnsureCreateExists(ret);
+			C3::Core::Profiler::Gateway::AddBuildInCommands(ret, true);
+			return ret;
 		}
 		catch (json::parse_error& e)
 		{
