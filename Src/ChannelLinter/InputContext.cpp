@@ -14,6 +14,11 @@ namespace MWR::C3::Linter
 			if (parser.exists("complementary"))
 				config.m_ComplementaryChannelArguments = parser.retrieve<std::vector<std::string>>("complementary");
 
+			config.m_TestChannelIO = parser.exists("test-io");
+
+			if (parser.exists("command"))
+				config.m_Command = parser.retrieve<StringVector>("command");
+
 			return config;
 		}
 	}
@@ -30,6 +35,8 @@ namespace MWR::C3::Linter
 		m_ArgParser.addArgument("-n", "--name", 1, false);
 		m_ArgParser.addArgument("-a", "--args", '*', false);
 		m_ArgParser.addArgument("-c", "--complementary", '*');
+		m_ArgParser.addArgument("-i", "--test-io");
+		m_ArgParser.addArgument("-x", "--command", '+');
 	}
 
 	std::string InputContext::GetUsage()

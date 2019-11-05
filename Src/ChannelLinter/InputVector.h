@@ -6,6 +6,12 @@ namespace MWR::C3::Linter
 	{
 	public:
 		InputVector(StringVector input);
+
+		template<typename It>
+		InputVector(It first, It last) :m_Input{ first, last }, m_Current{ begin(m_Input) }
+		{
+		}
+
 		InputVector(InputVector const& other);
 		InputVector& operator = (InputVector const& other);
 

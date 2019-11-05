@@ -50,7 +50,7 @@ namespace MWR::C3::Linter
 
 	MWR::ByteVector MockDeviceBridge::RunCommand(ByteView command)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		return GetDevice()->OnRunCommand(command);
 	}
 
 	MWR::ByteVector MockDeviceBridge::WhoAreYou()
@@ -65,14 +65,14 @@ namespace MWR::C3::Linter
 		std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText("", message, nullptr) << std::endl;
 	}
 
-	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateFrequencyInMs, std::chrono::milliseconds maxUpdateFrequencyInMs)
+	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateDelay, std::chrono::milliseconds maxUpdateDelay)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		GetDevice()->SetUpdateDelay(minUpdateDelay, maxUpdateDelay);
 	}
 
-	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds frequencyInMs)
+	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds updateDelay)
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		GetDevice()->SetUpdateDelay(updateDelay);
 	}
 
 	void MockDeviceBridge::SetErrorStatus(std::string_view errorMessage)

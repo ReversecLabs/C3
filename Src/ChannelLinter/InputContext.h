@@ -6,16 +6,20 @@ namespace MWR::C3::Linter
 {
 	using StringVector = std::vector<std::string>;
 
-	class InputContext {
+	class InputContext
+	{
 	public:
 		InputContext(int argc, char** argv);
 
 		std::string GetUsage();
 
-		struct Config {
+		struct Config
+		{
 			std::string m_ChannelName;
 			StringVector m_ChannelArguments;
 			std::optional<StringVector> m_ComplementaryChannelArguments;
+			bool m_TestChannelIO;
+			std::optional<StringVector> m_Command;
 		};
 
 		Config const& GetConfig() const { return m_Config; }
