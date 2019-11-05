@@ -24,6 +24,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebController", "WebController\Backend\WebController.csproj", "{023B2DB0-6DA4-4F0D-988B-4D9BF522DA37}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChannelLinter", "ChannelLinter\ChannelLinter.vcxproj", "{F2EC73D1-D533-4EE4-955A-A62E306472CC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9341205B-AEE0-483B-9A80-975C2084C3AE} = {9341205B-AEE0-483B-9A80-975C2084C3AE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
