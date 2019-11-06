@@ -15,12 +15,12 @@ namespace MWR::C3::Linter
 
 	void MockDeviceBridge::Detach()
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		m_Device.reset();
 	}
 
 	void MockDeviceBridge::Close()
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		Detach();
 	}
 
 	void MockDeviceBridge::OnReceive()
@@ -67,12 +67,12 @@ namespace MWR::C3::Linter
 
 	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateDelay, std::chrono::milliseconds maxUpdateDelay)
 	{
-		GetDevice()->SetUpdateDelay(minUpdateDelay, maxUpdateDelay);
+		throw std::logic_error("The method or operation is not implemented.");
 	}
 
 	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds updateDelay)
 	{
-		GetDevice()->SetUpdateDelay(updateDelay);
+		throw std::logic_error("The method or operation is not implemented.");
 	}
 
 	void MockDeviceBridge::SetErrorStatus(std::string_view errorMessage)
