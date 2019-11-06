@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "InputContext.h"
+#include "AppConfig.h"
 
 namespace MWR::C3::Linter
 {
 	namespace
 	{
-		InputContext::Config CreateConfig(argparse::ArgumentParser const& parser)
+		AppConfig::Config CreateConfig(argparse::ArgumentParser const& parser)
 		{
-			InputContext::Config config;
+			AppConfig::Config config;
 			config.m_ChannelName = parser.retrieve<std::string>("name");
 			config.m_ChannelArguments = parser.retrieve<std::vector<std::string>>("args");
 
@@ -23,14 +23,14 @@ namespace MWR::C3::Linter
 		}
 	}
 
-	InputContext::InputContext(int argc, char** argv) : m_ArgParser()
+	AppConfig::AppConfig(int argc, char** argv) : m_ArgParser()
 	{
 		AddOptions();
 		m_ArgParser.parse(argc, argv);
 		m_Config = CreateConfig(m_ArgParser);
 	}
 
-	void InputContext::AddOptions()
+	void AppConfig::AddOptions()
 	{
 		m_ArgParser.addArgument("-n", "--name", 1, false);
 		m_ArgParser.addArgument("-a", "--args", '*', false);
@@ -39,7 +39,7 @@ namespace MWR::C3::Linter
 		m_ArgParser.addArgument("-x", "--command", '+');
 	}
 
-	std::string InputContext::GetUsage()
+	std::string AppConfig::GetUsage()
 	{
 		return m_ArgParser.usage();
 	}

@@ -59,7 +59,7 @@ try
 	using namespace MWR;
 
 	std::cout << "Custom Command and Control - Channel linter. BUILD: " << C3_BUILD_VERSION << std::endl;
-	C3::Linter::InputContext context(argc, argv);
+	C3::Linter::AppConfig context(argc, argv);
 	auto const& config = context.GetConfig();
 
 	// select channel

@@ -6,10 +6,10 @@ namespace MWR::C3::Linter
 {
 	using StringVector = std::vector<std::string>;
 
-	class InputContext
+	class AppConfig
 	{
 	public:
-		InputContext(int argc, char** argv);
+		AppConfig(int argc, char** argv);
 
 		std::string GetUsage();
 

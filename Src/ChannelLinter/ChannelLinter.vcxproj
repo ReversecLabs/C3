@@ -298,7 +298,7 @@
   <ItemGroup>
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormElement.hpp" />
-    <ClInclude Include="InputContext.h" />
+    <ClInclude Include="AppConfig.h" />
     <ClInclude Include="InputVector.h" />
     <ClInclude Include="MockDeviceBridge.h" />
     <ClInclude Include="StdAfx.h" />
@@ -306,7 +306,7 @@
   <ItemGroup>
     <ClCompile Include="ChannelLinter.cpp" />
     <ClCompile Include="Form.cpp" />
-    <ClCompile Include="InputContext.cpp" />
+    <ClCompile Include="AppConfig.cpp" />
     <ClCompile Include="InputVector.cpp" />
     <ClCompile Include="MockDeviceBridge.cpp" />
     <ClCompile Include="StdAfx.cpp">
