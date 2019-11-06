@@ -1001,12 +1001,12 @@ void MWR::C3::Core::Profiler::Gateway::EnsureCreateExists(json& interface)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Profiler::Gateway::AddBuildInCommands(json& def, bool isDevice)
+void MWR::C3::Core::Profiler::Gateway::AddBuildInCommands(json& interface, bool isDevice)
 {
-	def["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
+	interface["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
 
 	if (isDevice)
-		def["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<Command>>(Command::UpdateJitter) },
+		interface["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<Command>>(Command::UpdateJitter) },
 			{"arguments", {
 				{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
 				{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}
