@@ -17,6 +17,7 @@ using json = nlohmann::json;
 
 #include "Common/CppCodec/base64_default_rfc4648.hpp"
 
+#include "argparse.hpp"
 #include "AppConfig.h"
 #include "InputVector.h"
 #include "FormElement.hpp"

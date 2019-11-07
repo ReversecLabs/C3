@@ -1,6 +1,4 @@
 #pragma once
-#include "argparse.hpp"
-#include <optional>
 
 namespace MWR::C3::Linter
 {
@@ -25,7 +23,7 @@ namespace MWR::C3::Linter
 		Config const& GetConfig() const { return m_Config; }
 
 	private:
-		void AddOptions();
+		void ConfigureParser();
 		argparse::ArgumentParser m_ArgParser;
 		Config m_Config;
 	};

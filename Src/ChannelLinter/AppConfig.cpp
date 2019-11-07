@@ -25,12 +25,12 @@ namespace MWR::C3::Linter
 
 	AppConfig::AppConfig(int argc, char** argv) : m_ArgParser()
 	{
-		AddOptions();
+		ConfigureParser();
 		m_ArgParser.parse(argc, argv);
 		m_Config = CreateConfig(m_ArgParser);
 	}
 
-	void AppConfig::AddOptions()
+	void AppConfig::ConfigureParser()
 	{
 		m_ArgParser.addArgument("-n", "--name", 1, false);
 		m_ArgParser.addArgument("-a", "--args", '*', false);

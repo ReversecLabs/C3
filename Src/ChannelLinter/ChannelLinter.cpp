@@ -3,13 +3,6 @@
 
 namespace MWR::C3::Linter
 {
-	void OutputDebug(std::string_view output)
-	{
-#ifdef _DEBUG
-		std::cout << output << std::endl;
-#endif // _DEBUG
-	}
-
 	/// @throws std::runtime_error if channel with given name was not registered
 	auto const& GetChannelInfo(std::string_view channelName)
 	{
@@ -43,12 +36,6 @@ namespace MWR::C3::Linter
 		return channelBridge;
 	}
 }
-
-#ifdef _DEBUG
-#define DebugDump(x) MWR::C3::Linter::OutputDebug(x)
-#else
-#define DebugDump(x)
-#endif // _DEBUG
 
 /// Entry point of the application.
 /// @param argc number of program arguments.
