@@ -8,9 +8,9 @@
     <ClCompile Include="InputVector.cpp" />
     <ClCompile Include="StdAfx.cpp" />
     <ClCompile Include="MockDeviceBridge.cpp" />
-    <ClCompile Include="AppConfig.cpp" />
     <ClCompile Include="ChannelLinterMain.cpp" />
     <ClCompile Include="ChannelLinter.cpp" />
+    <ClCompile Include="ArgumentParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Form.h" />
@@ -18,7 +18,8 @@
     <ClInclude Include="InputVector.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="MockDeviceBridge.h" />
-    <ClInclude Include="AppConfig.h" />
     <ClInclude Include="ChannelLinter.h" />
+    <ClInclude Include="ArgumentParser.h" />
+    <ClInclude Include="AppConfig.hpp" />
   </ItemGroup>
 </Project>

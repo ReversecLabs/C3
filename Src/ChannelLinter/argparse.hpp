@@ -367,7 +367,7 @@ public:
     // --------------------------------------------------------------------------
     // Properties
     // --------------------------------------------------------------------------
-    String usage() {
+    String usage() const {
         // premable app name
         std::ostringstream help;
         help << "Usage: " << escape(app_name_);
@@ -408,7 +408,7 @@ public:
 
         // get the final argument
         if (!final_name_.empty()) {
-            Argument arg = arguments_[index_[final_name_]];
+            Argument arg = arguments_[index_.at(final_name_)];
             String argstr = arg.toString(false);
             if (argstr.size() + linelength > 80) {
                 help << "\n" << String(indent, ' ');

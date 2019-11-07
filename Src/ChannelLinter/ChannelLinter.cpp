@@ -13,9 +13,7 @@ namespace MWR::C3::Linter
 			return InterfaceFactory::Instance().Find<AbstractChannel>(channelName)->second;
 		}
 
-		/// template to avoid typing the whole name
-		template<class T>
-		auto GetChannelCapability(T const& channelInfo)
+		auto GetChannelCapability(InterfaceFactory::InterfaceData<AbstractChannel> const& channelInfo)
 		{
 			try
 			{
@@ -30,60 +28,95 @@ namespace MWR::C3::Linter
 			}
 		}
 
-		/// template to avoid typing the whole name
-		template<class T>
-		auto MakeDevice(MWR::json const& createParams, const T& chInfo)
+		uint16_t GetCommandId(std::string const& commandId)
 		{
-			auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
-			auto channelBridge = std::make_shared<C3::Linter::MockDeviceBridge>(chInfo.m_Builder(blob));
-			channelBridge->OnAttach();
-			return channelBridge;
+			// allow negative inputs
+			auto commandIdL = std::stoi(commandId);
+			return static_cast<uint16_t>(commandIdL);
 		}
+	}
+
+	ChannelLinter::ChannelLinter(AppConfig config) :
+		m_Config(std::move(config)),
+		m_ChannelData(GetChannelInfo(m_Config.m_ChannelName)),
+		m_ChannelCapability(GetChannelCapability(m_ChannelData))
+	{
 	}
 
 	void ChannelLinter::Process()
 	{
-		// select channel
-		auto const& chInfo = C3::Linter::GetChannelInfo(m_Config.m_ChannelName);
-
-		// read create and prompt for arguments
-		auto capability = C3::Linter::GetChannelCapability(chInfo);
-
-		std::cout << "Create channel 1" << std::endl;
-		C3::Linter::Form form(capability.at("/create/arguments"_json_pointer));
-		auto createParams = form.FillForm(m_Config.m_ChannelArguments);
-		auto channel = C3::Linter::MakeDevice(createParams, chInfo);
+		std::shared_ptr<MockDeviceBridge> channel;
+		if (m_Config.ShouldCreateChannel())
+			channel = MakeChannel(*m_Config.m_ChannelArguments);
 
 		if (m_Config.m_TestChannelIO)
 		{
-			std::cout << "Create channel 2" << std::endl;
-			auto const& ch2Args = m_Config.m_ComplementaryChannelArguments ? *m_Config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(m_Config.m_ChannelArguments);
-			json createParams2 = form.FillForm(ch2Args);
-			auto ch2 = C3::Linter::MakeDevice(createParams2, chInfo);
-
-			//  test write and read
-			auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
-			channel->GetDevice()->OnSendToChannelInternal(data);
-			auto rcv = std::static_pointer_cast<C3::AbstractChannel>(ch2->GetDevice())->OnReceiveFromChannelInternal();
-			if (data != rcv.at(0))
-				throw std::exception("data sent and received mismatch");
+			assert(channel); // First channel should already be created
+			auto complementaryArgs = GetComplementaryChannelArgs();
+			auto complementaryChannel = MakeChannel(complementaryArgs);
+			TestChannelIO(channel, complementaryChannel);
 		}
 
 		if (m_Config.m_Command)
 		{
-			auto& commandParams = *m_Config.m_Command;
-			auto commandIdL = std::stoi(commandParams.at(0));
-			auto commandId = static_cast<uint16_t>(commandIdL);
-
-			auto& commands = capability.at("commands");
-			auto commandIt = std::find_if(begin(commands), end(commands), [commandId](auto const& c) { return c.contains("id") && c["id"].get<uint16_t>() == commandId; });
-			if (commandIt == end(commands))
-				throw std::runtime_error("Failed to find a command with id: " + std::to_string(commandId));
-
-			C3::Linter::Form commandForm(commandIt->at("arguments"));
-			auto args = commandForm.FillForm({ begin(commandParams) + 1, end(commandParams) }); // +1 to omit command ID
-			auto x = ByteVector{}.Concat(commandId, C3::Core::Profiler::TranslateArguments(args));
-			channel->RunCommand(x);
+			assert(channel); // First channel should already be created
+			TestCommand(channel);
 		}
+	}
+
+	std::shared_ptr<MWR::C3::Linter::MockDeviceBridge> ChannelLinter::MakeChannel(StringVector const& channnelArguments) const
+	{
+		std::cout << "Create channel " << std::endl;
+		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
+		auto createParams = form.FillForm(channnelArguments);
+		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
+		return MakeChannel(blob);
+	}
+
+	std::shared_ptr<MockDeviceBridge> ChannelLinter::MakeChannel(ByteView blob) const
+	{
+		auto channelBridge = std::make_shared<MockDeviceBridge>(m_ChannelData.m_Builder(blob));
+		channelBridge->OnAttach();
+		return channelBridge;
+	}
+
+	void ChannelLinter::TestChannelIO(std::shared_ptr<MockDeviceBridge> const& channel, std::shared_ptr<MockDeviceBridge> const& complementary)
+	{
+		assert(channel);
+		assert(complementary);
+
+		auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
+		channel->GetDevice()->OnSendToChannelInternal(data);
+		auto received = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
+		if (data != received.at(0))
+			throw std::exception("Data sent and received mismatch");
+	}
+
+	void ChannelLinter::TestCommand(std::shared_ptr<MockDeviceBridge> const& channel)
+	{
+		assert(m_Config.m_Command);
+		auto binaryCommand = TranslateCommand(*m_Config.m_Command);
+		channel->RunCommand(binaryCommand);
+	}
+
+	MWR::ByteVector ChannelLinter::TranslateCommand(StringVector const& commandParams)
+	{
+		uint16_t commandId = GetCommandId(commandParams.at(0));
+
+		auto& commands = m_ChannelCapability.at("commands");
+		auto commandIt = std::find_if(begin(commands), end(commands), [commandId](auto const& c) { return c.contains("id") && c["id"].get<uint16_t>() == commandId; });
+		if (commandIt == end(commands))
+			throw std::runtime_error("Failed to find a command with id: " + std::to_string(commandId));
+
+		json command = *commandIt;
+		Form commandForm(command.at("arguments"));
+		command["arguments"] = commandForm.FillForm({begin(commandParams) + 1, end(commandParams)}); // + 1 to omit command id
+		return C3::Core::Profiler::TranslateCommand(command);
+	}
+
+	StringVector ChannelLinter::GetComplementaryChannelArgs() const
+	{
+		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
+		return m_Config.m_ComplementaryChannelArguments ? *m_Config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(*m_Config.m_ChannelArguments);
 	}
 }

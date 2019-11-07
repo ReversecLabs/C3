@@ -296,10 +296,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AppConfig.hpp" />
     <ClInclude Include="ChannelLinter.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormElement.hpp" />
-    <ClInclude Include="AppConfig.h" />
+    <ClInclude Include="ArgumentParser.h" />
     <ClInclude Include="InputVector.h" />
     <ClInclude Include="MockDeviceBridge.h" />
     <ClInclude Include="StdAfx.h" />
@@ -308,7 +309,7 @@
     <ClCompile Include="ChannelLinter.cpp" />
     <ClCompile Include="ChannelLinterMain.cpp" />
     <ClCompile Include="Form.cpp" />
-    <ClCompile Include="AppConfig.cpp" />
+    <ClCompile Include="ArgumentParser.cpp" />
     <ClCompile Include="InputVector.cpp" />
     <ClCompile Include="MockDeviceBridge.cpp" />
     <ClCompile Include="StdAfx.cpp">

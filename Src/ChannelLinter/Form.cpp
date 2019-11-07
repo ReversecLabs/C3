@@ -51,27 +51,23 @@ namespace MWR::C3::Linter
 		}
 	}
 
-	StringVector Form::GetComplementaryArgs(StringVector const& input)
+	StringVector Form::GetComplementaryArgs(StringVector input)
 	{
-		StringVector args;
-		size_t k = 0;
-		for (size_t i = 0; i < m_ArgumentsForm.size(); ++i)
+		size_t currentOffset = 0;
+		for (auto const& arg : m_ArgumentsForm)
 		{
-			auto& arg = m_ArgumentsForm[i];
 			if (arg.is_array())
 			{
-				for (size_t j = 0; j < arg.size(); ++j)
-				{
-					auto rotateRight = [s = arg.size()](size_t index) { return (index + s - 1) % s; };
-					args.emplace_back(input.at(k + rotateRight(j)));
-				}
-				k += arg.size();
+				auto size = arg.size();
+				auto first = begin(input) + currentOffset;
+				std::rotate(first, first + size - 1, first + size);
+				currentOffset += size;
 			}
 			else
 			{
-				args.emplace_back(input.at(k++));
+				++currentOffset;
 			}
 		}
-		return args;
+		return input;
 	}
 }
