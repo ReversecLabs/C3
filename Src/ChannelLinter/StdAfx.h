@@ -23,3 +23,4 @@ using json = nlohmann::json;
 #include "FormElement.hpp"
 #include "Form.h"
 #include "MockDeviceBridge.h"
+#include "ChannelLinter.h"

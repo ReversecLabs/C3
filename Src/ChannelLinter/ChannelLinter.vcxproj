@@ -296,6 +296,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChannelLinter.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormElement.hpp" />
     <ClInclude Include="AppConfig.h" />
@@ -305,6 +306,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChannelLinter.cpp" />
+    <ClCompile Include="ChannelLinterMain.cpp" />
     <ClCompile Include="Form.cpp" />
     <ClCompile Include="AppConfig.cpp" />
     <ClCompile Include="InputVector.cpp" />
