@@ -36,6 +36,10 @@ namespace MWR::C3::Interfaces::Peripherals
 		/// Return json with commands.
 		/// @return ByteView Commands description in JSON format.
 		static ByteView GetCapability();
+		
+		/// Close peripheral Grunt
+		/// Calls superclass CLose and prepares to exit without deadlocking
+		void Close() override;
 
 	private:
 
@@ -52,5 +56,7 @@ namespace MWR::C3::Interfaces::Peripherals
 
 		/// Used to support beacon chunking data.
 		bool m_ReadingState = true;
+
+		bool m_Close = false;
 	};
 }

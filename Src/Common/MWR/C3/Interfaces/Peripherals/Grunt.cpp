@@ -1,8 +1,9 @@
 #include "StdAfx.h"
 #include "Grunt.h"
+using namespace mscorlib;
 
 //This function will run the .NET assembly
-void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
+static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 {
 	HANDLE hHeap = GetProcessHeap();
 	HRESULT hr;
@@ -159,7 +160,7 @@ Cleanup:
 MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 {
 
-	auto [pipeName, payload] = arguments.Read<std::string, ByteVector>();
+	auto [pipeName, payload, connectAttempts] = arguments.Read<std::string, ByteVector, uint32_t>();
 	
 	BYTE *x = (BYTE *)payload.data();
 	SIZE_T len = payload.size();
@@ -177,29 +178,32 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give Grunt thread time to start pipe.
-	while(1)
+	for (int i = 0; i < connectAttempts; i++)
+	{
 		try
-	{
-		m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
-		return;
+		{
+			m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
+			return;
+		}
+		catch (std::exception& e)
+		{
+			// Sleep between trials.
+			Log({ OBF_SEC("Grunt constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
+		}
 	}
-	catch (std::exception& e)
-	{
-		// Sleep between trials.
-		Log({ OBF_SEC("Grunt constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
-		std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
-	}
-
-	return;
-
+	
+	std::runtime_error{ OBF("Grunt creation failed") };
 }
 
 void MWR::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView data)
 {
 	// Get access to write when whole read is done.
 	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState; });
+	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
 	
+	if(m_Close)
+		return;
 	// Write to Covenant specific pipe 
 	m_Pipe->WriteCov(data);
 
@@ -213,8 +217,11 @@ void MWR::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView da
 MWR::ByteVector MWR::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
 {	
 	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState; });
+	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
 	
+	if(m_Close)
+		return {};
+
 	// Read
 	auto ret = m_Pipe->ReadCov();
 	
@@ -225,6 +232,15 @@ MWR::ByteVector MWR::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral
 	return  ret;
 	
 }
+
+void MWR::C3::Interfaces::Peripherals::Grunt::Close()
+{
+	MWR::C3::Device::Close();
+	std::scoped_lock lock(m_Mutex);
+	m_Close = true;
+	m_ConditionalVariable.notify_one();
+}
+
 
 MWR::ByteView MWR::C3::Interfaces::Peripherals::Grunt::GetCapability()
 {
@@ -261,6 +277,13 @@ MWR::ByteView MWR::C3::Interfaces::Peripherals::Grunt::GetCapability()
 				"defaultValue" : 30,
 				"name": "Jitter",
 				"description": "Jitter"
+			},
+			{
+				"type": "int32",
+				"min": 10,
+				"defaultValue" : 30,
+				"name": "Connect Attempts",
+				"description": "Number of attempts to connect to SMB Pipe"
 			}
 		]
 	},
