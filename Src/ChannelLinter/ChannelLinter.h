@@ -25,6 +25,8 @@ namespace MWR::C3::Linter
 		AppConfig m_Config;
 		InterfaceFactory::InterfaceData<AbstractChannel> const& m_ChannelData;
 		json m_ChannelCapability;
+		const Form m_CreateForm;
+		std::vector<Form> m_CommandForms;
 	};
 }
 

@@ -3,52 +3,49 @@
 
 namespace MWR::C3::Linter
 {
+	Form::Form(json argumentForm) :
+		m_ArgumentsForm(std::move(argumentForm))
+	{
+		for (auto& arg : m_ArgumentsForm)
+		{
+			if (arg.is_array())
+			{
+				for (auto& a : arg)
+				{
+					m_Elements.emplace_back(MakeFormElement(a));
+				}
+			}
+			else
+			{
+				m_Elements.emplace_back(MakeFormElement(arg));
+			}
+		}
+	}
 
-	Form::Form(json argumentForm) : m_ArgumentsForm(std::move(argumentForm))
+	Form::Form(Form const& other) noexcept :
+		Form(other.m_ArgumentsForm)
 	{
 	}
 
-	json Form::FillForm(InputVector input)
+	Form& Form::operator=(Form const& other) noexcept
 	{
-		try
-		{
-			auto createParams = m_ArgumentsForm;
-			auto fillArg = [&input](json& arg)
-			{
-				ValidateAndSet(arg, input.GetNext());
-			};
-			for (size_t i = 0; i < createParams.size(); ++i)
-			{
-				auto& arg = createParams[i];
-				if (arg.is_array())
-					for (size_t j = 0; j < arg.size(); ++j)
-						fillArg(arg[j]);
-				else
-					fillArg(arg);
-			}
-			return createParams;
-		}
-		catch (std::out_of_range&)
-		{
-			input.Reset();
-			std::string message;
-			auto AddParameterMessage = [&message, &input](json& arg)
-			{
-				auto& name = arg.at("name").get_ref<std::string const&>();
-				auto& type = arg.at("type").get_ref<std::string const&>();
-				message += name + " (" + type + ") > " + input.GetOptionalNext().value_or("") + '\n';
-			};
-			for (size_t i = 0; i < m_ArgumentsForm.size(); ++i)
-			{
-				auto& arg = m_ArgumentsForm[i];
-				if (arg.is_array())
-					for (size_t j = 0; j < arg.size(); ++j)
-						AddParameterMessage(arg[j]);
-				else
-					AddParameterMessage(arg);
-			}
- 			throw std::runtime_error("Failed to fill from arguments: not enough arguments given.\nRequired parameter > received argument\n" + message);
-		}
+		Form tmp(other);
+		std::swap(*this, tmp);
+		return *this;
+	}
+
+	json Form::Fill(StringVector input)
+	{
+		if (input.size() < m_Elements.size())
+			throw std::runtime_error("Not enough arguments given to fill out form [required = " + std::to_string(m_Elements.size()) + ", given = " + std::to_string(input.size()) + "]");
+
+		// TODO log "Too many arguments, ignoring some of them"
+		// if (input.size() > m_Elemets.size())
+
+		auto inputIt = begin(input);
+		std::for_each(begin(m_Elements), end(m_Elements), [&inputIt](auto& element) {element->ValidateAndSet(*inputIt++); });
+
+		return m_ArgumentsForm;
 	}
 
 	StringVector Form::GetComplementaryArgs(StringVector input)

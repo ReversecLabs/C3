@@ -113,10 +113,10 @@ Global
 		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x64.Build.0 = Release|x64
 		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x86.ActiveCfg = Release|Win32
 		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x86.Build.0 = Release|Win32
-		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.ActiveCfg = Release|x64
-		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.Build.0 = Release|x64
-		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.ActiveCfg = Release|Win32
-		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.Build.0 = Release|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.ActiveCfg = ReleaseWithDebInfo|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.Build.0 = ReleaseWithDebInfo|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.ActiveCfg = ReleaseWithDebInfo|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.Build.0 = ReleaseWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

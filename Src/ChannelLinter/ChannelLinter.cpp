@@ -22,7 +22,7 @@ namespace MWR::C3::Linter
 				C3::Core::Profiler::Gateway::AddBuildInCommands(ret, true);
 				return ret;
 			}
-			catch (json::parse_error & e)
+			catch (json::parse_error& e)
 			{
 				throw std::runtime_error("Failed to parse channel's capability json. "s + e.what());
 			}
@@ -39,8 +39,11 @@ namespace MWR::C3::Linter
 	ChannelLinter::ChannelLinter(AppConfig config) :
 		m_Config(std::move(config)),
 		m_ChannelData(GetChannelInfo(m_Config.m_ChannelName)),
-		m_ChannelCapability(GetChannelCapability(m_ChannelData))
+		m_ChannelCapability(GetChannelCapability(m_ChannelData)),
+		m_CreateForm(m_ChannelCapability.at("/create/arguments"_json_pointer))
 	{
+		for (auto&& command : m_ChannelCapability.at("commands"))
+			m_CommandForms.emplace_back(command.at("arguments"));
 	}
 
 	void ChannelLinter::Process()
@@ -68,7 +71,9 @@ namespace MWR::C3::Linter
 	{
 		std::cout << "Create channel " << std::endl;
 		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
-		auto createParams = form.FillForm(channnelArguments);
+		Form form2(m_ChannelCapability.at("/create/arguments"_json_pointer));
+		form = form2;
+		auto createParams = form.Fill(channnelArguments);
 		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
 		return MakeChannel(blob);
 	}
@@ -110,7 +115,7 @@ namespace MWR::C3::Linter
 
 		json command = *commandIt;
 		Form commandForm(command.at("arguments"));
-		command["arguments"] = commandForm.FillForm({begin(commandParams) + 1, end(commandParams)}); // + 1 to omit command id
+		command["arguments"] = commandForm.Fill({begin(commandParams) + 1, end(commandParams)}); // + 1 to omit command id
 		return C3::Core::Profiler::TranslateCommand(command);
 	}
 

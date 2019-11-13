@@ -1,40 +1,10 @@
-#pragma once
+#include "StdAfx.h"
+#include "FormElement.h"
 
 namespace MWR::C3::Linter
 {
 	namespace
 	{
-		class FormElement
-		{
-		public:
-			enum class Type
-			{
-				Unknown = 0,
-				Uint8,
-				Uint16,
-				Uint32,
-				Uint64,
-				Int8,
-				Int16,
-				Int32,
-				Int64,
-				Float,
-				Boolean,
-				String,
-				Ip,
-				Binary,
-			};
-
-			virtual void ValidateAndSet(std::string_view input) = 0;
-
-		protected:
-			FormElement(json& definition) : m_Definition(definition)
-			{
-			}
-
-			json& m_Definition;
-		};
-
 		inline void CheckLengthConstraint(json const& definition, std::string_view input)
 		{
 			if (definition.contains("min") && input.length() < definition["min"].get<size_t>())
@@ -146,68 +116,80 @@ namespace MWR::C3::Linter
 				m_Definition["value"] = value;
 			}
 		};
-
-		inline std::unique_ptr<FormElement> MakeFormElement(json& element)
-		{
-			switch (element.at("type").get<FormElement::Type>())
-			{
-			case FormElement::Type::Uint8:
-				return std::make_unique<NumericFormElement<uint8_t>>(element);
-			case FormElement::Type::Uint16:
-				return std::make_unique<NumericFormElement<uint16_t>>(element);
-			case FormElement::Type::Uint32:
-				return std::make_unique<NumericFormElement<uint32_t>>(element);
-			case FormElement::Type::Uint64:
-				return std::make_unique<NumericFormElement<uint64_t>>(element);
-			case FormElement::Type::Int8:
-				return std::make_unique<NumericFormElement<int8_t>>(element);
-			case FormElement::Type::Int16:
-				return std::make_unique<NumericFormElement<int16_t>>(element);
-			case FormElement::Type::Int32:
-				return std::make_unique<NumericFormElement<int32_t>>(element);
-			case FormElement::Type::Int64:
-				return std::make_unique<NumericFormElement<int64_t>>(element);
-			case FormElement::Type::Float:
-				return std::make_unique<NumericFormElement<float>>(element);
-			case FormElement::Type::Boolean:
-				return std::make_unique<BooleanFormElement>(element);
-			case FormElement::Type::String:
-				return std::make_unique<StringFormElement>(element);
-			case FormElement::Type::Ip:
-				return std::make_unique<IpFormElement>(element);
-			case FormElement::Type::Binary:
-				return std::make_unique<BinaryFormElement>(element);
-			default:
-				throw std::runtime_error("Unknown form argument type: \"" + element["type"].get<std::string>() + '"');
-			}
-		}
-
-		NLOHMANN_JSON_SERIALIZE_ENUM
-		(
-			FormElement::Type,
-			{
-				{FormElement::Type::Unknown, nullptr},
-				{FormElement::Type::Uint8, "uint8"},
-				{FormElement::Type::Uint16, "uint16"},
-				{FormElement::Type::Uint32, "uint32"},
-				{FormElement::Type::Uint64, "uint64"},
-				{FormElement::Type::Int8, "int8"},
-				{FormElement::Type::Int16, "int16"},
-				{FormElement::Type::Int32, "int32"},
-				{FormElement::Type::Int64, "int64"},
-				{FormElement::Type::Float, "float"},
-				{FormElement::Type::Boolean, "boolean"},
-				{FormElement::Type::String, "string"},
-				{FormElement::Type::Ip, "ip"},
-				{FormElement::Type::Binary, "binary"},
-			}
-		);
 	}
 
-	inline void ValidateAndSet(json& element, std::string_view input)
+	FormElement::FormElement(json& definition) :
+		m_Definition(definition)
+	{
+		if (!m_Definition.contains("name"))
+			throw std::invalid_argument{ "Form element must contain 'name' property." };
+	}
+
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
+		FormElement::Type,
+		{
+			{FormElement::Type::Unknown, nullptr},
+			{FormElement::Type::Uint8, "uint8"},
+			{FormElement::Type::Uint16, "uint16"},
+			{FormElement::Type::Uint32, "uint32"},
+			{FormElement::Type::Uint64, "uint64"},
+			{FormElement::Type::Int8, "int8"},
+			{FormElement::Type::Int16, "int16"},
+			{FormElement::Type::Int32, "int32"},
+			{FormElement::Type::Int64, "int64"},
+			{FormElement::Type::Float, "float"},
+			{FormElement::Type::Boolean, "boolean"},
+			{FormElement::Type::String, "string"},
+			{FormElement::Type::Ip, "ip"},
+			{FormElement::Type::Binary, "binary"},
+		}
+	);
+
+	std::unique_ptr<FormElement> MakeFormElement(json& element)
+	{
+		if (!element.is_object())
+			throw std::invalid_argument { "Form element must be a json object." };
+		if (!element.contains("type"))
+			throw std::invalid_argument{ "Form element must contain 'type' property." };
+
+		switch (element["type"].get<FormElement::Type>())
+		{
+		case FormElement::Type::Uint8:
+			return std::make_unique<NumericFormElement<uint8_t>>(element);
+		case FormElement::Type::Uint16:
+			return std::make_unique<NumericFormElement<uint16_t>>(element);
+		case FormElement::Type::Uint32:
+			return std::make_unique<NumericFormElement<uint32_t>>(element);
+		case FormElement::Type::Uint64:
+			return std::make_unique<NumericFormElement<uint64_t>>(element);
+		case FormElement::Type::Int8:
+			return std::make_unique<NumericFormElement<int8_t>>(element);
+		case FormElement::Type::Int16:
+			return std::make_unique<NumericFormElement<int16_t>>(element);
+		case FormElement::Type::Int32:
+			return std::make_unique<NumericFormElement<int32_t>>(element);
+		case FormElement::Type::Int64:
+			return std::make_unique<NumericFormElement<int64_t>>(element);
+		case FormElement::Type::Float:
+			return std::make_unique<NumericFormElement<float>>(element);
+		case FormElement::Type::Boolean:
+			return std::make_unique<BooleanFormElement>(element);
+		case FormElement::Type::String:
+			return std::make_unique<StringFormElement>(element);
+		case FormElement::Type::Ip:
+			return std::make_unique<IpFormElement>(element);
+		case FormElement::Type::Binary:
+			return std::make_unique<BinaryFormElement>(element);
+		default:
+			throw std::runtime_error("Unknown form argument type: \"" + element["type"].get<std::string>() + '"');
+		}
+	}
+
+	void ValidateAndSet(json& element, std::string_view input)
 	{
 		auto formElement = MakeFormElement(element);
 		formElement->ValidateAndSet(input);
 	}
-}
 
+}

@@ -7,13 +7,18 @@ namespace MWR::C3::Linter
 	public:
 		Form(json argumentForm);
 
-		json FillForm(InputVector input);
+		Form(Form const& other) noexcept;
+		Form& operator=(Form const& other) noexcept;
+		Form(Form&& other) noexcept = default;
+		Form& operator=(Form&& other) noexcept = default;
+
+		json Fill(StringVector input);
 
 		StringVector GetComplementaryArgs(StringVector input);
 
 	private:
-		// TODO Form should contain a list of form elements (validated), not just a json
 		json m_ArgumentsForm;
+		std::vector<std::unique_ptr<FormElement>> m_Elements;
 	};
 }
 
