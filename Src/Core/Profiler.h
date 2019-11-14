@@ -536,6 +536,42 @@ namespace MWR::C3::Core
 		/// @returns binder id
 		uint32_t GetBinderTo(uint32_t);
 
+		/// Helper to wrap calls to CreateProfileShnapshot
+		class SnapshotProxy
+		{
+		public:
+			/// Create a snapshot proxy
+			/// @param profiler to wrap CreateProfileShnapshot calls
+			SnapshotProxy(Profiler& profiler) :
+				m_Profiler(profiler)
+			{
+			}
+
+			/// Create a snapshot
+			/// @return std::nullopt if snaphot hasn't change since the last call
+			std::optional<json> GetSnapshotIfChanged()
+			{
+				auto currentSnapshot = m_Profiler.Get().m_Gateway.CreateProfileSnapshot();
+				auto currentHash = std::hash<json>{}(currentSnapshot);
+				if (previousHash && currentHash == *previousHash)
+					return {};
+
+				previousHash = currentHash;
+				return currentSnapshot;
+			}
+
+		private:
+			/// Proxied profiler
+			Profiler& m_Profiler;
+
+			/// helper state variable
+			std::optional<size_t> previousHash;
+		};
+
+		/// Create Snapshot proxy for this profiler
+		/// @returns snapshot proxy for this profiler
+		SnapshotProxy GetSnapshotProxy() { return SnapshotProxy(*this); }
+
 	protected:
 		std::optional<Gateway> m_Gateway;																				///< The "virtual gateway object".
 
