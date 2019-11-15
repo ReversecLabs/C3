@@ -596,7 +596,6 @@ namespace MWR::C3::Core
 		};
 
 		mutable std::mutex m_AccessMutex;																				///< Mutex for synchronization.
-		std::vector<Action> m_RelevantActions;																			///< List of Actions - planned, pending and finished but not yet reported to the Controller.
 
 		/// Contains hashes of binders. This allows to call: auto tsConnectorhash = GetBinderTo(hashBeacona);. First hash in pair is Peripheral hash and second one is corresponding Connector.
 		std::vector<std::pair<std::uint32_t, std::uint32_t>> m_BindersMappings;
