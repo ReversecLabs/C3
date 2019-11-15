@@ -539,62 +539,6 @@ namespace MWR::C3::Core
 	protected:
 		std::optional<Gateway> m_Gateway;																				///< The "virtual gateway object".
 
-		// Forward declaration.
-		struct SubAction;
-
-		/// Base for all Actions.
-		struct BaseAction
-		{
-			enum State
-			{
-				Unknown = 0,																							///< E.g. uninitialized.
-				Planned = 1,																							///< Scheduled.
-				Cancelled = 2,																							///< Cancelled by user (information from Controller).
-				Pendning = 3,																							///< In progress.
-				Succeeded = 4,																							///< Done.
-				Failed = 5,																								///< Couldn't be done.
-				Abandoned = 6,																							///< By Profiler (e.g. dependent on previous action which has failed).
-			} m_State = State::Unknown;
-			std::string m_StateComment;																					///< E.g. error text.
-
-			/// Public ctor.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			BaseAction(State state, std::string stateComment);
-
-			// Identifier typedefs.
-			using ActionId = std::uint32_t;																				///< ID typedef.
-			using CommandSeqNo = std::uint32_t;																			///< Command sequence number given by Controller.
-
-			std::vector<std::pair<std::string, SubAction>> m_SubActions;												///< For Scenarios.
-		};
-
-		/// Non-root Actions.
-		struct SubAction : BaseAction
-		{
-			/// Public ctor.
-			/// @param description a short summary of what is being done in this step.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			SubAction(std::string description, State state = State::Planned, std::string stateComment = OBF(""));
-
-			std::string m_Description;																					///< Short summary of what is being done in this step.
-		};
-
-		/// Root-Action.
-		struct Action : BaseAction
-		{
-			/// Public ctor.
-			/// @param commandSeqNo Command sequence number given by Controller.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			Action(CommandSeqNo commandSeqNo, State state = State::Unknown, std::string stateComment = OBF(""));
-
-			static ActionId m_LastActionId;																				///< Global counter for Action IDs.
-			ActionId m_ActionId;																						///< ID given by Profiler for Command requested by Controller.
-			CommandSeqNo m_CommandSeqNo;																				///< Command sequence number given by Controller.
-		};
-
 		mutable std::mutex m_AccessMutex;																				///< Mutex for synchronization.
 
 		/// Contains hashes of binders. This allows to call: auto tsConnectorhash = GetBinderTo(hashBeacona);. First hash in pair is Peripheral hash and second one is corresponding Connector.
