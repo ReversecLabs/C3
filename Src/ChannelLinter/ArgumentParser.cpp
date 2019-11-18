@@ -22,7 +22,7 @@ namespace MWR::C3::Linter
 	{
 		ConfigureParser();
 		m_ArgParser.parse(argc, argv);
-		m_Config = GetConfig();
+		m_Config = CreateConfig();
 	}
 
 	void ArgumentParser::ConfigureParser()
