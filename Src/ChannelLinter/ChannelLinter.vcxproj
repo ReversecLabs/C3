@@ -297,6 +297,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AppConfig.hpp" />
+    <ClInclude Include="argparse.hpp" />
     <ClInclude Include="ChannelLinter.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormElement.h" />

@@ -5,6 +5,10 @@ namespace MWR::C3::Linter
 {
 	namespace
 	{
+		/// Validate input length against argument rules
+		/// @param argument definition
+		/// @returns input to validate
+		/// @throws std::invalid_argument if validation fails
 		inline void CheckLengthConstraint(json const& definition, std::string_view input)
 		{
 			if (definition.contains("min") && input.length() < definition["min"].get<size_t>())
@@ -14,6 +18,10 @@ namespace MWR::C3::Linter
 				throw std::invalid_argument("Input \""s + std::string(input) + "\" too long for argument " + definition.at("name").get<std::string>() + ". (max = " + std::to_string(definition["max"].get<size_t>()) + ", actual = " + std::to_string(input.length()) + ')');
 		}
 
+		/// Validate numeric value against argument rules
+		/// @param argument definition
+		/// @returns value to validate
+		/// @throws std::invalid_argument if validation fails
 		template<typename Numeric>
 		void CheckValueConstraint(json const& definition, Numeric value)
 		{
@@ -24,6 +32,7 @@ namespace MWR::C3::Linter
 				throw std::invalid_argument("Value too high for argument " + definition.at("name").get<std::string>() + ". (min = " + std::to_string(definition["min"].get<Numeric>()) + ", actual = " + std::to_string(value) + ')');
 		};
 
+		/// Concrete implementation for boolean argument type
 		class BooleanFormElement : public FormElement
 		{
 		public:
@@ -31,6 +40,8 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Set boolean value from input accepted values interpreted as true are "true", "yes", "y", "1"
+			/// @param input to validate
 			void ValidateAndSet(std::string_view input) override
 			{
 				std::string lowercase(input);
@@ -40,6 +51,7 @@ namespace MWR::C3::Linter
 			}
 		};
 
+		/// Concrete implementation for string argument type
 		class StringFormElement : public FormElement
 		{
 		public:
@@ -47,6 +59,9 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Validate and set string value from input
+			/// @param input to validate
+			/// @throws std::invalid_argument if validation fails
 			void ValidateAndSet(std::string_view input) override
 			{
 				CheckLengthConstraint(m_Definition, input);
@@ -54,6 +69,7 @@ namespace MWR::C3::Linter
 			}
 		};
 
+		/// Concrete implementation for ip argument type
 		class IpFormElement : public FormElement
 		{
 		public:
@@ -61,6 +77,9 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Validate and set IP value from input
+			/// @param input to validate
+			/// @throws std::invalid_argument if validation fails
 			void ValidateAndSet(std::string_view input) override
 			{
 				if (!IsIpV4(std::string(input)))
@@ -68,6 +87,9 @@ namespace MWR::C3::Linter
 				m_Definition["value"] = input;
 			}
 
+			/// Determine if input is an IPv4
+			/// @param input to validate
+			/// @returns true if input is in IPv4 dotted notation
 			static bool IsIpV4(std::string const& input)
 			{
 				sockaddr_in client;
@@ -82,6 +104,7 @@ namespace MWR::C3::Linter
 			}
 		};
 
+		/// Concrete implementation for binary argument type
 		class BinaryFormElement : public FormElement
 		{
 		public:
@@ -89,14 +112,28 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Validate and set binary value from input (in base64 string)
+			/// @param input to validate
+			/// @throws std::invalid_argument if validation fails
 			void ValidateAndSet(std::string_view input) override
 			{
-				auto decoded = base64::decode<std::string>(input);
-				CheckLengthConstraint(m_Definition, decoded);
-				m_Definition["value"] = input;
+				try
+				{
+					auto decoded = base64::decode<std::string>(input);
+					CheckLengthConstraint(m_Definition, decoded);
+					m_Definition["value"] = input;
+				}
+				catch (std::domain_error&)
+				{
+					throw std::invalid_argument("Failed to decode base64 encoded input \""s + std::string(input) + '"');
+				}
+
 			}
 		};
 
+		/// Concrete implementation for binary argument type
+		/// @tparam Numeric - type of numeric argument
+		// TODO constrain Numeric template parameter to numeric types only
 		template<typename Numeric>
 		class NumericFormElement : public FormElement
 		{
@@ -105,10 +142,12 @@ namespace MWR::C3::Linter
 			{
 			}
 
-			using NumericType = Numeric;
+			/// Validate and set numeric value from input
+			/// @param input to validate
+			/// @throws std::invalid_argument if validation fails
 			void ValidateAndSet(std::string_view input) override
 			{
-				NumericType value;
+				Numeric value;
 				auto x = std::from_chars(input.data(), input.data() + input.size(), value);
 				if (x.ptr != input.data() + input.size())
 					throw std::invalid_argument("Failed to read numeric value from input \""s + std::string(input) + '"');
@@ -125,6 +164,7 @@ namespace MWR::C3::Linter
 			throw std::invalid_argument{ "Form element must contain 'name' property." };
 	}
 
+	/// Generate FormElement::Type to_json and from_json fuctions to enable serialization
 	NLOHMANN_JSON_SERIALIZE_ENUM
 	(
 		FormElement::Type,
@@ -185,11 +225,4 @@ namespace MWR::C3::Linter
 			throw std::runtime_error("Unknown form argument type: \"" + element["type"].get<std::string>() + '"');
 		}
 	}
-
-	void ValidateAndSet(json& element, std::string_view input)
-	{
-		auto formElement = MakeFormElement(element);
-		formElement->ValidateAndSet(input);
-	}
-
 }

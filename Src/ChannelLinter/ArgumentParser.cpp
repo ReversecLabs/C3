@@ -3,14 +3,11 @@
 
 namespace MWR::C3::Linter
 {
-	ArgumentParser::ArgumentParser(int argc, char** argv) : m_ArgParser()
-	{
-		ConfigureParser();
-		m_ArgParser.parse(argc, argv);
-	}
 
 	namespace
 	{
+		/// Validate created config, uses ArgumentParser options in messages
+		/// @throws std::invalid_argument if config is not valid
 		void ValidateConfig(AppConfig const& config)
 		{
 			if (config.m_TestChannelIO && !config.m_ChannelArguments)
@@ -19,6 +16,13 @@ namespace MWR::C3::Linter
 			if (config.m_Command&& !config.m_ChannelArguments)
 				throw std::invalid_argument("Argument error: specified -x (--command) without -a (--args)");
 		}
+	}
+
+	ArgumentParser::ArgumentParser(int argc, char** argv) : m_ArgParser()
+	{
+		ConfigureParser();
+		m_ArgParser.parse(argc, argv);
+		m_Config = GetConfig();
 	}
 
 	void ArgumentParser::ConfigureParser()
@@ -30,8 +34,18 @@ namespace MWR::C3::Linter
 		m_ArgParser.addArgument("-x", "--command", '+');
 	}
 
-	AppConfig ArgumentParser::GetConfig() const
+	AppConfig const& ArgumentParser::GetConfig() const
 	{
+		return m_Config;
+	}
+
+	std::string ArgumentParser::GetUsage() const
+	{
+		return m_ArgParser.usage();
+	}
+
+	MWR::C3::Linter::AppConfig ArgumentParser::CreateConfig() const
+{
 		AppConfig config;
 		config.m_ChannelName = m_ArgParser.retrieve<std::string>("name");
 
@@ -49,10 +63,4 @@ namespace MWR::C3::Linter
 		ValidateConfig(config);
 		return config;
 	}
-
-	std::string ArgumentParser::GetUsage() const
-	{
-		return m_ArgParser.usage();
-	}
-
 }

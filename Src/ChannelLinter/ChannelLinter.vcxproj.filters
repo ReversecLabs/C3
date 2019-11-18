@@ -20,5 +20,6 @@
     <ClInclude Include="ArgumentParser.h" />
     <ClInclude Include="AppConfig.hpp" />
     <ClInclude Include="FormElement.h" />
+    <ClInclude Include="argparse.hpp" />
   </ItemGroup>
 </Project>

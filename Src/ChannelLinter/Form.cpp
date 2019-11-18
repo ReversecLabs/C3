@@ -34,7 +34,7 @@ namespace MWR::C3::Linter
 		return *this;
 	}
 
-	json Form::Fill(StringVector input)
+	json Form::Fill(StringVector const& input)
 	{
 		if (input.size() < m_Elements.size())
 			throw std::runtime_error("Not enough arguments given to fill out form [required = " + std::to_string(m_Elements.size()) + ", given = " + std::to_string(input.size()) + "]");

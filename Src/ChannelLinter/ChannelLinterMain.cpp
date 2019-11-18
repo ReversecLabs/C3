@@ -10,7 +10,7 @@ try
 
 	using namespace MWR;
 	C3::Linter::ArgumentParser argParser(argc, argv);
-	auto config = argParser.GetConfig();
+	auto const& config = argParser.GetConfig();
 	C3::Linter::ChannelLinter(config).Process();
 }
 catch (std::exception& e)
