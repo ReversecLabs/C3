@@ -8,10 +8,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Sockets\AddrInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Sockets\InitializeSockets.cpp" />
@@ -42,15 +39,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Sdk.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteArray.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Hash.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Payload.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ScopeGuard.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\XError.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\Crypto\Base32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\Crypto\Base64.h" />
@@ -88,5 +81,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)C3_BUILD_VERSION_HASH_PART.hxx" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.h" />
   </ItemGroup>
 </Project>

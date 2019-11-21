@@ -22,10 +22,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Slack\SlackApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Sockets\AddrInfo.cpp" />
@@ -64,6 +61,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Sdk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.h" />
@@ -72,8 +70,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\SafeSmartPointerContainer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ScopeGuard.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\SecureString.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\SecureString.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\XError.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\Crypto\Base32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\Crypto\Base64.h" />
