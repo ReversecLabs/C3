@@ -14,7 +14,7 @@ namespace MWR::C3::Linter
 		Form(Form const& other) noexcept;
 
 		/// Copy assignment
-		Form& operator=(Form const& other) noexcept;
+		Form& operator=(Form other) noexcept;
 
 		/// Move constructor
 		Form(Form&& other) noexcept = default;

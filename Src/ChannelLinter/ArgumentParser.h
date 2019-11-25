@@ -12,7 +12,7 @@ namespace MWR::C3::Linter
 		/// @throws std::invalid_argument if config is not valid
 		ArgumentParser(int argc, char** argv);
 
-		/// @retrns valid application config
+		/// @returns valid application config
 		AppConfig const& GetConfig() const;
 
 		/// @returns formatted usage string
@@ -24,6 +24,10 @@ namespace MWR::C3::Linter
 
 		/// Helper create AppConfig
 		AppConfig CreateConfig() const;
+
+		/// Validate created config, uses ArgumentParser options in messages
+		/// @throws std::invalid_argument if config is not valid
+		void ValidateConfig() const;
 
 		/// Internal argument parser
 		argparse::ArgumentParser m_ArgParser;

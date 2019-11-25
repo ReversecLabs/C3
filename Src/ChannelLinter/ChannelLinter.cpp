@@ -7,12 +7,18 @@ namespace MWR::C3::Linter
 {
 	namespace
 	{
+		/// Return Interface metadata
+		/// @param channel name - case sensitive
+		/// @returns Interface metadata
 		/// @throws std::runtime_error if channel with given name was not registered
 		auto const& GetChannelInfo(std::string_view channelName)
 		{
 			return InterfaceFactory::Instance().Find<AbstractChannel>(channelName)->second;
 		}
 
+		/// Get Channel capability supplemented with build-in capability
+		/// @param channel metadata
+		/// @returns Channel capability supplemented with build-in capability
 		auto GetChannelCapability(InterfaceFactory::InterfaceData<AbstractChannel> const& channelInfo)
 		{
 			try
@@ -28,6 +34,10 @@ namespace MWR::C3::Linter
 			}
 		}
 
+		/// Get command id from string (allows negative inputs e.g "-2" for Close)
+		/// @param command Id string
+		/// @returns command Id
+		/// @throws std::invalid_argument
 		uint16_t GetCommandId(std::string const& commandId)
 		{
 			// allow negative inputs
@@ -71,8 +81,6 @@ namespace MWR::C3::Linter
 	{
 		std::cout << "Create channel " << std::endl;
 		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
-		Form form2(m_ChannelCapability.at("/create/arguments"_json_pointer));
-		form = form2;
 		auto createParams = form.Fill(channnelArguments);
 		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
 		return MakeChannel(blob);

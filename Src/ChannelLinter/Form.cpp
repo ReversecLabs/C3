@@ -27,10 +27,10 @@ namespace MWR::C3::Linter
 	{
 	}
 
-	Form& Form::operator=(Form const& other) noexcept
+	Form& Form::operator=(Form other) noexcept
 	{
-		Form tmp(other);
-		std::swap(*this, tmp);
+		std::swap(m_ArgumentsForm, other.m_ArgumentsForm);
+		std::swap(m_Elements, other.m_Elements);
 		return *this;
 	}
 
