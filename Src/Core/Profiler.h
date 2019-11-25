@@ -542,23 +542,11 @@ namespace MWR::C3::Core
 		public:
 			/// Create a snapshot proxy
 			/// @param profiler to wrap CreateProfileShnapshot calls
-			SnapshotProxy(Profiler& profiler) :
-				m_Profiler(profiler)
-			{
-			}
+			SnapshotProxy(Profiler& profiler);
 
 			/// Create a snapshot
 			/// @return std::nullopt if snaphot hasn't change since the last call
-			std::optional<json> GetSnapshotIfChanged()
-			{
-				auto currentSnapshot = m_Profiler.Get().m_Gateway.CreateProfileSnapshot();
-				auto currentHash = std::hash<json>{}(currentSnapshot);
-				if (previousHash && currentHash == *previousHash)
-					return {};
-
-				previousHash = currentHash;
-				return currentSnapshot;
-			}
+			std::optional<json> GetSnapshotIfChanged();
 
 		private:
 			/// Proxied profiler

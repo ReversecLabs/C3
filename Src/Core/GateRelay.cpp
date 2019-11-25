@@ -173,8 +173,7 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 			{
 				// Read socket.
 				std::this_thread::sleep_for(300ms);
-				auto newSnapshot = sp.GetSnapshotIfChanged();
-				if (newSnapshot)
+				if (auto newSnapshot = sp.GetSnapshotIfChanged())
 				{
 					try
 					{
