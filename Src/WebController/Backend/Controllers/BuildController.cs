@@ -47,8 +47,11 @@ namespace MWR.C3.WebController.Controllers
         }
 
         [HttpPost("customize")]
-        public async Task<IActionResult> Customize([FromBody]RelayBuildRequest request, [FromServices] ICustomizer customizer)
+        public async Task<IActionResult> Customize([FromBody]RelayBuildRequest request, [FromServices] ICustomizer customizer, [FromServices] IDonutService donut)
         {
+            if (request is null)
+                return BadRequest("Failed to read RelayBuildRequest");
+
             RelayBuild newBuild = null;
             System.Action cleanupBuild = () =>
             {
@@ -73,8 +76,10 @@ namespace MWR.C3.WebController.Controllers
                     context.SaveChanges();
                 }
                 output = await customizer.CustomizeNodeRelay(newBuild);
+                if (request.Donut != null)
+                    output = donut.GenerateShellcode(output, request.Donut, request.Architecture, request.Type);
                 var buildName = String.IsNullOrEmpty(newBuild.Name) ? "" : $"_{newBuild.Name}";
-                return File(output, "application/octet-stream", $"Relay_{newBuild.Arch.ToString().ToLower()}_{newBuild.BuildId:x}{buildName}.{newBuild.Type.ToString().ToLower()}");
+                return File(output, "application/octet-stream", $"Relay_{newBuild.Arch.ToString().ToLower()}_{newBuild.BuildId:x}{buildName}.{GetBuildExtention(request)}");
             }
             catch (TimeoutException e)
             {
@@ -95,7 +100,7 @@ namespace MWR.C3.WebController.Controllers
             catch (Exception e)
             {
                 cleanupBuild();
-                return StatusCode(StatusCodes.Status500InternalServerError , $"Unknown error. {e.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Unknown error. {e.Message}");
             }
         }
 
@@ -116,6 +121,23 @@ namespace MWR.C3.WebController.Controllers
                 Peripherals = gatewayBuild.Peripherals,
                 ParentGatwayAgentId = gatewayAgentId,
             };
+        }
+
+        private string GetBuildExtention(RelayBuildRequest request)
+        {
+            switch (request.Donut?.format)
+            {
+                case DonutLibrary.OutputFormat.BINARY: return "bin";
+                case DonutLibrary.OutputFormat.BASE64: return "b64";
+                case DonutLibrary.OutputFormat.RUBY: return "rb";
+                case DonutLibrary.OutputFormat.C: return "c";
+                case DonutLibrary.OutputFormat.PYTHON: return "py";
+                case DonutLibrary.OutputFormat.POWERSHELL: return "ps1";
+                case DonutLibrary.OutputFormat.CSHARP: return "cs";
+                case DonutLibrary.OutputFormat.HEX: return "hex";
+                case null: return request.Type.ToString().ToLower();
+                default: throw new ArgumentException("Unrecognized output format");
+            }
         }
     }
 }
