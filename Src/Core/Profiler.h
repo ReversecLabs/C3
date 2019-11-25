@@ -544,16 +544,24 @@ namespace MWR::C3::Core
 			/// @param profiler to wrap CreateProfileShnapshot calls
 			SnapshotProxy(Profiler& profiler);
 
+			/// Check if new version of snapshot is available.
+			/// @param ob. Observer token. If observer is not registered function will always return true.
+			/// @returns true if new snapshot is available.
+			bool CheckUpdates();
+
 			/// Create a snapshot
 			/// @return std::nullopt if snaphot hasn't change since the last call
-			std::optional<json> GetSnapshotIfChanged();
+			json const& GetSnapshot() const;
 
 		private:
 			/// Proxied profiler
 			Profiler& m_Profiler;
 
 			/// helper state variable
-			std::optional<size_t> previousHash;
+			std::optional<size_t> m_PreviousHash;
+
+			/// Current snapshot
+			json m_CurrentSnapshot;
 		};
 
 		/// Create Snapshot proxy for this profiler

@@ -175,13 +175,12 @@ void MWR::C3::Core::Profiler::DumpSnapshots()
 	auto sp = GetSnapshotProxy();
 	while (true)
 	{
-		const auto newSnapshot = sp.GetSnapshotIfChanged();
-		if (newSnapshot)
+		if (sp.CheckUpdates())
 		{
 			const auto snapshotTmpPath = std::filesystem::path(m_SnapshotPath).replace_extension(".tmp");
 			{
 				std::ofstream snapshotTmp{ snapshotTmpPath };
-				snapshotTmp << newSnapshot->dump(4) << std::endl;
+				snapshotTmp << sp.GetSnapshot().dump() << std::endl;
 			}
 			std::filesystem::rename(snapshotTmpPath, m_SnapshotPath);
 		}
@@ -1538,13 +1537,20 @@ MWR::C3::Core::Profiler::SnapshotProxy::SnapshotProxy(Profiler& profiler) :
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::optional<MWR::json> MWR::C3::Core::Profiler::SnapshotProxy::GetSnapshotIfChanged()
+bool MWR::C3::Core::Profiler::SnapshotProxy::CheckUpdates()
 {
-	auto currentSnapshot = m_Profiler.Get().m_Gateway.CreateProfileSnapshot();
-	auto currentHash = std::hash<json>{}(currentSnapshot);
-	if (previousHash && currentHash == *previousHash)
-		return {};
+	m_CurrentSnapshot = m_Profiler.Get().m_Gateway.CreateProfileSnapshot();
+	auto currentHash = std::hash<json>{}(m_CurrentSnapshot);
+	if (m_PreviousHash && currentHash == *m_PreviousHash)
+		return false;
 
-	previousHash = currentHash;
-	return currentSnapshot;
+	m_PreviousHash = currentHash;
+	return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+json const& MWR::C3::Core::Profiler::SnapshotProxy::GetSnapshot() const
+{
+	return m_CurrentSnapshot;
+}
+

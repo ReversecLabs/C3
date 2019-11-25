@@ -173,11 +173,11 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 			{
 				// Read socket.
 				std::this_thread::sleep_for(300ms);
-				if (auto newSnapshot = sp.GetSnapshotIfChanged())
+				if (sp.CheckUpdates())
 				{
 					try
 					{
-						connection.Send(Crypto::Encrypt(ByteView{ json{ { "messageType", "GetProfile" }, { "messageData", *newSnapshot }}.dump() }, m_SessionKeys.second));
+						connection.Send(Crypto::Encrypt(ByteView{ json{ { "messageType", "GetProfile" }, { "messageData", sp.GetSnapshot()}}.dump() }, m_SessionKeys.second));
 					}
 					catch (std::exception& exception)
 					{
