@@ -168,18 +168,22 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 			Log({ "API bridge connection established on " + std::string{apiBrigdeIp} +':' + std::to_string(apiBrigdePort), MWR::C3::LogMessage::Severity::Information });
 			reconnectWait = 0s;
 			// Enter main loop.
+			auto sp = m_Profiler->GetSnapshotProxy();
 			while (m_IsAlive && connection.IsSending())
 			{
 				// Read socket.
 				std::this_thread::sleep_for(300ms);
-				try
+				if (sp.CheckUpdates())
 				{
-					connection.Send(Crypto::Encrypt(ByteView{ json{ { "messageType", "GetProfile" }, { "messageData", m_Profiler->Get().m_Gateway.CreateProfileSnapshot() }}.dump() }, m_SessionKeys.second));
-				}
-				catch (std::exception& exception)
-				{
-					Log({ "Caught an exception while sending Profile. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
-					break;
+					try
+					{
+						connection.Send(Crypto::Encrypt(ByteView{ json{ { "messageType", "GetProfile" }, { "messageData", sp.GetSnapshot()}}.dump() }, m_SessionKeys.second));
+					}
+					catch (std::exception& exception)
+					{
+						Log({ "Caught an exception while sending Profile. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
+						break;
+					}
 				}
 			}
 		}

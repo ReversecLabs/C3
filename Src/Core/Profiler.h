@@ -536,6 +536,38 @@ namespace MWR::C3::Core
 		/// @returns binder id
 		uint32_t GetBinderTo(uint32_t);
 
+		/// Helper to wrap calls to CreateProfileShnapshot
+		class SnapshotProxy
+		{
+		public:
+			/// Create a snapshot proxy
+			/// @param profiler to wrap CreateProfileShnapshot calls
+			SnapshotProxy(Profiler& profiler);
+
+			/// Check if new version of snapshot is available.
+			/// @param ob. Observer token. If observer is not registered function will always return true.
+			/// @returns true if new snapshot is available.
+			bool CheckUpdates();
+
+			/// Create a snapshot
+			/// @return std::nullopt if snaphot hasn't change since the last call
+			json const& GetSnapshot() const;
+
+		private:
+			/// Proxied profiler
+			Profiler& m_Profiler;
+
+			/// helper state variable
+			std::optional<size_t> m_PreviousHash;
+
+			/// Current snapshot
+			json m_CurrentSnapshot;
+		};
+
+		/// Create Snapshot proxy for this profiler
+		/// @returns snapshot proxy for this profiler
+		SnapshotProxy GetSnapshotProxy() { return SnapshotProxy(*this); }
+
 	protected:
 		std::optional<Gateway> m_Gateway;																				///< The "virtual gateway object".
 

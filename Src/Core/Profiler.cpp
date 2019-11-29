@@ -154,18 +154,15 @@ MWR::ByteVector MWR::C3::Core::Profiler::Translate(std::string const& type, json
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MWR::C3::Core::Profiler::DumpSnapshots()
 {
-	std::optional<std::size_t> oldHash;
+	auto sp = GetSnapshotProxy();
 	while (true)
 	{
-		const auto snapshotTmpPath = std::filesystem::path(m_SnapshotPath).replace_extension(".tmp");
-		const auto snapshot = Get().m_Gateway.CreateProfileSnapshot().dump(4);
-		const auto snapshotHash = std::hash<std::string>{}(snapshot);
-		if (!oldHash || *oldHash != snapshotHash)
+		if (sp.CheckUpdates())
 		{
-			oldHash = snapshotHash;
+			const auto snapshotTmpPath = std::filesystem::path(m_SnapshotPath).replace_extension(".tmp");
 			{
 				std::ofstream snapshotTmp{ snapshotTmpPath };
-				snapshotTmp << snapshot << std::endl;
+				snapshotTmp << sp.GetSnapshot().dump() << std::endl;
 			}
 			std::filesystem::rename(snapshotTmpPath, m_SnapshotPath);
 		}
@@ -1492,3 +1489,28 @@ json MWR::C3::Core::Profiler::Channel::CreateProfileSnapshot() const
 
 	return profile;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+MWR::C3::Core::Profiler::SnapshotProxy::SnapshotProxy(Profiler& profiler) :
+	m_Profiler(profiler)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool MWR::C3::Core::Profiler::SnapshotProxy::CheckUpdates()
+{
+	m_CurrentSnapshot = m_Profiler.Get().m_Gateway.CreateProfileSnapshot();
+	auto currentHash = std::hash<json>{}(m_CurrentSnapshot);
+	if (m_PreviousHash && currentHash == *m_PreviousHash)
+		return false;
+
+	m_PreviousHash = currentHash;
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+json const& MWR::C3::Core::Profiler::SnapshotProxy::GetSnapshot() const
+{
+	return m_CurrentSnapshot;
+}
+
