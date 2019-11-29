@@ -8,7 +8,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-MWR::C3::Core::Profiler::Action::ActionId MWR::C3::Core::Profiler::Action::m_LastActionId = 0;
 std::mutex MWR::C3::Core::Profiler::Profile::m_Mutex;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,9 +31,6 @@ void MWR::C3::Core::Profiler::HandleActionsPacket(ByteView actionsPacket)
 {
 	std::scoped_lock lock(m_AccessMutex);
 
-	// Action adapter.
-	std::optional<Action> action;
-
 	try
 	{
 		auto actions = json::parse(std::string{ actionsPacket });
@@ -54,8 +50,6 @@ void MWR::C3::Core::Profiler::HandleActionsPacket(ByteView actionsPacket)
 			throw std::runtime_error{ std::string{ elementName } +" is not specified." };
 		};
 
-		// Read CommandSeqNo and create Action.
-		action = std::optional<Action>(ReadJsonElement("CommandSeqNo")->get<Action::CommandSeqNo>());
 		// Parse AgentId.
 		if (auto relayAgentId = ReadJsonElement("relayAgentId"); relayAgentId->is_null())
 			m_Gateway->ParseAndRunCommand(actions);
@@ -66,21 +60,9 @@ void MWR::C3::Core::Profiler::HandleActionsPacket(ByteView actionsPacket)
 	}
 	catch (std::exception& exception)
 	{
-		if (action)
-		{
-			action->m_State = Action::State::Failed;
-			action->m_StateComment = exception.what();
-			if (auto gateway = m_Gateway->m_Gateway.lock())
-				gateway->Log({ "Caught an exception while parsing Action. "s + exception.what(), MWR::C3::LogMessage::Severity::DebugInformation });
-
-		}
-		else if (auto gateway = m_Gateway->m_Gateway.lock())
-			gateway->Log({ "Caught an exception while parsing Action. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
+		if (auto gateway = m_Gateway->m_Gateway.lock())
+			gateway->Log({ "Caught an exception while parsing Action. "s + exception.what(), MWR::C3::LogMessage::Severity::Error});
 	}
-
-	// Schedule Action.
-	if (action)
-		m_RelevantActions.push_back(std::move(*action));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1440,28 +1422,6 @@ MWR::C3::Core::Profiler::Gateway::Connector::Connector(std::weak_ptr<Profiler> o
 	, m_Connector(connector)
 {
 
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::Profiler::Action::Action(CommandSeqNo commandSeqNo, State state, std::string stateComment)
-	: BaseAction(state, stateComment)
-	, m_ActionId(++m_LastActionId)
-	, m_CommandSeqNo(commandSeqNo)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::Profiler::SubAction::SubAction(std::string description, State state, std::string stateComment)
-	: BaseAction(state, stateComment)
-	, m_Description(description)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::Profiler::BaseAction::BaseAction(State state, std::string stateComment)
-	: m_State(state)
-	, m_StateComment(stateComment)
-{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
