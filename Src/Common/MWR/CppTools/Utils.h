@@ -214,6 +214,8 @@ namespace MWR::Utils
 	constexpr bool IsTuple<std::tuple<T...>> = true;
 
 	/// Prevents compiler from optimizing out call.
+	/// @param ptr pointer to memory to be cleared.
+	/// @param n number of bytes to overwrite.
 	inline void* SecureMemzero(void* ptr, size_t n)
 	{
 		if (ptr) for (auto p = reinterpret_cast<volatile char*>(ptr); n--; *p++ = 0);

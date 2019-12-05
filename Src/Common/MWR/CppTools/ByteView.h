@@ -136,9 +136,9 @@ namespace MWR
 		using Super::npos;
 		using Super::value_type;
 
-
-		/// @returns ByteVector. Owning container with the read bytes.
+		/// Read bytes and move ByteView to position after parsed data.
 		/// @param byteCount. How many bytes should be read.
+		/// @returns ByteVector. Owning container with the read bytes.
 		/// @throws std::out_of_range. If byteCount > size().
 		ByteVector Read(size_t byteCount)
 		{
@@ -150,9 +150,17 @@ namespace MWR
 			return retVal;
 		}
 
-		/// Read custom type and remove it from ByteView.
-		/// @param arg. Type to be read from ByteView
-		/// @param args. Rest of types that need to be handled with recursion.
+		/// Read object and move ByteView to position after parsed data.
+		/// @tparam T. Mandatory type to be retrieved from ByteView.
+		/// @tparam Ts. Optional types to be retrieved in one call.
+		/// @note Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
+		/// Include ByteConverter.h to add support for common types like enum, std::vector, std:map, std::pair, std::tuple and others.
+		/// Create specialization on ByteConverter for custom types or template types to expand existing functionality.
+		/// @returns one type if Ts was empty, std::tuple with all types otherwise.
+		/// Simple usage:
+		/// @code auto [a, b, c] = someByteView.Read<int, float, std::string>(); @endcode
+		/// @note Returned types does not have to match exactly with Read template parameters list.
+		/// It is possible to create tags that will be used to retrieve different type.
 		template<typename T, typename ...Ts, typename = decltype(MWR::ByteConverter<std::remove_const_t<T>>::From(std::declval<ByteView>()))>
 		auto Read()
 		{
@@ -172,7 +180,7 @@ namespace MWR
 	};
 
 	/// ByteConverter::From specialization for arithmetic types.
-	/// This is a basic specialization and will not be moved to ByteConverter.h
+	/// This is a basic functionality that should be available with ByteView. This specialization will not be moved to ByteConverter.h.
 	template <typename T>
 	T ByteConverter<T, std::enable_if_t<Utils::IsOneOf<T, ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view>::value>>::From(ByteView& bv)
 	{
@@ -199,7 +207,7 @@ namespace MWR
 	}
 
 	/// ByteConverter::from specialization for ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
-	/// This is a basic specialization and will not be moved to ByteConverter.h
+	/// This is a basic functionality that should be available with ByteView. This specialization will not be moved to ByteConverter.h.
 	template <typename T>
 	T ByteConverter<T, std::enable_if_t<std::is_arithmetic_v<T>>>::From(ByteView& bv)
 	{

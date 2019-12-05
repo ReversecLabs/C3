@@ -36,20 +36,28 @@
 /// specializations for ByteConverter for common types.
 namespace MWR
 {
-	/// ByteConverter specialization for enums.
+	/// ByteConverter specialization for enum.
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<std::is_enum_v<T>>>
 	{
+		/// Serialize enum type to ByteVector.
+		/// @param enumInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(T enumInstance)
 		{
 			return ByteVector::Create(static_cast<std::underlying_type_t<T>>(enumInstance));
 		}
 
+		/// Get size required after serialization.
+		/// @return size_t. Number of bytes used after serialization.
 		constexpr static size_t Size()
 		{
 			return sizeof(std::underlying_type_t<T>);
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return enum.
 		static T From(ByteView& bv)
 		{
 			return static_cast<T>(bv.Read<std::underlying_type_t<T>>());
@@ -60,16 +68,25 @@ namespace MWR
 	template <typename T1, typename T2>
 	struct ByteConverter<std::pair<T1, T2>>
 	{
+		/// Serialize pair type to ByteVector.
+		/// @param pairInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::pair<T1, T2> const& pairInstance)
 		{
 			return ByteVector::Create(pairInstance.first, pairInstance.second);
 		}
 
+		/// Get size required after serialization.
+		/// @param pairInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(std::pair<T1, T2> const& pairInstance)
 		{
 			return ByteVector::Size(pairInstance.first) + ByteVector::Size(pairInstance.second);
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::pair.
 		static std::pair<T1, T2> From(ByteView& bv)
 		{
 			auto [t1, t2] = bv.Read<T1, T2>();
@@ -81,16 +98,25 @@ namespace MWR
 	template <>
 	struct ByteConverter<std::filesystem::path>
 	{
+		/// Serialize path type to ByteVector.
+		/// @param pathInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::filesystem::path const& pathInstance)
 		{
 			return ByteVector::Create(pathInstance.wstring());
 		}
 
+		/// Get size required after serialization.
+		/// @param pathInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(std::filesystem::path const& pathInstance)
 		{
 			return ByteVector::Size(pathInstance.wstring());
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::filesystem::path.
 		static std::filesystem::path From(ByteView& bv)
 		{
 			return { bv.Read<std::wstring>() };
@@ -101,25 +127,33 @@ namespace MWR
 	template <>
 	struct ByteConverter<std::byte>
 	{
+		/// Serialize byte type to ByteVector.
+		/// @param byteInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::byte byteInstance)
 		{
 			return ByteVector::Create(static_cast<unsigned char>(byteInstance));
 		}
 
+		/// Get size required after serialization.
+		/// @return size_t. Number of bytes used after serialization.
 		constexpr static size_t Size()
 		{
 			return sizeof(unsigned char);
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::byte.
 		static std::byte From(ByteView& bv)
 		{
  			return static_cast<std::byte>(bv.Read<unsigned char>());
 		}
 	};
 
-	/// Class allowing reading N bytes without coping data like in ByeView::Read<ByteArray<N>> or ByteView::Reed(size_t).
+	/// Class allowing reading N bytes without coping data like in ByeView::Read<ByteArray<N>>() or ByteView::Reed(size_t).
 	/// Using Bytes class in read will return ByteView with requested size using simple syntax:
-	/// someByteViewObject.Read<int, int, Bytes<7>, std::string>
+	/// @code someByteViewObject.Read<int, int, Bytes<7>, std::string> @endCode
 	template<size_t N>
 	class Bytes
 	{
@@ -131,6 +165,9 @@ namespace MWR
 	template <size_t N>
 	struct ByteConverter<MWR::Bytes<N>>
 	{
+		/// Retrieve ByteView substring with requested size.
+		/// @param bv. Buffer with serialized data. Will be moved by N bytes.
+		/// @return ByteView new view with size equal to N.
 		static ByteView From(ByteView& bv)
 		{
 			if (N > bv.size())
@@ -146,6 +183,9 @@ namespace MWR
 	template <typename T>
 	struct ByteConverter<std::vector<T>>
 	{
+		/// Serialize vector type to ByteVector.
+		/// @param vectorInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::vector<T> const& vectorInstance)
 		{
 			ByteVector ret;
@@ -157,6 +197,9 @@ namespace MWR
 			return ret;
 		}
 
+		/// Get size required after serialization.
+		/// @param vectorInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(std::vector<T> const& vectorInstance)
 		{
 			size_t size = sizeof(uint32_t); //four bytes for vector size.
@@ -166,6 +209,9 @@ namespace MWR
 			return size;
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::vector.
 		static std::vector<T> From(ByteView& bv)
 		{
 			std::vector<T> ret;
@@ -181,6 +227,9 @@ namespace MWR
 	template <typename T1, typename T2>
 	struct ByteConverter<std::map<T1, T2>>
 	{
+		/// Serialize map type to ByteVector.
+		/// @param mapInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::map<T1, T2> const& mapInstance)
 		{
 			ByteVector ret;
@@ -192,6 +241,9 @@ namespace MWR
 			return ret;
 		}
 
+		/// Get size required after serialization.
+		/// @param mapInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(std::map<T1, T2> const& mapInstance)
 		{
 			size_t size = sizeof(uint32_t); //four bytes for map size.
@@ -201,6 +253,9 @@ namespace MWR
 			return size;
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::map.
 		static std::map<T1, T2> From(ByteView& bv)
 		{
 			std::map<T1, T2> ret;
@@ -219,6 +274,9 @@ namespace MWR
 	template <typename T, size_t N>
 	struct ByteConverter<std::array<T, N>>
 	{
+		/// Serialize array type to ByteVector.
+		/// @param arrayInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(std::array<T, N> const& arrayInstance)
 		{
 			ByteVector ret;
@@ -229,6 +287,9 @@ namespace MWR
 			return ret;
 		}
 
+		/// Get size required after serialization.
+		/// @param arrayInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(std::array<T, N> const& arrayInstance)
 		{
 			auto ret = size_t{ 0 };
@@ -246,10 +307,11 @@ namespace MWR
 			return ret;
 		}
 
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::array.
 		static std::array<T, N> From(ByteView& bv)
 		{
-			// T might not be default constructible, array must be filled like aggregator,
-			// order of reading from ByteView would depend on calling convention.
 			std::vector<T> temp;
 			temp.reserve(N);
 			for (auto i = 0u; i < N; ++i)
@@ -259,6 +321,11 @@ namespace MWR
 		}
 
 	private:
+		/// Create array with size N from provided vector.
+		/// This helper function is required because T might not be default constructible, but array must be filled like aggregator.
+		/// Reading data to vector first will ensure order of elements, independent of calling convention.
+		/// @param vec. Temporary vector with data.
+		/// @returns std::array with all elements.
 		template<size_t...Is>
 		static std::array<T, N> MakeArray(std::vector<T>&& vec, std::index_sequence<Is...>)
 		{
@@ -270,6 +337,9 @@ namespace MWR
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<Utils::IsTuple<T>>>
 	{
+		/// Serialize tuple type to ByteVector.
+		/// @param tupleInstance. Object to be serialized.
+		/// @return ByteVector. Serialized data.
 		static ByteVector To(T const& tupleInstance)
 		{
 			ByteVector ret;
@@ -278,11 +348,18 @@ namespace MWR
 			return ret;
 		}
 
+		/// Get size required after serialization.
+		/// @param tupleInstance. Instance for which size should be found.
+		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size(T const& tupleInstance)
 		{
 			return TupleHandler<T>::Size(tupleInstance);
 		}
 
+
+		/// Deserialize from ByteView.
+		/// @param bv. Buffer with serialized data.
+		/// @return std::tuple.
 		static auto From(ByteView& bv)
 		{
 			return TupleHandler<T>::Read(bv);
@@ -307,6 +384,7 @@ namespace MWR
 			}
 
 			/// Function responsible for recursively calculating buffer size needed for call with tuple argument.
+			/// @param t. reference to tuple.
 			/// @return size_t number of bytes needed.
 			static size_t Size(T const& t)
 			{

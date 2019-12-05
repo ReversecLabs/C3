@@ -42,8 +42,8 @@ namespace MWR
 		/// Type of stored values.
 		using ValueType = Super::value_type;
 
-		/// Destructor zeroing memory.
 #if defined BYTEVECTOR_ZERO_MEMORY_DESTRUCTION
+		/// Destructor zeroing memory.
 		~ByteVector()
 		{
 			Utils::SecureMemzero(data(), size());
@@ -137,21 +137,25 @@ namespace MWR
 		using Super::resize;
 
 		/// Write content of of provided objects.
-		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteArray, and std::tuple of those types.
-		/// Writes 4 Bytes header with size for types that have variable buffer length.
-		/// @tparam T. Types to be stored.
+		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
+		/// Include ByteConverter.h to add support for common types like enum, std::vector, std:map, std::pair, std::tuple and others.
+		/// Create specialization on ByteConverter for custom types or template types to expand existing serialization functionality.
+		/// @param arg. Object to be stored.
+		/// @param args. Optional other objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename ...T>
-		ByteVector & Write(T const& ...args)
+		template <typename T, typename ...Ts>
+		ByteVector& Write(T const& arg, Ts const& ...args)
 		{
-			reserve(size() + Size<T...>(args...));
-			Store<T...>(args...);
+			reserve(size() + Size<T, Ts...>(arg, args...));
+			Store<T, Ts...>(arg, args...);
 			return *this;
 		}
 
 		/// Write content of of provided objects.
 		/// Supports ByteView and ByteVector.
 		/// Does not write header with size.
+		/// @param arg. Object to be stored.
+		/// @param args. Optional other objects to be stored.
 		/// @return itself to allow chaining.
 		template <typename T, typename ...Ts, typename = std::enable_if_t<Utils::IsOneOf<T, ByteView, ByteVector>::value>>
 		ByteVector& Concat(T const& arg, Ts const& ...args)
@@ -184,12 +188,14 @@ namespace MWR
 		//}
 
 		/// Create new ByteVector with Variadic list of parameters.
-		/// This function cannot be constructor, becouse it would be ambigious with std::vector costructors.
-		/// @see ByteVector::Write and ByteVector::Concat for more informations.
-		template <typename ...T>
-		static ByteVector Create(T const& ...args)
+		/// This function cannot be constructor, because it would be ambiguous with super class constructors.
+		/// @param arg. Object to be stored.
+		/// @param args. Optional other objects to be stored.
+		/// @see ByteVector::Write for more informations.
+		template <typename T, typename ...Ts>
+		static ByteVector Create(T const& arg, Ts const& ...args)
 		{
-			return ByteVector{}.Write(args...);
+			return ByteVector{}.Write(arg, args...);
 		}
 
 		/// Proxy function to ByteView::Read.
@@ -201,8 +207,8 @@ namespace MWR
 		}
 
 		/// Calculate the size that the argument will take in memory
-		/// @param arg. argument to be stored.
-		/// @param args. rest of types that will be handled with recursion.
+		/// @param arg. Argument to be stored.
+		/// @param args. Rest of types that will be handled with recursion.
 		/// @return size_t number of bytes needed.
 		template<typename T, typename ...Ts>
 		static size_t Size(T const& arg, Ts const& ...args)
@@ -225,8 +231,8 @@ namespace MWR
 
 	private:
 		/// Store custom type.
-		/// param arg. object to be stored. There must exsist MWR::ByteConverter<T>::To(T const&) method avalible to store custom type.
-		/// param args. rest of objects that will be handled with recursion.
+		/// @param arg. Object to be stored. There must exsist MWR::ByteConverter<T>::To(T const&) method avalible to store custom type.
+		/// @param args. Rest of objects that will be handled with recursion.
 		/// @return itself to allow chaining.
 		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(MWR::ByteConverter<T>::To(std::declval<T>())), MWR::ByteVector >, int> = 0>
 		ByteVector & Store(T const& arg, Ts const& ...args)
@@ -246,7 +252,7 @@ namespace MWR
 	};
 
 	/// ByteConverter specialization for ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
-	/// This is a basic specialization and will not be moved to ByteConverter.h
+	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<Utils::IsOneOf<T, ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view>::value>>
 	{
@@ -270,7 +276,7 @@ namespace MWR
 	};
 
 	/// ByteConverter specialization for arithmetic types.
-	/// This is a basic specialization and will not be moved to ByteConverter.h
+	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<std::is_arithmetic_v<T>>>
 	{
