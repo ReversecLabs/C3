@@ -15,6 +15,11 @@ namespace MWR
 	struct ByteConverter {};
 
 	/// Check if MWR namespace has function to get size of type T when it is stored to ByteVector.
+	/// This class performs test that looks for implementation of Size function in ByteConverter<T>.
+	/// Depending on test result 'value' is set to one of:
+	/// absent - No implementation is available for Size function. Size can only be determined after serialization.
+	/// compileTime - Size is determined by type, not object instance. Size() is constexpr function.
+	/// runTime - Size depends on object instance. Size(T const&) can be used before serialization
 	template <typename T>
 	class ByteSizeFunctionType
 	{
@@ -38,11 +43,12 @@ namespace MWR
 		using ValueType = Super::value_type;
 
 		/// Destructor zeroing memory.
+#if defined BYTEVECTOR_ZERO_MEMORY_DESTRUCTION
 		~ByteVector()
 		{
-			// Increase OpSec by clearing memory when ByteVector is not needed anymore.
 			Utils::SecureMemzero(data(), size());
 		}
+#endif
 
 		/// Copy constructor.
 		/// @param other. Object to copy.

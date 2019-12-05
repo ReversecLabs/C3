@@ -3,46 +3,46 @@
 #include "ByteView.h"
 
 /// Example code of specializing ByteConverter for custom type A.
-//struct A
-//{
-//	uint16_t m_a, m_b;
-//
-//	A(uint16_t a, uint16_t b) : m_a(a), m_b(b) {}
-//};
-//
-//namespace MWR
-//{
-//	template <>
-//	struct ByteConverter<A>
-//	{
-//		static ByteVector To(A const& a)
-//		{
-//			return ByteVector::Create(a.m_a, a.m_b);
-//		}
-//
-//		static size_t Size(A const& a)
-//		{
-//			return 2 * sizeof(uint16_t);
-//		}
-//
-//		static A From(ByteView& bv)
-//		{
-//			auto [a, b] = bv.Read<uint16_t, uint16_t>();
-//			return A(a, b);
-//		}
-//	};
-//}
+/// struct A
+/// {
+/// 	uint16_t m_a, m_b;
+///
+/// 	A(uint16_t a, uint16_t b) : m_a(a), m_b(b) {}
+/// };
+///
+/// namespace MWR
+/// {
+/// 	template <>
+/// 	struct ByteConverter<A>
+/// 	{
+/// 		static ByteVector To(A const& a)
+/// 		{
+/// 			return ByteVector::Create(a.m_a, a.m_b);
+/// 		}
+///
+/// 		static size_t Size(A const& a)
+/// 		{
+/// 			return 2 * sizeof(uint16_t);
+/// 		}
+///
+/// 		static A From(ByteView& bv)
+/// 		{
+/// 			auto [a, b] = bv.Read<uint16_t, uint16_t>();
+/// 			return A(a, b);
+/// 		}
+/// 	};
+/// }
 
-// specializations for ByteConverter for common types.
+/// specializations for ByteConverter for common types.
 namespace MWR
 {
-	// ByteConverter specialization for enums.
+	/// ByteConverter specialization for enums.
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<std::is_enum_v<T>>>
 	{
-		static ByteVector To(T obj)
+		static ByteVector To(T enumInstance)
 		{
-			return ByteVector::Create(static_cast<std::underlying_type_t<T>>(obj));
+			return ByteVector::Create(static_cast<std::underlying_type_t<T>>(enumInstance));
 		}
 
 		constexpr static size_t Size()
@@ -56,18 +56,18 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for std::pair<>.
+	/// ByteConverter specialization for std::pair<>.
 	template <typename T1, typename T2>
 	struct ByteConverter<std::pair<T1, T2>>
 	{
-		static ByteVector To(std::pair<T1, T2> const& obj)
+		static ByteVector To(std::pair<T1, T2> const& pairInstance)
 		{
-			return ByteVector::Create(obj.first, obj.second);
+			return ByteVector::Create(pairInstance.first, pairInstance.second);
 		}
 
-		static size_t Size(std::pair<T1, T2> const& obj)
+		static size_t Size(std::pair<T1, T2> const& pairInstance)
 		{
-			return ByteVector::Size(obj.first) + ByteVector::Size(obj.second);
+			return ByteVector::Size(pairInstance.first) + ByteVector::Size(pairInstance.second);
 		}
 
 		static std::pair<T1, T2> From(ByteView& bv)
@@ -77,18 +77,18 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for std::filesystem::path.
+	/// ByteConverter specialization for std::filesystem::path.
 	template <>
 	struct ByteConverter<std::filesystem::path>
 	{
-		static ByteVector To(std::filesystem::path const& obj)
+		static ByteVector To(std::filesystem::path const& pathInstance)
 		{
-			return ByteVector::Create(obj.wstring());
+			return ByteVector::Create(pathInstance.wstring());
 		}
 
-		static size_t Size(std::filesystem::path const& obj)
+		static size_t Size(std::filesystem::path const& pathInstance)
 		{
-			return ByteVector::Size(obj.wstring());
+			return ByteVector::Size(pathInstance.wstring());
 		}
 
 		static std::filesystem::path From(ByteView& bv)
@@ -97,13 +97,13 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for std::byte.
+	/// ByteConverter specialization for std::byte.
 	template <>
 	struct ByteConverter<std::byte>
 	{
-		static ByteVector To(std::byte obj)
+		static ByteVector To(std::byte byteInstance)
 		{
-			return ByteVector::Create(static_cast<unsigned char>(obj));
+			return ByteVector::Create(static_cast<unsigned char>(byteInstance));
 		}
 
 		constexpr static size_t Size()
@@ -127,7 +127,7 @@ namespace MWR
 		Bytes() = delete;
 	};
 
-	// ByteConverter specialization for MWR::Bytes.
+	/// ByteConverter specialization for MWR::Bytes.
 	template <size_t N>
 	struct ByteConverter<MWR::Bytes<N>>
 	{
@@ -142,25 +142,25 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for vector types.
+	/// ByteConverter specialization for vector types.
 	template <typename T>
 	struct ByteConverter<std::vector<T>>
 	{
-		static ByteVector To(std::vector<T> const& obj)
+		static ByteVector To(std::vector<T> const& vectorInstance)
 		{
 			ByteVector ret;
-			ret.reserve(ByteVector::Size(obj));
-			ret.Write(static_cast<uint32_t>(obj.size()));
-			for (auto const& e : obj)
+			ret.reserve(ByteVector::Size(vectorInstance));
+			ret.Write(static_cast<uint32_t>(vectorInstance.size()));
+			for (auto const& e : vectorInstance)
 				ret.Concat(ByteVector::Create(e));
 
 			return ret;
 		}
 
-		static size_t Size(std::vector<T> const& obj)
+		static size_t Size(std::vector<T> const& vectorInstance)
 		{
 			size_t size = sizeof(uint32_t); //four bytes for vector size.
-			for (auto const& e : obj)
+			for (auto const& e : vectorInstance)
 				size += ByteVector::Size(e);
 
 			return size;
@@ -177,25 +177,25 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for map types.
+	/// ByteConverter specialization for map types.
 	template <typename T1, typename T2>
 	struct ByteConverter<std::map<T1, T2>>
 	{
-		static ByteVector To(std::map<T1, T2> const& obj)
+		static ByteVector To(std::map<T1, T2> const& mapInstance)
 		{
 			ByteVector ret;
-			ret.reserve(ByteVector::Size(obj));
-			ret.Write(static_cast<uint32_t>(obj.size()));
-			for (auto const& [key, val] : obj)
+			ret.reserve(ByteVector::Size(mapInstance));
+			ret.Write(static_cast<uint32_t>(mapInstance.size()));
+			for (auto const& [key, val] : mapInstance)
 				ret.Concat(ByteVector::Create(key, val));
 
 			return ret;
 		}
 
-		static size_t Size(std::map<T1, T2> const& obj)
+		static size_t Size(std::map<T1, T2> const& mapInstance)
 		{
 			size_t size = sizeof(uint32_t); //four bytes for map size.
-			for (auto const& [key, val] : obj)
+			for (auto const& [key, val] : mapInstance)
 				size += ByteVector::Size(key) + ByteVector::Size(val);
 
 			return size;
@@ -215,31 +215,31 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for std:array.
+	/// ByteConverter specialization for std:array.
 	template <typename T, size_t N>
 	struct ByteConverter<std::array<T, N>>
 	{
-		static ByteVector To(std::array<T, N> const& obj)
+		static ByteVector To(std::array<T, N> const& arrayInstance)
 		{
 			ByteVector ret;
-			ret.reserve(ByteVector::Size(obj));
-			for (auto const& e : obj)
+			ret.reserve(ByteVector::Size(arrayInstance));
+			for (auto const& e : arrayInstance)
 				ret.Write(e);
 
 			return ret;
 		}
 
-		static size_t Size(std::array<T, N> const& obj)
+		static size_t Size(std::array<T, N> const& arrayInstance)
 		{
 			auto ret = size_t{ 0 };
 			if constexpr (std::is_arithmetic_v<T>)
 			{
-				static_cast<void>(obj);
+				static_cast<void>(arrayInstance);
 				ret = sizeof(T) * N; // avoid extra calls when size of array is known.
 			}
 			else
 			{
-				for (auto const& e : obj)
+				for (auto const& e : arrayInstance)
 					ret += ByteVector::Size(e);
 			}
 
@@ -266,21 +266,21 @@ namespace MWR
 		}
 	};
 
-	// ByteConverter specialization for tuple.
+	/// ByteConverter specialization for tuple.
 	template <typename T>
 	struct ByteConverter<T, std::enable_if_t<Utils::IsTuple<T>>>
 	{
-		static ByteVector To(T const& obj)
+		static ByteVector To(T const& tupleInstance)
 		{
 			ByteVector ret;
-			ret.reserve(Size(obj));
-			TupleHandler<T>::Write(ret, obj);
+			ret.reserve(Size(tupleInstance));
+			TupleHandler<T>::Write(ret, tupleInstance);
 			return ret;
 		}
 
-		static size_t Size(T const& obj)
+		static size_t Size(T const& tupleInstance)
 		{
-			return TupleHandler<T>::Size(obj);
+			return TupleHandler<T>::Size(tupleInstance);
 		}
 
 		static auto From(ByteView& bv)
@@ -295,7 +295,7 @@ namespace MWR
 		struct TupleHandler
 		{
 			/// Function responsible for recursively packing data to ByteVector.
-			/// @param self. Reference to ByteVector object using VariadicWriter.
+			/// @param self. Reference to ByteVector object using TupleHandler.
 			/// @param t. reference to tuple.
 			static void Write(ByteVector& self, T const& t)
 			{
