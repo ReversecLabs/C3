@@ -86,7 +86,7 @@ uint32_t MWR::C3::Core::Profiler::GetBinderTo(uint32_t id)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::ByteVector MWR::C3::Core::Profiler::TranslateCommand(json const& command)
 {
-	return ByteVector{}.Concat(command.at("id").get<uint16_t>(), TranslateArguments(command.at("arguments")));
+	return ByteVector::Create(command.at("id").get<uint16_t>()).Concat(TranslateArguments(command.at("arguments")));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ MWR::ByteVector MWR::C3::Core::Profiler::TranslateStartupCommand(json const& jco
 	if (command == createCommands.cend() || !command->m_IsDevice)
 		throw std::logic_error{ "Failed to find a create command" };
 
-	return ByteVector{}.Concat(command->m_IsNegotiableChannel, command->m_Hash, TranslateArguments(jcommand.at("arguments")));
+	return ByteVector::Create(command->m_IsNegotiableChannel, command->m_Hash).Concat(TranslateArguments(jcommand.at("arguments")));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -692,7 +692,7 @@ void MWR::C3::Core::Profiler::Agent::PerformCreateCommand(json const& jCommandEl
 	// it is a create command
 	DeviceId newDeviceId = ++m_LastDeviceId;
 	ByteVector repacked;
-	repacked.Concat(static_cast<std::underlying_type_t<Command>>(Command::AddDevice), newDeviceId.ToByteVector(), command->m_IsNegotiableChannel, command->m_Hash);
+	repacked.Write(Command::AddDevice, newDeviceId, command->m_IsNegotiableChannel, command->m_Hash);
 	if (auto binder = profiler->GetBinderTo(command->m_Hash); binder && command->m_IsDevice) // peripheral, check if payload is needed.
 	{
 		auto connector = profiler->m_Gateway->m_Gateway.lock()->GetConnector(binder);
