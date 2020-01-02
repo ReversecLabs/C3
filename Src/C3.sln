@@ -23,8 +23,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Core\Core.vcxproj",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebController", "WebController\Backend\WebController.csproj", "{023B2DB0-6DA4-4F0D-988B-4D9BF522DA37}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CebuLoader", "CebuLoader\CebuLoader.vcxproj", "{53182258-F40E-4104-AFC6-1F327E556E77}"
+	ProjectSection(ProjectDependencies) = postProject
+		{946619C2-5959-4C0C-BC7C-1C27D825B042} = {946619C2-5959-4C0C-BC7C-1C27D825B042}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Common\Common.vcxitems*{53182258-f40e-4104-afc6-1f327e556e77}*SharedItemsImports = 4
 		Common\Common.vcxitems*{5cc52339-4b11-47df-b1db-18fbcf057123}*SharedItemsImports = 9
 		Common\Common.vcxitems*{946619c2-5959-4c0c-bc7c-1c27d825b042}*SharedItemsImports = 4
 		Common\Common.vcxitems*{b7c64002-5002-410f-868c-826073afa924}*SharedItemsImports = 4
@@ -99,6 +105,21 @@ Global
 		{023B2DB0-6DA4-4F0D-988B-4D9BF522DA37}.ReleaseWithDebInfo|x64.Build.0 = ReleaseWithDebInfo|Any CPU
 		{023B2DB0-6DA4-4F0D-988B-4D9BF522DA37}.ReleaseWithDebInfo|x86.ActiveCfg = ReleaseWithDebInfo|Any CPU
 		{023B2DB0-6DA4-4F0D-988B-4D9BF522DA37}.ReleaseWithDebInfo|x86.Build.0 = ReleaseWithDebInfo|Any CPU
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Debug|x64.ActiveCfg = Debug|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Debug|x64.Build.0 = Debug|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Debug|x64.Deploy.0 = Debug|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Debug|x86.ActiveCfg = Debug|Win32
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Debug|x86.Build.0 = Debug|Win32
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Release|x64.ActiveCfg = Release|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Release|x64.Build.0 = Release|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Release|x64.Deploy.0 = Release|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Release|x86.ActiveCfg = Release|Win32
+		{53182258-F40E-4104-AFC6-1F327E556E77}.Release|x86.Build.0 = Release|Win32
+		{53182258-F40E-4104-AFC6-1F327E556E77}.ReleaseWithDebInfo|x64.ActiveCfg = ReleaseWithDebInfo|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.ReleaseWithDebInfo|x64.Build.0 = ReleaseWithDebInfo|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.ReleaseWithDebInfo|x64.Deploy.0 = ReleaseWithDebInfo|x64
+		{53182258-F40E-4104-AFC6-1F327E556E77}.ReleaseWithDebInfo|x86.ActiveCfg = ReleaseWithDebInfo|Win32
+		{53182258-F40E-4104-AFC6-1F327E556E77}.ReleaseWithDebInfo|x86.Build.0 = ReleaseWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
