@@ -15,8 +15,12 @@ namespace ResourceGenerator
                 return;
             }
 
+            var outputDir = Path.Join(args[1], "gen");
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
             var guid = Guid.NewGuid().ToByteArray();
-            using (var sw = new StreamWriter(Path.Join(args[1], "EmbeddedResource.h"), false) { AutoFlush = true })
+            using (var sw = new StreamWriter(Path.Join(outputDir, "EmbeddedResource.h"), false) { AutoFlush = true })
             {
                 sw.Write("#define EMBEDDED_DLL_PAYLOAD \"");
                 foreach (var oneByte in guid)
@@ -25,7 +29,7 @@ namespace ResourceGenerator
             }
 
 
-            using (var bw = new BinaryWriter(File.Open(Path.Join(args[1], "EmbeddedResource.dat"), FileMode.Create)))
+            using (var bw = new BinaryWriter(File.Open(Path.Join(outputDir, "EmbeddedResource.dat"), FileMode.Create)))
             {
                 var data = File.ReadAllBytes(args[0]);
                 bw.Write(guid);

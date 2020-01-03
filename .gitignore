@@ -16,3 +16,4 @@ PER_BUILD_DYNAMIC_SIGNATURE_SEED.hpp
 __pycache__
 Src/Common/C3_BUILD_VERSION_HASH_PART.hxx
 Builds/
+gen/

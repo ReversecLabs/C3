@@ -1,5 +1,5 @@
 #pragma once
-#include "EmbeddedResource.h"
+#include "gen/EmbeddedResource.h"
 #ifndef EMBEDDED_DLL_PAYLOAD
 #error Unknown resource guid.
 #endif // !EMBEDDED_DLL_PAYLOAD
