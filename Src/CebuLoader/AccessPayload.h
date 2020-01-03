@@ -6,20 +6,11 @@
 
 // Payload form [16 byte guid][1 byte terminator 0xff][4 byte size][body]
 
-static bool ByteCompare(char* a, char* b, size_t size)
-{
-	for (size_t i = 0; i < size; ++i)
-		if (a[i] != b[i])
-			return false;
-
-	return true;
-}
-
 static char* FindStartOfResource(void* startofImage, size_t sizeOfImage)
 {
 	if (sizeOfImage >= 21)
 		for (char* p = (char*) startofImage; p < (char*) startofImage + sizeOfImage - 21; ++p)
-			if (ByteCompare(p, EMBEDDED_DLL_PAYLOAD, 16) && p[16] == '\xff')
+			if (!memcmp(p, EMBEDDED_DLL_PAYLOAD, 16) && p[16] == '\xff')
 				return p;
 
 	return NULL;
