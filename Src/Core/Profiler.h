@@ -378,6 +378,15 @@ namespace MWR::C3::Core
 			/// @return Network Profile in JSON format.
 			json CreateProfileSnapshot() const override;
 
+			/// Adds a default 'create' property
+			/// @param interface - json definition of interface
+			static void EnsureCreateExists(json& interface);
+
+			/// Adds built-in command definitions (Close/TurnOff and UpdateDelay)
+			/// @param interface - json definition of interface
+			/// @param isDevice - whether interfce is a device (channel/peripheral) or not (connstors)
+			static void AddBuildInCommands(json& interface, bool isDevice);
+
 			/// Get JSON representing available Commands.
 			/// @return Network's Capability in JSON format.
 			json GetCapability();

@@ -62,15 +62,17 @@ namespace MWR::C3
 
 		/// Find iterator to object associated to interface name.
 		/// @param name Interface name
-		/// @return hash of the Interface name.
+		/// @throws if interface was not registered.
+		/// @return iterator to internal storage.
 		template<typename T, std::enable_if_t<std::is_same_v<T, AbstractChannel> or std::is_same_v<T, AbstractPeripheral> or std::is_same_v<T, AbstractConnector>, int> = 0>
-		HashT Find(std::string_view name)
+		auto Find(std::string_view name)
 		{
-			for (auto iterator = GetMap<T>().begin(); iterator != GetMap<T>().end(); ++iterator)
-				if (iterator->second.m_Name == name)
-					return iterator.first;
+			auto const& map = GetMap<T>();
+			auto it = std::find_if(std::cbegin(map), std::cend(map), [&name](auto const& el) { return el.second.m_Name == name; } );
+			if (it == std::cend(map))
+				throw std::runtime_error{ OBF("Requested Device was not registered: ") + std::string(name)};
 
-			return 0;
+			return it;
 		}
 
 		/// Get proper map member for type T.

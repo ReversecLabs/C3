@@ -86,7 +86,7 @@ uint32_t MWR::C3::Core::Profiler::GetBinderTo(uint32_t id)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::ByteVector MWR::C3::Core::Profiler::TranslateCommand(json const& command)
 {
-	return ByteVector{}.Concat(command.at("id").get<uint16_t>(), TranslateArguments(command.at("arguments")));
+	return ByteVector::Create(command.at("id").get<uint16_t>()).Concat(TranslateArguments(command.at("arguments")));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ MWR::ByteVector MWR::C3::Core::Profiler::TranslateStartupCommand(json const& jco
 	if (command == createCommands.cend() || !command->m_IsDevice)
 		throw std::logic_error{ "Failed to find a create command" };
 
-	return ByteVector{}.Concat(command->m_IsNegotiableChannel, command->m_Hash, TranslateArguments(jcommand.at("arguments")));
+	return ByteVector::Create(command->m_IsNegotiableChannel, command->m_Hash).Concat(TranslateArguments(jcommand.at("arguments")));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -692,7 +692,7 @@ void MWR::C3::Core::Profiler::Agent::PerformCreateCommand(json const& jCommandEl
 	// it is a create command
 	DeviceId newDeviceId = ++m_LastDeviceId;
 	ByteVector repacked;
-	repacked.Concat(static_cast<std::underlying_type_t<Command>>(Command::AddDevice), newDeviceId.ToByteVector(), command->m_IsNegotiableChannel, command->m_Hash);
+	repacked.Write(Command::AddDevice, newDeviceId, command->m_IsNegotiableChannel, command->m_Hash);
 	if (auto binder = profiler->GetBinderTo(command->m_Hash); binder && command->m_IsDevice) // peripheral, check if payload is needed.
 	{
 		auto connector = profiler->m_Gateway->m_Gateway.lock()->GetConnector(binder);
@@ -860,18 +860,7 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 	json initialPacket = json::parse(gateway->m_InterfaceFactory.GetCapability());
 
 	for (auto& interface : initialPacket["channels"])
-		if (!interface.contains("create"))
-			interface["create"] = json::parse(R"(
-			{
-				"arguments" :
-					[
-						{
-							"type": "binary",
-							"description": "Blob of data that will be provided to Channel constructor.",
-							"name": "arguments"
-						}
-					]
-			})");
+		EnsureCreateExists(interface);
 
 	// Create method in interface is constructor. It must be a relay/gateway command.
 	// initialPacket is copied to original to prevent iterator invalidation.
@@ -905,13 +894,7 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 
 				// modify initial Packet with extra entries.
 				initialPacket[interfaceType][idToErase].erase("create");
-				initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
-				if (isDevice)
-					initialPacket[interfaceType][idToErase]["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<Command>>(Command::UpdateJitter) },
-						{"arguments", {
-							{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
-							{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}
-						}} });
+				AddBuildInCommands(initialPacket[interfaceType][idToErase], isDevice);
 			}
 			catch (std::exception& e)
 			{
@@ -976,6 +959,37 @@ json MWR::C3::Core::Profiler::Gateway::GetCapability()
 	gatewayPushBack("name", m_Name);
 
 	return initialPacket;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void MWR::C3::Core::Profiler::Gateway::EnsureCreateExists(json& interface)
+{
+	if (!interface.contains("create"))
+		interface["create"] = json::parse(R"(
+{
+	"arguments" :
+		[
+			{
+				"type": "binary",
+				"description": "Blob of data that will be provided to Channel constructor.",
+				"name": "arguments"
+			}
+		]
+}
+)");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void MWR::C3::Core::Profiler::Gateway::AddBuildInCommands(json& interface, bool isDevice)
+{
+	interface["commands"].push_back(json{ {"name", isDevice ? "Close" : "TurnOff"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Close) }, {"arguments", json::array()} });
+
+	if (isDevice)
+		interface["commands"].push_back(json{ {"name", "Set UpdateDelayJitter"}, {"description", "Set delay between receiving function calls."}, {"id", static_cast<std::underlying_type_t<Command>>(Command::UpdateJitter) },
+			{"arguments", {
+				{{"type", "float"}, {"name", "Min"}, {"description", "Minimal delay in seconds"}, {"min", 0.03}},
+				{{"type", "float"}, {"name", "Max"}, {"description", "Maximal delay in seconds. "}, {"min", 0.03}}
+			}} });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -85,7 +85,13 @@ namespace std
 	basic_string<char, std::char_traits<char>, MWR::SecureAllocator<char>>::~basic_string()
 	{
 		// Clear internal buffer if SSO is in effect
+#if _MSC_VER >= 1920 // v142 toolset
+		auto& _My_data = _Mypair._Myval2;
+#elif _MSC_VER >= 1910 // v141 toolset
 		auto& _My_data = this->_Get_data();
+#elif
+#error Unsupported toolset
+#endif
 		if (!_My_data._Large_string_engaged())
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
 
@@ -104,7 +110,13 @@ namespace std
 	basic_string<wchar_t, std::char_traits<wchar_t>, MWR::SecureAllocator<wchar_t>>::~basic_string()
 	{
 		// Clear internal buffer if SSO is in effect
+#if _MSC_VER >= 1920 // v142 toolset
+		auto& _My_data = _Mypair._Myval2;
+#elif _MSC_VER >= 1910 // v141 toolset
 		auto& _My_data = this->_Get_data();
+#elif
+#error Unsupported toolset
+#endif
 		if (!_My_data._Large_string_engaged())
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
 

@@ -340,7 +340,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ parentRid.GetAgentId(), childSideDid });
 
 	//send update message across route.
-	auto&& packet = ProceduresG2X::AddRoute::Create(parentRid, m_Signature, childRid.ToByteVector().Concat(childSideDid));
+	auto&& packet = ProceduresG2X::AddRoute::Create(parentRid, m_Signature, ByteVector::Create(childRid,childSideDid));
 	LockAndSendPacket(packet->ComposeQueryPacket(), receivedFrom);
 }
 

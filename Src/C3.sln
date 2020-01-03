@@ -33,12 +33,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceGenerator", "Tools\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{4A3F736E-E356-407C-BBAC-6724F1F14C94}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChannelLinter", "ChannelLinter\ChannelLinter.vcxproj", "{F2EC73D1-D533-4EE4-955A-A62E306472CC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9341205B-AEE0-483B-9A80-975C2084C3AE} = {9341205B-AEE0-483B-9A80-975C2084C3AE}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.vcxitems*{5cc52339-4b11-47df-b1db-18fbcf057123}*SharedItemsImports = 9
 		Common\Common.vcxitems*{946619c2-5959-4c0c-bc7c-1c27d825b042}*SharedItemsImports = 4
 		Common\Common.vcxitems*{b7c64002-5002-410f-868c-826073afa924}*SharedItemsImports = 4
 		Common\Common.vcxitems*{d00c849b-4fa5-4e84-b9ef-b1c8c338647a}*SharedItemsImports = 4
+		Common\Common.vcxitems*{f2ec73d1-d533-4ee4-955a-a62e306472cc}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -136,6 +142,18 @@ Global
 		{BC9BC3C3-4FBC-4F36-866C-AC2B4758BEBE}.ReleaseWithDebInfo|x64.Build.0 = Release|Any CPU
 		{BC9BC3C3-4FBC-4F36-866C-AC2B4758BEBE}.ReleaseWithDebInfo|x86.ActiveCfg = Release|Any CPU
 		{BC9BC3C3-4FBC-4F36-866C-AC2B4758BEBE}.ReleaseWithDebInfo|x86.Build.0 = Release|Any CPU
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Debug|x64.ActiveCfg = Debug|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Debug|x64.Build.0 = Debug|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Debug|x86.ActiveCfg = Debug|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Debug|x86.Build.0 = Debug|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x64.ActiveCfg = Release|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x64.Build.0 = Release|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x86.ActiveCfg = Release|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.Release|x86.Build.0 = Release|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.ActiveCfg = ReleaseWithDebInfo|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x64.Build.0 = ReleaseWithDebInfo|x64
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.ActiveCfg = ReleaseWithDebInfo|Win32
+		{F2EC73D1-D533-4EE4-955A-A62E306472CC}.ReleaseWithDebInfo|x86.Build.0 = ReleaseWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

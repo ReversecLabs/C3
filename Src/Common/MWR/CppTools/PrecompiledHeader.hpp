@@ -14,10 +14,9 @@
 
 #include "Common/ADVobfuscator/MetaString.h"
 
-#include "Utils.h"																										//< For common functions.
-#include "ByteArray.h"																									//< For ByteArray.
-#include "ByteVector.h"																									//< For ByteVector.
-#include "ByteView.h"																									//< For ByteView.
+#define BYTEVECTOR_ZERO_MEMORY_DESTRUCTION																				//< Increase OpSec by clearing memory when ByteVector is destructed.
+#include "ByteConverter.h"																								//< For ByteView, ByteVector and ByteConverter specializations for common types.
+
 
 
 // Literals.
