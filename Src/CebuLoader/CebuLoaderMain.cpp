@@ -46,10 +46,10 @@ ModuleData moduleData;
 LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 {
 	// Filter by Visual Studio magic for C++ exception, see https://web.archive.org/web/20170911103343/https://support.microsoft.com/en-us/help/185294/prb-exception-code-0xe06d7363-when-calling-win32-seh-apis
-	if (exceptionInfo->ExceptionRecord->ExceptionCode == EH_EXCEPTION_NUMBER and
-		exceptionInfo->ExceptionRecord->ExceptionInformation[2] >= moduleData.m_DllBaseAddress and					// Check exception site image boundaries.
-		exceptionInfo->ExceptionRecord->ExceptionInformation[2] <= moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll and
-		exceptionInfo->ExceptionRecord->ExceptionInformation[0] == EH_PURE_MAGIC_NUMBER1 and
+	if (exceptionInfo->ExceptionRecord->ExceptionCode == EH_EXCEPTION_NUMBER &&
+		exceptionInfo->ExceptionRecord->ExceptionInformation[2] >= moduleData.m_DllBaseAddress &&					// Check exception site image boundaries.
+		exceptionInfo->ExceptionRecord->ExceptionInformation[2] <= moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll &&
+		exceptionInfo->ExceptionRecord->ExceptionInformation[0] == EH_PURE_MAGIC_NUMBER1 &&
 		exceptionInfo->ExceptionRecord->ExceptionInformation[3] == 0)
 	{
 		exceptionInfo->ExceptionRecord->ExceptionInformation[0] = (ULONG_PTR)EH_MAGIC_NUMBER1;					//< CRT magic number, used in exception records for native or mixed C++ thrown objects.

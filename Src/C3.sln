@@ -35,7 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{4A3F736E
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Common\Common.vcxitems*{53182258-f40e-4104-afc6-1f327e556e77}*SharedItemsImports = 4
 		Common\Common.vcxitems*{5cc52339-4b11-47df-b1db-18fbcf057123}*SharedItemsImports = 9
 		Common\Common.vcxitems*{946619c2-5959-4c0c-bc7c-1c27d825b042}*SharedItemsImports = 4
 		Common\Common.vcxitems*{b7c64002-5002-410f-868c-826073afa924}*SharedItemsImports = 4

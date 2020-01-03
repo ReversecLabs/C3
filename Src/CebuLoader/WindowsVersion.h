@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 namespace MWR::Loader
 {
 #define _WIN32_WINNT_NT4            0x0400

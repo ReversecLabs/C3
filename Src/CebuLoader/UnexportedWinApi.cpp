@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "UnexportedWinApi.h"
 
+#include <algorithm>
+#include <string>
+using namespace std::string_literals;
+
 // Based on Blackbone https://github.com/DarthTon/Blackbone
 
 namespace MWR::Loader::UnexportedWinApi
