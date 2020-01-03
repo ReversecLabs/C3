@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <filesystem>
+
 #include "ByteView.h"
 
 /// Example code of specializing ByteConverter for custom type A.

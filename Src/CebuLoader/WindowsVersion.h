@@ -1,6 +1,9 @@
 #pragma once
 
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winternl.h>
 
 namespace MWR::Loader
 {

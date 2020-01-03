@@ -1,5 +1,14 @@
 #pragma once
 
+#include <string>
+#include <string_view>
+#include <vector>
+#include <chrono>
+
+#ifndef OBF
+#	define OBF(x) x
+#endif // !OBF
+
 namespace MWR::Utils
 {
 	/// Check if application is 64bit.

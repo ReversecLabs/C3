@@ -135,6 +135,8 @@ namespace MWR
 		using Super::emplace_back;
 		using Super::pop_back;
 		using Super::resize;
+		friend inline bool operator==(ByteVector const& lhs, ByteVector const& rhs);
+		friend inline bool operator!=(ByteVector const& lhs, ByteVector const& rhs);
 
 		/// Write content of of provided objects.
 		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
@@ -318,29 +320,29 @@ namespace MWR
 			return ret;
 		}
 	}
-}
 
-/// Checks if the contents of lhs and rhs are equal.
-/// @param lhs. Left hand side of operator.
-/// @param rhs. Right hand side of operator.
-inline bool operator==(MWR::ByteVector const& lhs, MWR::ByteVector const& rhs)
-{
-	if (lhs.size() != rhs.size())
-		return false;
-
-	for (size_t i = 0; i < lhs.size(); ++i)
-		if (lhs[i] != rhs[i])
+	/// Checks if the contents of lhs and rhs are equal.
+	/// @param lhs. Left hand side of operator.
+	/// @param rhs. Right hand side of operator.
+	inline bool operator==(MWR::ByteVector const& lhs, MWR::ByteVector const& rhs)
+	{
+		if (lhs.size() != rhs.size())
 			return false;
 
-	return true;
-}
+		for (size_t i = 0; i < lhs.size(); ++i)
+			if (lhs[i] != rhs[i])
+				return false;
 
-/// Checks if the contents of lhs and rhs are equal.
-/// @param lhs. Left hand side of operator.
-/// @param rhs. Right hand side of operator.
-inline bool operator!=(MWR::ByteVector const& lhs, MWR::ByteVector const& rhs)
-{
-	return !(lhs == rhs);
+		return true;
+	}
+
+	/// Checks if the contents of lhs and rhs are equal.
+	/// @param lhs. Left hand side of operator.
+	/// @param rhs. Right hand side of operator.
+	inline bool operator!=(MWR::ByteVector const& lhs, MWR::ByteVector const& rhs)
+	{
+		return !(lhs == rhs);
+	}
 }
 
 namespace std
