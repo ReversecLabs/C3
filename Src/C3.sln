@@ -31,6 +31,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CebuLoader", "CebuLoader\Ce
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceGenerator", "Tools\ResourceGenerator\ResourceGenerator.csproj", "{BC9BC3C3-4FBC-4F36-866C-AC2B4758BEBE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{4A3F736E-E356-407C-BBAC-6724F1F14C94}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.vcxitems*{53182258-f40e-4104-afc6-1f327e556e77}*SharedItemsImports = 4
@@ -168,6 +170,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BC9BC3C3-4FBC-4F36-866C-AC2B4758BEBE} = {4A3F736E-E356-407C-BBAC-6724F1F14C94}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B9B7CEB7-A146-4F29-9A20-085BA7A9E5D7}

