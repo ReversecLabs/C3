@@ -18,7 +18,7 @@ namespace MWR.C3.WebController.Comms
         {
             { Build.BinaryType.Exe, "NodeRelayConsoleExe_{0}.exe"},
             { Build.BinaryType.Dll, "NodeRelayDll_{0}.dll"},
-            { Build.BinaryType.Reflective, "NodeRelayReflectiveDll_{0}.dll"},
+            { Build.BinaryType.Shellcode, "CebuLoader_{0}.dll"},
         };
 
         private static readonly string gatewayFile = "GatewayConsoleExe_{0}.exe";

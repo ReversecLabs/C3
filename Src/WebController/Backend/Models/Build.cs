@@ -13,7 +13,7 @@ namespace MWR.C3.WebController.Models
         {
             Exe,
             Dll,
-            Reflective,
+            Shellcode,
         }
 
         public enum Architecture

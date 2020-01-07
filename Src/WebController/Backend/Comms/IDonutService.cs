@@ -5,12 +5,11 @@ namespace MWR.C3.WebController.Comms
 {
     public interface IDonutService
     {
-        byte[] GenerateShellcode(byte[] payload, DonutRequest request, Build.Architecture arch, Build.BinaryType binaryType);
+        byte[] GenerateShellcode(byte[] payload, DonutRequest request, Build.Architecture arch);
     }
 
     public class DonutServiceOptions
     {
-        public bool Enable { get; set; }
         public string Tempdir { get; set; }
     }
 }

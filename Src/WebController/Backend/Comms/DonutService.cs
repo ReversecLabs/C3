@@ -22,15 +22,12 @@ namespace MWR.C3.WebController.Comms
         private DonutServiceOptions m_Options;
         private string m_TempPath;
 
-        public byte[] GenerateShellcode(byte[] payload, DonutRequest request, Build.Architecture arch, Build.BinaryType binaryType)
+        public byte[] GenerateShellcode(byte[] payload, DonutRequest request, Build.Architecture arch)
         {
-            if (!m_Options.Enable)
-                throw new Exception("Donut service disabled");
-
             // donut api requires files
             var rand = new Random();
             var tmpFilename = rand.NextString(16);
-            var tmpPayloadFile = Path.Combine(m_TempPath, tmpFilename + ".exe");
+            var tmpPayloadFile = Path.Combine(m_TempPath, tmpFilename + ".dll");
             var tmpDonutFile = Path.Combine(m_TempPath, tmpFilename + ".donut");
 
             WriteToFile(payload, tmpPayloadFile);
@@ -38,7 +35,7 @@ namespace MWR.C3.WebController.Comms
             var config = new DonutLibrary.DonutConfig
             {
                 arch = (int)(arch == Build.Architecture.X64 ? DonutLibrary.Architecture.X64 : DonutLibrary.Architecture.X86),
-                mod_type = (int)(binaryType == Build.BinaryType.Exe ? DonutLibrary.ModuleType.EXE : DonutLibrary.ModuleType.DLL),
+                mod_type = (int)(DonutLibrary.ModuleType.DLL),
                 format = (int)request.format,
                 compress = (int)request.compress,
                 entropy = (int)request.entropy,
