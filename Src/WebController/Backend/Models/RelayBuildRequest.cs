@@ -31,7 +31,7 @@ namespace MWR.C3.WebController.Models
         public DonutRequest()
         {
             format = DonutLibrary.OutputFormat.BINARY;
-            compress = DonutLibrary.ComperssionEngine.NONE;
+            compress = DonutLibrary.ComperssionEngine.XPRESS_HUFF;
             entropy = DonutLibrary.EntropyLevel.DEFAULT;
             exitOpt = DonutLibrary.ExitOpt.EXIT_THREAD;
             bypass = DonutLibrary.AmsiWldpBypass.NONE;
