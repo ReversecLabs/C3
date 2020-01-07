@@ -22,7 +22,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-          :options="{'dll': 'dll', 'exe': 'exe'}"
+          :options="{'dll': 'dll', 'exe': 'exe', 'shellcode': 'shellcode'}"
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
