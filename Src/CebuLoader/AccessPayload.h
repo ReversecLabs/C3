@@ -6,12 +6,17 @@
 
 // Payload form [16 byte guid][1 byte terminator 0xff][4 byte size][body]
 
-static char* FindStartOfResource(void* startofImage, size_t sizeOfImage)
+static char* FindStartOfResource(void* startofImage)
 {
-	if (sizeOfImage >= 21)
-		for (char* p = (char*) startofImage; p < (char*) startofImage + sizeOfImage - 21; ++p)
+	__try
+	{
+		for (char* p = (char*) startofImage;; ++p)
 			if (!memcmp(p, EMBEDDED_DLL_PAYLOAD, 16) && p[16] == '\xff')
 				return p;
+	}
+	__except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+	{
+	}
 
 	return NULL;
 }

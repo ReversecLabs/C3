@@ -1,5 +1,7 @@
 #pragma once
 
+#define _HAS_EXCEPTIONS 0
+
 // Standard library includes.
 #include <iostream>																										//< For std::cout, std::cerr. Remove when common files will not nead it.
 #include <algorithm>

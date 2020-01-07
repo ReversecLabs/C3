@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "AccessPayload.h"
-#include "tlhelp32.h"
 
 #ifdef _WIN64
 #define HOST_MACHINE IMAGE_FILE_MACHINE_AMD64
@@ -62,31 +61,18 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 
 /// Search for payload in own memory.
 /// @returns pointer to dll file stored as resource.
-char* GetTargetDll()
+char* GetTargetDll(void* baseAddress)
 {
-	auto ME32 = MODULEENTRY32{ sizeof(MODULEENTRY32), };
-	auto moduleHandle = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
-
-	Module32First(moduleHandle, &ME32);
-	CloseHandle(moduleHandle);
-
-	auto baseAddress = ME32.modBaseAddr;
-	auto dosHeader = Rva2Va<PIMAGE_DOS_HEADER>(baseAddress, 0);
-	auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(baseAddress, dosHeader->e_lfanew);
-
-	return GetPayload(FindStartOfResource(baseAddress, ntHeaders->OptionalHeader.SizeOfImage));
+	return GetPayload(FindStartOfResource(baseAddress));
 }
 
 /// Entry point of the application.
-/// @param argc number of program arguments.
-/// @param argv vector of program arguments.
-int main(int argc, char* argv[])
+int LoadPe(void* dllData)
 {
 	// Loader code based on Shellcode Reflective DLL Injection by Nick Landers https://github.com/monoxgas/sRDI
 	// which is derived from "Improved Reflective DLL Injection" from Dan Staples https://disman.tl/2015/01/30/an-improved-reflective-dll-injection-technique.html
 	// which itself is derived from the original project by Stephen Fewer. https://github.com/stephenfewer/ReflectiveDLLInjection
 
-	auto dllData = GetTargetDll();
 	auto dosHeader = Rva2Va<PIMAGE_DOS_HEADER>(dllData, 0);
 	auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(dllData, dosHeader->e_lfanew);
 	auto sizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
@@ -344,5 +330,20 @@ int main(int argc, char* argv[])
 	RemoveVectoredExceptionHandler(veh);
 	// TODO cleanup after RtlAddFunctionTable
 	VirtualFree((void*)baseAddress, alignedImageSize, MEM_RELEASE);
+	return 0;
 }
 
+void ExecResource(void* baseAddress)
+{
+	if (auto resource = GetTargetDll(baseAddress))
+		LoadPe(resource);
+}
+
+BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
+{
+	// Indicate successful load of the library.
+	if (reason == DLL_PROCESS_ATTACH)
+		ExecResource(instance);
+
+	return TRUE;
+}
