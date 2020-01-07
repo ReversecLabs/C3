@@ -126,7 +126,7 @@ export default class DataTableFooter extends Mixins(C3) {
       background-color: $color-grey-c3
       &:checked
         background-color: $color-grey-900
-        color: $color-green-c3
+        color: $color-blue-c3
   &-paginator
     display: flex
     flex-grow: 3

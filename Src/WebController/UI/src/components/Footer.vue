@@ -1,7 +1,5 @@
 <template>
-  <div class="c3footer">
-    C3 dashboard - MWR Labs
-  </div>
+  <div class="c3footer">C3 dashboard - Labs</div>
 </template>
 
 <script lang="ts">

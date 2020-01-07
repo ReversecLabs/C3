@@ -3,15 +3,10 @@
     <div class="c3checkbox-row" v-on:click="clickOnLabel">
       {{ legend }} &nbsp;
       <span class="icon help" v-if="hasHelp">
-        <div class="help-text">
-          {{ help }}
-        </div>
+        <div class="help-text">{{ help }}</div>
       </span>
     </div>
-    <div
-      class="c3toggle"
-      :class="{ 'disabled' : isDisabled }"
-    >
+    <div class="c3toggle" :class="{ 'disabled' : isDisabled }">
       <input
         v-bind="$attrs"
         class="c3toggle-input"
@@ -23,11 +18,7 @@
         @change="toogleToggle"
         :disabled="disabled"
       />
-      <label
-        class="c3toggle-label"
-        @click="clickOnLabel"
-      >
-      </label>
+      <label class="c3toggle-label" @click="clickOnLabel"></label>
     </div>
   </div>
 </template>
@@ -46,14 +37,19 @@ export default class Toggle extends Mixins(C3, C3FormElement) {
   public isChecked: boolean = this.getIsChecked;
 
   get getIsChecked() {
-    if (this.checked && typeof this.checked === 'boolean' && this.checked === true) {
+    if (
+      this.checked &&
+      typeof this.checked === 'boolean' &&
+      this.checked === true
+    ) {
       return true;
     }
     return false;
   }
 
   public mounted(): void {
-    (this.$refs.booleanCheckbox as HTMLInputElement).checked = this.getIsChecked;
+    (this.$refs
+      .booleanCheckbox as HTMLInputElement).checked = this.getIsChecked;
   }
 
   // boolean true or false, nothing to validate here
@@ -140,7 +136,7 @@ export default class Toggle extends Mixins(C3, C3FormElement) {
       left: 0
       width: 20px
       height: 20px
-      background-color: $color-grey-000
+      background-color: $color-grey-500
       border-radius: 14px
       box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14),0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12)
       z-index: 2
@@ -149,11 +145,11 @@ export default class Toggle extends Mixins(C3, C3FormElement) {
   // Checked
   &-input:checked + &-label
     &:before
-      background-color: #99EBCF
-      border: 1px solid #1B6C51
+      background-color: $color-blue-200
+      border: 1px solid $color-blue-500
     &:after
       left: 20px
-      background-color: $color-green-c3
+      background-color: $color-blue-c3
   &.disabled
     .c3toggle-label
       &:before

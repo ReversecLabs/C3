@@ -1,11 +1,12 @@
-@import './fonts.scss';
-@import './mixins.scss';
-@import './colors.scss';
+@import "./fonts.scss";
+@import "./mixins.scss";
+@import "./colors.scss";
 
-@import './components/button.scss';
+@import "./components/button.scss";
 
-html, body {
-  font-family: 'Roboto', sans-serif;
+html,
+body {
+  font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
@@ -20,7 +21,7 @@ html, body {
 }
 
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: "FSecureSans", sans-serif;
   box-sizing: border-box;
   outline: none !important;
   background-color: inherit;
@@ -43,7 +44,7 @@ label.icon {
 }
 
 .c3link.c3link {
-  color: $color-green-c3;
+  color: $color-blue-c3;
   cursor: pointer;
 }
 

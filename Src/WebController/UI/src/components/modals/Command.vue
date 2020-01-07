@@ -98,7 +98,7 @@ export default class CommandModal extends Mixins(C3) {
 <style scoped lang="sass">
 @import '~@/scss/colors.scss'
 tr:hover .hover-link
-  color: $color-green-c3
+  color: $color-blue-c3
 .command-for
   text-transform: capitalize
 </style>

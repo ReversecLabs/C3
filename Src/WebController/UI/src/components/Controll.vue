@@ -114,8 +114,8 @@ export default class Controll extends Mixins(C3) {
       padding-left: 1rem
       padding-right: 1rem
       &.active
-        color: $color-green-c3
-        border-bottom: 1px solid $color-green-c3
+        color: $color-blue-c3
+        border-bottom: 1px solid $color-blue-c3
       &:hover
         cursor: pointer
 .c3tab

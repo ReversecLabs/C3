@@ -1,5 +1,5 @@
 @import "./svg-icons.scss";
-@import './colors.scss';
+@import "./colors.scss";
 
 $exclamation: "exclamation";
 $close: "close";
@@ -19,9 +19,9 @@ $add-comment: "add-comment";
 
 @mixin generate-checkbox-icons($size, $hover-size: $size) {
   &.#{$checkbox}-on {
-    @include checkboxon("0DF2A4", $size);
+    @include checkboxon("2297ff", $size);
     &:hover {
-      @include checkboxon("0DF2A4", $hover-size);
+      @include checkboxon("2297ff", $hover-size);
     }
   }
   &.#{$checkbox}-on--disabled {
@@ -83,14 +83,14 @@ $add-comment: "add-comment";
   &.#{$rand} {
     @include rand($color, $size);
     &:hover {
-      @include rand('FFFFFF', $hover-size);
+      @include rand("FFFFFF", $hover-size);
     }
   }
 
   &.#{$upload} {
     @include upload($color, $size);
     &:hover {
-      @include upload('FFFFFF', $hover-size);
+      @include upload("FFFFFF", $hover-size);
     }
   }
 

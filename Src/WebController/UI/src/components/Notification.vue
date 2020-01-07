@@ -92,7 +92,7 @@ export default class Notification extends Vue {
     h1+p
       margin-top: .5rem
   &-info
-    border-left: 8px solid $color-green-c3
+    border-left: 8px solid $color-blue-c3
   &-error
     border-left: 8px solid $color-red-500
   &-close

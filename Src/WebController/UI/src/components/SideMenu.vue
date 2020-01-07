@@ -140,7 +140,7 @@ export default class SideMenu extends Mixins(C3) {
     color: $color-grey-400
   &-config-link
     font-family: "Roboto"
-    color: $color-green-c3
+    color: $color-blue-c3
     font-size: 12px
     line-height: 120%
     display: flexc3btn-group
