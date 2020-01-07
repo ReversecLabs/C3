@@ -36,6 +36,9 @@ namespace ResourceGenerator
                 bw.Write((byte)0xff);
                 bw.Write(BitConverter.GetBytes(data.Length));
                 bw.Write(data);
+                string exportName = args.Length < 3 ? "" : args[2];
+                bw.Write(BitConverter.GetBytes(exportName.Length));
+                bw.Write(Encoding.ASCII.GetBytes(exportName));
             }
         }
     }
