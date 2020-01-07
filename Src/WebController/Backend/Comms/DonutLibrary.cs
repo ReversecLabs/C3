@@ -30,6 +30,7 @@ namespace MWR.C3.WebController.Comms
             INVALID_ENGINE = 18,
             COMPRESSION = 19,
             INVALID_ENTROPY = 20,
+            MIXED_ASSEMBLY = 21,
         }
 
         // target architecture
@@ -117,19 +118,26 @@ namespace MWR.C3.WebController.Comms
         [StructLayout(LayoutKind.Sequential, Pack = 0)]
         public struct DonutConfig
         {
+            public uint len, zlen;                // original length of input file and compressed length
+
+            // general / misc options for loader
             public int arch;
             public int bypass;
             public int compress;                 // engine to use when compressing file via RtlCompressBuffer
             public int entropy;                  // entropy/encryption level
-            public int fork;                     // fork/create a new thread for the loader
             public int format;                   // output format for loader
             public int exit_opt;                 // return to caller or invoke RtlExitUserProcess to terminate the host process
             public int thread;                   // run entrypoint of unmanaged EXE as a thread. attempts to intercept calls to exit-related API
+            public ulong oep;                     // original entrypoint of target host file
+
+            // files in/out
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string input;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string output;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
+
+            // .NET stuff
             public string runtime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string domain;
@@ -137,22 +145,31 @@ namespace MWR.C3.WebController.Comms
             public string cls;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string method;
+
+            // command line for DLL/EXE
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
-            public string param;
-            public int ansi;
+            public string param;                 // command line to use for unmanaged DLL/EXE and .NET DLL/EXE
+            public int unicode;                  // param is converted to UNICODE before being passed to DLL function
+
+            // HTTP staging information
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string url;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Constants.DONUT_MAX_NAME)]
             public string modname;
+
+            // DONUT_MODULE
             public int mod_type;
             public int mod_len;
-            public IntPtr mod;                     // points to DONUT_MODULE
-                                                   // DONUT_INSTANCE
+            public IntPtr mod;                   // points to DONUT_MODULE
+
+            // DONUT_INSTANCE
             public int inst_type;                // DONUT_INSTANCE_PIC or DONUT_INSTANCE_URL
             public int inst_len;                 // size of DONUT_INSTANCE
-            public IntPtr inst;                    // points to DONUT_INSTANCE
+            public IntPtr inst;                  // points to DONUT_INSTNCE
+
+            // shellcode generated from configuration
             public int pic_len;                  // size of loader/shellcode
-            public IntPtr pic;                      // points to loader/shellcode
+            public IntPtr pic;                   // points to loader/shellcode
         }
 
         public static byte[] GenerateShellcode(DonutConfig config)
