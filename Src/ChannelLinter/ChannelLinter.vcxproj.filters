@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Manifest Include="..\Common\MWR\WinTools\OsVersion.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Form.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="MockDeviceBridge.cpp" />
+    <ClCompile Include="ChannelLinterMain.cpp" />
+    <ClCompile Include="ChannelLinter.cpp" />
+    <ClCompile Include="ArgumentParser.cpp" />
+    <ClCompile Include="FormElement.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Form.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="MockDeviceBridge.h" />
+    <ClInclude Include="ChannelLinter.h" />
+    <ClInclude Include="ArgumentParser.h" />
+    <ClInclude Include="AppConfig.hpp" />
+    <ClInclude Include="FormElement.h" />
+    <ClInclude Include="argparse.hpp" />
+  </ItemGroup>
+</Project>

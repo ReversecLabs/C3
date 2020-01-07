@@ -378,6 +378,15 @@ namespace MWR::C3::Core
 			/// @return Network Profile in JSON format.
 			json CreateProfileSnapshot() const override;
 
+			/// Adds a default 'create' property
+			/// @param interface - json definition of interface
+			static void EnsureCreateExists(json& interface);
+
+			/// Adds built-in command definitions (Close/TurnOff and UpdateDelay)
+			/// @param interface - json definition of interface
+			/// @param isDevice - whether interfce is a device (channel/peripheral) or not (connstors)
+			static void AddBuildInCommands(json& interface, bool isDevice);
+
 			/// Get JSON representing available Commands.
 			/// @return Network's Capability in JSON format.
 			json GetCapability();
@@ -536,67 +545,42 @@ namespace MWR::C3::Core
 		/// @returns binder id
 		uint32_t GetBinderTo(uint32_t);
 
+		/// Helper to wrap calls to CreateProfileShnapshot
+		class SnapshotProxy
+		{
+		public:
+			/// Create a snapshot proxy
+			/// @param profiler to wrap CreateProfileShnapshot calls
+			SnapshotProxy(Profiler& profiler);
+
+			/// Check if new version of snapshot is available.
+			/// @param ob. Observer token. If observer is not registered function will always return true.
+			/// @returns true if new snapshot is available.
+			bool CheckUpdates();
+
+			/// Create a snapshot
+			/// @return std::nullopt if snaphot hasn't change since the last call
+			json const& GetSnapshot() const;
+
+		private:
+			/// Proxied profiler
+			Profiler& m_Profiler;
+
+			/// helper state variable
+			std::optional<size_t> m_PreviousHash;
+
+			/// Current snapshot
+			json m_CurrentSnapshot;
+		};
+
+		/// Create Snapshot proxy for this profiler
+		/// @returns snapshot proxy for this profiler
+		SnapshotProxy GetSnapshotProxy() { return SnapshotProxy(*this); }
+
 	protected:
 		std::optional<Gateway> m_Gateway;																				///< The "virtual gateway object".
 
-		// Forward declaration.
-		struct SubAction;
-
-		/// Base for all Actions.
-		struct BaseAction
-		{
-			enum State
-			{
-				Unknown = 0,																							///< E.g. uninitialized.
-				Planned = 1,																							///< Scheduled.
-				Cancelled = 2,																							///< Cancelled by user (information from Controller).
-				Pendning = 3,																							///< In progress.
-				Succeeded = 4,																							///< Done.
-				Failed = 5,																								///< Couldn't be done.
-				Abandoned = 6,																							///< By Profiler (e.g. dependent on previous action which has failed).
-			} m_State = State::Unknown;
-			std::string m_StateComment;																					///< E.g. error text.
-
-			/// Public ctor.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			BaseAction(State state, std::string stateComment);
-
-			// Identifier typedefs.
-			using ActionId = std::uint32_t;																				///< ID typedef.
-			using CommandSeqNo = std::uint32_t;																			///< Command sequence number given by Controller.
-
-			std::vector<std::pair<std::string, SubAction>> m_SubActions;												///< For Scenarios.
-		};
-
-		/// Non-root Actions.
-		struct SubAction : BaseAction
-		{
-			/// Public ctor.
-			/// @param description a short summary of what is being done in this step.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			SubAction(std::string description, State state = State::Planned, std::string stateComment = OBF(""));
-
-			std::string m_Description;																					///< Short summary of what is being done in this step.
-		};
-
-		/// Root-Action.
-		struct Action : BaseAction
-		{
-			/// Public ctor.
-			/// @param commandSeqNo Command sequence number given by Controller.
-			/// @param state initial state.
-			/// @param stateComment initial state comment.
-			Action(CommandSeqNo commandSeqNo, State state = State::Unknown, std::string stateComment = OBF(""));
-
-			static ActionId m_LastActionId;																				///< Global counter for Action IDs.
-			ActionId m_ActionId;																						///< ID given by Profiler for Command requested by Controller.
-			CommandSeqNo m_CommandSeqNo;																				///< Command sequence number given by Controller.
-		};
-
 		mutable std::mutex m_AccessMutex;																				///< Mutex for synchronization.
-		std::vector<Action> m_RelevantActions;																			///< List of Actions - planned, pending and finished but not yet reported to the Controller.
 
 		/// Contains hashes of binders. This allows to call: auto tsConnectorhash = GetBinderTo(hashBeacona);. First hash in pair is Peripheral hash and second one is corresponding Connector.
 		std::vector<std::pair<std::uint32_t, std::uint32_t>> m_BindersMappings;

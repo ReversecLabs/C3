@@ -325,7 +325,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<InitializeRouteQuery> Create(RouteId rid, int32_t timestamp, RouteId senderRid, DeviceId senderSideDid, ByteVector encryptedBlob, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<InitializeRouteQuery>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteVector(), timestamp, senderRid.ToByteVector(), senderSideDid.ToByteVector(), encryptedBlob), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, senderRid, senderSideDid).Concat(encryptedBlob), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -360,7 +360,7 @@ namespace MWR::C3::Core
 			{
 				auto query = std::make_unique<AddDeviceResponse>(rid, timestamp, ResponseType::None);
 				std::uint8_t flags = static_cast<std::uint8_t>(isChannel) | (static_cast<std::uint8_t>(isNegotiationChannel) << 1);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray(), timestamp, newDeviceId.ToByteVector(), deviceTypeHash, flags), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, newDeviceId, deviceTypeHash, flags), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -382,7 +382,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<DeliverToBinder> Create(RouteId rid, int32_t timestamp, DeviceId peripheralId, HashT connectorHash, ByteView blobFromPeripheral, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<DeliverToBinder>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Concat(rid.ToByteArray(), timestamp, peripheralId.ToByteVector(), connectorHash, blobFromPeripheral), gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, peripheralId, connectorHash).Concat(blobFromPeripheral), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -416,19 +416,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<NewNegotiatedChannelNotification> Create(RouteId rid, int32_t timestamp, DeviceId newDeviceId, DeviceId negotiatiorId, ByteView inId, ByteView outId, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<NewNegotiatedChannelNotification>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously
-				(
-					query->CompileQueryHeader()
-						.Concat(rid.ToByteArray())
-						.Write
-						(
-							timestamp
-							, newDeviceId.ToUnderlyingType()
-							, negotiatiorId.ToUnderlyingType()
-							, inId
-							, outId
-						)
-					, gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, newDeviceId, negotiatiorId, inId, outId), gatewayPublicEncryptionKey);
 				return query;
 			}
 
@@ -449,16 +437,7 @@ namespace MWR::C3::Core
 			static std::unique_ptr<Notification> Create(RouteId rid, int32_t timestamp, MWR::ByteView blob, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<Notification>(rid, timestamp, ResponseType::None);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously
-				(
-					query->CompileQueryHeader()
-					.Concat(rid.ToByteArray())
-					.Write
-					(
-						timestamp
-						, blob
-					)
-					, gatewayPublicEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, blob), gatewayPublicEncryptionKey);
 				return query;
 			}
 
