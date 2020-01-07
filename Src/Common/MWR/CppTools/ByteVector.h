@@ -329,11 +329,7 @@ namespace MWR
 		if (lhs.size() != rhs.size())
 			return false;
 
-		for (size_t i = 0; i < lhs.size(); ++i)
-			if (lhs[i] != rhs[i])
-				return false;
-
-		return true;
+		return !memcmp(lhs.data(), rhs.data(), lhs.size());
 	}
 
 	/// Checks if the contents of lhs and rhs are equal.

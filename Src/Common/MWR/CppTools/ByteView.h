@@ -135,6 +135,8 @@ namespace MWR
 		using Super::find_last_not_of;
 		using Super::npos;
 		using Super::value_type;
+		friend inline bool operator==(ByteView const& lhs, ByteView const& rhs);
+		friend inline bool operator!=(ByteView const& lhs, ByteView const& rhs);
 
 		/// Read bytes and move ByteView to position after parsed data.
 		/// @param byteCount. How many bytes should be read.
@@ -230,6 +232,25 @@ namespace MWR
 		{
 			return { reinterpret_cast<const uint8_t*>(data), size * sizeof(wchar_t) };
 		}
+	}
+
+	/// Checks if the contents of lhs and rhs are equal.
+	/// @param lhs. Left hand side of operator.
+	/// @param rhs. Right hand side of operator.
+	inline bool operator==(MWR::ByteView const& lhs, MWR::ByteView const& rhs)
+	{
+		if (lhs.size() != rhs.size())
+			return false;
+
+		return !memcmp(lhs.data(), rhs.data(), lhs.size());
+	}
+
+	/// Checks if the contents of lhs and rhs are equal.
+	/// @param lhs. Left hand side of operator.
+	/// @param rhs. Right hand side of operator.
+	inline bool operator!=(MWR::ByteView const& lhs, MWR::ByteView const& rhs)
+	{
+		return !(lhs == rhs);
 	}
 }
 
