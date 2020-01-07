@@ -339,6 +339,7 @@ void ExecResource(void* baseAddress)
 		LoadPe(resource);
 }
 
+#ifdef NDEBUG
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 {
 	// Indicate successful load of the library.
@@ -347,3 +348,17 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 
 	return TRUE;
 }
+#else
+
+#include "tlhelp32.h"
+
+int main()
+{
+	auto ME32 = MODULEENTRY32{ sizeof(MODULEENTRY32), };
+	auto moduleHandle = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+
+	Module32First(moduleHandle, &ME32);
+	CloseHandle(moduleHandle);
+	ExecResource(ME32.modBaseAddr);
+}
+#endif
