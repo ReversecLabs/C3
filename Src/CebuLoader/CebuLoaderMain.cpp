@@ -30,6 +30,7 @@ typedef struct
 #pragma warning(pop)
 
 typedef BOOL(WINAPI* DllEntryPoint)(HINSTANCE, DWORD, LPVOID);
+typedef void (*EXPORTFUNC)(void);
 
 struct ModuleData
 {
@@ -59,15 +60,8 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-/// Search for payload in own memory.
-/// @returns pointer to dll file stored as resource.
-char* GetTargetDll(void* baseAddress)
-{
-	return GetPayload(FindStartOfResource(baseAddress));
-}
-
 /// Entry point of the application.
-int LoadPe(void* dllData)
+int LoadPe(void* dllData, std::string_view callExport)
 {
 	// Loader code based on Shellcode Reflective DLL Injection by Nick Landers https://github.com/monoxgas/sRDI
 	// which is derived from "Improved Reflective DLL Injection" from Dan Staples https://disman.tl/2015/01/30/an-improved-reflective-dll-injection-technique.html
@@ -326,6 +320,42 @@ int LoadPe(void* dllData)
 	auto dllEntryPoint = RVA(DllEntryPoint, baseAddress, ntHeaders->OptionalHeader.AddressOfEntryPoint);
 	dllEntryPoint((HINSTANCE)baseAddress, DLL_PROCESS_ATTACH, NULL);
 
+	///
+	// STEP 10: call our exported function
+	///
+	if (!callExport.empty())
+	{
+
+		do
+		{
+			dataDir = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+			if (!dataDir->Size)
+				break;
+
+			auto exportDir = (PIMAGE_EXPORT_DIRECTORY)(baseAddress + dataDir->VirtualAddress);
+			if (!exportDir->NumberOfNames || !exportDir->NumberOfFunctions)
+				break;
+
+			auto expName = RVA(PDWORD, baseAddress, exportDir->AddressOfNames);
+			auto expOrdinal = RVA(PWORD, baseAddress, exportDir->AddressOfNameOrdinals);
+
+			for (size_t i = 0; i < exportDir->NumberOfNames; i++, expName++, expOrdinal++) {
+
+				auto expNameStr = RVA(LPCSTR, baseAddress, *expName);
+
+				if (!expNameStr)
+					break;
+
+				if (expNameStr == callExport && expOrdinal)
+				{
+					auto exportFunc = RVA(EXPORTFUNC, baseAddress, *(PDWORD)(baseAddress + exportDir->AddressOfFunctions + (*expOrdinal * 4)));
+					exportFunc();
+					break;
+				}
+			}
+		} while (0);
+	}
+
 	// STEP 11 Cleanup
 	RemoveVectoredExceptionHandler(veh);
 	// TODO cleanup after RtlAddFunctionTable
@@ -335,8 +365,12 @@ int LoadPe(void* dllData)
 
 void ExecResource(void* baseAddress)
 {
-	if (auto resource = GetTargetDll(baseAddress))
-		LoadPe(resource);
+	if (auto resource = FindStartOfResource(baseAddress))
+	{
+		auto dllData = GetPayload(resource);
+		auto exportFunc = GetExportName(resource);
+		LoadPe(dllData, exportFunc);
+	}
 }
 
 #ifdef NDEBUG

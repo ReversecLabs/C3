@@ -30,3 +30,18 @@ static char* GetPayload(void* startOfResource)
 {
 	return (char*) startOfResource + 21; //16 bytes guid, 0xff terminator, four bytes size.
 }
+
+inline void* GetPayloadEnd(void* startOfResource)
+{
+	return GetPayload(startOfResource) + GetPayloadSize(startOfResource);
+}
+
+inline size_t GetExportNameSize(void* startOfResource)
+{
+	return *(int32_t*)(GetPayloadEnd(startOfResource));
+}
+
+inline std::string_view GetExportName(void* startOfResource)
+{
+	return {(char*)GetPayloadEnd(startOfResource) + 4, GetExportNameSize(startOfResource) };
+}
