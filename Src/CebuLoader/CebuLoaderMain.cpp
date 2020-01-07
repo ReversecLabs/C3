@@ -384,15 +384,8 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 }
 #else
 
-#include "tlhelp32.h"
-
 int main()
 {
-	auto ME32 = MODULEENTRY32{ sizeof(MODULEENTRY32), };
-	auto moduleHandle = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
-
-	Module32First(moduleHandle, &ME32);
-	CloseHandle(moduleHandle);
-	ExecResource(ME32.modBaseAddr);
+	ExecResource(GetModuleHandle(NULL));
 }
 #endif
