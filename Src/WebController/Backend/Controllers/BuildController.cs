@@ -77,7 +77,10 @@ namespace MWR.C3.WebController.Controllers
                 }
                 output = await customizer.CustomizeNodeRelay(newBuild);
                 if (request.Type == Build.BinaryType.Shellcode)
-                    output = donut.GenerateShellcode(output, request.Donut ?? new DonutRequest(), request.Architecture);
+                {
+                    request.Donut = request.Donut ?? new DonutRequest();
+                    output = donut.GenerateShellcode(output, request.Donut, request.Architecture);
+                }
                 var buildName = String.IsNullOrEmpty(newBuild.Name) ? "" : $"_{newBuild.Name}";
                 return File(output, "application/octet-stream", $"Relay_{newBuild.Arch.ToString().ToLower()}_{newBuild.BuildId:x}{buildName}.{GetBuildExtention(request)}");
             }
