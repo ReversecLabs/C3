@@ -22,10 +22,10 @@
     "vuex-class": "^0.3.2"
   },
   "devDependencies": {
-    "@types/md5": "^2.1.33",
-    "@types/pluralize": "^0.0.29",
     "@types/chai": "^4.1.0",
+    "@types/md5": "^2.1.33",
     "@types/mocha": "^5.2.4",
+    "@types/pluralize": "^0.0.29",
     "@types/sinon": "^7.0.11",
     "@types/vis": "^4.21.15",
     "@vue/cli-plugin-babel": "^3.7.0",
