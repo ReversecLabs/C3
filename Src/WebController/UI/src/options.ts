@@ -41,7 +41,7 @@ export const VisOptions: any = {
     },
     shadow: {
       enabled: false,
-      color: 'rgba(23,223,115,1)',
+      color: 'rgba(75,174,97,1)',
       size: 20,
       x: 0,
       y: 0
@@ -63,7 +63,7 @@ export const VisOptions: any = {
     },
     color: {
       color: '#BDBDBD',
-      highlight: '#0cf2a3'
+      highlight: '#27ae60'
     },
     smooth: false
   },
