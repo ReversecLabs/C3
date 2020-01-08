@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Notification.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Notification is a Vue instance', () => {

@@ -11,16 +11,16 @@ localVue.use(Vuex);
 
 describe('@/components/modals/Relay.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('RelayModal is a Vue instance', () => {
     const wrapper = shallowMount(RelayModal, {
       propsData: {
-        targetId: 'a1d2',
+        targetId: 'a1d2'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

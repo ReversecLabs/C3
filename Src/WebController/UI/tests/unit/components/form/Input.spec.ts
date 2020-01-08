@@ -11,23 +11,23 @@ const localVue = createLocalVue();
 localVue.use(Vuex);
 localVue.use(VeeValidate, {
   inject: false,
-  validity: true,
+  validity: true
 });
 
 describe('@/components/form/Input.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Input is a Vue instance', () => {
     const wrapper = shallowMount(Input, {
       propsData: {
         legend: 'legend...perPage',
-        help: 'help text...',
+        help: 'help text...'
       },
       store,
       localVue,
-      sync: false,
+      sync: false
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

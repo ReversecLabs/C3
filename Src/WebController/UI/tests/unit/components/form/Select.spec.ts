@@ -11,17 +11,18 @@ localVue.use(Vuex);
 
 describe('@/components/form/Select.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Select is a Vue instance', () => {
     const wrapper = shallowMount(Select, {
       propsData: {
         selected: 'perPage',
-        options: '{"5": "5", "10": "10","25": "25", "50": "50", "100": "100", "1000": "All"}',
+        options:
+          '{"5": "5", "10": "10","25": "25", "50": "50", "100": "100", "1000": "All"}'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

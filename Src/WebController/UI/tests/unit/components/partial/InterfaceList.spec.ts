@@ -11,17 +11,17 @@ localVue.use(Vuex);
 
 describe('@/components/partial/InterfaceList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('InterfaceList is a Vue instance', () => {
     const wrapper = shallowMount(InterfaceList, {
       propsData: {
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
@@ -32,14 +32,14 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.c3Interfaces.length;
-    expect(connectorsElementsCount).to.eql(16);
+    expect(connectorsElementsCount).to.eql(26);
   });
 
   it('InterfaceList populated and filtered correctly (connector/return)', () => {
@@ -48,10 +48,10 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'CONNECTOR',
-        returnChannelFilter: 'YES',
+        returnChannelFilter: 'YES'
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.c3Interfaces.length;
@@ -64,14 +64,14 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'CHANNEL',
-        returnChannelFilter: 'YES',
+        returnChannelFilter: 'YES'
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.c3Interfaces.length;
-    expect(connectorsElementsCount).to.eql(3);
+    expect(connectorsElementsCount).to.eql(8);
   });
 
   it('InterfaceList List hasTitle (has)', () => {
@@ -80,10 +80,10 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -96,10 +96,10 @@ describe('@/components/partial/InterfaceList.vue', () => {
         // title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -112,10 +112,10 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -128,10 +128,10 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         // showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -144,14 +144,14 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'ALL',
-        returnChannelFilter: 'ALL',
+        returnChannelFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const relayCount = wrapper.emitted('count');
-    expect(relayCount[0][0]).to.eql(16);
+    expect(relayCount[0][0]).to.eql(26);
   });
 
   it('InterfaceList emiting the list length (filtered)', () => {
@@ -160,13 +160,13 @@ describe('@/components/partial/InterfaceList.vue', () => {
         title: 'Interfaces',
         showEmpty: true,
         interfaceTypeFilter: 'CHANNEL',
-        returnChannelFilter: 'NO',
+        returnChannelFilter: 'NO'
       },
       store,
-      localVue,
+      localVue
     });
 
     const relayCount = wrapper.emitted('count');
-    expect(relayCount[0][0]).to.eql(7);
+    expect(relayCount[0][0]).to.eql(18);
   });
 });

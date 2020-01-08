@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3CommandList"
-     v-if="commands.length || displayEmpty"
-  >
+  <div class="c3CommandList" v-if="commands.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="commands.length">
       <table class="datatable">
@@ -18,7 +15,8 @@
           <tr
             v-for="c3Command in commands"
             v-bind:key="c3Command.id"
-            v-on:click="openModal(c3Command.id, 'COMMAND')">
+            v-on:click="openModal(c3Command.id, 'COMMAND')"
+          >
             <td class="c3link">
               <!-- <span
                 class="c3tab-info-dot"
@@ -50,7 +48,13 @@ import { namespace } from 'vuex-class';
 import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { GetNodeKlassFn } from '@/store/C3Module';
-import { NodeKlass, C3Node, C3Command, C3Gateway, nullNode } from '@/types/c3types';
+import {
+  NodeKlass,
+  C3Node,
+  C3Command,
+  C3Gateway,
+  nullNode
+} from '@/types/c3types';
 
 import C3 from '@/c3';
 import Partial from '@/components/partial/Partial';
@@ -78,7 +82,7 @@ export default class CommandList extends Mixins(C3, Partial) {
       });
     }
 
-    if (this.commandForFilter !== 'ALL' ) {
+    if (this.commandForFilter !== 'ALL') {
       commandsArray = commandsArray.filter((c3Command: C3Command) => {
         return this.commandType(c3Command) === this.commandForFilter;
       });

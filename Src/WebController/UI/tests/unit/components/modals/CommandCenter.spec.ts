@@ -11,16 +11,16 @@ localVue.use(Vuex);
 
 describe('@/components/modals/CommandCenter.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CommandCenterModal is a Vue instance', () => {
     const wrapper = shallowMount(CommandCenterModal, {
       propsData: {
-        targetId: '7c864a181f31cdba',
+        targetId: '7c864a181f31cdba'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

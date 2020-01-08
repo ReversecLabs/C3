@@ -14,7 +14,7 @@ interface PaginateState {
 const state: PaginateState = {
   itemPerPage: 5,
   actualPage: 1,
-  lastChange: Date.now(),
+  lastChange: Date.now()
 };
 
 // Getters
@@ -30,7 +30,7 @@ const getters: GetterTree<PaginateState, RootState> = {
 
   getLastChange(paginateState): number {
     return paginateState.lastChange;
-  },
+  }
 };
 
 // Mutations
@@ -48,7 +48,7 @@ export const mutations: MutationTree<PaginateState> = {
   setActualPage(paginateState, actualPage: number): void {
     paginateState.actualPage = actualPage;
     paginateState.lastChange = Date.now();
-  },
+  }
 };
 
 // Actions
@@ -60,5 +60,5 @@ export const paginateModule: Module<PaginateState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

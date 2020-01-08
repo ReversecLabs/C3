@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Footer.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Footer is a Vue instance', () => {

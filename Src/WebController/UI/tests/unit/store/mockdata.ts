@@ -23,13 +23,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d1-a1d0',
@@ -50,13 +50,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'c1d0-a1d0',
@@ -76,13 +76,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'c1d1-a1d0',
@@ -102,13 +102,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'a1d1',
@@ -130,13 +130,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d0-a1d1',
@@ -157,13 +157,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d1-a1d1',
@@ -184,13 +184,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d3-a1d1',
@@ -211,13 +211,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d4-a1d1',
@@ -238,13 +238,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'e1d1-a1d1',
@@ -264,13 +264,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'e1d0-a1d1',
@@ -290,13 +290,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'a1d2',
@@ -318,13 +318,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d2-a1d2',
@@ -345,13 +345,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d1-a1d2',
@@ -372,13 +372,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d0-a1d2',
@@ -399,13 +399,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'e1d3-a1d2',
@@ -425,13 +425,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'a1d3',
@@ -453,13 +453,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d0-a1d3',
@@ -480,13 +480,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: '11d1-a1d3',
@@ -507,13 +507,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'a1d4',
@@ -535,13 +535,13 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
+      isPending: true
+    }
   },
   {
     uid: 'e1d4-a1d4',
@@ -561,72 +561,72 @@ export const nodes: C3Node[] = [
       data: {
         args: [
           {
-            arg1: 'val1',
-          },
+            arg1: 'val1'
+          }
         ],
-        opt: 'optval',
+        opt: 'optval'
       },
-      isPending: true,
-    },
-  },
- ];
+      isPending: true
+    }
+  }
+];
 
 export const gateway = {
   '//comment': 'gateway',
-  'agentId': 'a1d0',
-  'buildId': '1',
-  'name': 'gateway',
-  'pending': 'false',
-  'isActive': 'true',
-  'error': '',
-  'channels': [
+  agentId: 'a1d0',
+  buildId: '1',
+  name: 'gateway',
+  pending: 'false',
+  isActive: 'true',
+  error: '',
+  channels: [
     {
       iid: '11d1',
       type: '1',
       pending: 'true',
       error: '',
       parentId: '0101',
-      parentType: 'gateway',
-    },
+      parentType: 'gateway'
+    }
   ],
-  'peripherals': [
+  peripherals: [
     {
       pending: 'true',
       error: '',
       iid: '11d1',
-      type: '1',
-    },
+      type: '1'
+    }
   ],
-  'routes': [
+  routes: [
     {
       outgoingInterface: '11d1',
       destinationAgent: 'a1d0',
       receivingInterface: '11d0',
-      isNeighbour: true,
+      isNeighbour: true
     },
     {
       outgoingInterface: '11d1',
       destinationAgent: 'a1d1',
-      receivingInterface: '11d0',
+      receivingInterface: '11d0'
     },
     {
       outgoingInterface: '11d1',
       destinationAgent: 'a1d2',
-      receivingInterface: '11d0',
+      receivingInterface: '11d0'
     },
     {
       outgoingInterface: '11d1',
       destinationAgent: 'a1d3',
-      receivingInterface: '11d0',
+      receivingInterface: '11d0'
     },
     {
       outgoingInterface: '11d1',
       destinationAgent: 'a1d2',
-      receivingInterface: '11d1',
-    },
+      receivingInterface: '11d1'
+    }
   ],
-  'connectors': [],
-  'relays': [
+  connectors: [],
+  relays: [
     {
       buildId: 'b1d0',
       agentId: 'a1d0',
@@ -641,7 +641,7 @@ export const gateway = {
           error: '',
           isReturnChannel: true,
           parentId: 'a1d0',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d1',
@@ -649,7 +649,7 @@ export const gateway = {
           pending: 'true',
           error: '',
           parentId: 'a1d0',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d3',
@@ -657,7 +657,7 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d0',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d4',
@@ -665,42 +665,42 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d0',
-          parentType: 'relay',
-        },
+          parentType: 'relay'
+        }
       ],
       peripherals: [
         {
           iid: '11d1',
           type: '1',
           pending: 'true',
-          error: '',
-        },
+          error: ''
+        }
       ],
       routes: [
         {
           outgoingInterface: '11d1',
           destinationAgent: 'a1d1',
           receivingInterface: '11d0',
-          isNeighbour: true,
+          isNeighbour: true
         },
         {
           outgoingInterface: '11d1',
           destinationAgent: 'a1d2',
-          receivingInterface: '11d0',
+          receivingInterface: '11d0'
         },
         {
           outgoingInterface: '11d3',
           destinationAgent: 'a1d3',
           receivingInterface: '11d0',
-          isNeighbour: true,
+          isNeighbour: true
         },
         {
           outgoingInterface: '11d4',
           destinationAgent: 'a1d2',
           receivingInterface: '11d1',
-          isNeighbour: true,
-        },
-      ],
+          isNeighbour: true
+        }
+      ]
     },
     {
       buildId: 'b1d1',
@@ -715,7 +715,7 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d1',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d1',
@@ -724,7 +724,7 @@ export const gateway = {
           error: '',
           isReturnChannel: true,
           parentId: 'a1d1',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d2',
@@ -732,25 +732,25 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d1',
-          parentType: 'relay',
-        },
+          parentType: 'relay'
+        }
       ],
       peripherals: [
         {
           iid: '11d1',
           type: '1',
           pending: 'true',
-          error: '',
-        },
+          error: ''
+        }
       ],
       routes: [
         {
           outgoingInterface: '11d2',
           destinationAgent: 'a1d2',
           receivingInterface: '11d0',
-          isNeighbour: true,
-        },
-      ],
+          isNeighbour: true
+        }
+      ]
     },
     {
       buildId: 'b1d2',
@@ -765,7 +765,7 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d2',
-          parentType: 'relay',
+          parentType: 'relay'
         },
         {
           iid: '11d1',
@@ -774,18 +774,18 @@ export const gateway = {
           error: '',
           isReturnChannel: true,
           parentId: 'a1d2',
-          parentType: 'relay',
-        },
+          parentType: 'relay'
+        }
       ],
       peripherals: [
         {
           iid: '11d1',
           type: '1',
           pending: 'true',
-          error: '',
-        },
+          error: ''
+        }
       ],
-      routes: [],
+      routes: []
     },
     {
       buildId: 'b1d3',
@@ -800,8 +800,8 @@ export const gateway = {
           pending: 'false',
           error: '',
           parentId: 'a1d3',
-          parentType: 'relay',
-        },
+          parentType: 'relay'
+        }
       ],
       peripherals: [
         {
@@ -809,48 +809,48 @@ export const gateway = {
           type: '1',
           pending: 'true',
           error: '',
-          isReturnChannel: true,
-        },
+          isReturnChannel: true
+        }
       ],
-      routes: [],
-    },
-  ],
+      routes: []
+    }
+  ]
 };
 
 export const capability = {
   connectors: [
-  {
-    type: 0,
-    name: 'MockServer',
-    commands: [
-      {
-        name: 'Create',
-        arguments: [],
-      },
-    ],
-    description: '...',
-  },
-  {
-    type: 1,
-    name: 'TeamServer',
-    commands: [
-      {
-        name: 'Create',
-        arguments: [
-          {
-            type: 'ip',
-            name: 'Address',
-            description: 'Listening post address',
-          },
-          {
-            type: 'uint16',
-            name: 'Port',
-            description: 'Listening post port',
-          },
-        ],
-      },
-    ],
-  },
+    {
+      type: 0,
+      name: 'MockServer',
+      commands: [
+        {
+          name: 'Create',
+          arguments: []
+        }
+      ],
+      description: '...'
+    },
+    {
+      type: 1,
+      name: 'TeamServer',
+      commands: [
+        {
+          name: 'Create',
+          arguments: [
+            {
+              type: 'ip',
+              name: 'Address',
+              description: 'Listening post address'
+            },
+            {
+              type: 'uint16',
+              name: 'Port',
+              description: 'Listening post port'
+            }
+          ]
+        }
+      ]
+    }
   ],
   relayCommands: {
     commands: [
@@ -862,11 +862,11 @@ export const capability = {
             name: 'Peripheral type',
             defaultValue: [
               'peripherals:Beacon:Create',
-              'peripherals:Mock:Create',
+              'peripherals:Mock:Create'
             ],
-            description: '...',
-          },
-        ],
+            description: '...'
+          }
+        ]
       },
       {
         name: 'AddChannel',
@@ -876,13 +876,13 @@ export const capability = {
             name: 'Channel type',
             defaultValue: [
               'channels:NamedPipe:Create',
-              'channels:EwsTask:Create',
+              'channels:EwsTask:Create'
             ],
-            description: '...',
-          },
-        ],
-      },
-    ],
+            description: '...'
+          }
+        ]
+      }
+    ]
   },
   type: 'Exe',
   architecture: 'X86',
@@ -898,11 +898,11 @@ export const capability = {
           name: 'Connector type',
           defaultValue: [
             'connectors:TeamServer:Create',
-            'connectors:MockServer:Create',
+            'connectors:MockServer:Create'
           ],
-          description: '...',
-        },
-      ],
+          description: '...'
+        }
+      ]
     },
     {
       name: 'AddChannel',
@@ -912,12 +912,12 @@ export const capability = {
           name: 'Channel type',
           defaultValue: [
             'channels:NamedPipe:Create',
-            'channels:EwsTask:Create',
+            'channels:EwsTask:Create'
           ],
-          description: '...',
-        },
-      ],
-    },
+          description: '...'
+        }
+      ]
+    }
   ],
   peripherals: [
     {
@@ -931,31 +931,33 @@ export const capability = {
               type: 'string',
               name: 'Pipe name',
               description: `Name of pipe that beacon opens. Name is encrypted in payload,
-                'but is necessary for establishing communication`,
+                'but is necessary for establishing communication`
             },
             {
               type: 'int16',
               min: 1,
               defaultValue: 10,
               name: 'Connection trials',
-              description: 'Connection tail may fail, which does not mean that whole staging was unsuccessful',
+              description:
+                'Connection tail may fail, which does not mean that whole staging was unsuccessful'
             },
             {
               type: 'int16',
               min: 1,
               defaultValue: 1000,
               name: 'Trials delay',
-              description: 'The time in milliseconds to wait between unsuccessful connection trails',
+              description:
+                'The time in milliseconds to wait between unsuccessful connection trails'
             },
             {
               type: 'base64',
               name: 'Payload',
-              description: 'Payload with beacon to inject',
-            },
-          ],
-        },
+              description: 'Payload with beacon to inject'
+            }
+          ]
+        }
       ],
-      description: '...',
+      description: '...'
     },
     {
       type: 1,
@@ -963,10 +965,10 @@ export const capability = {
       commands: [
         {
           name: 'Create',
-          arguments: [],
-        },
-      ],
-    },
+          arguments: []
+        }
+      ]
+    }
   ],
   channels: [
     {
@@ -983,7 +985,7 @@ export const capability = {
                 min: 4,
                 max: 4,
                 randomize: true,
-                description: 'Used to distinguish packets for the channel',
+                description: 'Used to distinguish packets for the channel'
               },
               {
                 type: 'string',
@@ -991,12 +993,12 @@ export const capability = {
                 min: 4,
                 max: 4,
                 randomize: true,
-                description: 'Used to distinguish packets from the channel',
-              },
-            ],
-          ],
-        },
-      ],
+                description: 'Used to distinguish packets from the channel'
+              }
+            ]
+          ]
+        }
+      ]
     },
     {
       type: 1,
@@ -1012,7 +1014,7 @@ export const capability = {
                 min: 4,
                 max: 4,
                 randomize: true,
-                description: 'Used to distinguish packets for the channel',
+                description: 'Used to distinguish packets for the channel'
               },
               {
                 type: 'string',
@@ -1020,122 +1022,123 @@ export const capability = {
                 min: 4,
                 max: 4,
                 randomize: true,
-                description: 'Used to distinguish packets from the channel',
-              },
+                description: 'Used to distinguish packets from the channel'
+              }
             ],
             {
               type: 'string',
               name: 'Uri',
-              description: 'Uri of EWS server',
+              description: 'Uri of EWS server'
             },
             {
               type: 'string',
               name: 'Username',
-              description: 'Username used to sign in',
+              description: 'Username used to sign in'
             },
             {
               type: 'string',
               name: 'Password',
-              description: 'Password used to sign in',
+              description: 'Password used to sign in'
             },
             {
               type: 'boolean',
               name: 'Remove all task',
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
-            },
-          ],
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth'
+            }
+          ]
         },
         {
           name: 'RemoveAllTasks',
-          arguments: [],
-        },
-      ],
-    },
-  ],
+          arguments: []
+        }
+      ]
+    }
+  ]
 };
 
 export const commands = [
   {
-      relayAgentId: 41425,
-      id: 6,
-      name: 'RelayCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
+    relayAgentId: 41425,
+    id: 6,
+    name: 'RelayCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
   },
   {
-      relayAgentId: 41425,
-      interfaceId: 4561,
-      id: 5,
-      name: 'RelayInterfaceCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
+    relayAgentId: 41425,
+    interfaceId: 4561,
+    id: 5,
+    name: 'RelayInterfaceCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
   },
   {
-      interfaceId: 4561,
-      id: 4,
-      name: 'GatewayInterfaceCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
+    interfaceId: 4561,
+    id: 4,
+    name: 'GatewayInterfaceCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
   },
   {
-      id: 3,
-      name: 'GatewayCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
+    id: 3,
+    name: 'GatewayCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
   },
   {
-      id: 1,
-      name: 'GatewayCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
+    id: 1,
+    name: 'GatewayCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
   },
   {
-      id: 0,
-      name: 'GatewayCommand',
-      data: {
-          args: [
-              {
-                  arg1: 'val1',
-              },
-          ],
-          opt: 'optval',
-      },
-      isPending: true,
-  },
+    id: 0,
+    name: 'GatewayCommand',
+    data: {
+      args: [
+        {
+          arg1: 'val1'
+        }
+      ],
+      opt: 'optval'
+    },
+    isPending: true
+  }
 ];

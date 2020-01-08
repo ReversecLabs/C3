@@ -3,7 +3,7 @@
 .c3btn {
   border-radius: 2px;
   height: 32px;
-  font-family: "Roboto";
+  font-family: 'Roboto';
   font-size: 12px;
   display: flex;
   align-items: center;
@@ -16,42 +16,42 @@
   margin-bottom: 16px;
   min-width: 100px;
   cursor: pointer;
-  border: 1px solid $color-green-c3;
-  background-color: $color-green-c3;
+  border: 1px solid $color-blue-c3;
+  background-color: $color-blue-c3;
   box-shadow: none;
   color: $color-grey-800;
   &.pull-right {
     margin-left: auto;
   }
   &:active {
-    border: 1px solid $color-green-c3;
+    border: 1px solid $color-blue-c3;
     background-color: transparent;
     box-shadow: none;
-    color: $color-green-c3;
+    color: $color-blue-c3;
   }
   &--grey {
     border: 1px solid $color-grey-400;
     background-color: transparent;
     color: $color-grey-000;
     &:hover {
-      border: 1px solid $color-green-c3;
-      color: $color-green-c3;
+      border: 1px solid $color-blue-c3;
+      color: $color-blue-c3;
     }
     &:active {
-      border: 1px solid $color-green-c3;
-      background-color: $color-green-c3;
+      border: 1px solid $color-blue-c3;
+      background-color: $color-blue-c3;
       box-shadow: none;
       color: $color-grey-800;
     }
   }
   &--outline {
-    border: 1px solid $color-green-c3;
+    border: 1px solid $color-blue-c3;
     background-color: transparent;
     box-shadow: none;
-    color: $color-green-c3;
+    color: $color-blue-c3;
     &:active {
-      border: 1px solid $color-green-c3;
-      background-color: $color-green-c3;
+      border: 1px solid $color-blue-c3;
+      background-color: $color-blue-c3;
       box-shadow: none;
       color: $color-grey-800;
     }
@@ -60,13 +60,12 @@
     align-self: flex-end;
   }
   &[disabled] {
-    color: #3D3D3D;
-    border: 1px solid  $color-green-800;
+    color: #3d3d3d;
+    border: 1px solid $color-green-800;
     background-color: $color-green-800;
     border-radius: 2px;
     cursor: default;
   }
-
 }
 
 .c3btn-group {
@@ -87,7 +86,7 @@
       border-bottom-left-radius: 0;
     }
     &:hover {
-      border-right: 1px solid $color-green-c3;
+      border-right: 1px solid $color-blue-c3;
       & + .c3btn {
         border-left: none;
       }

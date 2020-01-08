@@ -11,22 +11,22 @@ const localVue = createLocalVue();
 localVue.use(Vuex);
 localVue.use(VeeValidate, {
   inject: false,
-  validity: true,
+  validity: true
 });
 
 describe('@/components/form/CheckBox.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CheckBox is a Vue instance', () => {
     const wrapper = shallowMount(CheckBox, {
       propsData: {
         legend: 'legend...perPage',
-        help: 'help text...',
+        help: 'help text...'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

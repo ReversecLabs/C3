@@ -63,8 +63,8 @@ const C3Module = namespace('c3Module');
     Input,
     Select,
     Textarea,
-    CheckBox,
-  },
+    CheckBox
+  }
 })
 export default class GeneralForm extends Mixins(C3) {
   @Prop() public command!: any;
@@ -82,7 +82,8 @@ export default class GeneralForm extends Mixins(C3) {
 
   // get the capability from store
   @C3Capability.Getter public getCapabilityFor!: GetCapabilityForFn;
-  @C3Capability.Getter public getTypeNameForInterface!: GetTypeNameForInterfaceFn;
+  @C3Capability.Getter
+  public getTypeNameForInterface!: GetTypeNameForInterfaceFn;
 
   get capability() {
     return this.getCapabilityFor(this.interfaceName, this.klass);
@@ -98,10 +99,14 @@ export default class GeneralForm extends Mixins(C3) {
   // TODO: add more field type
   public getFieldType(f: any): string {
     switch (f.type) {
-      case 'boolean': return 'CheckBox';
-      case 'base64': return 'Textarea';
-      case 'base32': return 'Textarea';
-      case 'binary': return 'Textarea';
+      case 'boolean':
+        return 'CheckBox';
+      case 'base64':
+        return 'Textarea';
+      case 'base32':
+        return 'Textarea';
+      case 'binary':
+        return 'Textarea';
     }
     return 'Input';
   }
@@ -130,9 +135,7 @@ export default class GeneralForm extends Mixins(C3) {
   public emitFormData(): void {
     this.isValid = true;
 
-    const formData = [
-      this.clearArray(this.argumentsArray),
-    ];
+    const formData = [this.clearArray(this.argumentsArray)];
     this.clearArray(this.argumentObjects).forEach((element: any) => {
       formData.push(element);
     });
@@ -140,14 +143,15 @@ export default class GeneralForm extends Mixins(C3) {
     const formIsValid = this.isValid;
 
     this.$emit('change', {
-      data: formData, valid: formIsValid,
+      data: formData,
+      valid: formIsValid
     });
   }
 
   // populate the argumentsArray and argumentObjects arrays on load
   public mounted(): void {
-     this.getCommandFrom();
-     this.emitFormData();
+    this.getCommandFrom();
+    this.emitFormData();
   }
 
   public clearArray(data: any): any {
@@ -166,7 +170,7 @@ export default class GeneralForm extends Mixins(C3) {
         rData.push({
           type: t,
           name: n,
-          value: v,
+          value: v
         });
       });
     }
@@ -209,11 +213,11 @@ export default class GeneralForm extends Mixins(C3) {
     return validation;
   }
 
-  public getRandomLenght(e: any): number|undefined {
+  public getRandomLenght(e: any): number | undefined {
     // If no minimum then dont show the random button.
-    if (e.randomize && e.randomize === true || e.randomize === 'true') {
+    if ((e.randomize && e.randomize === true) || e.randomize === 'true') {
       if (e.min && parseInt(e.min, 10) > 0) {
-        return parseInt(e.min , 10);
+        return parseInt(e.min, 10);
       } else {
         e.randomize = 8;
       }
@@ -250,7 +254,7 @@ export default class GeneralForm extends Mixins(C3) {
   public setDefaultValue(inputName: string, inputValue: any) {
     const value = inputValue;
     if (this.hasOptions) {
-      const newValue = this.options.find((item) => {
+      const newValue = this.options.find(item => {
         return inputName === item.name;
       });
       if (!!newValue) {
@@ -262,14 +266,16 @@ export default class GeneralForm extends Mixins(C3) {
 
   public setArgumentData(argument: any): any {
     argument.validation = this.getValidationRule(argument);
-    argument.id = Math.random().toString(36).substring(2);
+    argument.id = Math.random()
+      .toString(36)
+      .substring(2);
     if (this.getRandomLenght(argument)) {
       argument.randomize = this.getRandomLenght(argument);
     }
 
     argument.value = {
       value: '',
-      valid: false,
+      valid: false
     };
 
     return argument;
@@ -277,7 +283,8 @@ export default class GeneralForm extends Mixins(C3) {
 
   // populate the argumentsArray and argumentObjects arrays
   public getCommandFrom(): any {
-    if (this.capability &&
+    if (
+      this.capability &&
       this.capability.commands &&
       this.capability.commands.length > 0
     ) {
@@ -301,7 +308,7 @@ export default class GeneralForm extends Mixins(C3) {
       } else {
         this.addNotify({
           type: 'info',
-          message: 'Command not set up correctly, Form can\'t be generated.',
+          message: "Command not set up correctly, Form can't be generated."
         });
       }
     }

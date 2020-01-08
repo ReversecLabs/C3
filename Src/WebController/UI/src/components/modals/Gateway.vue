@@ -1,14 +1,17 @@
 <template>
   <div class="c3modal-body" v-if="gateway !== null">
-    <div
-      class="c3modal-header"
-      :class="{ 'has-error': !!gateway.error }"
-    >
-      <h1>Gateway: <span>&nbsp;{{ gateway.name }} / {{ gateway.id }}</span></h1>
+    <div class="c3modal-header" :class="{ 'has-error': !!gateway.error }">
+      <h1>
+        Gateway: <span>&nbsp;{{ gateway.name }} / {{ gateway.id }}</span>
+      </h1>
       <div class="flex-row">
         <div class="details">
-          <p>Build ID <span>{{ gateway.buildId }}</span></p>
-          <p>Start time <span>{{ unixTimeToString(gateway.timestamp) }}</span></p>
+          <p>
+            Build ID <span>{{ gateway.buildId }}</span>
+          </p>
+          <p>
+            Start time <span>{{ unixTimeToString(gateway.timestamp) }}</span>
+          </p>
         </div>
         <div class="actions">
           <button
@@ -19,15 +22,12 @@
           </button>
         </div>
       </div>
-      <p
-        v-if="gateway.error && gateway.error !== ''"
-        class="message-with-icon"
-      >
+      <p v-if="gateway.error && gateway.error !== ''" class="message-with-icon">
         <span class="icon warning"></span>
         Error: {{ gateway.error }}
       </p>
       <div class="flex-row">
-        <NetworkStats style="width:250px;"/>
+        <NetworkStats style="width:250px;" />
         <div class="actions">
           <button
             class="c3btn c3btn--outline"
@@ -39,20 +39,13 @@
       </div>
     </div>
     <div class="c3modal-details">
-      <ChannelList
-        :target-id="null"
-        title="Channels"
-        :show-empty="true"
-      />
+      <ChannelList :target-id="null" title="Channels" :show-empty="true" />
       <PheripheralList
         :target-id="null"
         title="Peripherals"
         :show-empty="true"
       />
-      <ConnectorList
-        title="Connectors"
-        :show-empty="true"
-      />
+      <ConnectorList title="Connectors" :show-empty="true" />
       <RouteList
         :target-id="null"
         :parent-id="gateway.id"
@@ -87,8 +80,8 @@ const C3Module = namespace('c3Module');
     NetworkStats,
     ConnectorList,
     PheripheralList,
-    CommandCenterModal,
-  },
+    CommandCenterModal
+  }
 })
 export default class GatewayModal extends Mixins(C3) {
   public mounted(): void {
@@ -96,7 +89,11 @@ export default class GatewayModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 }
 </script>

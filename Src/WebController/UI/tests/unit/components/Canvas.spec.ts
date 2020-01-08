@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Canvas.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Canvas is a Vue instance', () => {

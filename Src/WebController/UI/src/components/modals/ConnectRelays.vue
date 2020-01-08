@@ -4,10 +4,20 @@
       <h1>Source Relay &amp; Interface</h1>
       <div class="flex-row">
         <div class="details">
-          <p>Relay <span>&nbsp;{{ relay.name }} / {{ relay.id }}</span></p>
-          <p>Build ID <span>{{ relay.buildId }}</span></p>
-          <p>{{ c3Interface.klass.toLowerCase() }} ID <span>{{ c3Interface.id || '' }}</span></p>
-          <p>{{ c3Interface.klass.toLowerCase() }} Type <span>{{ interfaceTypeName(c3Interface) }}</span></p>
+          <p>
+            Relay <span>&nbsp;{{ relay.name }} / {{ relay.id }}</span>
+          </p>
+          <p>
+            Build ID <span>{{ relay.buildId }}</span>
+          </p>
+          <p>
+            {{ c3Interface.klass.toLowerCase() }} ID
+            <span>{{ c3Interface.id || '' }}</span>
+          </p>
+          <p>
+            {{ c3Interface.klass.toLowerCase() }} Type
+            <span>{{ interfaceTypeName(c3Interface) }}</span>
+          </p>
         </div>
       </div>
     </div>
@@ -25,7 +35,8 @@
       </div>
 
       <div class="c3modal-form">
-        <CommandCenterModal class="embeded-modal"
+        <CommandCenterModal
+          class="embeded-modal"
           :target-id="selectedRelay"
           :embeded="false"
           @change="changeForm($event, formData)"
@@ -40,8 +51,18 @@
 import { namespace } from 'vuex-class';
 import { Component, Mixins, Prop } from 'vue-property-decorator';
 
-import { C3Gateway, NodeKlass, C3Node, C3Relay, nullNode } from '@/types/c3types';
-import { GetTypesForInterfaceKlassFn, InterfaceItem, GetCommandTargetForFn } from '@/store/C3Capability';
+import {
+  C3Gateway,
+  NodeKlass,
+  C3Node,
+  C3Relay,
+  nullNode
+} from '@/types/c3types';
+import {
+  GetTypesForInterfaceKlassFn,
+  InterfaceItem,
+  GetCommandTargetForFn
+} from '@/store/C3Capability';
 
 import C3 from '@/c3';
 import Input from '@/components/form/Input.vue';
@@ -49,7 +70,11 @@ import Select from '@/components/form/Select.vue';
 import GeneralForm from '@/components/form/GeneralForm.vue';
 import AddChannelForm from '@/components/form/AddChannelForm.vue';
 import CommandCenterModal from './CommandCenter.vue';
-import { GetRelayFn, GetInterfaceFn, GetInterfacesForFn } from '@/store/C3Module';
+import {
+  GetRelayFn,
+  GetInterfaceFn,
+  GetInterfacesForFn
+} from '@/store/C3Module';
 
 const C3Module = namespace('c3Module');
 const C3Capability = namespace('c3Capability');
@@ -59,15 +84,16 @@ const C3Capability = namespace('c3Capability');
     Input,
     Select,
     GeneralForm,
-    CommandCenterModal,
-  },
+    CommandCenterModal
+  }
 })
 export default class ConnectRelayModal extends Mixins(C3) {
   @Prop() public targetId!: string;
   @Prop() public options!: any;
 
   @C3Capability.Getter public getCommandTargetFor!: GetCommandTargetForFn;
-  @C3Capability.Getter public getTypesForInterfaceKlass!: GetTypesForInterfaceKlassFn;
+  @C3Capability.Getter
+  public getTypesForInterfaceKlass!: GetTypesForInterfaceKlassFn;
 
   @C3Module.Getter public getRelays!: C3Node[];
   @C3Module.Getter public getRelay!: GetRelayFn;
@@ -125,7 +151,7 @@ export default class ConnectRelayModal extends Mixins(C3) {
     return {
       formDefault: this.options.formDefault,
       source: this.options.source,
-      targetGroup: 'NewRelayCommandGroup',
+      targetGroup: 'NewRelayCommandGroup'
     };
   }
 
@@ -138,8 +164,9 @@ export default class ConnectRelayModal extends Mixins(C3) {
     nodes.forEach((node, index) => {
       if (node.id !== this.relay.id) {
         optionsCount++;
-        selectOptions[node.id] =
-          `${node.id} ${node.name ? '- ' + node.name + ' ' : ''}`;
+        selectOptions[node.id] = `${node.id} ${
+          node.name ? '- ' + node.name + ' ' : ''
+        }`;
         if (first === '') {
           first = node.id;
         }
@@ -165,7 +192,11 @@ export default class ConnectRelayModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 
   public changeForm(data: any): void {
@@ -187,4 +218,3 @@ export default class ConnectRelayModal extends Mixins(C3) {
     box-shadow: none
     padding: 0
 </style>
-

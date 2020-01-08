@@ -1,24 +1,30 @@
 <template>
   <div class="c3modal-body" v-if="relay !== undefined">
-    <div
-      class="c3modal-header"
-      :class="{ 'has-error': !!relay.error }"
-    >
-      <h1>Relay: <span>&nbsp;{{ relay.name }} / {{ relay.id }}</span></h1>
+    <div class="c3modal-header" :class="{ 'has-error': !!relay.error }">
+      <h1>
+        Relay: <span>&nbsp;{{ relay.name }} / {{ relay.id }}</span>
+      </h1>
       <div class="flex-row">
         <div class="details">
-          <p>Parent
+          <p>
+            Parent
             <span
               class="c3link"
               v-on:click="openModal(relay.parentId, relay.parentKlass)"
             >
-              <span class="capitalize">{{ relay.parentKlass.toLowerCase() }} / </span>
+              <span class="capitalize"
+                >{{ relay.parentKlass.toLowerCase() }} /
+              </span>
               {{ relay.parentId }}
             </span>
           </p>
 
-          <p>Build ID <span>{{ relay.buildId }}</span></p>
-          <p>Last seen <span>{{ unixTimeToString(relay.timestamp) }}</span></p>
+          <p>
+            Build ID <span>{{ relay.buildId }}</span>
+          </p>
+          <p>
+            Last seen <span>{{ unixTimeToString(relay.timestamp) }}</span>
+          </p>
         </div>
 
         <div class="actions">
@@ -33,36 +39,81 @@
 
       <div class="flex-row host-info">
         <div class="details">
-          <p><span class="details-title">Computer Name </span><span class="details-value">{{ relay.hostInfo.computerName }}</span></p>
-          <p><span class="details-title">User Name </span><span class="details-value">{{ relay.hostInfo.userName }}</span></p>
-          <p><span class="details-title">Domain </span><span class="details-value">{{ relay.hostInfo.domain === '' ? '-' : relay.hostInfo.domain }}</span></p>
-          <p><span class="details-title">processId </span><span class="details-value">{{ relay.hostInfo.processId }}</span></p>
-          <p><span class="details-title">is Elevated </span><span class="details-value">{{ relay.hostInfo.isElevated }}</span></p>
+          <p>
+            <span class="details-title">Computer Name </span
+            ><span class="details-value">{{
+              relay.hostInfo.computerName
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">User Name </span
+            ><span class="details-value">{{ relay.hostInfo.userName }}</span>
+          </p>
+          <p>
+            <span class="details-title">Domain </span
+            ><span class="details-value">{{
+              relay.hostInfo.domain === '' ? '-' : relay.hostInfo.domain
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">processId </span
+            ><span class="details-value">{{ relay.hostInfo.processId }}</span>
+          </p>
+          <p>
+            <span class="details-title">is Elevated </span
+            ><span class="details-value">{{ relay.hostInfo.isElevated }}</span>
+          </p>
         </div>
         <div class="details">
-          <p><span class="details-title">OS Major Version </span><span class="details-value">{{ relay.hostInfo.osMajorVersion }}</span></p>
-          <p><span class="details-title">OS Minor Version </span><span class="details-value">{{ relay.hostInfo.osMinorVersion }}</span></p>
-          <p><span class="details-title">OS Build Number </span><span class="details-value">{{ relay.hostInfo.osBuildNumber }}</span></p>
-          <p><span class="details-title">OS Service Pack Major </span><span class="details-value">{{ relay.hostInfo.osServicePackMajor }}</span></p>
-          <p><span class="details-title">OS Service Pack Minor </span><span class="details-value">{{ relay.hostInfo.osServicePackMinor }}</span></p>
-          <p><span class="details-title">OS Product Type </span><span class="details-value">{{ relay.hostInfo.osProductType }}</span></p>
-          <p><span class="details-title">OS Version </span><span class="details-value">{{ relay.hostInfo.osVersion }}</span></p>
+          <p>
+            <span class="details-title">OS Major Version </span
+            ><span class="details-value">{{
+              relay.hostInfo.osMajorVersion
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Minor Version </span
+            ><span class="details-value">{{
+              relay.hostInfo.osMinorVersion
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Build Number </span
+            ><span class="details-value">{{
+              relay.hostInfo.osBuildNumber
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Service Pack Major </span
+            ><span class="details-value">{{
+              relay.hostInfo.osServicePackMajor
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Service Pack Minor </span
+            ><span class="details-value">{{
+              relay.hostInfo.osServicePackMinor
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Product Type </span
+            ><span class="details-value">{{
+              relay.hostInfo.osProductType
+            }}</span>
+          </p>
+          <p>
+            <span class="details-title">OS Version </span
+            ><span class="details-value">{{ relay.hostInfo.osVersion }}</span>
+          </p>
         </div>
       </div>
-      <p
-        v-if="relay.error && relay.error !== ''"
-        class="message-with-icon"
-      >
+      <p v-if="relay.error && relay.error !== ''" class="message-with-icon">
         <span class="icon warning"></span>
         Error: {{ relay.error }}
       </p>
     </div>
     <div class="c3modal-details">
-      <ChannelList
-        :target-id="targetId"
-        title="Channels"
-        :show-empty="true"
-      />
+      <ChannelList :target-id="targetId" title="Channels" :show-empty="true" />
       <PheripheralList
         :target-id="targetId"
         title="Peripherals"
@@ -77,7 +128,9 @@
       />
       <template v-if="JSON.stringify(relay.initialCommand) !== '{}'">
         <h1>Command</h1>
-        <pre class="c3command">{{ JSON.stringify(relay.initialCommand, null, 4) }}</pre>
+        <pre class="c3command">{{
+          JSON.stringify(relay.initialCommand, null, 4)
+        }}</pre>
       </template>
     </div>
   </div>
@@ -101,8 +154,8 @@ const C3Module = namespace('c3Module');
   components: {
     RouteList,
     ChannelList,
-    PheripheralList,
-  },
+    PheripheralList
+  }
 })
 export default class RelayModal extends Mixins(C3) {
   @Prop() public targetId!: string;
@@ -122,7 +175,11 @@ export default class RelayModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 }
 </script>
