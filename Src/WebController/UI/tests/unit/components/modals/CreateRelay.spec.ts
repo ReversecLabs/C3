@@ -16,6 +16,12 @@ describe('@/components/modals/CreateRelay.vue', () => {
 
   it('CreateRelayModal is a Vue instance', () => {
     const wrapper = shallowMount(CreateRelayModal, {
+      propsData: {
+        options: {
+          formDefault: {},
+          source: {}
+        }
+      },
       store,
       localVue
     });

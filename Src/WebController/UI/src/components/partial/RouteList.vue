@@ -1,5 +1,5 @@
 <template>
-  <div class="c3route-list" v-if="routes.length || displayEmpty">
+  <div class="c3route-list" v-if="(routes && routes.length) || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="routes.length">
       <table class="datatable">
