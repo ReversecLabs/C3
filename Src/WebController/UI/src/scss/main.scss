@@ -1,12 +1,12 @@
-@import "./fonts.scss";
-@import "./mixins.scss";
-@import "./colors.scss";
+@import './fonts.scss';
+@import './mixins.scss';
+@import './colors.scss';
 
-@import "./components/button.scss";
+@import './components/button.scss';
 
 html,
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
@@ -21,7 +21,7 @@ body {
 }
 
 * {
-  font-family: "FSecureSans", sans-serif;
+  font-family: 'FSecureSans', sans-serif;
   box-sizing: border-box;
   outline: none !important;
   background-color: inherit;
@@ -32,10 +32,10 @@ span.icon {
   width: 24px;
   height: 24px;
   // color, hover-color, size, hover-size?
-  @include generate-gray-icons("828282", "828282", 24px);
-  @include generate-white-icons("FFFFFF", "FFFFFF", 24px);
-  @include generate-red-icons("BF0001", "BF0001", 24px);
-  @include generate-purple-icons("AB61F6", "AB61F6", 24px);
+  @include generate-gray-icons('828282', '828282', 24px);
+  @include generate-white-icons('FFFFFF', 'FFFFFF', 24px);
+  @include generate-red-icons('BF0001', 'BF0001', 24px);
+  @include generate-purple-icons('AB61F6', 'AB61F6', 24px);
 }
 
 label.icon {

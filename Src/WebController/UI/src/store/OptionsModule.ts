@@ -15,7 +15,7 @@ interface OptionsState {
 const state: OptionsState = {
   baseUrl: 'http://localhost',
   port: 52935,
-  refreshInterval: 2000,
+  refreshInterval: 2000
 };
 
 // Getters
@@ -35,7 +35,7 @@ const getters: GetterTree<OptionsState, RootState> = {
 
   getRefreshInterval(optionsState): number {
     return optionsState.refreshInterval;
-  },
+  }
 };
 
 // Mutations
@@ -55,8 +55,7 @@ export const mutations: MutationTree<OptionsState> = {
 
   setRefreshInterval(optionsState, refreshRate: number): void {
     optionsState.refreshInterval = refreshRate;
-  },
-
+  }
 };
 
 // Actions
@@ -68,5 +67,5 @@ export const optionsModule: Module<OptionsState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

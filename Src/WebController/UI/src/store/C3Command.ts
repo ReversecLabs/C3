@@ -14,7 +14,7 @@ export interface C3CommandState {
 
 export const state: C3CommandState = {
   commands: [],
-  totalCount: 0,
+  totalCount: 0
 };
 
 // Getters
@@ -27,15 +27,15 @@ export const getters: GetterTree<C3CommandState, RootState> = {
     return C3State.commands;
   },
 
-  getCommand: (C3State) => (id: string | number): C3Command | undefined => {
-    return C3State.commands.find((command) => {
+  getCommand: C3State => (id: string | number): C3Command | undefined => {
+    return C3State.commands.find(command => {
       return '' + command.id === '' + id;
     });
   },
 
   getCommandCount(C3State): number {
     return C3State.totalCount;
-  },
+  }
 };
 
 // Mutations
@@ -47,7 +47,7 @@ export const mutations: MutationTree<C3CommandState> = {
 
   updateTotalCount(C3State, totalCount: number) {
     C3State.totalCount = totalCount;
-  },
+  }
 };
 
 // Actions
@@ -61,12 +61,11 @@ const actions: ActionTree<C3CommandState, RootState> = {
       const perPage = context.rootGetters['paginateModule/getItemPerPage'];
 
       const url = `/api/gateway/${gatewayId}/command?all=true&page=${page}&perPage=${perPage}`;
-      const baseURL =
-        `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
+      const baseURL = `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
 
       axios
         .get(url, { baseURL })
-        .then((response) => {
+        .then(response => {
           // store the gateway
           context.commit('updateCommands', response.data);
 
@@ -79,13 +78,12 @@ const actions: ActionTree<C3CommandState, RootState> = {
           if (!!totalCount) {
             context.commit('updateTotalCount', totalCount);
           }
-
         })
-        .catch((error) => {
+        .catch(error => {
           context.dispatch(
             'notifyModule/insertNotify',
             { type: 'error', message: error.message },
-            { root: true },
+            { root: true }
           );
           // tslint:disable-next-line:no-console
           console.error(error.message);
@@ -94,12 +92,12 @@ const actions: ActionTree<C3CommandState, RootState> = {
       context.dispatch(
         'notifyModule/insertNotify',
         { type: 'error', message: 'missing: gatewayId' },
-        { root: true },
+        { root: true }
       );
       // tslint:disable-next-line:no-console
       console.error('missing: gatewayId');
     }
-  },
+  }
 };
 
 export const c3CommandModule: Module<C3CommandState, RootState> = {
@@ -107,5 +105,5 @@ export const c3CommandModule: Module<C3CommandState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

@@ -30,11 +30,11 @@ export const capability = {
             'gateway:Command:AddChannelSlack',
             'gateway:Command:AddNegotiationChannelSlack',
             'gateway:Command:AddChannelUncShareFile',
-            'gateway:Command:AddNegotiationChannelUncShareFile',
-          ],
-        },
-      ],
-    },
+            'gateway:Command:AddNegotiationChannelUncShareFile'
+          ]
+        }
+      ]
+    }
   ],
   peripherals: [
     {
@@ -42,18 +42,19 @@ export const capability = {
         {
           arguments: [
             {
-              description: 'Error set on connector. Send empty to clean up error',
-              name: 'Error message',
-            },
+              description:
+                'Error set on connector. Send empty to clean up error',
+              name: 'Error message'
+            }
           ],
           description: 'Set error on connector.',
           id: 0,
-          name: 'Test command',
+          name: 'Test command'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -61,29 +62,29 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
-        },
+          name: 'UpdateDelayJitter'
+        }
       ],
       name: 'Mock',
-      type: 1562929860,
+      type: 1562929860
     },
     {
       commands: [
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -91,23 +92,23 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
-        },
+          name: 'UpdateDelayJitter'
+        }
       ],
       name: 'Beacon',
-      type: 2927991403,
-    },
+      type: 2927991403
+    }
   ],
   channels: [
     {
@@ -116,12 +117,12 @@ export const capability = {
           arguments: [],
           description: 'Clearing old tasks from server may increase bandwidth',
           id: 0,
-          name: 'Remove all tasks',
+          name: 'Remove all tasks'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -129,18 +130,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -151,62 +152,64 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'Uri of EWS server',
               min: 1,
               name: 'Uri',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Username used to sign in',
               min: 1,
               name: 'Username',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Password used to sign in',
               name: 'Password',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Remove all task',
-              type: 'boolean',
-            },
-          ],
-        },
+              type: 'boolean'
+            }
+          ]
+        }
       ],
       name: 'EwsTask',
-      type: 3521084197,
+      type: 3521084197
     },
     {
       commands: [
         {
           arguments: [
             {
-              description: 'Error set on connector. Send empty to clean up error',
-              name: 'Error message',
-            },
+              description:
+                'Error set on connector. Send empty to clean up error',
+              name: 'Error message'
+            }
           ],
           description: 'Set error on connector.',
           id: 0,
-          name: 'Test command',
+          name: 'Test command'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -214,18 +217,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -236,21 +239,21 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
-          ],
-        },
+                type: 'string'
+              }
+            ]
+          ]
+        }
       ],
       name: 'ContributionTestChannel',
-      type: 2865778679,
+      type: 2865778679
     },
     {
       commands: [
@@ -258,12 +261,12 @@ export const capability = {
           arguments: [],
           description: 'Clearing old files from server may increase bandwidth',
           id: 0,
-          name: 'Remove all files',
+          name: 'Remove all files'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -271,18 +274,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -293,52 +296,55 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old files from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old files from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
-          ],
-        },
+              type: 'boolean'
+            }
+          ]
+        }
       ],
       name: 'OneDrive365RestFile',
-      type: 3235357973,
+      type: 3235357973
     },
     {
       commands: [
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -346,18 +352,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -368,21 +374,21 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
-          ],
-        },
+                type: 'string'
+              }
+            ]
+          ]
+        }
       ],
       name: 'NamedPipe',
-      type: 3583579335,
+      type: 3583579335
     },
     {
       commands: [
@@ -390,12 +396,12 @@ export const capability = {
           arguments: [],
           description: 'Clearing old tasks from server may increase bandwidth',
           id: 0,
-          name: 'Remove all tasks',
+          name: 'Remove all tasks'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -403,18 +409,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -425,52 +431,55 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
-          ],
-        },
+              type: 'boolean'
+            }
+          ]
+        }
       ],
       name: 'Outlook365RestTask',
-      type: 1387616683,
+      type: 1387616683
     },
     {
       commands: [
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -478,18 +487,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -500,47 +509,49 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'This token is what channel needs to interact with Slack\'s API',
+              description:
+                "This token is what channel needs to interact with Slack's API",
               min: 1,
               name: 'Slack token',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Name of Slack\'s channel used by api',
+              description: "Name of Slack's channel used by api",
               min: 4,
               name: 'Channel name',
               randomize: true,
-              type: 'string',
-            },
-          ],
-        },
+              type: 'string'
+            }
+          ]
+        }
       ],
       name: 'Slack',
-      type: 761093896,
+      type: 761093896
     },
     {
       commands: [
         {
           arguments: [],
-          description: 'Clearing old files from directory may increase bandwidth',
+          description:
+            'Clearing old files from directory may increase bandwidth',
           id: 0,
-          name: 'Remove all message files',
+          name: 'Remove all message files'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -548,18 +559,18 @@ export const capability = {
               description: 'Minimal delay in milliseconds',
               min: 30,
               name: 'Min',
-              type: 'uint16',
+              type: 'uint16'
             },
             {
               description: 'Maximal delay in milliseconds. ',
               min: 30,
               name: 'Max',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           description: 'Set delay between receiving function calls.',
           id: 65534,
-          name: 'UpdateDelayJitter',
+          name: 'UpdateDelayJitter'
         },
         {
           name: 'Create',
@@ -570,34 +581,35 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'UNC or absolute path of fileshare',
               min: 1,
               name: 'Filesystem path',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: false,
-              description: 'Clearing old files before starting communication may increase bandwidth',
+              description:
+                'Clearing old files before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
-          ],
-        },
+              type: 'boolean'
+            }
+          ]
+        }
       ],
       name: 'UncShareFile',
-      type: 2164756926,
-    },
+      type: 2164756926
+    }
   ],
   connectors: [
     {
@@ -605,22 +617,23 @@ export const capability = {
         {
           arguments: [
             {
-              description: 'Error set on connector. Send empty to clean up error',
-              name: 'Error message',
-            },
+              description:
+                'Error set on connector. Send empty to clean up error',
+              name: 'Error message'
+            }
           ],
           description: 'Set error on connector.',
           id: 0,
-          name: 'Test command',
+          name: 'Test command'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'TurnOff',
-        },
+          name: 'TurnOff'
+        }
       ],
       name: 'MockServer',
-      type: 2331856458,
+      type: 2331856458
     },
     {
       commands: [
@@ -629,22 +642,23 @@ export const capability = {
             {
               description: 'Id associated to beacon',
               min: 1,
-              name: 'Route Id',
-            },
+              name: 'Route Id'
+            }
           ],
-          description: 'Close socket connection with TeamServer if beacon is not available',
+          description:
+            'Close socket connection with TeamServer if beacon is not available',
           id: 1,
-          name: 'Close connection',
+          name: 'Close connection'
         },
         {
           arguments: [],
           id: 65535,
-          name: 'TurnOff',
-        },
+          name: 'TurnOff'
+        }
       ],
       name: 'TeamServer',
-      type: 549339708,
-    },
+      type: 549339708
+    }
   ],
   relayCommands: {
     commands: [
@@ -673,12 +687,12 @@ export const capability = {
               'relay:Command:AddChannelSlack',
               'relay:Command:AddNegotiationChannelSlack',
               'relay:Command:AddChannelUncShareFile',
-              'relay:Command:AddNegotiationChannelUncShareFile',
-            ],
-          },
-        ],
-      },
-    ],
+              'relay:Command:AddNegotiationChannelUncShareFile'
+            ]
+          }
+        ]
+      }
+    ]
   },
   gateway: [
     {
@@ -688,7 +702,7 @@ export const capability = {
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -696,23 +710,23 @@ export const capability = {
               description: 'Id of route in string form.',
               min: 1,
               name: 'RouteID',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Id of device in string form.',
               min: 1,
               name: 'DeviceId',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
               description: 'Informs if relay is direct neighbour.',
               name: 'Neighbour',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65533,
-          name: 'CreateRoute',
+          name: 'CreateRoute'
         },
         {
           arguments: [
@@ -720,38 +734,38 @@ export const capability = {
               description: 'Id of route in string form.',
               min: 1,
               name: 'RouteID',
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65532,
-          name: 'RemoveRoute',
+          name: 'RemoveRoute'
         },
         {
           arguments: [],
           id: 65279,
-          name: 'TurnOnConnectorMockServer',
+          name: 'TurnOnConnectorMockServer'
         },
         {
           arguments: [
             {
               description: 'Listening post address',
               name: 'Address',
-              type: 'ip',
+              type: 'ip'
             },
             {
               description: 'Listening post port',
               min: 1,
               name: 'Port',
-              type: 'uint16',
-            },
+              type: 'uint16'
+            }
           ],
           id: 65278,
-          name: 'TurnOnConnectorTeamServer',
+          name: 'TurnOnConnectorTeamServer'
         },
         {
           arguments: [],
           id: 65277,
-          name: 'AddPeripheralMock',
+          name: 'AddPeripheralMock'
         },
         {
           arguments: [
@@ -760,30 +774,33 @@ export const capability = {
               min: 4,
               name: 'Pipe name',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: 10,
-              description: 'Number of connection trials before marking whole staging process unsuccessful.',
+              description:
+                'Number of connection trials before marking whole staging process unsuccessful.',
               min: 1,
               name: 'Connection trials',
-              type: 'int16',
+              type: 'int16'
             },
             {
               defaultValue: 1000,
-              description: 'Time in milliseconds to wait between unsuccessful connection trails.',
+              description:
+                'Time in milliseconds to wait between unsuccessful connection trails.',
               min: 30,
               name: 'Trials delay',
-              type: 'int16',
+              type: 'int16'
             },
             {
-              description: 'Implant to inject. Leave empty to generate payload. BETA: Always leave empty, custom payload will not work.',
+              description:
+                'Implant to inject. Leave empty to generate payload. BETA: Always leave empty, custom payload will not work.',
               name: 'Payload',
-              type: 'binary',
-            },
+              type: 'binary'
+            }
           ],
           id: 65276,
-          name: 'AddPeripheralBeacon',
+          name: 'AddPeripheralBeacon'
         },
         {
           arguments: [
@@ -793,77 +810,80 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'Uri of EWS server',
               min: 1,
               name: 'Uri',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Username used to sign in',
               min: 1,
               name: 'Username',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Password used to sign in',
               name: 'Password',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Remove all task',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65275,
-          name: 'AddChannelEwsTask',
+          name: 'AddChannelEwsTask'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Uri of EWS server',
               min: 1,
               name: 'Uri',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Username used to sign in',
               min: 1,
               name: 'Username',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Password used to sign in',
               name: 'Password',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Remove all task',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65274,
-          name: 'AddNegotiationChannelEwsTask',
+          name: 'AddNegotiationChannelEwsTask'
         },
         {
           arguments: [
@@ -873,31 +893,32 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
+                type: 'string'
+              }
+            ]
           ],
           id: 65273,
-          name: 'AddChannelContributionTestChannel',
+          name: 'AddChannelContributionTestChannel'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65272,
-          name: 'AddNegotiationChannelContributionTestChannel',
+          name: 'AddNegotiationChannelContributionTestChannel'
         },
         {
           arguments: [
@@ -907,79 +928,86 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old files from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old files from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65271,
-          name: 'AddChannelOneDrive365RestFile',
+          name: 'AddChannelOneDrive365RestFile'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old files from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old files from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65270,
-          name: 'AddNegotiationChannelOneDrive365RestFile',
+          name: 'AddNegotiationChannelOneDrive365RestFile'
         },
         {
           arguments: [
@@ -989,31 +1017,32 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
+                type: 'string'
+              }
+            ]
           ],
           id: 65269,
-          name: 'AddChannelNamedPipe',
+          name: 'AddChannelNamedPipe'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65268,
-          name: 'AddNegotiationChannelNamedPipe',
+          name: 'AddNegotiationChannelNamedPipe'
         },
         {
           arguments: [
@@ -1023,79 +1052,86 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65267,
-          name: 'AddChannelOutlook365RestTask',
+          name: 'AddChannelOutlook365RestTask'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65266,
-          name: 'AddNegotiationChannelOutlook365RestTask',
+          name: 'AddNegotiationChannelOutlook365RestTask'
         },
         {
           arguments: [
@@ -1105,57 +1141,60 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'This token is what channel needs to interact with Slack\'s API',
+              description:
+                "This token is what channel needs to interact with Slack's API",
               min: 1,
               name: 'Slack token',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Name of Slack\'s channel used by api',
+              description: "Name of Slack's channel used by api",
               min: 4,
               name: 'Channel name',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65265,
-          name: 'AddChannelSlack',
+          name: 'AddChannelSlack'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'This token is what channel needs to interact with Slack\'s API',
+              description:
+                "This token is what channel needs to interact with Slack's API",
               min: 1,
               name: 'Slack token',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Name of Slack\'s channel used by api',
+              description: "Name of Slack's channel used by api",
               min: 4,
               name: 'Channel name',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65264,
-          name: 'AddNegotiationChannelSlack',
+          name: 'AddNegotiationChannelSlack'
         },
         {
           arguments: [
@@ -1165,58 +1204,61 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'UNC or absolute path of fileshare',
               min: 1,
               name: 'Filesystem path',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: false,
-              description: 'Clearing old files before starting communication may increase bandwidth',
+              description:
+                'Clearing old files before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65263,
-          name: 'AddChannelUncShareFile',
+          name: 'AddChannelUncShareFile'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'UNC or absolute path of fileshare',
               min: 1,
               name: 'Filesystem path',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: false,
-              description: 'Clearing old files before starting communication may increase bandwidth',
+              description:
+                'Clearing old files before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65262,
-          name: 'AddNegotiationChannelUncShareFile',
-        },
-      ],
-    },
+          name: 'AddNegotiationChannelUncShareFile'
+        }
+      ]
+    }
   ],
   relay: [
     {
@@ -1226,7 +1268,7 @@ export const capability = {
         {
           arguments: [],
           id: 65535,
-          name: 'Close',
+          name: 'Close'
         },
         {
           arguments: [
@@ -1234,23 +1276,23 @@ export const capability = {
               description: 'Id of route in string form.',
               min: 1,
               name: 'RouteID',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Id of device in string form.',
               min: 1,
               name: 'DeviceId',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
               description: 'Informs if relay is direct neighbour.',
               name: 'Neighbour',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65533,
-          name: 'CreateRoute',
+          name: 'CreateRoute'
         },
         {
           arguments: [
@@ -1258,16 +1300,16 @@ export const capability = {
               description: 'Id of route in string form.',
               min: 1,
               name: 'RouteID',
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65532,
-          name: 'RemoveRoute',
+          name: 'RemoveRoute'
         },
         {
           arguments: [],
           id: 65277,
-          name: 'AddPeripheralMock',
+          name: 'AddPeripheralMock'
         },
         {
           arguments: [
@@ -1276,30 +1318,33 @@ export const capability = {
               min: 4,
               name: 'Pipe name',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: 10,
-              description: 'Number of connection trials before marking whole staging process unsuccessful.',
+              description:
+                'Number of connection trials before marking whole staging process unsuccessful.',
               min: 1,
               name: 'Connection trials',
-              type: 'int16',
+              type: 'int16'
             },
             {
               defaultValue: 1000,
-              description: 'Time in milliseconds to wait between unsuccessful connection trails.',
+              description:
+                'Time in milliseconds to wait between unsuccessful connection trails.',
               min: 30,
               name: 'Trials delay',
-              type: 'int16',
+              type: 'int16'
             },
             {
-              description: 'Implant to inject. Leave empty to generate payload. BETA: Always leave empty, custom payload will not work.',
+              description:
+                'Implant to inject. Leave empty to generate payload. BETA: Always leave empty, custom payload will not work.',
               name: 'Payload',
-              type: 'binary',
-            },
+              type: 'binary'
+            }
           ],
           id: 65276,
-          name: 'AddPeripheralBeacon',
+          name: 'AddPeripheralBeacon'
         },
         {
           arguments: [
@@ -1309,77 +1354,80 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'Uri of EWS server',
               min: 1,
               name: 'Uri',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Username used to sign in',
               min: 1,
               name: 'Username',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Password used to sign in',
               name: 'Password',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Remove all task',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65275,
-          name: 'AddChannelEwsTask',
+          name: 'AddChannelEwsTask'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Uri of EWS server',
               min: 1,
               name: 'Uri',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Username used to sign in',
               min: 1,
               name: 'Username',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Password used to sign in',
               name: 'Password',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Remove all task',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65274,
-          name: 'AddNegotiationChannelEwsTask',
+          name: 'AddNegotiationChannelEwsTask'
         },
         {
           arguments: [
@@ -1389,31 +1437,32 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
+                type: 'string'
+              }
+            ]
           ],
           id: 65273,
-          name: 'AddChannelContributionTestChannel',
+          name: 'AddChannelContributionTestChannel'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65272,
-          name: 'AddNegotiationChannelContributionTestChannel',
+          name: 'AddNegotiationChannelContributionTestChannel'
         },
         {
           arguments: [
@@ -1423,79 +1472,86 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old files from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old files from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65271,
-          name: 'AddChannelOneDrive365RestFile',
+          name: 'AddChannelOneDrive365RestFile'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old files from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old files from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65270,
-          name: 'AddNegotiationChannelOneDrive365RestFile',
+          name: 'AddNegotiationChannelOneDrive365RestFile'
         },
         {
           arguments: [
@@ -1505,31 +1561,32 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
-            ],
+                type: 'string'
+              }
+            ]
           ],
           id: 65269,
-          name: 'AddChannelNamedPipe',
+          name: 'AddChannelNamedPipe'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65268,
-          name: 'AddNegotiationChannelNamedPipe',
+          name: 'AddNegotiationChannelNamedPipe'
         },
         {
           arguments: [
@@ -1539,79 +1596,86 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65267,
-          name: 'AddChannelOutlook365RestTask',
+          name: 'AddChannelOutlook365RestTask'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Refresh token manually generated for an application',
+              description:
+                'Refresh token manually generated for an application',
               min: 1,
               name: 'Refresh token',
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'Identifies the application (e.g. a GUID)',
               min: 1,
               name: 'Client key',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Used for authentication for the application (e.g. a password)',
+              description:
+                'Used for authentication for the application (e.g. a password)',
               min: 1,
               name: 'Client secret',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: true,
-              description: 'Clearing old tasks from server before starting communication may increase bandwidth',
+              description:
+                'Clearing old tasks from server before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65266,
-          name: 'AddNegotiationChannelOutlook365RestTask',
+          name: 'AddNegotiationChannelOutlook365RestTask'
         },
         {
           arguments: [
@@ -1621,57 +1685,60 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
-              description: 'This token is what channel needs to interact with Slack\'s API',
+              description:
+                "This token is what channel needs to interact with Slack's API",
               min: 1,
               name: 'Slack token',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Name of Slack\'s channel used by api',
+              description: "Name of Slack's channel used by api",
               min: 4,
               name: 'Channel name',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65265,
-          name: 'AddChannelSlack',
+          name: 'AddChannelSlack'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'This token is what channel needs to interact with Slack\'s API',
+              description:
+                "This token is what channel needs to interact with Slack's API",
               min: 1,
               name: 'Slack token',
-              type: 'string',
+              type: 'string'
             },
             {
-              description: 'Name of Slack\'s channel used by api',
+              description: "Name of Slack's channel used by api",
               min: 4,
               name: 'Channel name',
               randomize: true,
-              type: 'string',
-            },
+              type: 'string'
+            }
           ],
           id: 65264,
-          name: 'AddNegotiationChannelSlack',
+          name: 'AddNegotiationChannelSlack'
         },
         {
           arguments: [
@@ -1681,58 +1748,61 @@ export const capability = {
                 min: 4,
                 name: 'Input ID',
                 randomize: true,
-                type: 'string',
+                type: 'string'
               },
               {
                 description: 'Used to distinguish packets from the channel',
                 min: 4,
                 name: 'Output ID',
                 randomize: true,
-                type: 'string',
-              },
+                type: 'string'
+              }
             ],
             {
               description: 'UNC or absolute path of fileshare',
               min: 1,
               name: 'Filesystem path',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: false,
-              description: 'Clearing old files before starting communication may increase bandwidth',
+              description:
+                'Clearing old files before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65263,
-          name: 'AddChannelUncShareFile',
+          name: 'AddChannelUncShareFile'
         },
         {
           arguments: [
             {
-              description: 'One identifier used to negotiate identifiers for each joining relay',
+              description:
+                'One identifier used to negotiate identifiers for each joining relay',
               name: 'Negotiation Identifier',
               randomize: true,
-              type: 'string',
+              type: 'string'
             },
             {
               description: 'UNC or absolute path of fileshare',
               min: 1,
               name: 'Filesystem path',
-              type: 'string',
+              type: 'string'
             },
             {
               defaultValue: false,
-              description: 'Clearing old files before starting communication may increase bandwidth',
+              description:
+                'Clearing old files before starting communication may increase bandwidth',
               name: 'Clear',
-              type: 'boolean',
-            },
+              type: 'boolean'
+            }
           ],
           id: 65262,
-          name: 'AddNegotiationChannelUncShareFile',
-        },
-      ],
-    },
+          name: 'AddNegotiationChannelUncShareFile'
+        }
+      ]
+    }
   ],
   channelCommands: {
     commands: [
@@ -1761,12 +1831,12 @@ export const capability = {
               'channels:Slack:UpdateDelayJitter',
               'channels:UncShareFile:Remove all message files',
               'channels:UncShareFile:Close',
-              'channels:UncShareFile:UpdateDelayJitter',
-            ],
-          },
-        ],
-      },
-    ],
+              'channels:UncShareFile:UpdateDelayJitter'
+            ]
+          }
+        ]
+      }
+    ]
   },
   connectorCommands: {
     commands: [
@@ -1780,12 +1850,12 @@ export const capability = {
               'connectors:MockServer:Test command',
               'connectors:MockServer:TurnOff',
               'connectors:TeamServer:Close connection',
-              'connectors:TeamServer:TurnOff',
-            ],
-          },
-        ],
-      },
-    ],
+              'connectors:TeamServer:TurnOff'
+            ]
+          }
+        ]
+      }
+    ]
   },
   peripheralCommands: {
     commands: [
@@ -1800,11 +1870,11 @@ export const capability = {
               'peripherals:Mock:Close',
               'peripherals:Mock:UpdateDelayJitter',
               'peripherals:Beacon:Close',
-              'peripherals:Beacon:UpdateDelayJitter',
-            ],
-          },
-        ],
-      },
-    ],
-  },
+              'peripherals:Beacon:UpdateDelayJitter'
+            ]
+          }
+        ]
+      }
+    ]
+  }
 };

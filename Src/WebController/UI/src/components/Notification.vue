@@ -3,12 +3,15 @@
     <li
       v-for="notify in notifies"
       :key="notify.id"
-      :class="'c3notify-'+notify.type"
+      :class="'c3notify-' + notify.type"
       style="right: 0"
     >
       <h1 v-if="notify.title">{{ notify.title }}</h1>
       <p>{{ notify.message }}</p>
-      <span class="c3notify-close icon close" v-on:click.self="deleteNotify(notify.id)"></span>
+      <span
+        class="c3notify-close icon close"
+        v-on:click.self="deleteNotify(notify.id)"
+      ></span>
     </li>
   </transition-group>
 </template>

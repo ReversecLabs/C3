@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/datatables/Interfaces.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('InterfacesTab is a Vue instance', () => {

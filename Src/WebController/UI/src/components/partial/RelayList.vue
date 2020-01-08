@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3InterfaceList"
-     v-if="relays.length || displayEmpty"
-  >
+  <div class="c3InterfaceList" v-if="relays.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="relays.length">
       <table class="datatable">
@@ -18,11 +15,15 @@
             v-for="(relay, index) in relays"
             v-bind:key="relay.id"
             v-show="index >= minIndex && index < maxIndex"
-            v-on:click="openModal(relay.uid, relay.klass)">
+            v-on:click="openModal(relay.uid, relay.klass)"
+          >
             <td class="c3link">
               <span
                 class="c3tab-info-dot not-active"
-                :class="{ 'is-active': !!relay.isActive, 'has-error': !!relay.error }"
+                :class="{
+                  'is-active': !!relay.isActive,
+                  'has-error': !!relay.error
+                }"
               ></span>
               {{ relay.id }}
             </td>

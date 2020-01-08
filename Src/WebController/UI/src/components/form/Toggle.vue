@@ -6,7 +6,7 @@
         <div class="help-text">{{ help }}</div>
       </span>
     </div>
-    <div class="c3toggle" :class="{ 'disabled' : isDisabled }">
+    <div class="c3toggle" :class="{ disabled: isDisabled }">
       <input
         v-bind="$attrs"
         class="c3toggle-input"
@@ -57,7 +57,7 @@ export default class Toggle extends Mixins(C3, C3FormElement) {
     this.isChecked = !this.isChecked;
     this.$emit('change', {
       value: this.isChecked === true ? true : false,
-      valid: true,
+      valid: true
     });
   }
 

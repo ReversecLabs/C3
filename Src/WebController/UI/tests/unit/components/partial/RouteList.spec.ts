@@ -11,16 +11,14 @@ localVue.use(Vuex);
 
 describe('@/components/partial/RouteList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('RouteList is a Vue instance', () => {
     const wrapper = shallowMount(RouteList, {
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
 });
-
-

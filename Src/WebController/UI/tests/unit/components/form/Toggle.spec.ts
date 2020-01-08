@@ -11,23 +11,23 @@ const localVue = createLocalVue();
 localVue.use(Vuex);
 localVue.use(VeeValidate, {
   inject: false,
-  validity: true,
+  validity: true
 });
 
 describe('@/components/form/Toggle.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Toggle is a Vue instance', () => {
     const wrapper = shallowMount(Toggle, {
       propsData: {
         legend: 'legend... toggle!',
-        help: 'help text...',
+        help: 'help text...'
       },
       store,
       localVue,
-      sync: false,
+      sync: false
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
@@ -37,10 +37,10 @@ describe('@/components/form/Toggle.vue', () => {
       propsData: {
         legend: 'legend... toggle!',
         help: 'help text...',
-        checked: true,
+        checked: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const input = wrapper.find('.c3toggle-input');
@@ -55,10 +55,10 @@ describe('@/components/form/Toggle.vue', () => {
       propsData: {
         legend: 'legend... toggle!',
         help: 'help text...',
-        checked: true,
+        checked: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const label = wrapper.find('.c3checkbox-row');
@@ -70,10 +70,10 @@ describe('@/components/form/Toggle.vue', () => {
       propsData: {
         legend: 'legend... toggle!',
         help: 'help text...',
-        checked: true,
+        checked: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasHelp = wrapper.vm.hasHelp;
@@ -83,15 +83,14 @@ describe('@/components/form/Toggle.vue', () => {
     expect(help.text()).to.contain('help text...');
   });
 
-
   it('Toggle NOT contains the help icon', () => {
     const wrapper = shallowMount(Toggle, {
       propsData: {
         legend: 'legend... toggle!',
-        checked: false,
+        checked: false
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasHelp = wrapper.vm.hasHelp;

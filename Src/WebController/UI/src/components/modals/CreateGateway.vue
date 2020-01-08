@@ -17,7 +17,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-          :options="{'exe': 'exe'}"
+          :options="{ exe: 'exe' }"
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
@@ -25,7 +25,7 @@
           legend="Architecture"
           class="form-element"
           :selected="selectedArchitecture"
-          :options="{'x86': 'x86','x64': 'x64'}"
+          :options="{ x86: 'x86', x64: 'x64' }"
           :border="true"
           @change="changeArchitecture($event, architecture)"
         />
@@ -35,11 +35,12 @@
           class="c3btn c3btn--grey"
           v-on:click.self="closeThisModal()"
           v-show="hasSelectedGateway !== false"
-        >Cancel</button>
-        <button
-          class="c3btn c3btn pull-right"
-          v-on:click="createNewGateway()"
-        >Create and download Gateway</button>
+        >
+          Cancel
+        </button>
+        <button class="c3btn c3btn pull-right" v-on:click="createNewGateway()">
+          Create and download Gateway
+        </button>
       </dir>
     </div>
   </div>
@@ -62,8 +63,8 @@ const C3OptionsModule = namespace('optionsModule');
 @Component({
   components: {
     Input,
-    Select,
-  },
+    Select
+  }
 })
 export default class CreateGatewayModal extends Mixins(C3) {
   @Prop() public targetId!: string;
@@ -96,7 +97,7 @@ export default class CreateGatewayModal extends Mixins(C3) {
     (window as any).removeEventListener(
       'keydown',
       this.handleGlobalKeyDown,
-      true,
+      true
     );
   }
 
@@ -121,9 +122,9 @@ export default class CreateGatewayModal extends Mixins(C3) {
       url: apiUrl,
       method: 'GET',
       baseURL: this.getAPIBaseUrl,
-      responseType: 'blob',
+      responseType: 'blob'
     })
-      .then((response) => {
+      .then(response => {
         const blob = new Blob([response.data], { type: response.data.type });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -151,10 +152,10 @@ export default class CreateGatewayModal extends Mixins(C3) {
 
         this.closeThisModal();
       })
-      .catch((error) => {
+      .catch(error => {
         this.addNotify({
           type: 'error',
-          message: error.message,
+          message: error.message
         });
         // tslint:disable-next-line:no-console
         console.error(error.message);

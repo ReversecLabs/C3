@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3route-list"
-    v-if="routes.length || displayEmpty"
-  >
+  <div class="c3route-list" v-if="routes.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="routes.length">
       <table class="datatable">
@@ -17,23 +14,22 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="route in routes"
-            v-bind:key="route.destinationAgent"
-          >
+          <tr v-for="route in routes" v-bind:key="route.destinationAgent">
             <td>{{ route.destinationAgent }}:{{ route.receivingInterface }}</td>
             <td>{{ route.destinationAgent }}</td>
             <td>{{ route.outgoingInterface }}</td>
             <td>{{ route.receivingInterface }}</td>
             <td>{{ route.isNeighbour ? 'Yes' : '' }}</td>
             <td style="position: relative;">
-              <span
-                class="c3route-list-more-btn icon more"
-              ></span>
+              <span class="c3route-list-more-btn icon more"></span>
               <ul class="c3route-list-menu">
                 <li
                   class="c3route-list-menu-item"
-                  @click="sendCommand(route.destinationAgent + ':' + route.receivingInterface)"
+                  @click="
+                    sendCommand(
+                      route.destinationAgent + ':' + route.receivingInterface
+                    )
+                  "
                 >
                   Delete
                 </li>
@@ -49,7 +45,7 @@
   </div>
 </template>
 
-<script lang=ts>
+<script lang="ts">
 import axios from 'axios';
 import { namespace } from 'vuex-class';
 import { Component, Prop, Mixins } from 'vue-property-decorator';
@@ -88,10 +84,13 @@ export default class RouteList extends Mixins(C3, Partial) {
 
   get getCommandId() {
     const interfaceKlass = !!this.targetId ? 'RELAY' : 'GATEWAY';
-    const capability = this.getCapabilityFor('Command', interfaceKlass as NodeKlass);
+    const capability = this.getCapabilityFor(
+      'Command',
+      interfaceKlass as NodeKlass
+    );
     if (!!capability) {
       const com = capability.commands.find((c: any) => {
-          return c.name === 'RemoveRoute';
+        return c.name === 'RemoveRoute';
       });
       return com.id;
     }
@@ -120,10 +119,10 @@ export default class RouteList extends Mixins(C3, Partial) {
             {
               type: 'string',
               name: 'RouteID',
-              value: routeToDelete,
-            },
-          ],
-        },
+              value: routeToDelete
+            }
+          ]
+        }
       };
     } else {
       data = {
@@ -136,10 +135,10 @@ export default class RouteList extends Mixins(C3, Partial) {
             {
               type: 'string',
               name: 'RouteID',
-              value: routeToDelete,
-            },
-          ],
-        },
+              value: routeToDelete
+            }
+          ]
+        }
       };
     }
 
@@ -165,19 +164,20 @@ export default class RouteList extends Mixins(C3, Partial) {
       url: apiURL,
       method: 'POST',
       baseURL: this.getAPIBaseUrl,
-      data,
-    }).then((response) => {
-      this.addNotify({
-        type: 'info',
-        message: 'Command successfully sent...',
-      });
-      this.closeThisModal();
+      data
     })
-    .catch((error) => {
+      .then(response => {
+        this.addNotify({
+          type: 'info',
+          message: 'Command successfully sent...'
+        });
+        this.closeThisModal();
+      })
+      .catch(error => {
         const msg: string = 'Command NOT sent: ' + error.message;
         this.addNotify({
           type: 'error',
-          message: msg,
+          message: msg
         });
         // tslint:disable-next-line:no-console
         console.error(error.message);

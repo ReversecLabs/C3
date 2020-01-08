@@ -13,5 +13,5 @@ export const modules = {
   notifyModule,
   c3Capability,
   paginateModule,
-  c3CommandModule,
+  c3CommandModule
 };

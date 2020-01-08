@@ -5,16 +5,12 @@
         {{ help }}
       </div>
     </span>
-    <span
-      class="icon random"
-      v-if="random"
-      @click.self="onClickRandom"
-    ></span>
+    <span class="icon random" v-if="random" @click.self="onClickRandom"></span>
     <input
       v-bind="$attrs"
       ref="textinput"
       class="c3input-input"
-      :class="{ 'dirty': isDirty }"
+      :class="{ dirty: isDirty }"
       type="text"
       v-model="inputText"
       @change="changeInputText"
@@ -27,7 +23,7 @@
     />
     <label
       class="c3input-label"
-      :class="{ 'dirty': isDirty }"
+      :class="{ dirty: isDirty }"
       @click.self="clickOnLabel()"
     >
       {{ legend }}
@@ -45,10 +41,9 @@ import C3 from '@/c3';
 
 @Component({
   $_veeValidate: {
-    validator: 'new',
-  },
+    validator: 'new'
+  }
 })
-
 export default class Input extends Mixins(C3, C3FormElement) {
   @Prop() public value!: string;
   @Prop() public random!: string;
@@ -71,11 +66,19 @@ export default class Input extends Mixins(C3, C3FormElement) {
 
   public mounted(): void {
     this.changeInputText();
-    (window as any).addEventListener('inputkeypress', this.handleEnterAndTabKeyDown, true);
+    (window as any).addEventListener(
+      'inputkeypress',
+      this.handleEnterAndTabKeyDown,
+      true
+    );
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('inputkeypress', this.handleEnterAndTabKeyDown, true);
+    (window as any).removeEventListener(
+      'inputkeypress',
+      this.handleEnterAndTabKeyDown,
+      true
+    );
   }
 
   public gainFocus(): void {
@@ -94,12 +97,13 @@ export default class Input extends Mixins(C3, C3FormElement) {
   }
 
   public changeInputText() {
-    this.$validator.verify((this.$refs.textinput as HTMLInputElement).value, this.validate)
-      .then((valid) => {
+    this.$validator
+      .verify((this.$refs.textinput as HTMLInputElement).value, this.validate)
+      .then(valid => {
         const isValid = valid.valid;
         this.$emit('change', {
           value: this.inputText,
-          valid: isValid,
+          valid: isValid
         });
       });
   }
@@ -117,14 +121,17 @@ export default class Input extends Mixins(C3, C3FormElement) {
     if (n > 10) {
       n = 10;
     }
-    return Math.random().toString(36).substring(2).substr(0, n);
+    return Math.random()
+      .toString(36)
+      .substring(2)
+      .substr(0, n);
   }
 
   public onClickRandom() {
     this.inputText = this.rand(parseInt(this.random, 10));
     // We need to run the validation manualy because the value changed programaticaly
     // and not by user interaction.
-    this.$validator.validate().then((valid) => {
+    this.$validator.validate().then(valid => {
       this.changeInputText();
     });
   }

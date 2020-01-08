@@ -1,45 +1,45 @@
-@import "./svg-icons.scss";
-@import "./colors.scss";
+@import './svg-icons.scss';
+@import './colors.scss';
 
-$exclamation: "exclamation";
-$close: "close";
-$fullscreen: "fullscreen";
-$zoomin: "zoomin";
-$carrotup: "carrotup";
-$carrotdown: "carrotdown";
-$menudots: "more";
-$help: "help";
-$rand: "random";
-$back: "back";
-$checkbox: "checkbox";
-$upload: "upload";
-$warning: "warning";
-$return-info: "return";
-$add-comment: "add-comment";
+$exclamation: 'exclamation';
+$close: 'close';
+$fullscreen: 'fullscreen';
+$zoomin: 'zoomin';
+$carrotup: 'carrotup';
+$carrotdown: 'carrotdown';
+$menudots: 'more';
+$help: 'help';
+$rand: 'random';
+$back: 'back';
+$checkbox: 'checkbox';
+$upload: 'upload';
+$warning: 'warning';
+$return-info: 'return';
+$add-comment: 'add-comment';
 
 @mixin generate-checkbox-icons($size, $hover-size: $size) {
   &.#{$checkbox}-on {
-    @include checkboxon("2297ff", $size);
+    @include checkboxon('2297ff', $size);
     &:hover {
-      @include checkboxon("2297ff", $hover-size);
+      @include checkboxon('2297ff', $hover-size);
     }
   }
   &.#{$checkbox}-on--disabled {
-    @include checkboxon("1B6C51", $size);
+    @include checkboxon('1B6C51', $size);
     &:hover {
-      @include checkboxon("1B6C51", $hover-size);
+      @include checkboxon('1B6C51', $hover-size);
     }
   }
   &.#{$checkbox}-off {
-    @include checkboxoff("FFFFFF", $size);
+    @include checkboxoff('FFFFFF', $size);
     &:hover {
-      @include checkboxoff("FFFFFF", $hover-size);
+      @include checkboxoff('FFFFFF', $hover-size);
     }
   }
   &.#{$checkbox}-off--disabled {
-    @include checkboxoff("4F4F4F", $size);
+    @include checkboxoff('4F4F4F', $size);
     &:hover {
-      @include checkboxoff("4F4F4F", $hover-size);
+      @include checkboxoff('4F4F4F', $hover-size);
     }
   }
 }
@@ -55,7 +55,7 @@ $add-comment: "add-comment";
   &.#{$help} {
     @include help($color, $size);
     &:hover {
-      @include help("FFFFFF", $hover-size);
+      @include help('FFFFFF', $hover-size);
     }
   }
 
@@ -83,14 +83,14 @@ $add-comment: "add-comment";
   &.#{$rand} {
     @include rand($color, $size);
     &:hover {
-      @include rand("FFFFFF", $hover-size);
+      @include rand('FFFFFF', $hover-size);
     }
   }
 
   &.#{$upload} {
     @include upload($color, $size);
     &:hover {
-      @include upload("FFFFFF", $hover-size);
+      @include upload('FFFFFF', $hover-size);
     }
   }
 

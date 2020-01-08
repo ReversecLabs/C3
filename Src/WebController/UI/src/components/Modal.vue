@@ -1,9 +1,15 @@
 <template>
-  <div class="c3modal" :class="this.activeModal.modalTarget.toLowerCase()" v-if="currentModal">
+  <div
+    class="c3modal"
+    :class="this.activeModal.modalTarget.toLowerCase()"
+    v-if="currentModal"
+  >
     <div class="c3modal-holder">
       <GatewayModal v-if="isGateway()" :target-id="targetUid" />
       <RelayModal v-if="isRelay()" :target-id="targetUid" />
-      <CreateGatewayModal v-if="this.activeModal.modalTarget === 'CREATE_GATEWAY'" />
+      <CreateGatewayModal
+        v-if="this.activeModal.modalTarget === 'CREATE_GATEWAY'"
+      />
       <CreateRelayModal
         v-if="this.activeModal.modalTarget === 'CREATE_RELAY'"
         :options="options()"
@@ -18,11 +24,19 @@
         :target-id="targetUid"
         :options="options()"
       />
-      <CommandModal v-if="this.activeModal.modalTarget === 'COMMAND'" :target-id="targetUid" />
+      <CommandModal
+        v-if="this.activeModal.modalTarget === 'COMMAND'"
+        :target-id="targetUid"
+      />
       <OptionsModal v-if="this.activeModal.modalTarget === 'OPTIONS'" />
       <InterfaceModal v-if="isInterface()" :target-id="targetUid" />
-      <span class="c3modal-back icon back" v-on:click.self="closeThisModal()">Back</span>
-      <span class="c3modal-close icon close" v-on:click.self="closeAllModal()"></span>
+      <span class="c3modal-back icon back" v-on:click.self="closeThisModal()"
+        >Back</span
+      >
+      <span
+        class="c3modal-close icon close"
+        v-on:click.self="closeAllModal()"
+      ></span>
     </div>
   </div>
 </template>
@@ -57,8 +71,8 @@ const ModalModule = namespace('modalModule');
     CreateRelayModal,
     ConnectRelayModal,
     CommandCenterModal,
-    CreateGatewayModal,
-  },
+    CreateGatewayModal
+  }
 })
 export default class Modal extends Mixins(C3) {
   @ModalModule.Getter public activeModal!: C3Modal;

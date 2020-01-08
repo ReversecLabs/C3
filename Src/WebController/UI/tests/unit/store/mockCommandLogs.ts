@@ -14,17 +14,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'ctvg',
+            value: 'ctvg'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'idck',
-          },
-        ],
-      ],
+            value: 'idck'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '6f06a07c9263d0cb',
@@ -39,17 +39,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'n3ca',
+            value: 'n3ca'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'dsvz',
-          },
-        ],
-      ],
+            value: 'dsvz'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '6f06a07c9263d0cb',
@@ -64,17 +64,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: '7q5b',
+            value: '7q5b'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'l7wf',
-          },
-        ],
-      ],
+            value: 'l7wf'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: 'aa0eaa3839d6d9c8',
@@ -89,17 +89,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'kiv2',
+            value: 'kiv2'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: '3vej',
-          },
-        ],
-      ],
+            value: '3vej'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: 'aa0eaa3839d6d9c8',
@@ -109,9 +109,9 @@ export const commands = [
       id: 65277,
       name: 'Command',
       command: 'AddPeripheralMock',
-      arguments: [],
+      arguments: []
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: 'c59e70f44dc584d7',
@@ -126,17 +126,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'bgzb',
+            value: 'bgzb'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: '7sas',
-          },
-        ],
-      ],
+            value: '7sas'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '36c0bcb85e82a447',
@@ -150,26 +150,26 @@ export const commands = [
         {
           type: 'string',
           name: 'Pipe name',
-          value: 'b25j',
+          value: 'b25j'
         },
         {
           type: 'int16',
           name: 'Connection trials',
-          value: 10,
+          value: 10
         },
         {
           type: 'int16',
           name: 'Trials delay',
-          value: 1000,
+          value: 1000
         },
         {
           type: 'binary',
           name: 'Payload',
-          value: '',
-        },
-      ],
+          value: ''
+        }
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '95896bc3757517b0',
@@ -183,11 +183,11 @@ export const commands = [
         {
           type: 'string',
           name: 'Negotiation Identifier',
-          value: '1evo5gkd',
-        },
-      ],
+          value: '1evo5gkd'
+        }
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '3a57b45b0273c52b',
@@ -202,17 +202,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'gggg',
+            value: 'gggg'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'hhhh',
-          },
-        ],
-      ],
+            value: 'hhhh'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '68035347127c17dc',
@@ -226,26 +226,26 @@ export const commands = [
         {
           type: 'string',
           name: 'Pipe name',
-          value: 'ezhf',
+          value: 'ezhf'
         },
         {
           type: 'int16',
           name: 'Connection trials',
-          value: 10,
+          value: 10
         },
         {
           type: 'int16',
           name: 'Trials delay',
-          value: 1000,
+          value: 1000
         },
         {
           type: 'binary',
           name: 'Payload',
-          value: '',
-        },
-      ],
+          value: ''
+        }
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '68035347127c17dc',
@@ -255,9 +255,9 @@ export const commands = [
       id: 65277,
       name: 'Command',
       command: 'AddPeripheralMock',
-      arguments: [],
+      arguments: []
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '68035347127c17dc',
@@ -267,9 +267,9 @@ export const commands = [
       id: 65277,
       name: 'Command',
       command: 'AddPeripheralMock',
-      arguments: [],
+      arguments: []
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '68035347127c17dc',
@@ -284,17 +284,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'eeee',
+            value: 'eeee'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'ffff',
-          },
-        ],
-      ],
+            value: 'ffff'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '4011a444def9464',
@@ -309,17 +309,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'cccc',
+            value: 'cccc'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'dddd',
-          },
-        ],
-      ],
+            value: 'dddd'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '4011a444def9464',
@@ -334,17 +334,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'aaaa',
+            value: 'aaaa'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: 'bbbb',
-          },
-        ],
-      ],
+            value: 'bbbb'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     relayAgentId: '4011a444def9464',
@@ -359,17 +359,17 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'd358',
+            value: 'd358'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: '1hzt',
-          },
-        ],
-      ],
+            value: '1hzt'
+          }
+        ]
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     id: 2,
@@ -382,11 +382,11 @@ export const commands = [
         {
           type: 'string',
           name: 'Negotiation Identifier',
-          value: '65i9fkpj',
-        },
-      ],
+          value: '65i9fkpj'
+        }
+      ]
     },
-    isPending: true,
+    isPending: true
   },
   {
     id: 1,
@@ -400,16 +400,16 @@ export const commands = [
           {
             type: 'string',
             name: 'Input ID',
-            value: 'h018',
+            value: 'h018'
           },
           {
             type: 'string',
             name: 'Output ID',
-            value: '0znh',
-          },
-        ],
-      ],
+            value: '0znh'
+          }
+        ]
+      ]
     },
-    isPending: true,
-  },
+    isPending: true
+  }
 ];

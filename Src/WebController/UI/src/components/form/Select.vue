@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3select"
-    :class="{ 'disabled': isDisabled }"
-  >
+  <div class="c3select" :class="{ disabled: isDisabled }">
     <div
       class="c3select-close"
       v-on:click.self="toggleSelect()"
@@ -34,7 +31,7 @@
       <li
         v-for="(value, id) in options"
         class="c3select-option"
-        :class="{ 'selected': isSelected(id)}"
+        :class="{ selected: isSelected(id) }"
         :key="id"
         v-on:click.self="selectAndClose(id)"
       >
@@ -56,13 +53,15 @@ export default class Select extends Mixins(C3, C3FormElement) {
   @Prop() public legend!: string;
   @Prop() public border!: boolean;
   @Prop() public selected!: string;
-  @Prop() public options!: {[key: string]: string};
+  @Prop() public options!: { [key: string]: string };
   @Prop() public feedback!: string;
 
   public isOpen: boolean = false;
   public hasBorder: boolean = this.border || false;
   public directionReverse: boolean = this.up || false;
-  public selectRef: string = Math.random().toString(36).substring(2);
+  public selectRef: string = Math.random()
+    .toString(36)
+    .substring(2);
   public selectUlStyle: string = '';
 
   get dropDownIcon() {
@@ -71,7 +70,7 @@ export default class Select extends Mixins(C3, C3FormElement) {
 
   get selectedValue(): string {
     let value: string = '';
-    Object.keys(this.options).forEach((e) => {
+    Object.keys(this.options).forEach(e => {
       if (this.selected === e) {
         value = this.options[e];
       }
@@ -107,13 +106,17 @@ export default class Select extends Mixins(C3, C3FormElement) {
 
   public calculateSelectUlOffset(): void {
     const rect = this.$el.getBoundingClientRect();
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollLeft =
+      window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     if (this.directionReverse) {
-      this.selectUlStyle = `position: fixed; margin-bottom: -31px; bottom: calc(100vh - ${rect.top + scrollTop}px);` +
+      this.selectUlStyle =
+        `position: fixed; margin-bottom: -31px; bottom: calc(100vh - ${rect.top +
+          scrollTop}px);` +
         ` left: ${rect.left + scrollLeft}px; width: ${rect.width}px;`;
     } else {
-      this.selectUlStyle = `position: fixed; margin-top: 31px; top: ${rect.top + scrollTop}px;` +
+      this.selectUlStyle =
+        `position: fixed; margin-top: 31px; top: ${rect.top + scrollTop}px;` +
         ` left: ${rect.left + scrollLeft}px; width: ${rect.width}px;`;
     }
   }

@@ -55,8 +55,12 @@
       </li>
       <li class="c3canvas-menu-item" @click="reloadGraph">Reload Graph</li>
       <li class="c3canvas-menu-divider"></li>
-      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_GATEWAY')">New Gateway</li>
-      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_RELAY')">New Relay</li>
+      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_GATEWAY')">
+        New Gateway
+      </li>
+      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_RELAY')">
+        New Relay
+      </li>
     </ul>
     <div class="progress-bar">
       <div class="progress-bar-status" id="progress-bar-status"></div>
@@ -77,7 +81,7 @@ import {
   SetGraphDataFn,
   GenerateNodesFn,
   GenerateEdgesFn,
-  SetOptionFn,
+  SetOptionFn
 } from '@/store/VisModule';
 
 import C3 from '@/c3';
@@ -89,8 +93,8 @@ const VisModule = namespace('visModule');
 
 @Component({
   components: {
-    Toggle,
-  },
+    Toggle
+  }
 })
 export default class Canvas extends Mixins(C3, FindThePathToGateway) {
   get fullscreenIcon() {
@@ -157,7 +161,7 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
     (window as any).networkc3 = new Network(
       this.container,
       this.getGrapData,
-      this.graphOtions,
+      this.graphOtions
     );
 
     (window as any).networkc3.on('click', (params: any) => {
@@ -185,7 +189,7 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
 
     (window as any).networkc3.on('stabilizationProgress', (params: any) => {
       const status = Math.floor(
-        params.iterations / this.getOptions.physics.stabilization.updateInterval,
+        params.iterations / this.getOptions.physics.stabilization.updateInterval
       );
       const progressBarStatus = document.getElementById('progress-bar-status');
       if (progressBarStatus !== null) {
@@ -251,9 +255,9 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
         {
           id: nodeId.id,
           shadow: {
-            enabled: false,
-          },
-        },
+            enabled: false
+          }
+        }
       ]);
     });
   }
@@ -269,8 +273,8 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
           {
             id: edge.id,
             color: {},
-            width: 1,
-          },
+            width: 1
+          }
         ]);
       }
     });
@@ -281,9 +285,9 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
       {
         id: nodeId,
         shadow: {
-          enabled: true,
-        },
-      },
+          enabled: true
+        }
+      }
     ]);
 
     const paths = this.getPathsFromGateway(nodeId);
@@ -293,10 +297,10 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
           {
             id: edge.id,
             color: {
-              color: '#AB61F6',
+              color: '#AB61F6'
             },
-            width: 4,
-          },
+            width: 4
+          }
         ]);
       }
     });

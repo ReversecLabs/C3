@@ -2,13 +2,25 @@
   <div class="c3controll" v-if="hasSelectedGateway">
     <span class="c3controll-help icon exclamation"></span>
     <ul class="c3controll-tabs">
-      <li :class="{ active: activeIsRelay }" v-on:click="setActiveTab('relay')">Relays</li>
-      <li :class="{ active: activeIsInterface }" v-on:click="setActiveTab('interface')">Interfaces</li>
-      <li :class="{ active: activeIsCommands }" v-on:click="setActiveTab('command')">Commands</li>
+      <li :class="{ active: activeIsRelay }" v-on:click="setActiveTab('relay')">
+        Relays
+      </li>
+      <li
+        :class="{ active: activeIsInterface }"
+        v-on:click="setActiveTab('interface')"
+      >
+        Interfaces
+      </li>
+      <li
+        :class="{ active: activeIsCommands }"
+        v-on:click="setActiveTab('command')"
+      >
+        Commands
+      </li>
     </ul>
-    <RelaysTab v-if="activeIsRelay"/>
-    <InterfacesTab v-if="activeIsInterface"/>
-    <CommandsTab v-if="activeIsCommands"/>
+    <RelaysTab v-if="activeIsRelay" />
+    <InterfacesTab v-if="activeIsInterface" />
+    <CommandsTab v-if="activeIsCommands" />
   </div>
 </template>
 
@@ -30,8 +42,8 @@ const PaginateModule = namespace('paginateModule');
   components: {
     RelaysTab,
     CommandsTab,
-    InterfacesTab,
-  },
+    InterfacesTab
+  }
 })
 export default class Controll extends Mixins(C3) {
   @PaginateModule.Mutation public setActualPage!: SetActualPageFn;

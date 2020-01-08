@@ -11,43 +11,43 @@ localVue.use(Vuex);
 
 describe('@/components/partial/ConnectorList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('ConnectorList is a Vue instance', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: 'Connectors',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
 
-  it('ConnectorList populated correctly (populated)', () => {
+  it('ConnectorList populated correctly', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: 'Connectors',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.connectors.length;
-    expect(connectorsElementsCount).to.eql(2);
+    expect(connectorsElementsCount).to.eql(0);
   });
 
   it('ConnectorList List hasTitle (has)', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: 'Connectors',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -58,10 +58,10 @@ describe('@/components/partial/ConnectorList.vue', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: '',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -72,10 +72,10 @@ describe('@/components/partial/ConnectorList.vue', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: 'Connectors',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -86,10 +86,10 @@ describe('@/components/partial/ConnectorList.vue', () => {
     const wrapper = shallowMount(ConnectorList, {
       propsData: {
         title: 'Connectors',
-        showEmpty: null,
+        showEmpty: null
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;

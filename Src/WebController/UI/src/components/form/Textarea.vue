@@ -5,14 +5,12 @@
         {{ help }}
       </div>
     </span>
-    <div
-      class="textarea"
-      :class="{ 'focus': focused }"
-    >
+    <div class="textarea" :class="{ focus: focused }">
       <textarea
         class="c3textarea-input"
-        :class="{ 'focus': focused }"
-        rows="5" cols="33"
+        :class="{ focus: focused }"
+        rows="5"
+        cols="33"
         ref="textareainput"
         type="checkbox"
         :id="inputUID"
@@ -28,15 +26,12 @@
 
       <label
         class="c3textarea-label"
-        :class="{ 'dirty': isDirty, 'focus': focused }"
+        :class="{ dirty: isDirty, focus: focused }"
         @click.self="clickOnLabel()"
       >
         {{ legend }}
       </label>
-      <label
-        class="c3textarea-upload-button"
-        for="payload-file"
-      >
+      <label class="c3textarea-upload-button" for="payload-file">
         <span class="icon upload">
           <div class="help-text">
             Select file to upload...
@@ -85,7 +80,7 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
   public updateTextarea(): void {
     this.$emit('change', {
       value: this.dataText,
-      valid: true,
+      valid: true
     });
   }
 
@@ -95,13 +90,13 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
 
   public updateTextfield(): void {
     const reader = new FileReader();
-    const file: any = (this.$refs.fileinput as HTMLInputElement);
+    const file: any = this.$refs.fileinput as HTMLInputElement;
     let base64: string;
 
     reader.readAsDataURL(file.files[0]);
 
     reader.onload = () => {
-      base64 = (reader.result as string);
+      base64 = reader.result as string;
       if (!base64) {
         base64 = (base64 as string).replace(/^data:(.*;base64,)?/, '');
       }

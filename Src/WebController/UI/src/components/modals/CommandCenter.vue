@@ -1,10 +1,9 @@
 <template>
   <div class="c3modal-body">
     <div class="c3modal-details">
-      <h1
-        v-if="isNotEmbeded"
-      >
-        Create Command for: {{ currentItem.klass}} - {{ currentItem.name}} {{ interfaceTypeName(currentItem) }}/ {{ currentItem.id }}
+      <h1 v-if="isNotEmbeded">
+        Create Command for: {{ currentItem.klass }} - {{ currentItem.name }}
+        {{ interfaceTypeName(currentItem) }}/ {{ currentItem.id }}
       </h1>
       <div class="c3command-group">
         <Select
@@ -25,7 +24,8 @@
           @change="changeCommandTarget($event, commandTarget)"
         />
       </div>
-      <GeneralForm :key="selectedInterface + selectedCommand + selectedCommand"
+      <GeneralForm
+        :key="selectedInterface + selectedCommand + selectedCommand"
         v-if="selectedInterface !== undefined && selectedCommand !== undefined"
         :klass="selectedInterfaceKlass"
         :interface-name="selectedInterface"
@@ -35,9 +35,7 @@
         :target="selectedInterface"
         :options="argumentOptions"
       />
-      <dir class="flex-row c3modal-actions"
-        v-if="isNotEmbeded"
-      >
+      <dir class="flex-row c3modal-actions" v-if="isNotEmbeded">
         <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">
           Cancel
         </button>
@@ -65,7 +63,7 @@ import {
   GetTypesForInterfaceKlassFn,
   GetCommandGroupForFn,
   GetCommandTargetForFn,
-  GetCapabilityForFn,
+  GetCapabilityForFn
 } from '@/store/C3Capability';
 
 import C3 from '@/c3';
@@ -82,8 +80,8 @@ const C3OptionsModule = namespace('optionsModule');
   components: {
     Input,
     Select,
-    GeneralForm,
-  },
+    GeneralForm
+  }
 })
 export default class CommandCenterModal extends Mixins(C3) {
   @Prop() public targetId!: string;
@@ -154,13 +152,19 @@ export default class CommandCenterModal extends Mixins(C3) {
 
   get commandTargetOptions() {
     if (!!this.currentItem) {
-      if (this.currentItem.klass === NodeKlass.Gateway || this.currentItem.klass === NodeKlass.Relay) {
-        return this.getCommandTargetFor(this.selectedCommandGroup, this.currentItem.klass);
+      if (
+        this.currentItem.klass === NodeKlass.Gateway ||
+        this.currentItem.klass === NodeKlass.Relay
+      ) {
+        return this.getCommandTargetFor(
+          this.selectedCommandGroup,
+          this.currentItem.klass
+        );
       }
       return this.getCommandTargetFor(
         this.selectedCommandGroup,
         this.currentItem.klass,
-        this.interfaceTypeName(this.currentItem),
+        this.interfaceTypeName(this.currentItem)
       );
     }
     return '';
@@ -188,10 +192,13 @@ export default class CommandCenterModal extends Mixins(C3) {
   }
 
   get getCommandId() {
-    const capability = this.getCapabilityFor(this.selectedInterface, this.selectedInterfaceKlass as NodeKlass);
+    const capability = this.getCapabilityFor(
+      this.selectedInterface,
+      this.selectedInterfaceKlass as NodeKlass
+    );
     if (!!capability) {
       const com = capability.commands.find((c: any) => {
-          return c.name === this.selectedCommand;
+        return c.name === this.selectedCommand;
       });
       return com.id;
     }
@@ -225,15 +232,17 @@ export default class CommandCenterModal extends Mixins(C3) {
     (window as any).addEventListener('keydown', this.handleGlobalKeyDown, true);
     if (this.hasOptions) {
       if (!!this.options.formDefault) {
-        const target = Object.keys(this.commandTargetOptions)
-          .find((key) => {
-            if (!!this.options && !!this.options.formDefault) {
-              // TODO: found a better way to found the must select options.
-              return this.commandTargetOptions[key] === this.options.formDefault.prefix +
-                this.options.formDefault.interface;
-            }
-            return false;
-          });
+        const target = Object.keys(this.commandTargetOptions).find(key => {
+          if (!!this.options && !!this.options.formDefault) {
+            // TODO: found a better way to found the must select options.
+            return (
+              this.commandTargetOptions[key] ===
+              this.options.formDefault.prefix +
+                this.options.formDefault.interface
+            );
+          }
+          return false;
+        });
         if (!!target) {
           this.commandTarget = target;
         }
@@ -242,7 +251,11 @@ export default class CommandCenterModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 
   public resetForm(): void {
@@ -269,11 +282,12 @@ export default class CommandCenterModal extends Mixins(C3) {
           id: this.getCommandId,
           name: this.selectedInterface,
           command: this.selectedCommand,
-          arguments: this.formData,
-        },
+          arguments: this.formData
+        }
       };
       this.$emit('change', {
-        data: dataToEmit, valid: this.isValid,
+        data: dataToEmit,
+        valid: this.isValid
       });
     }
   }
@@ -294,8 +308,8 @@ export default class CommandCenterModal extends Mixins(C3) {
         id: this.getCommandId,
         name: this.selectedInterface,
         command: this.selectedCommand,
-        arguments: this.formData,
-      },
+        arguments: this.formData
+      }
     };
 
     // POST /api/gateway/{gatewayId}/command
@@ -309,36 +323,49 @@ export default class CommandCenterModal extends Mixins(C3) {
       apiURL = apiURL + `${this.currentItem.id}/command`;
     }
     if (!!this.currentItem && this.currentItem.klass === NodeKlass.Relay) {
-      apiURL = apiURL + `${this.currentItem.parentId}/relay/${this.currentItem.id}/command`;
+      apiURL =
+        apiURL +
+        `${this.currentItem.parentId}/relay/${this.currentItem.id}/command`;
     }
-    if (!!this.currentItem && this.currentItem.klass === NodeKlass.Channel ||
-        !!this.currentItem && this.currentItem.klass === NodeKlass.Peripheral ||
-        !!this.currentItem && this.currentItem.klass === NodeKlass.Connector) {
+    if (
+      (!!this.currentItem && this.currentItem.klass === NodeKlass.Channel) ||
+      (!!this.currentItem && this.currentItem.klass === NodeKlass.Peripheral) ||
+      (!!this.currentItem && this.currentItem.klass === NodeKlass.Connector)
+    ) {
       if (this.currentItem.parentKlass === NodeKlass.Gateway) {
         switch (this.currentItem.klass) {
           case NodeKlass.Channel:
-            apiURL = apiURL + `${this.currentItem.parentId}/channel/${this.currentItem.id}/command`;
+            apiURL =
+              apiURL +
+              `${this.currentItem.parentId}/channel/${this.currentItem.id}/command`;
             break;
           case NodeKlass.Peripheral:
-            apiURL = apiURL + `${this.currentItem.parentId}/peripheral/${this.currentItem.id}/command`;
+            apiURL =
+              apiURL +
+              `${this.currentItem.parentId}/peripheral/${this.currentItem.id}/command`;
             break;
           case NodeKlass.Connector:
-            apiURL = apiURL + `${this.currentItem.parentId}/connector/${this.currentItem.id}/command`;
+            apiURL =
+              apiURL +
+              `${this.currentItem.parentId}/connector/${this.currentItem.id}/command`;
             break;
         }
       }
       if (this.currentItem.parentKlass === NodeKlass.Relay) {
         switch (this.currentItem.klass) {
           case NodeKlass.Channel:
-            apiURL = apiURL +
+            apiURL =
+              apiURL +
               `${this.gateway.id}/relay/${this.currentItem.parentId}/channel/${this.currentItem.id}/command`;
             break;
           case NodeKlass.Peripheral:
-            apiURL = apiURL +
+            apiURL =
+              apiURL +
               `${this.gateway.id}/relay/${this.currentItem.parentId}/peripheral/${this.currentItem.id}/command`;
             break;
           case NodeKlass.Connector:
-            apiURL = apiURL +
+            apiURL =
+              apiURL +
               `${this.gateway.id}/relay/${this.currentItem.parentId}/connector/${this.currentItem.id}/command`;
             break;
         }
@@ -348,19 +375,20 @@ export default class CommandCenterModal extends Mixins(C3) {
       url: apiURL,
       method: 'POST',
       baseURL: this.getAPIBaseUrl,
-      data,
-    }).then((response) => {
-      this.addNotify({
-        type: 'info',
-        message: 'Command successfully sent...',
-      });
-      this.closeThisModal();
+      data
     })
-    .catch((error) => {
+      .then(response => {
+        this.addNotify({
+          type: 'info',
+          message: 'Command successfully sent...'
+        });
+        this.closeThisModal();
+      })
+      .catch(error => {
         const msg: string = 'Command NOT sent: ' + error.message;
         this.addNotify({
           type: 'error',
-          message: msg,
+          message: msg
         });
         // tslint:disable-next-line:no-console
         console.error(error.message);

@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3InterfaceList"
-     v-if="connectors.length || displayEmpty"
-  >
+  <div class="c3InterfaceList" v-if="connectors.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="connectors.length">
       <table class="datatable">
@@ -16,7 +13,8 @@
           <tr
             v-for="connector in connectors"
             v-bind:key="connector.id"
-            v-on:click="openModal(connector.uid, connector.klass)">
+            v-on:click="openModal(connector.uid, connector.klass)"
+          >
             <td class="c3link">{{ connector.id }}</td>
             <td>{{ interfaceTypeName(connector) }}</td>
           </tr>

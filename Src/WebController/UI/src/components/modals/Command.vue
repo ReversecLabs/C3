@@ -15,7 +15,9 @@
         </thead>
         <tbody>
           <tr
-            v-on:click="openModal(InterfaceUID(c3Command), commandType(c3Command))"
+            v-on:click="
+              openModal(InterfaceUID(c3Command), commandType(c3Command))
+            "
           >
             <td>
               <span
@@ -47,7 +49,14 @@ import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { Notify } from '@/store/NotifyModule';
 import { GetCommandFn } from '@/store/C3Module';
-import { C3Interface, C3Gateway, C3Relay, NodeKlass, C3Command, C3Node } from '@/types/c3types';
+import {
+  C3Interface,
+  C3Gateway,
+  C3Relay,
+  NodeKlass,
+  C3Command,
+  C3Node
+} from '@/types/c3types';
 
 import C3 from '@/c3';
 
@@ -66,7 +75,7 @@ export default class CommandModal extends Mixins(C3) {
       this.closeThisModal();
       this.addNotify({
         type: 'error',
-        message: `The Commandyou looking for: ${this.targetId}, not exist.`,
+        message: `The Commandyou looking for: ${this.targetId}, not exist.`
       });
     }
     return target;
@@ -77,10 +86,14 @@ export default class CommandModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 
-  public InterfaceUID(c: C3Command): string|number {
+  public InterfaceUID(c: C3Command): string | number {
     if (!!c.interfaceId) {
       if (!!c.relayAgentId) {
         return c.interfaceId + '-' + c.relayAgentId;

@@ -1,14 +1,19 @@
 <template>
   <div class="c3tabfooter">
-    <div class="c3tabfooter-info">
-      Result: {{ results }}
-    </div>
+    <div class="c3tabfooter-info">Result: {{ results }}</div>
     <div class="c3tabfooter-action">
       Items per page:
       <Select
         v-on:change="changePerPage($event, page)"
         :selected="perPage"
-        :options="{'5': '5', '10': '10','25': '25', '50': '50', '100': '100', '1000': 'All'}"
+        :options="{
+          '5': '5',
+          '10': '10',
+          '25': '25',
+          '50': '50',
+          '100': '100',
+          '1000': 'All'
+        }"
         :border="false"
         style="max-width: 60px; margin-bottom: 0;"
         :up="true"
@@ -39,8 +44,8 @@ const PaginateModule = namespace('paginateModule');
 
 @Component({
   components: {
-    Select,
-  },
+    Select
+  }
 })
 export default class DataTableFooter extends Mixins(C3) {
   @Prop() public results!: number;

@@ -2,16 +2,15 @@
   <div class="c3side">
     <div class="c3side-title-wrapper">
       <h1 class="c3side-title">Network</h1>
-      <span class="c3side-config-link" v-on:click="openModal('', 'OPTIONS')">EDIT CONFIG</span>
+      <span class="c3side-config-link" v-on:click="openModal('', 'OPTIONS')"
+        >EDIT CONFIG</span
+      >
     </div>
     <div class="c3side-body">
-
-      <NetworkStats/>
+      <NetworkStats />
 
       <div class="c3side-refresh-wrapper">
-        <span
-          class="c3side-refres-title"
-        >
+        <span class="c3side-refres-title">
           Refresh Rate
         </span>
         <Select
@@ -36,7 +35,12 @@
       />
 
       <div class="c3btn-group">
-        <button class="c3btn c3btn--grey" v-on:click="openModal('', 'CREATE_GATEWAY')">New Gateway</button>
+        <button
+          class="c3btn c3btn--grey"
+          v-on:click="openModal('', 'CREATE_GATEWAY')"
+        >
+          New Gateway
+        </button>
         <!-- <button class="c3btn c3btn--grey" v-on:click="openModal('', 'CREATE_RELAY')">New Relay</button> -->
       </div>
     </div>
@@ -44,7 +48,6 @@
 </template>
 
 <script lang="ts">
-
 import { namespace } from 'vuex-class';
 import { Component, Mixins } from 'vue-property-decorator';
 
@@ -66,8 +69,8 @@ const C3OptionsModule = namespace('optionsModule');
   components: {
     Toggle,
     Select,
-    NetworkStats,
-  },
+    NetworkStats
+  }
 })
 export default class SideMenu extends Mixins(C3) {
   @VisModule.Getter public getAutoUpdateEnabled!: boolean;
@@ -108,7 +111,7 @@ export default class SideMenu extends Mixins(C3) {
       300: '5 minutes',
       600: '10 minutes',
       1800: '30 minutes',
-      3600: '1 hour',
+      3600: '1 hour'
     };
   }
 }
