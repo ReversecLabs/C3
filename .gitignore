@@ -17,3 +17,4 @@ __pycache__
 Src/Common/C3_BUILD_VERSION_HASH_PART.hxx
 Builds/
 gen/
+*launchSettings.json
