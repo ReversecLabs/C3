@@ -28,7 +28,6 @@ namespace ResourceGenerator
                 sw.Write("\"\n");
             }
 
-
             using (var bw = new BinaryWriter(File.Open(Path.Join(outputDir, "EmbeddedResource.dat"), FileMode.Create)))
             {
                 var data = File.ReadAllBytes(args[0]);
@@ -37,8 +36,9 @@ namespace ResourceGenerator
                 bw.Write(BitConverter.GetBytes(data.Length));
                 bw.Write(data);
                 string exportName = args.Length < 3 ? "" : args[2];
-                bw.Write(BitConverter.GetBytes(exportName.Length));
+                bw.Write(BitConverter.GetBytes(exportName.Length + 1)); // + 1 for null termination
                 bw.Write(Encoding.ASCII.GetBytes(exportName));
+                bw.Write((byte)0x00);
             }
 
             return 0;
