@@ -7,12 +7,12 @@ namespace ResourceGenerator
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             if (args.Length < 2 || !File.Exists(args[0]) || !Directory.Exists(args[1]))
             {
                 System.Console.WriteLine("ResourceGenerator require existing input file and output directory.");
-                return;
+                return 1;
             }
 
             var outputDir = Path.Join(args[1], "gen");
@@ -40,6 +40,8 @@ namespace ResourceGenerator
                 bw.Write(BitConverter.GetBytes(exportName.Length));
                 bw.Write(Encoding.ASCII.GetBytes(exportName));
             }
+
+            return 0;
         }
     }
 }
