@@ -177,7 +177,29 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	else
 		throw std::exception(OBF("[Covenant] Could not get token, invalid logon"));
 
-	InitializeSockets();
+	///Create the bridge listener
+	url = this->m_webHost + OBF("/listener/createbridge");
+	web::http::client::http_client webClientBridge(utility::conversions::to_string_t(url), config);
+	request = web::http::http_request(web::http::methods::POST);
+	request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/x-www-form-urlencoded")));
+
+	std::string authHeader = OBF("Bearer ") + this->m_token;
+	request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+
+	std::string createBridgeString = "Id=0&GUID=b85ea642f2&ListenerTypeId=2&Status=Active&CovenantToken=&Description=A+Bridge+for+custom+listeners.&Name=C3Bridge&BindAddress=0.0.0.0&BindPort=" + \
+		std::to_string(this->m_ListeningPostPort) + "&ConnectPort=" + std::to_string(this->m_ListeningPostPort) + "&ConnectAddresses%5B0%5D=" + \
+		this->m_ListeningPostAddress + "&ProfileId=3";
+	request.set_body(utility::conversions::to_string_t(createBridgeString));
+
+	task = webClientBridge.request(request);
+	resp = task.get();
+
+	if (resp.status_code() == web::http::status_codes::OK)
+	{
+		InitializeSockets();
+	}
+	else
+		throw std::exception((OBF("[Covenant] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,13 +336,13 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 			{
 				"type": "ip",
 				"name": "Address",
-				"description": "C2Bridge ip address"
+				"description": "C2Bridge ip address - this will be setup automatically"
 			},
 			{
 				"type": "uint16",
 				"name": "Port",
 				"min": 1,
-				"description": "C2Bridge port"
+				"description": "C2Bridge port - this will be setup automatically"
 			},
 			{
 				"type": "string",
