@@ -136,6 +136,7 @@ namespace MWR::C3::Interfaces::Connectors
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 {
 	json postData;
@@ -182,10 +183,10 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	web::http::client::http_client webClientBridge(utility::conversions::to_string_t(url), config);
 	request = web::http::http_request(web::http::methods::POST);
 	request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/x-www-form-urlencoded")));
-
+	
 	std::string authHeader = OBF("Bearer ") + this->m_token;
 	request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
-
+	
 	std::string createBridgeString = "Id=0&GUID=b85ea642f2&ListenerTypeId=2&Status=Active&CovenantToken=&Description=A+Bridge+for+custom+listeners.&Name=C3Bridge&BindAddress=0.0.0.0&BindPort=" + \
 		std::to_string(this->m_ListeningPostPort) + "&ConnectPort=" + std::to_string(this->m_ListeningPostPort) + "&ConnectAddresses%5B0%5D=" + \
 		this->m_ListeningPostAddress + "&ProfileId=3";
@@ -196,12 +197,52 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 
 	if (resp.status_code() == web::http::status_codes::OK)
 	{
+		//Find the listener we just created
+		url = this->m_webHost + OBF("/api/listeners");
+		web::http::client::http_client webClientListeners(utility::conversions::to_string_t(url), config);
+
+		request = web::http::http_request(web::http::methods::GET);
+
+		std::string authHeader = OBF("Bearer ") + this->m_token;
+		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+		
+		task = webClientListeners.request(request);
+		resp = task.get();
+		
+		bool found = false;
+
+
+		if (resp.status_code() == web::http::status_codes::OK)
+		{
+			//Get the json response
+			auto respData = resp.extract_string();
+			response = json::parse(respData.get());
+
+			for (auto& listeners : response)
+			{
+				if (listeners[OBF("name")] == OBF("C3Bridge"))
+				{
+					std::cout << listeners["id"] << std::endl;
+					this->m_ListenerId = listeners[OBF("id")].get<int>();
+					found = true;
+				}
+			}
+
+		}
+
+		//will be true if status_code != OK or C3Bridge wasn't found
+		if (!found)
+		{
+			throw std::exception(OBF("[Covenant] unable to identify ID of Bridge Listener"));
+		}
+
 		InitializeSockets();
 	}
 	else
 		throw std::exception((OBF("[Covenant] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
-}
 
+	
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Interfaces::Connectors::Covenant::~Covenant()
 {
