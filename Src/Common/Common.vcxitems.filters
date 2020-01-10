@@ -3,9 +3,12 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\MockServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\TeamServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
