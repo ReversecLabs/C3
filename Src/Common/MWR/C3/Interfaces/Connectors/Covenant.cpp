@@ -169,7 +169,7 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		response = json::parse(respData.get());
 	}
 	else
-		throw std::exception(OBF("[Covenant] Error authenticating to web app, HTTP resp: ") + resp.status_code());
+		throw std::exception((OBF("[Covenant] Error authenticating to web app, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
 
 	//Get the token to be used for all other requests.
 	if (response[OBF("success")])
