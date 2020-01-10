@@ -13,6 +13,7 @@ namespace MWR::Loader::UnexportedWinApi
 	{
 		std::pair<std::string, size_t> GetOsLdrpHandleTlsOffsetData()
 		{
+#if defined _WIN64
 			if (IsWindows10RS3OrGreater())
 			{
 				// LdrpHandleTlsData
@@ -54,6 +55,45 @@ namespace MWR::Loader::UnexportedWinApi
 			}
 			else
 				abort(); // TODO
+#elif defined _WIN32
+			if (IsWindows10RS3OrGreater())
+			{
+				auto pattern = "\x8b\xc1\x8d\x4d\xbc\x51";
+				if (IsWindows10RS5OrGreater())
+					pattern = "\x33\xf6\x85\xc0\x79\x03";
+				else if (IsWindows10RS4OrGreater())
+					pattern = "\x8b\xc1\x8d\x4d\xac\x51";
+
+				auto offset = 0x18;
+				if (IsWindows10RS6OrGreater())
+					offset = 0x2E;
+				else if (IsWindows10RS5OrGreater())
+					offset = 0x2C;
+
+				return { pattern, offset };
+			}
+			else if (IsWindows10RS2OrGreater())
+			{
+				return { "\x8b\xc1\x8d\x4d\xbc\x51"s, 0x18 };
+			}
+			else if (IsWindows8Point1OrGreater())
+			{
+				return { "\x50\x6a\x09\x6a\x01\x8b\xc1"s, 0x1B };
+			}
+			else if (IsWindows8OrGreater())
+			{
+				return { "\x8b\x45\x08\x89\x45\xa0"s, 0xC };
+			}
+			else if (IsWindows7OrGreater())
+			{
+				return { "\x74\x20\x8d\x45\xd4\x50\x6a\x09"s, 0x14 };
+			}
+			else
+				abort(); // TODO
+#else
+# error Unsupported architecture
+#endif
+
 		}
 	}
 

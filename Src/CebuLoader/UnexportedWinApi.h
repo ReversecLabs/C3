@@ -26,7 +26,13 @@ namespace MWR::Loader::UnexportedWinApi
 		ULONG TimeDateStamp;
 	};
 
+#if defined _WIN64
 	typedef DWORD(NTAPI* LdprHandleTlsData)(LDR_DATA_TABLE_ENTRY*);
+#elif defined _WIN32
+	typedef DWORD(__thiscall* LdprHandleTlsData)(LDR_DATA_TABLE_ENTRY*);
+#else
+#error Unsupported architecture
+#endif
 
 	inline DWORD GetSizeOfImage(UINT_PTR baseAddress)
 	{
