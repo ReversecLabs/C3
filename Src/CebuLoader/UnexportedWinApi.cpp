@@ -11,7 +11,7 @@ namespace MWR::Loader::UnexportedWinApi
 {
 	namespace
 	{
-		std::pair<std::string, size_t> GetOsLdrpHandleTlsOffsetData()
+		std::pair<std::string, size_t> GetLdrpHandleTlsOffsetData()
 		{
 #if defined _WIN64
 			if (IsWindows10RS3OrGreater())
@@ -93,22 +93,62 @@ namespace MWR::Loader::UnexportedWinApi
 #else
 # error Unsupported architecture
 #endif
+		}
 
+		std::pair<std::string, size_t> GetRtlInsertInvertedFunctionTableOffset()
+		{
+#if defined _WIN32
+			if (IsWindows10RS3OrGreater())
+			{
+				return { "\x53\x56\x57\x8d\x45\xf8\x8b\xfa"s, 0x8 };
+			}
+			else if (IsWindows10RS2OrGreater())
+			{
+				return { "\x8d\x45\xf0\x89\x55\xf8\x50\x8d\x55\xf4"s, 0xB };
+			}
+			else if (IsWindows8Point1OrGreater())
+			{
+				return { "\x53\x56\x57\x8b\xda\x8b\xf9\x50"s, 0xB };
+			}
+			else if (IsWindows8OrGreater())
+			{
+				return { "\x8b\xff\x55\x8b\xec\x51\x51\x53\x57\x8b\x7d\x08\x8d"s, 0 };
+			}
+			else if (IsWindows7OrGreater())
+			{
+				return { "\x8b\xff\x55\x8b\xec\x56\x68"s, 0 };
+			}
+			else
+				abort(); // TODO
+#else
+# error Unsupported architecture
+#endif
+		}
+
+		void* FindSymbol(const wchar_t* dll, std::pair<std::string, size_t> const& offsetData)
+		{
+			auto dllBase = GetModuleHandleW(dll);
+			auto dllSize = GetSizeOfImage((UINT_PTR)dllBase);
+
+			auto match = std::search((char*)dllBase, (char*)dllBase + dllSize, offsetData.first.begin(), offsetData.first.end());
+			if (match == (char*)dllBase + dllSize)
+				abort();
+			return match - offsetData.second;
+		}
+
+		void* FindNtDllSymbol(std::pair<std::string, size_t> const& offsetData)
+		{
+			return FindSymbol(L"ntdll.dll", offsetData);
 		}
 	}
 
 	LdprHandleTlsData GetLdrpHandleTlsData()
 	{
-		auto offsetData = GetOsLdrpHandleTlsOffsetData();
-		auto ntdllBase = GetModuleHandleW(L"ntdll.dll");
-		auto ntdllSize = GetSizeOfImage((UINT_PTR)ntdllBase);
-
-
-		auto match = std::search((char*)ntdllBase, (char*)ntdllBase + ntdllSize, offsetData.first.begin(), offsetData.first.end());
-		if (match == (char*)ntdllBase + ntdllSize)
-			abort();
-
-		return (LdprHandleTlsData)(match - offsetData.second);
+		return (LdprHandleTlsData)(FindNtDllSymbol(GetLdrpHandleTlsOffsetData()));
 	}
 
+	void* GetRtlInsertInvertedFunctionTable()
+	{
+		return FindNtDllSymbol(GetRtlInsertInvertedFunctionTableOffset());
+	}
 }

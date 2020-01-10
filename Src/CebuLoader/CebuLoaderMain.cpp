@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "AccessPayload.h"
+#include "UnexportedWinApi.h"
 
 #ifdef _WIN64
 #define HOST_MACHINE IMAGE_FILE_MACHINE_AMD64
@@ -47,6 +48,7 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 {
 	// Filter by Visual Studio magic for C++ exception, see https://web.archive.org/web/20170911103343/https://support.microsoft.com/en-us/help/185294/prb-exception-code-0xe06d7363-when-calling-win32-seh-apis
 	if (exceptionInfo->ExceptionRecord->ExceptionCode == EH_EXCEPTION_NUMBER &&
+		exceptionInfo->ExceptionRecord->NumberParameters == 4 &&
 		exceptionInfo->ExceptionRecord->ExceptionInformation[2] >= moduleData.m_DllBaseAddress &&					// Check exception site image boundaries.
 		exceptionInfo->ExceptionRecord->ExceptionInformation[2] <= moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll &&
 		exceptionInfo->ExceptionRecord->ExceptionInformation[0] == EH_PURE_MAGIC_NUMBER1 &&
@@ -303,9 +305,6 @@ int LoadPe(void* dllData, std::string_view callExport)
 		if (!RtlAddFunctionTable(functionTable, count, (DWORD64)baseAddress))
 			return 1;
 	}
-#elif defined _WIN32
-#error TODO: Add x86 excpetion handling
-#endif
 
 	// register VEH
 	moduleData.m_DllBaseAddress = baseAddress;
@@ -313,6 +312,17 @@ int LoadPe(void* dllData, std::string_view callExport)
 	auto veh = AddVectoredExceptionHandler(0, PatchCppException);
 	if (!veh)
 		return 1;
+
+#elif defined _WIN32
+	auto rtlInsertInvertedFunctionTable = UnexportedWinApi::GetRtlInsertInvertedFunctionTable();
+	if (IsWindows8Point1OrGreater())
+		((UnexportedWinApi::RtlInsertInvertedFunctionTableWin8Point1OrGreater)rtlInsertInvertedFunctionTable)((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
+	else if (IsWindows8OrGreater())
+		((UnexportedWinApi::RtlInsertInvertedFunctionTableWin8OrGreater)rtlInsertInvertedFunctionTable)((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
+	else
+		abort(); // TODO 
+#endif
+
 
 	///
 	// STEP 9: call our images entry point
@@ -357,7 +367,9 @@ int LoadPe(void* dllData, std::string_view callExport)
 	}
 
 	// STEP 11 Cleanup
+#if defined _WIN64
 	RemoveVectoredExceptionHandler(veh);
+#endif
 	// TODO cleanup after RtlAddFunctionTable
 	VirtualFree((void*)baseAddress, alignedImageSize, MEM_RELEASE);
 	return 0;

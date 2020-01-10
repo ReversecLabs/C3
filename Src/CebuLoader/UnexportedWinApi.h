@@ -30,6 +30,9 @@ namespace MWR::Loader::UnexportedWinApi
 	typedef DWORD(NTAPI* LdprHandleTlsData)(LDR_DATA_TABLE_ENTRY*);
 #elif defined _WIN32
 	typedef DWORD(__thiscall* LdprHandleTlsData)(LDR_DATA_TABLE_ENTRY*);
+	typedef void(__fastcall* RtlInsertInvertedFunctionTableWin8Point1OrGreater)(void* baseAddr, DWORD sizeOfImage);
+	typedef void(_stdcall* RtlInsertInvertedFunctionTableWin8OrGreater)(void* baseAddr, DWORD sizeOfImage);
+	typedef void(_stdcall* RtlInsertInvertedFunctionTableWin7OrGreater)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
 #else
 #error Unsupported architecture
 #endif
@@ -41,4 +44,5 @@ namespace MWR::Loader::UnexportedWinApi
 	}
 
 	LdprHandleTlsData GetLdrpHandleTlsData();
+	void* GetRtlInsertInvertedFunctionTable();
 }
