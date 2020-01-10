@@ -124,6 +124,9 @@ namespace MWR::C3::Interfaces::Connectors
 		///API token, generated on logon.
 		std::string m_token;
 
+		///member for listener
+		int m_ListenerId;
+
 		/// Access mutex for m_ConnectionMap.
 		std::mutex m_ConnectionMapAccess;
 
@@ -222,7 +225,6 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 			{
 				if (listeners[OBF("name")] == OBF("C3Bridge"))
 				{
-					std::cout << listeners["id"] << std::endl;
 					this->m_ListenerId = listeners[OBF("id")].get<int>();
 					found = true;
 				}
@@ -296,9 +298,9 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 
 	//The data to create an SMB Grunt
 	json postData;
-	postData[OBF("id")] = 0;
+	postData[OBF("id")] = this->m_ListenerId;
 	postData[OBF("smbPipeName")] = pipename;
-	postData[OBF("listenerId")] = listenerId; 
+	postData[OBF("listenerId")] = this->m_ListenerId; 
 	postData[OBF("outputKind")] = OBF("ConsoleApplication");
 	postData[OBF("implantTemplateId")] = 2; //for GruntSMB template
 	postData[OBF("dotNetFrameworkVersion")] = OBF("Net40");
@@ -553,4 +555,5 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::PeripheralCreationCom
 	
 	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, listenerId, connectAttempts), connectAttempts);
 }
+
 
