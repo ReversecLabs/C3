@@ -13,7 +13,7 @@ namespace MWR::Loader::UnexportedWinApi
 	{
 		std::pair<std::string, size_t> GetLdrpHandleTlsOffsetData()
 		{
-#if defined _WIN64
+#if defined _M_X64
 			if (IsWindows10RS3OrGreater())
 			{
 				auto offset = 0x43;
@@ -38,7 +38,7 @@ namespace MWR::Loader::UnexportedWinApi
 			}
 			else
 				abort(); // TODO
-#elif defined _WIN32
+#elif defined _M_IX86
 			if (IsWindows10RS3OrGreater())
 			{
 				auto pattern = "\x8b\xc1\x8d\x4d\xbc\x51";
@@ -70,9 +70,9 @@ namespace MWR::Loader::UnexportedWinApi
 #endif
 		}
 
+#if defined _M_IX86
 		std::pair<std::string, size_t> GetRtlInsertInvertedFunctionTableOffset()
 		{
-#if defined _WIN32
 			if (IsWindows10RS3OrGreater())
 				return { "\x53\x56\x57\x8d\x45\xf8\x8b\xfa"s, 0x8 };
 			else if (IsWindows10RS2OrGreater())
@@ -85,10 +85,43 @@ namespace MWR::Loader::UnexportedWinApi
 				return { "\x8b\xff\x55\x8b\xec\x56\x68"s, 0 };
 			else
 				abort(); // TODO
-#else
-# error Unsupported architecture
-#endif
 		}
+#endif
+
+		struct UNICODE_STR
+		{
+			USHORT Length;
+			USHORT MaximumLength;
+			PWSTR pBuffer;
+		};
+
+		struct LDR_DATA_TABLE_ENTRY
+		{
+			LIST_ENTRY InLoadOrderLinks;
+			LIST_ENTRY InMemoryOrderModuleList;
+			LIST_ENTRY InInitializationOrderModuleList;
+			PVOID DllBase;
+			PVOID EntryPoint;
+			ULONG SizeOfImage;
+			UNICODE_STR FullDllName;
+			UNICODE_STR BaseDllName;
+			ULONG Flags;
+			SHORT LoadCount;
+			SHORT TlsIndex;
+			LIST_ENTRY HashTableEntry;
+			ULONG TimeDateStamp;
+		};
+
+#if defined _M_X64
+		typedef DWORD(NTAPI* LdprHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
+#elif defined _M_IX86
+		typedef DWORD(__thiscall* LdprHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
+		typedef void(__fastcall* RtlInsertInvertedFunctionTableWin8Point1OrGreater)(void* baseAddr, DWORD sizeOfImage);
+		typedef void(_stdcall* RtlInsertInvertedFunctionTableWin8OrGreater)(void* baseAddr, DWORD sizeOfImage);
+		typedef void(_stdcall* RtlInsertInvertedFunctionTableWin7OrGreater)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
+#else
+#error Unsupported architecture
+#endif
 
 		void* FindSymbol(const wchar_t* dll, std::pair<std::string, size_t> const& offsetData)
 		{
@@ -105,15 +138,45 @@ namespace MWR::Loader::UnexportedWinApi
 		{
 			return FindSymbol(L"ntdll.dll", offsetData);
 		}
+
+#if defined _M_IX86
+		void* g_RtlInsertInvertedFunctionTable = nullptr;
+		void* GetRtlInsertInvertedFunctionTable()
+		{
+			if (!g_RtlInsertInvertedFunctionTable)
+				g_RtlInsertInvertedFunctionTable = FindNtDllSymbol(GetRtlInsertInvertedFunctionTableOffset());
+			return g_RtlInsertInvertedFunctionTable;
+		}
+#endif // defined _M_IX86
+
+		LdprHandleTlsData_t g_LdrpHandleTlsData = nullptr;
+		LdprHandleTlsData_t GetLdrpHandleTlsData()
+		{
+			if (!g_LdrpHandleTlsData)
+				g_LdrpHandleTlsData = (LdprHandleTlsData_t)(FindNtDllSymbol(GetLdrpHandleTlsOffsetData()));
+			return g_LdrpHandleTlsData;
+		}
+	} // namespace
+
+	DWORD LdrpHandleTlsData(void* baseAddress)
+	{
+		auto ldrpHandleTlsData = GetLdrpHandleTlsData();
+		LDR_DATA_TABLE_ENTRY ldrDataTableEntry{};
+		ldrDataTableEntry.DllBase = baseAddress;
+		return ldrpHandleTlsData(&ldrDataTableEntry);
 	}
 
-	LdprHandleTlsData GetLdrpHandleTlsData()
+#if defined _M_IX86
+	void RtlInsertInvertedFunctionTable(void* baseAddress, DWORD sizeOfImage)
 	{
-		return (LdprHandleTlsData)(FindNtDllSymbol(GetLdrpHandleTlsOffsetData()));
+		auto rtlInsertInvertedFunctionTable = GetRtlInsertInvertedFunctionTable();
+		if (IsWindows8Point1OrGreater())
+			((RtlInsertInvertedFunctionTableWin8Point1OrGreater)rtlInsertInvertedFunctionTable)(baseAddress, sizeOfImage);
+		else if (IsWindows8OrGreater())
+			((RtlInsertInvertedFunctionTableWin8OrGreater)rtlInsertInvertedFunctionTable)(baseAddress, sizeOfImage);
+		else
+			abort(); // TODO
 	}
+#endif // defined _M_IX86
 
-	void* GetRtlInsertInvertedFunctionTable()
-	{
-		return FindNtDllSymbol(GetRtlInsertInvertedFunctionTableOffset());
-	}
-}
+} // namespace MWR::Loader

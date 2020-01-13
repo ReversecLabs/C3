@@ -271,14 +271,8 @@ int LoadPe(void* dllData, std::string_view callExport)
 	///
 	// STEP 7.1: Set static TLS values
 	///
+	MWR::Loader::UnexportedWinApi::LdrpHandleTlsData((void*)baseAddress);
 
-	using namespace MWR::Loader;
-	{
-		UnexportedWinApi::LDR_DATA_TABLE_ENTRY ldrDataTableEntry{};
-		ldrDataTableEntry.DllBase = (void*)baseAddress;
-		auto ldrpHandleTlsData = UnexportedWinApi::GetLdrpHandleTlsData();
-		ldrpHandleTlsData(&ldrDataTableEntry);
-	}
 	///
 	// STEP 8: execute TLS callbacks
 	///
@@ -296,7 +290,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 	//
 	// STEP 8.1: Add Exception handling
 	//
-#if defined _WIN64
+#if defined _M_X64
 	auto pImageEntryException = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
 
 	if (pImageEntryException->Size > 0)
@@ -314,16 +308,9 @@ int LoadPe(void* dllData, std::string_view callExport)
 	if (!veh)
 		return 1;
 
-#elif defined _WIN32
-	auto rtlInsertInvertedFunctionTable = UnexportedWinApi::GetRtlInsertInvertedFunctionTable();
-	if (IsWindows8Point1OrGreater())
-		((UnexportedWinApi::RtlInsertInvertedFunctionTableWin8Point1OrGreater)rtlInsertInvertedFunctionTable)((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
-	else if (IsWindows8OrGreater())
-		((UnexportedWinApi::RtlInsertInvertedFunctionTableWin8OrGreater)rtlInsertInvertedFunctionTable)((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
-	else
-		abort(); // TODO
+#elif defined _M_IX86
+	MWR::Loader::UnexportedWinApi::RtlInsertInvertedFunctionTable((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
 #endif
-
 
 	///
 	// STEP 9: call our images entry point
@@ -367,7 +354,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 	}
 
 	// STEP 11 Cleanup
-#if defined _WIN64
+#if defined _M_X64
 	RemoveVectoredExceptionHandler(veh);
 #endif
 	// TODO cleanup after RtlAddFunctionTable
