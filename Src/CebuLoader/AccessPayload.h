@@ -43,5 +43,5 @@ inline size_t GetExportNameSize(void* startOfResource)
 
 inline const char* GetExportName(void* startOfResource)
 {
-	return (char*)GetPayloadEnd(startOfResource) + 4;
+	return (char*)GetPayloadEnd(startOfResource) + 4; // 4 bytes size
 }

@@ -89,25 +89,22 @@ int LoadPe(void* dllData, std::string_view callExport)
 	auto sectionHeader = IMAGE_FIRST_SECTION(ntHeaders);
 	DWORD lastSectionEnd = 0;
 	DWORD endOfSection;
-	for (size_t i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++) {
-		if (sectionHeader->SizeOfRawData == 0) {
+	for (size_t i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++)
+	{
+		if (sectionHeader->SizeOfRawData == 0)
 			endOfSection = sectionHeader->VirtualAddress + ntHeaders->OptionalHeader.SectionAlignment;
-		}
-		else {
+		else
 			endOfSection = sectionHeader->VirtualAddress + sectionHeader->SizeOfRawData;
-		}
 
-		if (endOfSection > lastSectionEnd) {
+		if (endOfSection > lastSectionEnd)
 			lastSectionEnd = endOfSection;
-		}
 	}
 
 	SYSTEM_INFO sysInfo;
 	GetNativeSystemInfo(&sysInfo);
 	auto alignedImageSize = AlignValueUp(ntHeaders->OptionalHeader.SizeOfImage, sysInfo.dwPageSize);
-	if (alignedImageSize != AlignValueUp(lastSectionEnd, sysInfo.dwPageSize)) {
+	if (alignedImageSize != AlignValueUp(lastSectionEnd, sysInfo.dwPageSize))
 		return 1;
-	}
 
 	UINT_PTR baseAddress = (UINT_PTR)VirtualAlloc(NULL, alignedImageSize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if (!baseAddress)
@@ -133,14 +130,17 @@ int LoadPe(void* dllData, std::string_view callExport)
 	auto baseOffset = (UINT_PTR)baseAddress - ntHeaders->OptionalHeader.ImageBase;
 	auto dataDir = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
 
-	if (baseOffset && dataDir->Size) {
+	if (baseOffset && dataDir->Size)
+	{
 
 		auto relocation = Rva2Va<PIMAGE_BASE_RELOCATION>(baseAddress, dataDir->VirtualAddress);
 
-		while (relocation->VirtualAddress) {
+		while (relocation->VirtualAddress)
+		{
 			auto relocList = (PIMAGE_RELOC)(relocation + 1);
 
-			while ((PBYTE)relocList != (PBYTE)relocation + relocation->SizeOfBlock) {
+			while ((PBYTE)relocList != (PBYTE)relocation + relocation->SizeOfBlock)
+			{
 
 				if (relocList->type == IMAGE_REL_BASED_DIR64)
 					*(PULONG_PTR)((PBYTE)baseAddress + relocation->VirtualAddress + relocList->offset) += baseOffset;
@@ -180,7 +180,6 @@ int LoadPe(void* dllData, std::string_view callExport)
 			// iterate through all imported functions, importing by ordinal if no name present
 			for (; origFirstThunk->u1.Function; firstThunk++, origFirstThunk++)
 			{
-
 				if (IMAGE_SNAP_BY_ORDINAL(origFirstThunk->u1.Ordinal))
 				{
 					firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, (LPCSTR)IMAGE_ORDINAL(origFirstThunk->u1.Ordinal));
@@ -204,18 +203,21 @@ int LoadPe(void* dllData, std::string_view callExport)
 	{
 		auto delayDesc = RVA(PIMAGE_DELAYLOAD_DESCRIPTOR, baseAddress, dataDir->VirtualAddress);
 
-		for (; delayDesc->DllNameRVA; delayDesc++) {
-
+		for (; delayDesc->DllNameRVA; delayDesc++)
+		{
 			auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + delayDesc->DllNameRVA));
 			auto firstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, delayDesc->ImportAddressTableRVA);
 			auto origFirstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, delayDesc->ImportNameTableRVA);
 
 			// iterate through all imported functions, importing by ordinal if no name present
-			for (; firstThunk->u1.Function; firstThunk++, origFirstThunk++) {
-				if (IMAGE_SNAP_BY_ORDINAL(origFirstThunk->u1.Ordinal)) {
+			for (; firstThunk->u1.Function; firstThunk++, origFirstThunk++)
+			{
+				if (IMAGE_SNAP_BY_ORDINAL(origFirstThunk->u1.Ordinal))
+				{
 					firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, (LPCSTR)IMAGE_ORDINAL(origFirstThunk->u1.Ordinal));
 				}
-				else {
+				else
+				{
 					auto importByName = RVA(PIMAGE_IMPORT_BY_NAME, baseAddress, origFirstThunk->u1.AddressOfData);
 					firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, importByName->Name);
 				}
@@ -228,10 +230,10 @@ int LoadPe(void* dllData, std::string_view callExport)
 	///
 	sectionHeader = IMAGE_FIRST_SECTION(ntHeaders);
 
-	for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++) {
-
-		if (sectionHeader->SizeOfRawData) {
-
+	for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++)
+	{
+		if (sectionHeader->SizeOfRawData)
+		{
 			// determine protection flags based on characteristics
 			bool executable = (sectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0;
 			bool readable = (sectionHeader->Characteristics & IMAGE_SCN_MEM_READ) != 0;
@@ -255,9 +257,8 @@ int LoadPe(void* dllData, std::string_view callExport)
 			else if (executable && readable && writeable)
 				protect = PAGE_EXECUTE_READWRITE;
 
-			if (sectionHeader->Characteristics & IMAGE_SCN_MEM_NOT_CACHED) {
+			if (sectionHeader->Characteristics & IMAGE_SCN_MEM_NOT_CACHED)
 				protect |= PAGE_NOCACHE;
-			}
 
 			// change memory access flags
 			VirtualProtect(RVA(LPVOID, baseAddress, sectionHeader->VirtualAddress), sectionHeader->SizeOfRawData, protect, &protect);
@@ -270,12 +271,14 @@ int LoadPe(void* dllData, std::string_view callExport)
 	///
 	// STEP 7.1: Set static TLS values
 	///
-	using namespace MWR::Loader;
-	UnexportedWinApi::LDR_DATA_TABLE_ENTRY ldrDataTableEntry{};
-	ldrDataTableEntry.DllBase = (void*)baseAddress;
-	auto ldrpHandleTlsData = UnexportedWinApi::GetLdrpHandleTlsData();
-	ldrpHandleTlsData(&ldrDataTableEntry);
 
+	using namespace MWR::Loader;
+	{
+		UnexportedWinApi::LDR_DATA_TABLE_ENTRY ldrDataTableEntry{};
+		ldrDataTableEntry.DllBase = (void*)baseAddress;
+		auto ldrpHandleTlsData = UnexportedWinApi::GetLdrpHandleTlsData();
+		ldrpHandleTlsData(&ldrDataTableEntry);
+	}
 	///
 	// STEP 8: execute TLS callbacks
 	///
@@ -286,16 +289,14 @@ int LoadPe(void* dllData, std::string_view callExport)
 		auto tlsDir = RVA(PIMAGE_TLS_DIRECTORY, baseAddress, dataDir->VirtualAddress);
 		auto callback = (PIMAGE_TLS_CALLBACK*)(tlsDir->AddressOfCallBacks);
 
-		for (; *callback; callback++) {
+		for (; *callback; callback++)
 			(*callback)((LPVOID)baseAddress, DLL_PROCESS_ATTACH, NULL);
-		}
 	}
 
 	//
 	// STEP 8.1: Add Exception handling
 	//
 #if defined _WIN64
-	// STEP 6.1: Set up Structured Exception Handling (SEH)
 	auto pImageEntryException = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
 
 	if (pImageEntryException->Size > 0)
@@ -320,7 +321,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 	else if (IsWindows8OrGreater())
 		((UnexportedWinApi::RtlInsertInvertedFunctionTableWin8OrGreater)rtlInsertInvertedFunctionTable)((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
 	else
-		abort(); // TODO 
+		abort(); // TODO
 #endif
 
 
@@ -335,7 +336,6 @@ int LoadPe(void* dllData, std::string_view callExport)
 	///
 	if (!callExport.empty())
 	{
-
 		do
 		{
 			dataDir = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
@@ -349,8 +349,8 @@ int LoadPe(void* dllData, std::string_view callExport)
 			auto expName = RVA(PDWORD, baseAddress, exportDir->AddressOfNames);
 			auto expOrdinal = RVA(PWORD, baseAddress, exportDir->AddressOfNameOrdinals);
 
-			for (size_t i = 0; i < exportDir->NumberOfNames; i++, expName++, expOrdinal++) {
-
+			for (size_t i = 0; i < exportDir->NumberOfNames; i++, expName++, expOrdinal++)
+			{
 				auto expNameStr = RVA(LPCSTR, baseAddress, *expName);
 
 				if (!expNameStr)

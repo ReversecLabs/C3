@@ -7,20 +7,23 @@
 
 namespace MWR::Loader
 {
-#define _WIN32_WINNT_NT4            0x0400
-#define _WIN32_WINNT_WIN2K          0x0500
-#define _WIN32_WINNT_WINXP          0x0501
-#define _WIN32_WINNT_WS03           0x0502
-#define _WIN32_WINNT_WIN6           0x0600
-#define _WIN32_WINNT_VISTA          0x0600
-#define _WIN32_WINNT_WS08           0x0600
-#define _WIN32_WINNT_LONGHORN       0x0600
-#define _WIN32_WINNT_WIN7           0x0601
-#define _WIN32_WINNT_WIN8           0x0602
-#define _WIN32_WINNT_WINBLUE        0x0603
-#define _WIN32_WINNT_WIN10          0x0A00
+	enum Win32WinNt
+	{
+		Win32WinNtNT4           = 0x0400,
+		Win32WinNtWIN2K         = 0x0500,
+		Win32WinNtWINXP         = 0x0501,
+		Win32WinNtWS03          = 0x0502,
+		Win32WinNtWIN6          = 0x0600,
+		Win32WinNtVISTA         = 0x0600,
+		Win32WinNtWS08          = 0x0600,
+		Win32WinNtLONGHORN      = 0x0600,
+		Win32WinNtWIN7          = 0x0601,
+		Win32WinNtWIN8          = 0x0602,
+		Win32WinNtWINBLUE       = 0x0603,
+		Win32WinNtWIN10         = 0x0A00,
+	};
 
-	enum eBuildThreshold
+	enum BuildThreshold
 	{
 		Build_RS0 = 10586,
 		Build_RS1 = 14393,
@@ -32,7 +35,7 @@ namespace MWR::Loader
 		Build_RS_MAX = 99999,
 	};
 
-	enum eVerShort
+	enum VerShort
 	{
 		WinUnsupported, // Unsupported OS
 		WinXP,          // Windows XP
@@ -50,7 +53,7 @@ namespace MWR::Loader
 
 	struct WinVersion
 	{
-		eVerShort ver = WinUnsupported;
+		VerShort ver = WinUnsupported;
 		uint32_t revision = 0;
 		RTL_OSVERSIONINFOEXW native = { };
 	};
@@ -90,92 +93,92 @@ namespace MWR::Loader
 
 	inline bool IsWindowsXPOrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWINXP), LOBYTE(Win32WinNtWINXP), 0, 0);
 	}
 
 	inline bool IsWindowsXPSP1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 1, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWINXP), LOBYTE(Win32WinNtWINXP), 1, 0);
 	}
 
 	inline bool IsWindowsXPSP2OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 2, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWINXP), LOBYTE(Win32WinNtWINXP), 2, 0);
 	}
 
 	inline bool IsWindowsXPSP3OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 3, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWINXP), LOBYTE(Win32WinNtWINXP), 3, 0);
 	}
 
 	inline bool IsWindowsVistaOrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtVISTA), LOBYTE(Win32WinNtVISTA), 0, 0);
 	}
 
 	inline bool IsWindowsVistaSP1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 1, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtVISTA), LOBYTE(Win32WinNtVISTA), 1, 0);
 	}
 
 	inline bool IsWindowsVistaSP2OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 2, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtVISTA), LOBYTE(Win32WinNtVISTA), 2, 0);
 	}
 
 	inline bool IsWindows7OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN7), LOBYTE(Win32WinNtWIN7), 0, 0);
 	}
 
 	inline bool IsWindows7SP1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 1, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN7), LOBYTE(Win32WinNtWIN7), 1, 0);
 	}
 
 	inline bool IsWindows8OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN8), LOBYTE(Win32WinNtWIN8), 0, 0);
 	}
 
 	inline bool IsWindows8Point1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINBLUE), LOBYTE(_WIN32_WINNT_WINBLUE), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWINBLUE), LOBYTE(Win32WinNtWINBLUE), 0, 0);
 	}
 
 	inline bool IsWindows10OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, 0);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, 0);
 	}
 
 	inline bool IsWindows10RS1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS1);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS1);
 	}
 
 	inline bool IsWindows10RS2OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS2);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS2);
 	}
 
 	inline bool IsWindows10RS3OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS3);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS3);
 	}
 
 	inline bool IsWindows10RS4OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS4);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS4);
 	}
 
 	inline bool IsWindows10RS5OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS5);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS5);
 	}
 
 	inline bool IsWindows10RS6OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_RS6);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS6);
 	}
 
 	inline bool IsWindowsServer()

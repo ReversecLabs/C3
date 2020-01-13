@@ -28,7 +28,7 @@ namespace MWR::Loader
 				auto fullver = (g_WinVer.native.dwMajorVersion << 8) | g_WinVer.native.dwMinorVersion;
 				switch (fullver)
 				{
-				case _WIN32_WINNT_WIN10:
+				case Win32WinNtWIN10:
 					if (g_WinVer.native.dwBuildNumber >= Build_RS6)
 						g_WinVer.ver = Win10_RS6;
 					else if (g_WinVer.native.dwBuildNumber >= Build_RS5)
@@ -45,19 +45,19 @@ namespace MWR::Loader
 						g_WinVer.ver = Win10;
 					break;
 
-				case _WIN32_WINNT_WINBLUE:
+				case Win32WinNtWINBLUE:
 					g_WinVer.ver = Win8Point1;
 					break;
 
-				case _WIN32_WINNT_WIN8:
+				case Win32WinNtWIN8:
 					g_WinVer.ver = Win8;
 					break;
 
-				case _WIN32_WINNT_WIN7:
+				case Win32WinNtWIN7:
 					g_WinVer.ver = Win7;
 					break;
 
-				case _WIN32_WINNT_WINXP:
+				case Win32WinNtWINXP:
 					g_WinVer.ver = WinXP;
 					break;
 
