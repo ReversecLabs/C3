@@ -8,7 +8,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
@@ -89,5 +88,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
@@ -54,6 +53,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Slack.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\AutomaticRegistrator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\BackendCommons.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\HasConstructor.h" />
