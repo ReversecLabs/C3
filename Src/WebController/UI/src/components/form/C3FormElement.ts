@@ -26,6 +26,10 @@ export default class C3FormElement extends Vue {
   }
 
   get inputUID() {
-    return !!this.name ? this.name : Math.random().toString(36).substring(2);
+    return !!this.name
+      ? this.name
+      : Math.random()
+          .toString(36)
+          .substring(2);
   }
 }

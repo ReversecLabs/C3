@@ -5,14 +5,8 @@
     v-if="currentModal"
   >
     <div class="c3modal-holder">
-      <GatewayModal
-        v-if="isGateway()"
-        :target-id="targetUid"
-      />
-      <RelayModal
-        v-if="isRelay()"
-        :target-id="targetUid"
-      />
+      <GatewayModal v-if="isGateway()" :target-id="targetUid" />
+      <RelayModal v-if="isRelay()" :target-id="targetUid" />
       <CreateGatewayModal
         v-if="this.activeModal.modalTarget === 'CREATE_GATEWAY'"
       />
@@ -34,15 +28,15 @@
         v-if="this.activeModal.modalTarget === 'COMMAND'"
         :target-id="targetUid"
       />
-      <OptionsModal
-        v-if="this.activeModal.modalTarget === 'OPTIONS'"
-      />
-      <InterfaceModal
-        v-if="isInterface()"
-        :target-id="targetUid"
-      />
-      <span class="c3modal-back icon back" v-on:click.self="closeThisModal()">Back</span>
-      <span class="c3modal-close icon close" v-on:click.self="closeAllModal()"></span>
+      <OptionsModal v-if="this.activeModal.modalTarget === 'OPTIONS'" />
+      <InterfaceModal v-if="isInterface()" :target-id="targetUid" />
+      <span class="c3modal-back icon back" v-on:click.self="closeThisModal()"
+        >Back</span
+      >
+      <span
+        class="c3modal-close icon close"
+        v-on:click.self="closeAllModal()"
+      ></span>
     </div>
   </div>
 </template>
@@ -65,7 +59,6 @@ import CreateGatewayModal from '@/components/modals/CreateGateway.vue';
 import ConnectRelayModal from '@/components/modals/ConnectRelays.vue';
 import OptionsModal from '@/components/modals/Options.vue';
 
-
 const ModalModule = namespace('modalModule');
 
 @Component({
@@ -78,8 +71,8 @@ const ModalModule = namespace('modalModule');
     CreateRelayModal,
     ConnectRelayModal,
     CommandCenterModal,
-    CreateGatewayModal,
-  },
+    CreateGatewayModal
+  }
 })
 export default class Modal extends Mixins(C3) {
   @ModalModule.Getter public activeModal!: C3Modal;
@@ -113,9 +106,11 @@ export default class Modal extends Mixins(C3) {
   }
 
   public isInterface(): boolean {
-    return this.activeModal.modalTarget === NodeKlass.Channel ||
+    return (
+      this.activeModal.modalTarget === NodeKlass.Channel ||
       this.activeModal.modalTarget === NodeKlass.Peripheral ||
-      this.activeModal.modalTarget === NodeKlass.Connector;
+      this.activeModal.modalTarget === NodeKlass.Connector
+    );
   }
 
   public options(): any {
@@ -270,10 +265,10 @@ export default class Modal extends Mixins(C3) {
     color: $color-grey-400
   &-config-link
     font-family: "Roboto"
-    color: $color-green-c3
+    color: $color-blue-c3
     font-size: 12px
     line-height: 120%
-    display: flexc3btn-group
+    display: flex
     align-self: flex-end
     text-align: right
     margin: 0 0 14px

@@ -6,7 +6,7 @@
       </span>
       <!-- <span class="icon exclamation"></span> -->
     </div>
-    <SelectGatewayForm/>
+    <SelectGatewayForm />
   </div>
 </template>
 
@@ -18,10 +18,10 @@ import SelectGatewayForm from '@/components/form/SelectGatewayForm.vue';
 
 @Component({
   components: {
-    SelectGatewayForm,
-  },
+    SelectGatewayForm
+  }
 })
-export default class GatewayForm extends Mixins(C3) { }
+export default class GatewayForm extends Mixins(C3) {}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

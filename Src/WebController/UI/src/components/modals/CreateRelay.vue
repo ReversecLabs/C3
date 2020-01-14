@@ -22,7 +22,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-          :options="{'dll': 'dll', 'exe': 'exe'}"
+          :options="{ dll: 'dll', exe: 'exe' }"
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
@@ -30,7 +30,7 @@
           legend="Architecture"
           class="form-element"
           :selected="selectedArchitecture"
-          :options="{'x86': 'x86','x64': 'x64'}"
+          :options="{ x86: 'x86', x64: 'x64' }"
           :border="true"
           @change="changeArchitecture($event, architecture)"
         />
@@ -40,7 +40,8 @@
         <p>
           Please Select the first command to the Relay.
         </p>
-        <CommandCenterModal class="embeded-modal"
+        <CommandCenterModal
+          class="embeded-modal"
           :target-id="'new'"
           :embeded="true"
           @change="changeForm($event, formData)"
@@ -69,7 +70,11 @@ import { namespace } from 'vuex-class';
 import { Component, Mixins, Prop } from 'vue-property-decorator';
 
 import { C3Gateway, NodeKlass, C3CommandCenterOptions } from '@/types/c3types';
-import { GetTypesForInterfaceKlassFn, InterfaceItem, GetCommandTargetForFn } from '@/store/C3Capability';
+import {
+  GetTypesForInterfaceKlassFn,
+  InterfaceItem,
+  GetCommandTargetForFn
+} from '@/store/C3Capability';
 
 import C3 from '@/c3';
 import Input from '@/components/form/Input.vue';
@@ -87,14 +92,15 @@ const C3OptionsModule = namespace('optionsModule');
     Input,
     Select,
     GeneralForm,
-    CommandCenterModal,
-  },
+    CommandCenterModal
+  }
 })
 export default class CreateRelayModal extends Mixins(C3) {
   @Prop() public options!: C3CommandCenterOptions;
 
   @C3Capability.Getter public getCommandTargetFor!: GetCommandTargetForFn;
-  @C3Capability.Getter public getTypesForInterfaceKlass!: GetTypesForInterfaceKlassFn;
+  @C3Capability.Getter
+  public getTypesForInterfaceKlass!: GetTypesForInterfaceKlassFn;
 
   @C3OptionsModule.Getter public getAPIBaseUrl!: string;
 
@@ -169,7 +175,7 @@ export default class CreateRelayModal extends Mixins(C3) {
     return {
       formDefault: this.options.formDefault,
       source: this.options.source,
-      targetGroup: 'NewRelayCommandGroup',
+      targetGroup: 'NewRelayCommandGroup'
     };
   }
 
@@ -183,7 +189,11 @@ export default class CreateRelayModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 
   public changeName(n: any): void {
@@ -209,46 +219,48 @@ export default class CreateRelayModal extends Mixins(C3) {
       architecture: this.selectedArchitecture,
       parentGatewayBuildId: this.gatewayBuildsId,
       name: this.relayName,
-      startupCommands: [
-        this.formData,
-      ],
+      startupCommands: [this.formData]
     };
     axios({
       url: '/api/build/customize',
       method: 'POST',
       baseURL: this.getAPIBaseUrl,
       data,
-      responseType: 'blob',
-    }).then((response) => {
-      let fileName = '';
-      const blob = new Blob([response.data], {type: response.data.type});
-      const contentDisposition = response.headers['content-disposition'];
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      link.href = url;
-
-      if (contentDisposition !== undefined) {
-        fileName = contentDisposition.split('filename=')[1].split(';')[0].replace(/%20/gi, '-');
-      }
-
-      if (typeof fileName !== 'string' || fileName === '') {
-        fileName = 'relay.exe';
-      }
-
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      this.closeThisModal();
+      responseType: 'blob'
     })
-    .catch((error) => {
+      .then(response => {
+        let fileName = '';
+        const blob = new Blob([response.data], { type: response.data.type });
+        const contentDisposition = response.headers['content-disposition'];
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+
+        if (contentDisposition !== undefined) {
+          fileName = contentDisposition
+            .split('filename=')[1]
+            .split(';')[0]
+            .replace(/%20/gi, '-');
+        }
+
+        if (typeof fileName !== 'string' || fileName === '') {
+          fileName = 'relay.exe';
+        }
+
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        this.closeThisModal();
+      })
+      .catch(error => {
         this.addNotify({
           type: 'error',
-          message: error.message,
+          message: error.message
         });
         // tslint:disable-next-line:no-console
         console.error(error.message);
@@ -265,4 +277,3 @@ export default class CreateRelayModal extends Mixins(C3) {
     box-shadow: none
     padding: 0
 </style>
-

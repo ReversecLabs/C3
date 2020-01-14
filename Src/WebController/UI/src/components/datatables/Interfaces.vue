@@ -6,7 +6,12 @@
         legend="Filter by type"
         v-on:change="selectInterfaceType($event, interfaceType)"
         :selected="selectedInterfaceType"
-        :options="{'ALL': 'All', 'CHANNEL': 'Channel', 'PERIPHERAL': 'Peripheral', 'CONNECTOR': 'Connector'}"
+        :options="{
+          ALL: 'All',
+          CHANNEL: 'Channel',
+          PERIPHERAL: 'Peripheral',
+          CONNECTOR: 'Connector'
+        }"
         :border="true"
         :up="false"
       />
@@ -15,7 +20,7 @@
         legend="Filter by Return Channel"
         v-on:change="selectReturnChannel($event, returnChannel)"
         :selected="selectedReturnChannel"
-        :options="{'ALL': 'All', 'YES': 'Yes', 'NO': 'No'}"
+        :options="{ ALL: 'All', YES: 'Yes', NO: 'No' }"
         :border="true"
         :up="false"
         :disabled="isChannelOrAllForDisabled"
@@ -25,7 +30,7 @@
         legend="Filter by Negotiation Channel"
         v-on:change="selectNegotiationChannel($event, negotiationChannel)"
         :selected="selectedNegotiationChannel"
-        :options="{'ALL': 'All', 'YES': 'Yes', 'NO': 'No'}"
+        :options="{ ALL: 'All', YES: 'Yes', NO: 'No' }"
         :border="true"
         :up="false"
         :disabled="isChannelOrAllForDisabled"
@@ -38,7 +43,7 @@
       :interface-type-filter="selectedInterfaceType"
       @count="setCount($event)"
     />
-    <DataTableFooter :results="getCount"/>
+    <DataTableFooter :results="getCount" />
   </div>
 </template>
 
@@ -60,8 +65,8 @@ const C3Module = namespace('c3Module');
   components: {
     Select,
     InterfaceList,
-    DataTableFooter,
-  },
+    DataTableFooter
+  }
 })
 export default class InterfacesTab extends Mixins(C3) {
   public iCount = 0;
@@ -86,12 +91,14 @@ export default class InterfacesTab extends Mixins(C3) {
   }
 
   get isChannelOrAllForDisabled() {
-    const isChannel = this.selectedInterfaceType === 'ALL' || this.selectedInterfaceType === 'CHANNEL';
+    const isChannel =
+      this.selectedInterfaceType === 'ALL' ||
+      this.selectedInterfaceType === 'CHANNEL';
     if (!isChannel) {
       this.selectReturnChannel('NO');
       this.selectNegotiationChannel('NO');
     }
-    return  isChannel ? false : true;
+    return isChannel ? false : true;
   }
 
   public setCount(emitedCountNumber: number): void {
@@ -99,10 +106,13 @@ export default class InterfacesTab extends Mixins(C3) {
   }
 
   public selectInterfaceType(newtype: string) {
-    if ((this.interfaceByType === 'PERIPHERAL' || this.interfaceByType === 'CONNECTOR') &&
-      (newtype === 'ALL' || newtype === 'CHANNEL')) {
-        this.selectReturnChannel('ALL');
-        this.selectNegotiationChannel('ALL');
+    if (
+      (this.interfaceByType === 'PERIPHERAL' ||
+        this.interfaceByType === 'CONNECTOR') &&
+      (newtype === 'ALL' || newtype === 'CHANNEL')
+    ) {
+      this.selectReturnChannel('ALL');
+      this.selectNegotiationChannel('ALL');
     }
     this.interfaceByType = newtype;
   }

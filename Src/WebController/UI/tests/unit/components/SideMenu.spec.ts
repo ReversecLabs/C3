@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/SideMenu.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('SideMenu is a Vue instance', () => {

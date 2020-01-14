@@ -16,7 +16,7 @@ Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
   state: {
-    version: '1.0.0',
+    version: '1.0.0'
   },
   modules: {
     c3Module,
@@ -26,8 +26,8 @@ const store: StoreOptions<RootState> = {
     c3Capability,
     optionsModule,
     paginateModule,
-    c3CommandModule,
-  },
+    c3CommandModule
+  }
 };
 
 export default new Vuex.Store<RootState>(store);

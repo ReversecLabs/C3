@@ -10,16 +10,16 @@ localVue.use(Vuex);
 
 describe('@/components/modals/Channel.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('InterfaceModal is a Vue instance', () => {
     const wrapper = shallowMount(InterfaceModal, {
       propsData: {
-        targetId: '11d1-a1d0',
+        targetId: '11d1-a1d0'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

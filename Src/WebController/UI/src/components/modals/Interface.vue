@@ -2,7 +2,10 @@
   <div class="c3modal-body" v-if="c3Interface !== undefined">
     <div
       class="c3modal-header"
-      :class="{ 'is-return': !!c3Interface.isReturnChannel, 'has-error': !!c3Interface.error }"
+      :class="{
+        'is-return': !!c3Interface.isReturnChannel,
+        'has-error': !!c3Interface.error
+      }"
     >
       <h1>
         <span class="capitalize">{{ c3Interface.klass.toLowerCase() }} </span>
@@ -13,7 +16,8 @@
           <p>
             Parent
             <span class="c3link capitalize">
-              {{ c3Interface.parentKlass.toLowerCase() }} / {{ c3Interface.parentId }}
+              {{ c3Interface.parentKlass.toLowerCase() }} /
+              {{ c3Interface.parentId }}
             </span>
           </p>
           <p class="capitalize">
@@ -31,23 +35,24 @@
         </div>
 
         <div class="actions">
-          <span
-            class="c3modal-more-btn icon more"
-            v-if="showRelayDropdown"
-          >
+          <span class="c3modal-more-btn icon more" v-if="showRelayDropdown">
             INTERFACE OPTIONS
           </span>
           <ul class="c3modal-menu">
             <li
               class="c3modal-menu-item"
-              @click="openModal(c3Interface.id, 'CREATE_RELAY', generateOprions())"
+              @click="
+                openModal(c3Interface.id, 'CREATE_RELAY', generateOprions())
+              "
               v-show="showNewRelayButton"
             >
               New Relay
             </li>
             <li
               class="c3modal-menu-item"
-              @click="openModal(c3Interface.uid, 'CONNECT_RELAY', generateOprions())"
+              @click="
+                openModal(c3Interface.uid, 'CONNECT_RELAY', generateOprions())
+              "
               v-show="showConnectRelayButton"
             >
               Connect Relay
@@ -60,7 +65,6 @@
             Command Center
           </button>
         </div>
-
       </div>
       <p
         v-if="!!c3Interface.error && c3Interface.error !== ''"
@@ -70,14 +74,20 @@
         Error: {{ c3Interface.error }}
       </p>
       <p
-        v-if="!!c3Interface.isReturnChannel && c3Interface.isReturnChannel !== 'false'"
+        v-if="
+          !!c3Interface.isReturnChannel &&
+            c3Interface.isReturnChannel !== 'false'
+        "
         class="message-with-icon"
       >
         <span class="icon return"></span>
         This is a Gateway Return Channel (GRC).
       </p>
       <p
-        v-if="!!c3Interface.isNegotiationChannel && c3Interface.isNegotiationChannel !== 'false'"
+        v-if="
+          !!c3Interface.isNegotiationChannel &&
+            c3Interface.isNegotiationChannel !== 'false'
+        "
         class="message-with-icon"
       >
         <span class="icon exclamation"></span>
@@ -99,8 +109,17 @@ import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { Notify } from '@/store/NotifyModule';
 import { GetInterfaceFn, GetNodeKlassFn, GetRelayFn } from '@/store/C3Module';
-import { C3Interface, C3Gateway, C3Relay, NodeKlass, C3Node,
-  C3FieldDefault, C3CommandCenterOptions, SourceOptions, nullNode } from '@/types/c3types';
+import {
+  C3Interface,
+  C3Gateway,
+  C3Relay,
+  NodeKlass,
+  C3Node,
+  C3FieldDefault,
+  C3CommandCenterOptions,
+  SourceOptions,
+  nullNode
+} from '@/types/c3types';
 
 import C3 from '@/c3';
 
@@ -170,7 +189,6 @@ export default class InterfaceModal extends Mixins(C3) {
     return false;
   }
 
-
   public getArguments(node: C3Node = nullNode): any {
     if (this.isChannel()) {
       if (!!node.propertiesText && !!node.propertiesText.arguments) {
@@ -190,11 +208,13 @@ export default class InterfaceModal extends Mixins(C3) {
   public getPropertiesArguments(interfaceAguments: any): C3FieldDefault[] {
     const propertiesAurguments: C3FieldDefault[] = [];
 
-    Object.values(interfaceAguments).forEach((objectOrArray: C3FieldDefault | any) => {
-      if (!Array.isArray(objectOrArray)) {
-        propertiesAurguments.push(objectOrArray);
+    Object.values(interfaceAguments).forEach(
+      (objectOrArray: C3FieldDefault | any) => {
+        if (!Array.isArray(objectOrArray)) {
+          propertiesAurguments.push(objectOrArray);
+        }
       }
-    });
+    );
 
     return propertiesAurguments;
   }
@@ -209,7 +229,7 @@ export default class InterfaceModal extends Mixins(C3) {
   public generateSourceOptions(): SourceOptions {
     return {
       relay: this.getRelay(this.getInterfaceParentId()),
-      interface: this.c3Interface,
+      interface: this.c3Interface
     };
   }
 
@@ -217,24 +237,26 @@ export default class InterfaceModal extends Mixins(C3) {
     let inputId = {
       name: '',
       type: '',
-      value: '',
+      value: ''
     };
 
     let outputId = {
       name: '',
       type: '',
-      value: '',
+      value: ''
     };
 
     let tmp = '';
 
     if (!!attributes.length) {
-      inputId = attributes.find((a: C3FieldDefault) => {
-        return a.name === 'Input ID';
-      }) || '';
-      outputId = attributes.find((a: C3FieldDefault) => {
-        return a.name === 'Output ID';
-      }) || '';
+      inputId =
+        attributes.find((a: C3FieldDefault) => {
+          return a.name === 'Input ID';
+        }) || '';
+      outputId =
+        attributes.find((a: C3FieldDefault) => {
+          return a.name === 'Output ID';
+        }) || '';
     }
 
     tmp = outputId.value;
@@ -247,18 +269,25 @@ export default class InterfaceModal extends Mixins(C3) {
   public isNormalChannel(): boolean {
     const argumentsString = JSON.stringify(this.getArguments(this.c3Interface));
 
-    return !!argumentsString.match(/Input ID/g) && !!argumentsString.match(/Output ID/g);
+    return (
+      !!argumentsString.match(/Input ID/g) &&
+      !!argumentsString.match(/Output ID/g)
+    );
   }
 
   public generateCommandCenterArguments(): C3FieldDefault[] {
     const optionsArguments: C3FieldDefault[] = [];
 
-    let attributes = this.getArgumentsAttributes(this.getArguments(this.c3Interface));
+    let attributes = this.getArgumentsAttributes(
+      this.getArguments(this.c3Interface)
+    );
     if (attributes.length > 0) {
       attributes = this.changeInputOutputIDs(attributes);
     }
 
-    const propertiesArguments = this.getPropertiesArguments(this.getArguments(this.c3Interface));
+    const propertiesArguments = this.getPropertiesArguments(
+      this.getArguments(this.c3Interface)
+    );
 
     if (!!attributes.length) {
       attributes.forEach((element: C3FieldDefault) => {
@@ -296,9 +325,9 @@ export default class InterfaceModal extends Mixins(C3) {
       formDefault: {
         prefix: this.getPrefix(),
         interface: this.getInterfaceTypeString(),
-        arguments: this.generateCommandCenterArguments(),
+        arguments: this.generateCommandCenterArguments()
       },
-      source: this.generateSourceOptions(),
+      source: this.generateSourceOptions()
     };
   }
 
@@ -307,7 +336,11 @@ export default class InterfaceModal extends Mixins(C3) {
   }
 
   public beforeDestroy(): void {
-    (window as any).removeEventListener('keydown', this.handleGlobalKeyDown, true);
+    (window as any).removeEventListener(
+      'keydown',
+      this.handleGlobalKeyDown,
+      true
+    );
   }
 }
 </script>

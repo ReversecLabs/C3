@@ -17,17 +17,17 @@ export interface C3Modal {
 // State
 
 const state: ModalState = {
-  modals: [],
+  modals: []
 };
 
 // Getters
 const getters: GetterTree<ModalState, RootState> = {
-  activeModal(modalState): C3Modal|undefined {
+  activeModal(modalState): C3Modal | undefined {
     if (modalState.modals.length > 0) {
       return modalState.modals[modalState.modals.length - 1];
     }
     return undefined;
-  },
+  }
 };
 
 // Mutations
@@ -41,7 +41,8 @@ const mutations: MutationTree<ModalState> = {
     if (modalState.modals.length > 1) {
       last = modalState.modals[modalState.modals.length - 2];
     }
-    if (last !== false &&
+    if (
+      last !== false &&
       last.modalTarget === m.modalTarget &&
       last.modalTargetId === m.modalTargetId
     ) {
@@ -59,7 +60,7 @@ const mutations: MutationTree<ModalState> = {
 
   closeModalAll(modalState) {
     modalState.modals = [];
-  },
+  }
 };
 
 // Actions
@@ -71,5 +72,5 @@ export const modalModule: Module<ModalState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

@@ -14,17 +14,17 @@ export const state: C3State = {
   gateway: JSON.parse(JSON.stringify(gateway)),
   nodes,
   edges: [],
-  lastGetHash: 'string',
+  lastGetHash: 'string'
 };
 
 const actions: ActionTree<C3State, RootState> = {
   fetchGateways(context) {
-    return context.state.gateways = JSON.parse(JSON.stringify(gateways));
+    return (context.state.gateways = JSON.parse(JSON.stringify(gateways)));
   },
 
   fetchGateway(context) {
-    return context.state.gateway = JSON.parse(JSON.stringify(gateway));
-  },
+    return (context.state.gateway = JSON.parse(JSON.stringify(gateway)));
+  }
 };
 
 export const c3Module: Module<C3State, RootState> = {
@@ -32,5 +32,5 @@ export const c3Module: Module<C3State, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

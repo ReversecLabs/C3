@@ -1,10 +1,7 @@
 <template>
   <div class="c3tab">
-    <RelayList
-      :show-empty="true"
-      @count="setCount($event)"
-    />
-    <DataTableFooter :results="getCount"/>
+    <RelayList :show-empty="true" @count="setCount($event)" />
+    <DataTableFooter :results="getCount" />
   </div>
 </template>
 
@@ -23,8 +20,8 @@ const C3Module = namespace('c3Module');
 @Component({
   components: {
     RelayList,
-    DataTableFooter,
-  },
+    DataTableFooter
+  }
 })
 export default class RelaysTab extends Mixins(C3) {
   @C3Module.Getter public getRelays!: C3Node[];

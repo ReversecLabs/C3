@@ -3,8 +3,20 @@ import { Module, GetterTree, MutationTree, ActionTree } from 'vuex';
 import md5 from 'md5';
 import axios from 'axios';
 import { RootState } from '@/types/store/RootState';
-import { C3State, C3Relay, C3Interface, C3Gateway, GatewayHeader,
-  NodeKlass, C3Node, C3Edge, FetchData, C3Command, C3Route, C3RelayTime } from '@/types/c3types';
+import {
+  C3State,
+  C3Relay,
+  C3Interface,
+  C3Gateway,
+  GatewayHeader,
+  NodeKlass,
+  C3Node,
+  C3Edge,
+  FetchData,
+  C3Command,
+  C3Route,
+  C3RelayTime
+} from '@/types/c3types';
 
 const namespaced: boolean = true;
 // State
@@ -16,18 +28,21 @@ export const state: C3State = {
   edges: [],
   relayTimestamps: [],
   mustRefresh: false,
-  lastGetHash: '',
+  lastGetHash: ''
 };
 
 // Getters
 
-export type GetGatewayFn = () => C3Node|undefined;
-export type GetRelayFn = (id: string) => C3Node|undefined;
-export type GetInterfaceFn = (uid: string) => C3Node|undefined;
+export type GetGatewayFn = () => C3Node | undefined;
+export type GetRelayFn = (id: string) => C3Node | undefined;
+export type GetInterfaceFn = (uid: string) => C3Node | undefined;
 export type GetInterfacesFn = (nodeKlass?: NodeKlass[]) => C3Node[];
-export type GetInterfacesForFn = (nodeKlass: NodeKlass|NodeKlass[], parentId: string|null) => C3Node[];
+export type GetInterfacesForFn = (
+  nodeKlass: NodeKlass | NodeKlass[],
+  parentId: string | null
+) => C3Node[];
 export type GetNodeKlassFn = (uid: string) => NodeKlass;
-export type GetCommandFn = (id: string) => C3Command|undefined;
+export type GetCommandFn = (id: string) => C3Command | undefined;
 export type GetRelayRoutesFn = (id: string) => C3Route[];
 
 export const getters: GetterTree<C3State, RootState> = {
@@ -45,8 +60,8 @@ export const getters: GetterTree<C3State, RootState> = {
   },
 
   // return the selected gateway
-  getGateway(c3State): C3Node|undefined {
-    return c3State.nodes.find((node) => {
+  getGateway(c3State): C3Node | undefined {
+    return c3State.nodes.find(node => {
       return node.klass === NodeKlass.Gateway;
     });
   },
@@ -60,13 +75,13 @@ export const getters: GetterTree<C3State, RootState> = {
 
   // return all relays from the selected gateway
   getRelays(c3State): C3Node[] {
-    return c3State.nodes.filter((node) => {
+    return c3State.nodes.filter(node => {
       return node.klass === NodeKlass.Relay;
     });
   },
 
-  getRelay: (c3State) => (id: string): C3Node|undefined => {
-    return c3State.nodes.find((node) => {
+  getRelay: c3State => (id: string): C3Node | undefined => {
+    return c3State.nodes.find(node => {
       return node.id === id && node.klass === NodeKlass.Relay;
     });
   },
@@ -78,9 +93,9 @@ export const getters: GetterTree<C3State, RootState> = {
     return [];
   },
 
-  getRelayRoutes: (c3State) => (id: string): C3Route[] => {
+  getRelayRoutes: c3State => (id: string): C3Route[] => {
     if (!!c3State.gateway) {
-      const relay = c3State.gateway.relays.find((target) => {
+      const relay = c3State.gateway.relays.find(target => {
         return target.agentId === id;
       });
       if (!!relay) {
@@ -90,7 +105,7 @@ export const getters: GetterTree<C3State, RootState> = {
     return [];
   },
 
-  getInterface: (c3State) => (uid: string): C3Node|undefined => {
+  getInterface: c3State => (uid: string): C3Node | undefined => {
     if (uid === 'new') {
       return {
         uid: 'new',
@@ -105,53 +120,55 @@ export const getters: GetterTree<C3State, RootState> = {
         parentId: null,
         parentKlass: NodeKlass.Gateway,
         initialCommand: {},
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: Math.floor(Date.now() / 1000)
       };
     }
 
-    const c = c3State.nodes.find((node) => {
+    const c = c3State.nodes.find(node => {
       return node.uid === uid;
     });
-    return c3State.nodes.find((node) => {
+    return c3State.nodes.find(node => {
       return node.uid === uid;
     });
   },
 
-  getInterfaces: (c3State) =>
-    (nodeKlass: NodeKlass[] = [
+  getInterfaces: c3State => (
+    nodeKlass: NodeKlass[] = [
       NodeKlass.Channel,
       NodeKlass.Connector,
-      NodeKlass.Peripheral,
-    ]): C3Node[] => {
-    return c3State.nodes.filter((node) => {
+      NodeKlass.Peripheral
+    ]
+  ): C3Node[] => {
+    return c3State.nodes.filter(node => {
       return nodeKlass.includes(node.klass);
     });
   },
 
-  getInterfacesFor: (c3State) => (
-    nodeKlass: NodeKlass|NodeKlass[] = [
+  getInterfacesFor: c3State => (
+    nodeKlass: NodeKlass | NodeKlass[] = [
       NodeKlass.Channel,
       NodeKlass.Connector,
-      NodeKlass.Peripheral,
+      NodeKlass.Peripheral
     ],
-    parentId: string|null): C3Node[] => {
-      if ((parentId === '' || parentId === null) && c3State.gateway) {
-        parentId = c3State.gateway.agentId;
-      }
-      return c3State.nodes.filter((node) => {
-        return nodeKlass.includes(node.klass) && node.parentId === parentId;
-      });
+    parentId: string | null
+  ): C3Node[] => {
+    if ((parentId === '' || parentId === null) && c3State.gateway) {
+      parentId = c3State.gateway.agentId;
+    }
+    return c3State.nodes.filter(node => {
+      return nodeKlass.includes(node.klass) && node.parentId === parentId;
+    });
   },
 
-  getNodeKlass: (c3State) => (uid: string): NodeKlass => {
-    const n = c3State.nodes.find((node) => {
+  getNodeKlass: c3State => (uid: string): NodeKlass => {
+    const n = c3State.nodes.find(node => {
       return node.uid === uid;
     });
     if (n) {
       return n.klass;
     }
     return NodeKlass.Undefined;
-  },
+  }
 };
 
 // Mutations
@@ -211,7 +228,7 @@ export const mutations: MutationTree<C3State> = {
       error: data.error || null,
       parentId: null,
       parentKlass: null,
-      timestamp: gatewayTimestamp,
+      timestamp: gatewayTimestamp
     });
 
     data.channels.forEach((i: C3Interface) => {
@@ -226,7 +243,7 @@ export const mutations: MutationTree<C3State> = {
         isReturnChannel: i.isReturnChannel || false,
         isNegotiationChannel: i.isNegotiationChannel || false,
         parentKlass: NodeKlass.Gateway,
-        propertiesText: i.propertiesText || '',
+        propertiesText: i.propertiesText || ''
       });
     });
 
@@ -240,7 +257,7 @@ export const mutations: MutationTree<C3State> = {
         error: i.error || null,
         parentId: data.agentId,
         parentKlass: NodeKlass.Gateway,
-        propertiesText: i.propertiesText || '',
+        propertiesText: i.propertiesText || ''
       });
     });
 
@@ -254,7 +271,7 @@ export const mutations: MutationTree<C3State> = {
         error: i.error || null,
         parentId: data.agentId,
         parentKlass: NodeKlass.Gateway,
-        propertiesText: i.propertiesText || '',
+        propertiesText: i.propertiesText || ''
       });
     });
 
@@ -264,10 +281,10 @@ export const mutations: MutationTree<C3State> = {
         if (relayTimestamp < gatewayTimestamp) {
           relayTimestamps!.push({
             id: relay.agentId,
-            time: relayTimestamp,
+            time: relayTimestamp
           });
         } else {
-          const newTime = c3State.relayTimestamps!.find((t) => {
+          const newTime = c3State.relayTimestamps!.find(t => {
             return t.id === relay.agentId;
           });
           if (newTime !== undefined) {
@@ -290,7 +307,7 @@ export const mutations: MutationTree<C3State> = {
         parentKlass: NodeKlass.Gateway,
         initialCommand: relay.initialCommand || {},
         timestamp: relayTimestamp,
-        hostInfo: relay.hostInfo,
+        hostInfo: relay.hostInfo
       });
 
       relay.channels.forEach((i: C3Interface) => {
@@ -305,7 +322,7 @@ export const mutations: MutationTree<C3State> = {
           isReturnChannel: i.isReturnChannel || false,
           isNegotiationChannel: i.isNegotiationChannel || false,
           parentKlass: NodeKlass.Relay,
-          propertiesText: i.propertiesText || '',
+          propertiesText: i.propertiesText || ''
         });
       });
 
@@ -319,7 +336,7 @@ export const mutations: MutationTree<C3State> = {
           error: i.error || null,
           parentId: relay.agentId,
           parentKlass: NodeKlass.Relay,
-          propertiesText: i.propertiesText || '',
+          propertiesText: i.propertiesText || ''
         });
       });
     });
@@ -332,7 +349,9 @@ export const mutations: MutationTree<C3State> = {
     };
 
     const guid = () => {
-      return Math.random().toString(36).substring(2);
+      return Math.random()
+        .toString(36)
+        .substring(2);
     };
 
     const interfaceIsExist = (agentId: string, iid: string) => {
@@ -360,7 +379,7 @@ export const mutations: MutationTree<C3State> = {
         length: 0,
         dashes: false,
         from: data.agentId,
-        to: uuid(i.iid, data.agentId),
+        to: uuid(i.iid, data.agentId)
       });
     });
 
@@ -371,7 +390,7 @@ export const mutations: MutationTree<C3State> = {
         length: 0,
         dashes: false,
         from: data.agentId,
-        to: uuid(i.iid, data.agentId),
+        to: uuid(i.iid, data.agentId)
       });
     });
 
@@ -382,11 +401,11 @@ export const mutations: MutationTree<C3State> = {
         length: 0,
         dashes: true,
         from: data.agentId,
-        to: uuid(i.iid, data.agentId),
+        to: uuid(i.iid, data.agentId)
       });
     });
 
-    data.routes.forEach((route) => {
+    data.routes.forEach(route => {
       if (route.isNeighbour === true) {
         c3State.edges.push({
           id: guid(),
@@ -394,7 +413,7 @@ export const mutations: MutationTree<C3State> = {
           length: 100,
           dashes: false,
           from: data.agentId,
-          to: route.destinationAgent,
+          to: route.destinationAgent
         });
 
         c3State.edges.push({
@@ -403,7 +422,7 @@ export const mutations: MutationTree<C3State> = {
           length: 0,
           dashes: false,
           from: uuid(route.outgoingInterface, data.agentId),
-          to: uuid(route.receivingInterface, route.destinationAgent),
+          to: uuid(route.receivingInterface, route.destinationAgent)
         });
       }
     });
@@ -417,7 +436,7 @@ export const mutations: MutationTree<C3State> = {
           length: 0,
           dashes: false,
           from: relay.agentId,
-          to: uuid(i.iid, relay.agentId),
+          to: uuid(i.iid, relay.agentId)
         });
       });
 
@@ -428,16 +447,21 @@ export const mutations: MutationTree<C3State> = {
           length: 0,
           dashes: false,
           from: relay.agentId,
-          to: uuid(i.iid, relay.agentId),
+          to: uuid(i.iid, relay.agentId)
         });
       });
 
-      relay.routes.forEach((route) => {
+      relay.routes.forEach(route => {
         if (route.isNeighbour === true) {
           let isDashed = true;
-          if (interfaceIsExist(route.destinationAgent, route.receivingInterface) &&
-            interfaceIsExist(relay.agentId, route.outgoingInterface)) {
-              isDashed = false;
+          if (
+            interfaceIsExist(
+              route.destinationAgent,
+              route.receivingInterface
+            ) &&
+            interfaceIsExist(relay.agentId, route.outgoingInterface)
+          ) {
+            isDashed = false;
           }
           c3State.edges.push({
             id: guid(),
@@ -445,7 +469,7 @@ export const mutations: MutationTree<C3State> = {
             length: 100,
             dashes: isDashed,
             from: relay.agentId,
-            to: route.destinationAgent,
+            to: route.destinationAgent
           });
 
           c3State.edges.push({
@@ -454,12 +478,12 @@ export const mutations: MutationTree<C3State> = {
             length: 0,
             dashes: false,
             from: uuid(route.outgoingInterface, relay.agentId),
-            to: uuid(route.receivingInterface, route.destinationAgent),
+            to: uuid(route.receivingInterface, route.destinationAgent)
           });
         }
       });
     });
-  },
+  }
 };
 
 // Actions
@@ -468,22 +492,21 @@ export type FetchC3DataFn = (data: FetchData) => void;
 
 const actions: ActionTree<C3State, RootState> = {
   fetchCapability(context, nodeIds: FetchData) {
-    context.dispatch('c3Capability/fetchCapability', nodeIds, {root: true});
+    context.dispatch('c3Capability/fetchCapability', nodeIds, { root: true });
   },
 
   fetchGateways(context): void {
-    const baseURL =
-      `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
+    const baseURL = `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
     axios
       .get('/api/gateway', { baseURL })
-      .then((response) => {
+      .then(response => {
         context.commit('updateGateways', response.data);
       })
-      .catch((error) => {
+      .catch(error => {
         context.dispatch(
           'notifyModule/insertNotify',
-          {type: 'error', message: error.message},
-          {root: true},
+          { type: 'error', message: error.message },
+          { root: true }
         );
         // tslint:disable-next-line:no-console
         console.error(error.message);
@@ -493,17 +516,20 @@ const actions: ActionTree<C3State, RootState> = {
   fetchGateway(context, nodeIds: FetchData) {
     if (nodeIds.gatewayId) {
       const url = `/api/gateway/${nodeIds.gatewayId}`;
-      const baseURL =
-        `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
+      const baseURL = `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
       axios
         .get(url, { baseURL })
-        .then((response) => {
+        .then(response => {
           let hash: string = '';
 
           if (context.state.mustRefresh !== true) {
-            hash = md5(JSON.stringify(response.data).replace(/"timestamp":[0-9]*[,]{0,1}/g, ''));
+            hash = md5(
+              JSON.stringify(response.data).replace(
+                /"timestamp":[0-9]*[,]{0,1}/g,
+                ''
+              )
+            );
           }
-
 
           // store the gateway
           context.commit('updateGateway', response.data);
@@ -512,31 +538,31 @@ const actions: ActionTree<C3State, RootState> = {
 
           if (context.state.mustRefresh || hash !== context.state.lastGetHash) {
             // generate the data structure to vis library
-            context.dispatch('visModule/generateNodes', {}, {root: true});
-            context.dispatch('visModule/generateEdges', {}, {root: true});
-            context.commit('visModule/setGraphData', {}, {root: true});
+            context.dispatch('visModule/generateNodes', {}, { root: true });
+            context.dispatch('visModule/generateEdges', {}, { root: true });
+            context.commit('visModule/setGraphData', {}, { root: true });
             context.state.lastGetHash = hash;
           }
         })
-        .catch((error) => {
+        .catch(error => {
           context.dispatch(
             'notifyModule/insertNotify',
-            {type: 'error', message: error.message},
-            {root: true},
+            { type: 'error', message: error.message },
+            { root: true }
           );
           // tslint:disable-next-line:no-console
           console.error(error.message);
         });
-      } else {
-        context.dispatch(
-          'notifyModule/insertNotify',
-          {type: 'error', message: 'missing: gatewayId'},
-          {root: true},
-        );
-        // tslint:disable-next-line:no-console
-        console.error('missing: gatewayId');
-      }
-  },
+    } else {
+      context.dispatch(
+        'notifyModule/insertNotify',
+        { type: 'error', message: 'missing: gatewayId' },
+        { root: true }
+      );
+      // tslint:disable-next-line:no-console
+      console.error('missing: gatewayId');
+    }
+  }
 };
 
 export const c3Module: Module<C3State, RootState> = {
@@ -544,5 +570,5 @@ export const c3Module: Module<C3State, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

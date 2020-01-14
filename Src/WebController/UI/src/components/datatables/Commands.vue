@@ -35,7 +35,7 @@
       :status-filter="selectedCommandStatus"
       :command-for-filter="selectedCommandFor"
     />
-    <DataTableFooter :results="getCount"/>
+    <DataTableFooter :results="getCount" />
   </div>
 </template>
 
@@ -59,8 +59,8 @@ const C3CommandModule = namespace('c3CommandModule');
   components: {
     Select,
     CommandList,
-    DataTableFooter,
-  },
+    DataTableFooter
+  }
 })
 export default class CommandsTab extends Mixins(C3) {
   @C3CommandModule.Getter public getCommandCount!: number;

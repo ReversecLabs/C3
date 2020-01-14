@@ -3,8 +3,18 @@ import { DataSet, Node, Edge, Options } from 'vis';
 
 import { RootState } from '@/types/store/RootState';
 import { C3Edge, NodeKlass, C3Node } from '@/types/c3types';
-import { GATEWAY, RELAY, CHANNEL, PERIPHERAL, CONNECTOR, RETURN_CHANNEL,
-  VisOptions, INACTIVE, NEGOTIATION_CHANNEL, GHOST } from '@/options';
+import {
+  GATEWAY,
+  RELAY,
+  CHANNEL,
+  PERIPHERAL,
+  CONNECTOR,
+  RETURN_CHANNEL,
+  VisOptions,
+  INACTIVE,
+  NEGOTIATION_CHANNEL,
+  GHOST
+} from '@/options';
 
 const namespaced: boolean = true;
 
@@ -16,8 +26,8 @@ interface VisState {
   showInterfaces: boolean;
   showLabels: boolean;
   graphData: {
-    nodes: any,
-    edges: any,
+    nodes: any;
+    edges: any;
   };
 }
 
@@ -32,8 +42,8 @@ const state: VisState = {
   autoUpdateEnabled: true,
   graphData: {
     nodes: new DataSet({}),
-    edges: new DataSet({}),
-  },
+    edges: new DataSet({})
+  }
 };
 
 // Getters
@@ -64,7 +74,7 @@ const getters: GetterTree<VisState, RootState> = {
 
   getAutoUpdateEnabled(visState): boolean {
     return visState.autoUpdateEnabled;
-  },
+  }
 };
 
 // Mutations
@@ -121,7 +131,7 @@ const mutations: MutationTree<VisState> = {
 
   setAutoUpdateEnabled(visState, d: boolean): void {
     visState.autoUpdateEnabled = d;
-  },
+  }
 };
 
 // Actions
@@ -132,10 +142,15 @@ export type GenerateEdgesFn = () => void;
 const actions: ActionTree<VisState, RootState> = {
   generateNodes(context) {
     const ns: C3Node[] = context.rootGetters['c3Module/getNodes'];
-    const gatewayLastStartTime = context.rootGetters['c3Module/getGateway'].timestamp;
+    const gatewayLastStartTime =
+      context.rootGetters['c3Module/getGateway'].timestamp;
     const gatewayIsActive = context.rootGetters['c3Module/getGateway'].isActive;
 
-    const setGroup = (target: C3Node, gatewayStartTime: number, isGatewayActive: boolean): string => {
+    const setGroup = (
+      target: C3Node,
+      gatewayStartTime: number,
+      isGatewayActive: boolean
+    ): string => {
       let group: number = 0;
 
       // Add error if target has an error
@@ -204,8 +219,11 @@ const actions: ActionTree<VisState, RootState> = {
     const interfaccesIncluded: boolean = context.state.showInterfaces;
 
     ns.forEach((node: C3Node) => {
-      if ((context.state.showInterfaces === true) ||
-        (interfaccesIncluded !== true && node.klass === NodeKlass.Gateway || node.klass === NodeKlass.Relay)) {
+      if (
+        context.state.showInterfaces === true ||
+        (interfaccesIncluded !== true && node.klass === NodeKlass.Gateway) ||
+        node.klass === NodeKlass.Relay
+      ) {
         const group = setGroup(node, gatewayLastStartTime, gatewayIsActive);
         let label = '';
         if (context.state.showLabels) {
@@ -215,7 +233,7 @@ const actions: ActionTree<VisState, RootState> = {
         nodes.push({
           id: node.uid,
           group,
-          label,
+          label
         });
       } else {
         if (!!node.isNegotiationChannel && node.isNegotiationChannel === true) {
@@ -228,7 +246,7 @@ const actions: ActionTree<VisState, RootState> = {
           nodes.push({
             id: node.uid,
             group,
-            label,
+            label
           });
         }
       }
@@ -242,14 +260,14 @@ const actions: ActionTree<VisState, RootState> = {
     const edges: Edge[] = [];
     const interfaccesIncluded: boolean = context.state.showInterfaces;
 
-    es.forEach((edge) => {
+    es.forEach(edge => {
       if (interfaccesIncluded === true && edge.klass === NodeKlass.Interface) {
         edges.push({
           id: edge.id,
           length: edge.length,
           dashes: edge.dashes,
           from: edge.from,
-          to: edge.to,
+          to: edge.to
         });
       }
 
@@ -260,7 +278,7 @@ const actions: ActionTree<VisState, RootState> = {
             length: edge.length,
             dashes: edge.dashes,
             from: edge.from,
-            to: edge.to,
+            to: edge.to
           });
         }
       }
@@ -272,18 +290,18 @@ const actions: ActionTree<VisState, RootState> = {
           dashes: edge.dashes,
           from: edge.from,
           to: edge.to,
-          color: {},
+          color: {}
         };
         if (edge.dashes === true) {
           e.color = {
-              color: '#FFC24B',
+            color: '#FFC24B'
           };
         }
         edges.push(e);
       }
     });
     context.commit('setEdges', edges);
-  },
+  }
 };
 
 export const visModule: Module<VisState, RootState> = {
@@ -291,5 +309,5 @@ export const visModule: Module<VisState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };
