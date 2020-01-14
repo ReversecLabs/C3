@@ -32,8 +32,7 @@ namespace MWR::Loader::UnexportedWinApi
 				return { "\x48\x8b\x79\x30\x45\x8d\x66\x01"s, 0x49 };
 			else if (IsWindows7OrGreater())
 			{
-				//const bool update1 = WinVer().revision > 24059;
-				const bool update1 = true; // FIXME handle Win7 revisions
+				const bool update1 = WinVer().revision > 24059;
 				return { "\x41\xb8\x09\x00\x00\x00\x48\x8d\x44\x24\x38"s, update1 ? 0x23 : 0x27 };
 			}
 			else
@@ -86,6 +85,17 @@ namespace MWR::Loader::UnexportedWinApi
 			else
 				abort(); // TODO
 		}
+
+		std::pair<std::string, size_t> GetLdrpInvetedFunctionTableOffset()
+		{
+			// AFAIK only Win7 requires passing LdrpInvertedFunctionTable pointer to RtlInsertInvertedFunctionTable
+			if (IsWindows8OrGreater())
+				abort();
+			else if (IsWindows7OrGreater())
+				return { "\x89\x5D\xE0\x38", -0x1B };
+			else
+				abort();
+		}
 #endif
 
 		struct UNICODE_STR
@@ -113,30 +123,64 @@ namespace MWR::Loader::UnexportedWinApi
 		};
 
 #if defined _M_X64
-		typedef DWORD(NTAPI* LdprHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
+		typedef DWORD(* LdrpHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
 #elif defined _M_IX86
-		typedef DWORD(__thiscall* LdprHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
+		typedef DWORD(__thiscall* LdrpHandleTlsDataWin8Point1OrGreater)(LDR_DATA_TABLE_ENTRY*);
+		typedef DWORD(__stdcall* LdprHandleTlsDataWin7OrGreater)(LDR_DATA_TABLE_ENTRY*);
 		typedef void(__fastcall* RtlInsertInvertedFunctionTableWin8Point1OrGreater)(void* baseAddr, DWORD sizeOfImage);
-		typedef void(_stdcall* RtlInsertInvertedFunctionTableWin8OrGreater)(void* baseAddr, DWORD sizeOfImage);
-		typedef void(_stdcall* RtlInsertInvertedFunctionTableWin7OrGreater)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
+		typedef void(__stdcall* RtlInsertInvertedFunctionTableWin8OrGreater)(void* baseAddr, DWORD sizeOfImage);
+		typedef void(__stdcall* RtlInsertInvertedFunctionTableWin7OrGreater)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
 #else
 #error Unsupported architecture
 #endif
-
-		void* FindSymbol(const wchar_t* dll, std::pair<std::string, size_t> const& offsetData)
+		void* Find(void* begin, void* end, std::pair<std::string, size_t> const& offsetData)
 		{
-			auto dllBase = GetModuleHandleW(dll);
+			auto match = std::search((char*)begin, (char*)end, offsetData.first.begin(), offsetData.first.end());
+			if (match == end)
+				abort();
+			return (void*)(match - offsetData.second);
+		}
+
+		template<typename T, typename V, typename U>
+		T Rva2Va(V base, U rva)
+		{
+			return reinterpret_cast<T>((ULONG_PTR)base + rva);
+		}
+
+		std::pair<void*, void*> GetSectionRange(void* dllBase, std::string const& section)
+		{
+			auto dosHeaders = reinterpret_cast<PIMAGE_DOS_HEADER>(dllBase);
+			auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(dllBase, dosHeaders->e_lfanew);
+			auto sectionHeader = IMAGE_FIRST_SECTION(ntHeaders);
+			for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++)
+			{
+				if (_stricmp(section.c_str(), (char*)sectionHeader->Name) == 0)
+				{
+					auto sectionVa = Rva2Va<char*>(dllBase, sectionHeader->VirtualAddress);
+					return { sectionVa, sectionVa + sectionHeader->Misc.VirtualSize };
+				}
+			}
+			return {};
+		}
+
+		void* FindInSection(std::wstring const& dll, std::string const& section, std::pair<std::string, size_t> const& offsetData)
+		{
+			auto dllBase = GetModuleHandleW(dll.c_str());
+			auto [begin, end] = GetSectionRange(dllBase, section);
+			return Find(begin, end, offsetData);
+		}
+
+		void* FindSymbol(std::wstring const& dll, std::pair<std::string, size_t> const& offsetData)
+		{
+			auto dllBase = GetModuleHandleW(dll.c_str());
 			auto dllSize = GetSizeOfImage((UINT_PTR)dllBase);
 
-			auto match = std::search((char*)dllBase, (char*)dllBase + dllSize, offsetData.first.begin(), offsetData.first.end());
-			if (match == (char*)dllBase + dllSize)
-				abort();
-			return match - offsetData.second;
+			return Find(dllBase, dllBase + dllSize, offsetData);
 		}
 
 		void* FindNtDllSymbol(std::pair<std::string, size_t> const& offsetData)
 		{
-			return FindSymbol(L"ntdll.dll", offsetData);
+			return FindInSection(L"ntdll.dll", ".text", offsetData);
 		}
 
 #if defined _M_IX86
@@ -147,13 +191,20 @@ namespace MWR::Loader::UnexportedWinApi
 				g_RtlInsertInvertedFunctionTable = FindNtDllSymbol(GetRtlInsertInvertedFunctionTableOffset());
 			return g_RtlInsertInvertedFunctionTable;
 		}
-#endif // defined _M_IX86
 
-		LdprHandleTlsData_t g_LdrpHandleTlsData = nullptr;
-		LdprHandleTlsData_t GetLdrpHandleTlsData()
+		void* g_LdrpInvertedFunctionTable = nullptr;
+		void* GetLdrpInvetedFunctionTable()
+		{
+			if (!g_LdrpInvertedFunctionTable)
+				g_LdrpInvertedFunctionTable = *(void**)FindNtDllSymbol(GetLdrpInvetedFunctionTableOffset());
+			return g_LdrpInvertedFunctionTable;
+		}
+#endif // defined _M_IX86
+		void* g_LdrpHandleTlsData = nullptr;
+		void* GetLdrpHandleTlsData()
 		{
 			if (!g_LdrpHandleTlsData)
-				g_LdrpHandleTlsData = (LdprHandleTlsData_t)(FindNtDllSymbol(GetLdrpHandleTlsOffsetData()));
+				g_LdrpHandleTlsData = FindNtDllSymbol(GetLdrpHandleTlsOffsetData());
 			return g_LdrpHandleTlsData;
 		}
 	} // namespace
@@ -163,7 +214,16 @@ namespace MWR::Loader::UnexportedWinApi
 		auto ldrpHandleTlsData = GetLdrpHandleTlsData();
 		LDR_DATA_TABLE_ENTRY ldrDataTableEntry{};
 		ldrDataTableEntry.DllBase = baseAddress;
-		return ldrpHandleTlsData(&ldrDataTableEntry);
+#if defined _M_X64
+		return ((LdrpHandleTlsData_t)ldrpHandleTlsData)(&ldrDataTableEntry);
+#elif defined _M_IX86
+		if (IsWindows8Point1OrGreater())
+			return ((LdrpHandleTlsDataWin8Point1OrGreater)ldrpHandleTlsData)(&ldrDataTableEntry);
+		else
+			return ((LdprHandleTlsDataWin7OrGreater)ldrpHandleTlsData)(&ldrDataTableEntry);
+#else
+#error Unsupported architecture
+#endif
 	}
 
 #if defined _M_IX86
@@ -175,7 +235,7 @@ namespace MWR::Loader::UnexportedWinApi
 		else if (IsWindows8OrGreater())
 			((RtlInsertInvertedFunctionTableWin8OrGreater)rtlInsertInvertedFunctionTable)(baseAddress, sizeOfImage);
 		else
-			abort(); // TODO
+			((RtlInsertInvertedFunctionTableWin7OrGreater)rtlInsertInvertedFunctionTable)(GetLdrpInvetedFunctionTable(), baseAddress, sizeOfImage);
 	}
 #endif // defined _M_IX86
 
