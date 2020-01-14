@@ -1,13 +1,20 @@
 #include "StdAfx.h"
-
 #include "Compression.h"
-
 #include "Common/zlib/include/zlib.h"
+
 #if defined _WIN64
-#pragma comment(lib, "Common/zlib/lib/x64/zlib.lib")
+#define Z_PLATFORM "x64/"
 #else
-#pragma comment(lib, "Common/zlib/lib/x86/zlib.lib")
+#define Z_PLATFORM "x86/"
 #endif
+
+#if defined _DEBUG
+#define Z_DEBUG "d"
+#else
+#define Z_DEBUG ""
+#endif
+
+#pragma comment(lib, "Common/zlib/lib/" Z_PLATFORM "zlibstatic" Z_DEBUG ".lib")
 
 namespace MWR::Compression
 {
