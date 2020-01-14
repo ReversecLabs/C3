@@ -362,8 +362,10 @@ int LoadPe(void* dllData, std::string_view callExport)
 	if (pImageEntryException->Size > 0)
 	{
 		auto functionTable = Rva2Va<PRUNTIME_FUNCTION>(baseAddress, pImageEntryException->VirtualAddress);
-		RtlAddFunctionTable(functionTable);
+		RtlDeleteFunctionTable(functionTable);
 	}
+#elif defined _M_IX86
+	// TODO cleanup after RtlInsertInvertedFunctionTable -> see ntdll!_RtlRemoveInvertedFunctionTable@4
 #endif
 	VirtualFree((void*)baseAddress, alignedImageSize, MEM_RELEASE);
 	return 0;
