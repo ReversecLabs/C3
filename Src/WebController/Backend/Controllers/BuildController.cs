@@ -128,18 +128,24 @@ namespace MWR.C3.WebController.Controllers
 
         private string GetBuildExtention(RelayBuildRequest request)
         {
-            switch (request.Donut?.format)
+            if (request.Type == Build.BinaryType.Shellcode)
             {
-                case DonutLibrary.OutputFormat.BINARY: return "bin";
-                case DonutLibrary.OutputFormat.BASE64: return "b64";
-                case DonutLibrary.OutputFormat.RUBY: return "rb";
-                case DonutLibrary.OutputFormat.C: return "c";
-                case DonutLibrary.OutputFormat.PYTHON: return "py";
-                case DonutLibrary.OutputFormat.POWERSHELL: return "ps1";
-                case DonutLibrary.OutputFormat.CSHARP: return "cs";
-                case DonutLibrary.OutputFormat.HEX: return "hex";
-                case null: return request.Type.ToString().ToLower();
-                default: throw new ArgumentException("Unrecognized output format");
+                switch (request.Donut?.format)
+                {
+                    case DonutLibrary.OutputFormat.BINARY: return "bin";
+                    case DonutLibrary.OutputFormat.BASE64: return "b64";
+                    case DonutLibrary.OutputFormat.RUBY: return "rb";
+                    case DonutLibrary.OutputFormat.C: return "c";
+                    case DonutLibrary.OutputFormat.PYTHON: return "py";
+                    case DonutLibrary.OutputFormat.POWERSHELL: return "ps1";
+                    case DonutLibrary.OutputFormat.CSHARP: return "cs";
+                    case DonutLibrary.OutputFormat.HEX: return "hex";
+                    default: throw new ArgumentException("Unrecognized output format");
+                }
+            }
+            else
+            {
+                return request.Type.ToString().ToLower();
             }
         }
     }
