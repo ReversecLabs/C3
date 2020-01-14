@@ -16,8 +16,9 @@ T Rva2Va(V base, U rva)
 
 #define RVA(type, base, rva) Rva2Va<type>(base, rva)
 
-static inline size_t
-AlignValueUp(size_t value, size_t alignment) {
+
+static inline size_t AlignValueUp(size_t value, size_t alignment)
+{
 	return (value + alignment - 1) & ~(alignment - 1);
 }
 
@@ -31,7 +32,7 @@ typedef struct
 #pragma warning(pop)
 
 typedef BOOL(WINAPI* DllEntryPoint)(HINSTANCE, DWORD, LPVOID);
-typedef void (*EXPORTFUNC)(void);
+typedef void (*ExportFunc)(void);
 
 struct ModuleData
 {
@@ -62,7 +63,9 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-/// Entry point of the application.
+/// Load PE file image and call
+/// @param dllData - pointer to PE file in memory
+/// @param callExport - name of an exported function to call. Function must have a signature of ExportFunc [typedef void (*ExportFunc)(void)]
 int LoadPe(void* dllData, std::string_view callExport)
 {
 	// Loader code based on Shellcode Reflective DLL Injection by Nick Landers https://github.com/monoxgas/sRDI
@@ -345,7 +348,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 
 				if (expNameStr == callExport && expOrdinal)
 				{
-					auto exportFunc = RVA(EXPORTFUNC, baseAddress, *(PDWORD)(baseAddress + exportDir->AddressOfFunctions + (*expOrdinal * 4)));
+					auto exportFunc = RVA(ExportFunc, baseAddress, *(PDWORD)(baseAddress + exportDir->AddressOfFunctions + (*expOrdinal * 4)));
 					exportFunc();
 					break;
 				}
@@ -356,12 +359,18 @@ int LoadPe(void* dllData, std::string_view callExport)
 	// STEP 11 Cleanup
 #if defined _M_X64
 	RemoveVectoredExceptionHandler(veh);
+	if (pImageEntryException->Size > 0)
+	{
+		auto functionTable = Rva2Va<PRUNTIME_FUNCTION>(baseAddress, pImageEntryException->VirtualAddress);
+		RtlAddFunctionTable(functionTable);
+	}
 #endif
-	// TODO cleanup after RtlAddFunctionTable
 	VirtualFree((void*)baseAddress, alignedImageSize, MEM_RELEASE);
 	return 0;
 }
 
+/// Execute dll embedded as a resource [see ResourceGenerator]
+/// @param baseAddress of this Module
 void ExecResource(void* baseAddress)
 {
 	if (auto resource = FindStartOfResource(baseAddress))
@@ -373,6 +382,7 @@ void ExecResource(void* baseAddress)
 }
 
 #ifdef NDEBUG
+/// Entry point for this module. Executes the embedded resource on process attach
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 {
 	// Indicate successful load of the library.
@@ -383,6 +393,7 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 }
 #else
 
+/// Debug version of entry point, executes the embedded resource
 int main()
 {
 	ExecResource(GetModuleHandle(NULL));
