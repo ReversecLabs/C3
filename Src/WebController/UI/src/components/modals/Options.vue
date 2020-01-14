@@ -1,6 +1,5 @@
 <template>
   <div class="c3modal-body">
-
     <div class="c3modal-details">
       <h1 class="c3network-title">
         Network Configuration
@@ -30,10 +29,7 @@
         />
       </div>
       <dir class="flex-row c3modal-actions">
-        <button
-          class="c3btn c3btn--grey"
-          v-on:click.self="closeThisModal()"
-        >
+        <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">
           Cancel
         </button>
         <button
@@ -60,8 +56,8 @@ const C3OptionsModule = namespace('optionsModule');
 
 @Component({
   components: {
-    Input,
-  },
+    Input
+  }
 })
 export default class OptionsModal extends Mixins(C3) {
   @C3OptionsModule.Getter public getAPIUrl!: string;

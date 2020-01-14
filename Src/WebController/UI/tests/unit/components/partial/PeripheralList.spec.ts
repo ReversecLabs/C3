@@ -11,16 +11,16 @@ localVue.use(Vuex);
 
 describe('@/components/partial/PeripheralList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('PeripheralList is a Vue instance', () => {
     const wrapper = shallowMount(PeripheralList, {
       propsData: {
-        targetId: 'a1d1',
+        targetId: 'a1d1'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
@@ -30,14 +30,14 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d1',
         title: 'Peripherals',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.peripherals.length;
-    expect(connectorsElementsCount).to.eql(2);
+    expect(connectorsElementsCount).to.eql(0);
   });
 
   it('PeripheralList populated correctly (empty)', () => {
@@ -45,10 +45,10 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d0',
         title: 'Peripherals',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const connectorsElementsCount = wrapper.vm.peripherals.length;
@@ -60,10 +60,10 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d1',
         title: 'Peripherals',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -75,10 +75,10 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d1',
         title: '',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -90,10 +90,10 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d1',
         title: 'Peripherals',
-        showEmpty: true,
+        showEmpty: true
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -105,10 +105,10 @@ describe('@/components/partial/PeripheralList.vue', () => {
       propsData: {
         targetId: 'a1d1',
         title: 'Peripherals',
-        showEmpty: false,
+        showEmpty: false
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;

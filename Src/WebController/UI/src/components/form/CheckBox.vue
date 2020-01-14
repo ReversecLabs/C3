@@ -5,11 +5,7 @@
         {{ help }}
       </div>
     </span>
-    <label
-      class="icon checkbox"
-      :class="getIconKlass"
-      :for="inputUID"
-    >
+    <label class="icon checkbox" :class="getIconKlass" :for="inputUID">
       {{ legend }}
       <input
         ref="booleanCheckbox"
@@ -63,7 +59,7 @@ export default class CheckBox extends Mixins(C3, C3FormElement) {
     const isCheckedValue = this.isChecked === 'true' ? true : false;
     this.$emit('change', {
       value: isCheckedValue,
-      valid: true,
+      valid: true
     });
   }
 }

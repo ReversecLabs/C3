@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Navbar.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Navbar is a Vue instance', () => {

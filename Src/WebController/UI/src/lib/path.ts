@@ -22,9 +22,11 @@ export default class FindThePathToGateway extends Vue {
   private nextNode!: C3Node;
 
   get targetNode() {
-    return this.getNodes.find((node) => {
-      return node.klass === NodeKlass.Gateway;
-    }) || nullNode;
+    return (
+      this.getNodes.find(node => {
+        return node.klass === NodeKlass.Gateway;
+      }) || nullNode
+    );
   }
 
   public findPath(nodeId: string) {
@@ -68,14 +70,18 @@ export default class FindThePathToGateway extends Vue {
 
   // find the start node by Id and set it to the startNode
   private setStartNode(nodeId: string): void {
-    this.startNode = this.getNodes.find((node) => {
-      return node.uid === nodeId;
-    }) || nullNode;
+    this.startNode =
+      this.getNodes.find(node => {
+        return node.uid === nodeId;
+      }) || nullNode;
   }
 
   // check booth start end target node has a valid NodeKlass
   private hasPathEndpoints(): boolean {
-    return ((this.startNode.klass === NodeKlass.Undefined) || (this.targetNode.klass === NodeKlass.Undefined));
+    return (
+      this.startNode.klass === NodeKlass.Undefined ||
+      this.targetNode.klass === NodeKlass.Undefined
+    );
   }
 
   private handleNodeChannel() {
@@ -83,7 +89,9 @@ export default class FindThePathToGateway extends Vue {
   }
 
   private handleConnectorAndPeripheral() {
-    return this.isStartNodeConnectorOrPeripheral() && this.setNextAndParentNode();
+    return (
+      this.isStartNodeConnectorOrPeripheral() && this.setNextAndParentNode()
+    );
   }
 
   private handleRelay() {
@@ -100,13 +108,18 @@ export default class FindThePathToGateway extends Vue {
 
   // get the parent node for the startNode
   private getParentNode(): C3Node {
-    return this.getNodes.find((node) => {
-      return node.uid === this.startNode!.parentId;
-    }) || nullNode;
+    return (
+      this.getNodes.find(node => {
+        return node.uid === this.startNode!.parentId;
+      }) || nullNode
+    );
   }
 
   private isStartNodeConnectorOrPeripheral(): boolean {
-    return this.startNode.klass === NodeKlass.Peripheral || this.startNode.klass === NodeKlass.Connector;
+    return (
+      this.startNode.klass === NodeKlass.Peripheral ||
+      this.startNode.klass === NodeKlass.Connector
+    );
   }
 
   private isChannel(node: C3Node): boolean {
@@ -123,14 +136,16 @@ export default class FindThePathToGateway extends Vue {
 
   // find all the neighbours for the channel by the edges
   private getChannelNeighbours(): C3Edge[] {
-    return this.getEdges.filter((edge) => {
-      return edge.to === this.startNode!.uid || edge.from === this.startNode!.uid;
+    return this.getEdges.filter(edge => {
+      return (
+        edge.to === this.startNode!.uid || edge.from === this.startNode!.uid
+      );
     });
   }
 
   // find all the neighbours for the relay by the edges
   private getRelayNeighbours(): C3Edge[] {
-    return this.getEdges.filter((edge) => {
+    return this.getEdges.filter(edge => {
       return edge.from === this.startNode!.uid;
     });
   }
@@ -138,13 +153,18 @@ export default class FindThePathToGateway extends Vue {
   // look for possible neighbour on the edges by the uid
   // target: Enum ['from', 'to']
   private getPossibeNext(neighbour: C3Edge, target: string): C3Node {
-    return this.getNodes.find((node) => {
-      return node.uid === neighbour[target];
-    }) || nullNode;
+    return (
+      this.getNodes.find(node => {
+        return node.uid === neighbour[target];
+      }) || nullNode
+    );
   }
 
   private insertParentNodeToPaths() {
-    return this.getParentNode().klass !== NodeKlass.Undefined && this.paths.push(this.nextNode!.uid);
+    return (
+      this.getParentNode().klass !== NodeKlass.Undefined &&
+      this.paths.push(this.nextNode!.uid)
+    );
   }
 
   private setNextAndParentNode(): void {
@@ -171,7 +191,7 @@ export default class FindThePathToGateway extends Vue {
   private setNextNodeForReturnChannel(): void {
     // The parent is in the oposite direction as for the normal channel
     // and we using the edge to get the path
-    this.getChannelNeighbours().forEach((neighbour) => {
+    this.getChannelNeighbours().forEach(neighbour => {
       const possibleNext = this.getPossibeNext(neighbour, 'from');
       if (this.isChannel(possibleNext)) {
         this.setAndInsertNextNode(possibleNext);
@@ -181,7 +201,7 @@ export default class FindThePathToGateway extends Vue {
 
   // for relay we use the edge to found the way to the gateway
   private setNextNodeForRelay(): void {
-    this.getRelayNeighbours().forEach((neighbour) => {
+    this.getRelayNeighbours().forEach(neighbour => {
       const possibleNext = this.getPossibeNext(neighbour, 'to');
       if (this.isReturnChannel(possibleNext)) {
         this.setAndInsertNextNode(possibleNext);

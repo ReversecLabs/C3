@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3InterfaceList"
-    v-if="peripherals.length || displayEmpty"
-  >
+  <div class="c3InterfaceList" v-if="peripherals.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="peripherals.length">
       <table class="datatable">
@@ -16,7 +13,8 @@
           <tr
             v-for="peripheral in peripherals"
             v-bind:key="peripheral.id"
-            v-on:click="openModal(peripheral.uid, peripheral.klass)">
+            v-on:click="openModal(peripheral.uid, peripheral.klass)"
+          >
             <td class="c3link">{{ peripheral.id }}</td>
             <td>{{ interfaceTypeName(peripheral) }}</td>
           </tr>

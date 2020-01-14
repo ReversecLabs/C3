@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/GatewayForm.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('GatewayForm is a Vue instance', () => {

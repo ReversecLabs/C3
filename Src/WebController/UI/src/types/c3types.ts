@@ -2,7 +2,7 @@ export interface C3State {
   edges: C3Edge[];
   nodes: C3Node[];
   gateways: GatewayHeader[];
-  gateway?: C3Gateway|null;
+  gateway?: C3Gateway | null;
   relayTimestamps?: C3RelayTime[];
   mustRefresh?: boolean;
   lastGetHash: string;
@@ -15,7 +15,7 @@ export enum NodeKlass {
   Interface = 'INTERFACE',
   Peripheral = 'PERIPHERAL',
   Relay = 'RELAY',
-  Undefined = 'UNDEFINED',
+  Undefined = 'UNDEFINED'
 }
 
 export interface C3RelayTime {
@@ -33,11 +33,11 @@ export interface C3Node {
   isActive?: boolean;
   type: number;
   timestamp?: number;
-  error: string|null;
+  error: string | null;
   initialCommand?: any;
   propertiesText?: any;
-  parentId: string|null;
-  parentKlass: string|null;
+  parentId: string | null;
+  parentKlass: string | null;
   isReturnChannel?: boolean;
   isNegotiationChannel?: boolean;
   hostInfo?: C3HostInfo;
@@ -58,7 +58,7 @@ export const nullNode: C3Node = {
   isReturnChannel: false,
   isNegotiationChannel: false,
   initialCommand: {},
-  propertiesText: {},
+  propertiesText: {}
 };
 
 export interface C3Edge {
@@ -157,12 +157,11 @@ interface C3Opts {
 
 export interface C3Command {
   name: string;
-  id: string|number;
+  id: string | number;
   isPending: boolean;
-  data: C3Opts[]|C3Args;
-  interfaceId?: string|number;
-  relayAgentId?: string|number;
-
+  data: C3Opts[] | C3Args;
+  interfaceId?: string | number;
+  relayAgentId?: string | number;
 }
 
 export interface C3Parent {

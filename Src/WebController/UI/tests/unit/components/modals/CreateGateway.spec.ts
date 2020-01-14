@@ -11,13 +11,13 @@ localVue.use(Vuex);
 
 describe('@/components/modals/CreateGateway.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CreateGatewayModal is a Vue instance', () => {
     const wrapper = shallowMount(CreateGatewayModal, {
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

@@ -21,7 +21,8 @@ export default class C3 extends Vue {
 
   @NotifyModule.Action public insertNotify!: InsertNotifyFn;
 
-  @C3Capability.Getter public getTypeNameForInterface!: GetTypeNameForInterfaceFn;
+  @C3Capability.Getter
+  public getTypeNameForInterface!: GetTypeNameForInterfaceFn;
 
   @PaginateModule.Getter public getItemPerPage!: number;
   @PaginateModule.Getter public getActualPage!: number;
@@ -49,7 +50,7 @@ export default class C3 extends Vue {
     this.newModal({
       modalTarget: modal,
       modalTargetId: id,
-      modalOptions: options,
+      modalOptions: options
     });
   }
 
@@ -68,11 +69,15 @@ export default class C3 extends Vue {
   public interfaceTypeName(c3Interface: C3Node): string {
     if (c3Interface && c3Interface.type !== null) {
       if (c3Interface.klass) {
-        return this.getTypeNameForInterface(c3Interface.type, c3Interface.klass);
+        return this.getTypeNameForInterface(
+          c3Interface.type,
+          c3Interface.klass
+        );
       }
       this.addNotify({
         type: 'error',
-        message: 'Interface Type cannot be determined. Must be a channel, connector or peripheral.',
+        message:
+          'Interface Type cannot be determined. Must be a channel, connector or peripheral.'
       });
     }
     return '';
@@ -99,7 +104,9 @@ export default class C3 extends Vue {
   public commandType(c3Command: C3Command): string {
     if (c3Command.interfaceId && c3Command.interfaceId !== undefined) {
       if (c3Command.relayAgentId && c3Command.relayAgentId !== undefined) {
-        return this.getNodeKlass(c3Command.interfaceId + '-' + c3Command.relayAgentId);
+        return this.getNodeKlass(
+          c3Command.interfaceId + '-' + c3Command.relayAgentId
+        );
       }
       return this.getNodeKlass(c3Command.interfaceId + '-' + this.gateway.id);
     }
@@ -122,7 +129,10 @@ export default class C3 extends Vue {
     return 'error';
   }
 
-  public isCommandPending(c3Command: C3Command, returnClass: boolean = false): string {
+  public isCommandPending(
+    c3Command: C3Command,
+    returnClass: boolean = false
+  ): string {
     if (returnClass) {
       if (c3Command.isPending === true) {
         return 'Pending';

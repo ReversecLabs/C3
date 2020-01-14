@@ -11,13 +11,13 @@ localVue.use(Vuex);
 
 describe('@/components/partial/NetworkStats.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('NetworkStats is a Vue instance', () => {
     const wrapper = shallowMount(NetworkStats, {
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

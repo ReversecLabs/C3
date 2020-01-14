@@ -15,7 +15,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: null,
     parentKlass: null,
-    timestamp: 1565270492,
+    timestamp: 1565270492
   },
   {
     uid: '1-7c864a181f31cdba',
@@ -34,16 +34,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'h018',
+            value: 'h018'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: '0znh',
-          },
-        ],
-      ],
-    },
+            value: '0znh'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '2-7c864a181f31cdba',
@@ -61,10 +61,10 @@ export const nodes: C3Node[] = [
         {
           name: 'Negotiation Identifier',
           type: 'string',
-          value: '65i9fkpj',
-        },
-      ],
-    },
+          value: '65i9fkpj'
+        }
+      ]
+    }
   },
   {
     uid: '3-7c864a181f31cdba',
@@ -83,16 +83,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'a73hVxoy',
+            value: 'a73hVxoy'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: '48Fqe5Q7',
-          },
-        ],
-      ],
-    },
+            value: '48Fqe5Q7'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '4-7c864a181f31cdba',
@@ -111,16 +111,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'SX4aqPpV',
+            value: 'SX4aqPpV'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'ii4nQulM',
-          },
-        ],
-      ],
-    },
+            value: 'ii4nQulM'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '95896bc3757517b0',
@@ -134,7 +134,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '1-95896bc3757517b0',
@@ -152,10 +152,10 @@ export const nodes: C3Node[] = [
         {
           name: 'Negotiation Identifier',
           type: 'string',
-          value: '1evo5gkd',
-        },
-      ],
-    },
+          value: '1evo5gkd'
+        }
+      ]
+    }
   },
   {
     uid: '8000-95896bc3757517b0',
@@ -169,8 +169,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '8001-95896bc3757517b0',
@@ -184,8 +184,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '8002-95896bc3757517b0',
@@ -199,8 +199,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '8003-95896bc3757517b0',
@@ -214,8 +214,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: 'aa0eaa3839d6d9c8',
@@ -230,7 +230,7 @@ export const nodes: C3Node[] = [
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
     initialCommand: {},
-    timestamp: 1565270492,
+    timestamp: 1565270492
   },
   {
     uid: '0-aa0eaa3839d6d9c8',
@@ -244,8 +244,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '2-aa0eaa3839d6d9c8',
@@ -264,16 +264,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'kiv2',
+            value: 'kiv2'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: '3vej',
-          },
-        ],
-      ],
-    },
+            value: '3vej'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: 'c59e70f44dc584d7',
@@ -287,7 +287,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '1-c59e70f44dc584d7',
@@ -306,16 +306,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'bgzb',
+            value: 'bgzb'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: '7sas',
-          },
-        ],
-      ],
-    },
+            value: '7sas'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '8000-c59e70f44dc584d7',
@@ -329,8 +329,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '4011a444def9464',
@@ -344,7 +344,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '0-4011a444def9464',
@@ -358,8 +358,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '1-4011a444def9464',
@@ -378,16 +378,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'd358',
+            value: 'd358'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: '1hzt',
-          },
-        ],
-      ],
-    },
+            value: '1hzt'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '2-4011a444def9464',
@@ -406,16 +406,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'aaaa',
+            value: 'aaaa'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'bbbb',
-          },
-        ],
-      ],
-    },
+            value: 'bbbb'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '3-4011a444def9464',
@@ -434,16 +434,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'cccc',
+            value: 'cccc'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'dddd',
-          },
-        ],
-      ],
-    },
+            value: 'dddd'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '36c0bcb85e82a447',
@@ -457,7 +457,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '8000-36c0bcb85e82a447',
@@ -471,8 +471,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '3a57b45b0273c52b',
@@ -486,7 +486,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '1-3a57b45b0273c52b',
@@ -505,16 +505,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'gggg',
+            value: 'gggg'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'hhhh',
-          },
-        ],
-      ],
-    },
+            value: 'hhhh'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '8000-3a57b45b0273c52b',
@@ -528,8 +528,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '68035347127c17dc',
@@ -543,7 +543,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '0-68035347127c17dc',
@@ -557,8 +557,8 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
+      arguments: null
+    }
   },
   {
     uid: '1-68035347127c17dc',
@@ -577,16 +577,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'eeee',
+            value: 'eeee'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'ffff',
-          },
-        ],
-      ],
-    },
+            value: 'ffff'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '6f06a07c9263d0cb',
@@ -600,7 +600,7 @@ export const nodes: C3Node[] = [
     error: null,
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
-    initialCommand: {},
+    initialCommand: {}
   },
   {
     uid: '1-6f06a07c9263d0cb',
@@ -619,16 +619,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: '7q5b',
+            value: '7q5b'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'l7wf',
-          },
-        ],
-      ],
-    },
+            value: 'l7wf'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '2-6f06a07c9263d0cb',
@@ -647,16 +647,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'n3ca',
+            value: 'n3ca'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'dsvz',
-          },
-        ],
-      ],
-    },
+            value: 'dsvz'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '3-6f06a07c9263d0cb',
@@ -675,16 +675,16 @@ export const nodes: C3Node[] = [
           {
             name: 'Input ID',
             type: 'string',
-            value: 'ctvg',
+            value: 'ctvg'
           },
           {
             name: 'Output ID',
             type: 'string',
-            value: 'idck',
-          },
-        ],
-      ],
-    },
+            value: 'idck'
+          }
+        ]
+      ]
+    }
   },
   {
     uid: '8000-6f06a07c9263d0cb',
@@ -698,7 +698,7 @@ export const nodes: C3Node[] = [
     isNegotiationChannel: false,
     parentKlass: NodeKlass.Relay,
     propertiesText: {
-      arguments: null,
-    },
-  },
+      arguments: null
+    }
+  }
 ];

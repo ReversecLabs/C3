@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Modal.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Modal is a Vue instance', () => {

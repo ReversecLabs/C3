@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/partial/ChannelList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('ChannelList is a Vue instance', () => {
@@ -19,10 +19,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         title: 'Channel List test',
         showEmpty: true,
-        targetId: 'a1d1',
+        targetId: 'a1d1'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
@@ -32,10 +32,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         title: 'Channel List test',
         showEmpty: true,
-        targetId: '95896bc3757517b0',
+        targetId: '95896bc3757517b0'
       },
       store,
-      localVue,
+      localVue
     });
 
     const channelsElementsCount = wrapper.vm.channels.length;
@@ -47,10 +47,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         title: 'Channel List test',
         showEmpty: true,
-        targetId: 'a1d4',
+        targetId: 'a1d4'
       },
       store,
-      localVue,
+      localVue
     });
     const channelsElementsCount = wrapper.vm.channels.length;
     expect(channelsElementsCount).to.eql(0);
@@ -61,10 +61,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         title: 'Channel List test',
         showEmpty: true,
-        targetId: 'a1d4',
+        targetId: 'a1d4'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -76,10 +76,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         // title: '',
         showEmpty: true,
-        targetId: 'a1d4',
+        targetId: 'a1d4'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.hasTitle;
@@ -91,10 +91,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         title: 'Channel List test',
         showEmpty: true,
-        targetId: 'a1d4',
+        targetId: 'a1d4'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -106,10 +106,10 @@ describe('@/components/partial/ChannelList.vue', () => {
       propsData: {
         // title: '',
         showEmpty: false,
-        targetId: 'a1d4',
+        targetId: 'a1d4'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;

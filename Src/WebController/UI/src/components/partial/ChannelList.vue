@@ -1,10 +1,7 @@
 <template>
-  <div
-    class="c3InterfaceList"
-     v-if="channels.length || displayEmpty"
-  >
-   <h1 v-show="hasTitle">{{ title }}</h1>
-   <template v-if="channels.length">
+  <div class="c3InterfaceList" v-if="channels.length || displayEmpty">
+    <h1 v-show="hasTitle">{{ title }}</h1>
+    <template v-if="channels.length">
       <table class="datatable">
         <thead>
           <tr>
@@ -17,7 +14,8 @@
           <tr
             v-for="channel in channels"
             v-bind:key="channel.id"
-            v-on:click="openModal(channel.uid, channel.klass)">
+            v-on:click="openModal(channel.uid, channel.klass)"
+          >
             <td class="c3link">{{ channel.id }}</td>
             <td>{{ interfaceTypeName(channel) }}</td>
             <td>{{ interfaceType(channel) }}</td>
@@ -44,7 +42,7 @@ import Partial from '@/components/partial/Partial';
 const C3Module = namespace('c3Module');
 
 @Component
-export default class ChannelList extends Mixins(C3, Partial)  {
+export default class ChannelList extends Mixins(C3, Partial) {
   @Prop() public targetId!: string;
 
   @C3Module.Getter public getInterfacesFor!: GetInterfacesForFn;
