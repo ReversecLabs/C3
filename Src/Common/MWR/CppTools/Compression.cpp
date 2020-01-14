@@ -34,7 +34,7 @@ namespace MWR::Compression
 		defstream.avail_out = (uInt) data.size();	// size of output
 		defstream.next_out = (Bytef*) ret.data();	// output pointer
 
-		deflateInit(&defstream, Z_BEST_COMPRESSION);
+		deflateInit2(&defstream,Z_BEST_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
 		deflate(&defstream, Z_FINISH);
 		deflateEnd(&defstream);
 
@@ -57,7 +57,7 @@ namespace MWR::Compression
 
 		infstream.avail_in = (uInt)data.size();		// size of input
 		infstream.next_in = (Bytef*)data.data();	// input pointer
-		inflateInit(&infstream);
+		inflateInit2(&infstream, -15);
 		do
 		{
 			infstream.avail_out = (uInt)sizeof(buffer);		// set size to use whole buffer
