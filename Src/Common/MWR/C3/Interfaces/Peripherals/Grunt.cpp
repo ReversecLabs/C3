@@ -193,7 +193,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 		}
 	}
 	
-	std::runtime_error{ OBF("Grunt creation failed") };
+	throw std::runtime_error{ OBF("Grunt creation failed") };
 }
 
 void MWR::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView data)
