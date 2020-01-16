@@ -27,11 +27,14 @@ As supported account types choose "Accounts in any organizational directory and 
 #### Generate secret key for the app
 Under 'Certificates & secrets' generate new secret. Copy the secret as it will be hidden later.
 
+<img src="./images/office365/AzureSecret.jpg"/>
+
 #### Give the app the correct api permissions
 
 Directly after creation of the app, give it the correct permissions. To do this, click on the "API permissions" option.
 
 You should be presented with the following screen:
+
 <img src="./images/office365/AzureApiPermissions.JPG"/>
 
 The following permissions are required:
@@ -43,16 +46,20 @@ The following permissions are required:
 
 If user creating application is also an admin of target user tenant, it is possible to directly grant permission from "API permissions".
 
+<img src="./images/office365/AzureGrantPermissionsAdmin.JPG"/>
+
 Otherwise, target user must sign in to agree with usage of application popup.
+
+<img src="./images/office365/AzureGrantPermissionsUser.JPG"/>
 
 For onedrive channel use:
 ```
-https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id>&scope=https://graph.microsoft.com/.default
+https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id>&scope=https://graph.microsoft.com/.default&response_type=code
 ```
 
 For outlook channel use
 ```
-https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id>&scope=https://outlook.office365.com/.default
+https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id>&scope=https://outlook.office365.com/.default&response_type=code
 ```
 
 #### Pass authentication data to C3 channel
