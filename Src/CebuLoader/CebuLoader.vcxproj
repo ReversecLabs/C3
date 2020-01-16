@@ -330,6 +330,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CebuLoaderMain.cpp" />
+    <ClCompile Include="QuietAbort.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">StdAfx.h</PrecompiledHeaderFile>
@@ -349,6 +350,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AccessPayload.h" />
+    <ClInclude Include="QuietAbort.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="UnexportedWinApi.h" />

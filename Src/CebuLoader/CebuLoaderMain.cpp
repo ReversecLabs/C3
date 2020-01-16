@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "AccessPayload.h"
 #include "UnexportedWinApi.h"
+#include "QuietAbort.h"
 
 #ifdef _WIN64
 #define HOST_MACHINE IMAGE_FILE_MACHINE_AMD64
@@ -375,12 +376,14 @@ int LoadPe(void* dllData, std::string_view callExport)
 /// @param baseAddress of this Module
 void ExecResource(void* baseAddress)
 {
-	if (auto resource = FindStartOfResource(baseAddress))
-	{
-		auto dllData = GetPayload(resource);
-		auto exportFunc = GetExportName(resource);
-		LoadPe(dllData, exportFunc);
-	}
+	MWR_SET_QUIET_ABORT(
+		if (auto resource = FindStartOfResource(baseAddress))
+		{
+			auto dllData = GetPayload(resource);
+			auto exportFunc = GetExportName(resource);
+			LoadPe(dllData, exportFunc);
+		}
+	);
 }
 
 #ifdef NDEBUG

@@ -36,7 +36,7 @@ namespace MWR::Loader::UnexportedWinApi
 				return { "\x41\xb8\x09\x00\x00\x00\x48\x8d\x44\x24\x38"s, update1 ? 0x23 : 0x27 };
 			}
 			else
-				abort(); // TODO
+				QuietAbort();
 #elif defined _M_IX86
 			if (IsWindows10RS3OrGreater())
 			{
@@ -63,7 +63,7 @@ namespace MWR::Loader::UnexportedWinApi
 			else if (IsWindows7OrGreater())
 				return { "\x74\x20\x8d\x45\xd4\x50\x6a\x09"s, 0x14 };
 			else
-				abort(); // TODO
+				QuietAbort();
 #else
 # error Unsupported architecture
 #endif
@@ -83,18 +83,18 @@ namespace MWR::Loader::UnexportedWinApi
 			else if (IsWindows7OrGreater())
 				return { "\x8b\xff\x55\x8b\xec\x56\x68"s, 0 };
 			else
-				abort(); // TODO
+				QuietAbort();
 		}
 
-		std::pair<std::string, size_t> GetLdrpInvetedFunctionTableOffset()
+		std::pair<std::string, size_t> GetLdrpInvertedFunctionTableOffset()
 		{
 			// AFAIK only Win7 requires passing LdrpInvertedFunctionTable pointer to RtlInsertInvertedFunctionTable
 			if (IsWindows8OrGreater())
-				abort();
+				QuietAbort();
 			else if (IsWindows7OrGreater())
 				return { "\x89\x5D\xE0\x38", -0x1B };
 			else
-				abort();
+				QuietAbort();
 		}
 #endif
 
@@ -137,7 +137,7 @@ namespace MWR::Loader::UnexportedWinApi
 		{
 			auto match = std::search((char*)begin, (char*)end, offsetData.first.begin(), offsetData.first.end());
 			if (match == end)
-				abort();
+				QuietAbort();
 			return (void*)(match - offsetData.second);
 		}
 
@@ -196,7 +196,7 @@ namespace MWR::Loader::UnexportedWinApi
 		void* GetLdrpInvetedFunctionTable()
 		{
 			if (!g_LdrpInvertedFunctionTable)
-				g_LdrpInvertedFunctionTable = *(void**)FindNtDllSymbol(GetLdrpInvetedFunctionTableOffset());
+				g_LdrpInvertedFunctionTable = *(void**)FindNtDllSymbol(GetLdrpInvertedFunctionTableOffset());
 			return g_LdrpInvertedFunctionTable;
 		}
 #endif // defined _M_IX86
