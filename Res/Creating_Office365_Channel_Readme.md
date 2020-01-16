@@ -69,10 +69,10 @@ With application data, and tartget username/password C3 can use Office 365 Manag
 
 ## Rate Limit
 
-Office Management API introduces rete limit for application. Each channel instance will send GET request every 3 to 6 seconds, to receive packets from server. Multiple channels accessing one office application can consume whole limit causing other connections to throttle.
+Office Management API introduces rate limit for application. Each channel instance will send GET request every 3 to 6 seconds, to receive packets from server. Multiple channels accessing one office application can consume whole limit causing other connections to throttle.
 
 
-Both Outlook365RestTask and OneDrive365RestFile are using delay stored in 429 error response header, to wait time period recommended by the server. Refreshed limit will allow some of channels to perform correct transmission, but large amount of instances will consume new limit leaving other instances virtually unusable.
+Both Outlook365RestTask and OneDrive365RestFile are using delay stored in 429 error response header, to wait time period recommended by the server. Refreshed limit will allow some of the channels to perform correct transmission, but large amount of instances will consume new limit leaving other instances virtually unusable.
 
 
-Avoid creating negotiation channels with the same credentials as already working connections that are expensive to lose.
+Avoid creating negotiation channels with the same credentials as in existing connections that could be expensive to lose
