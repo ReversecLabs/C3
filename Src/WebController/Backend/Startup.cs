@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ namespace MWR.C3.WebController
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            CheckCryptoLib();
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(options => {
@@ -73,6 +75,11 @@ namespace MWR.C3.WebController
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "C3 Web API");
             });
+        }
+
+        private static void CheckCryptoLib()
+        {
+            Sodium.SodiumCore.Init();
         }
     }
 }
