@@ -61,27 +61,30 @@ size_t MWR::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView dat
 {
 	try
 	{
-		std::filesystem::path tmpFilePath;
-		std::filesystem::path filePath;
+		std::filesystem::path lockFilePath;
+		std::filesystem::path packetFilePath;
 		do
 		{
-			tmpFilePath = m_FilesystemPath / (m_OutboundDirectionName + std::to_string(MWR::Utils::GenerateRandomValue<int>(10000, 99999)) + ".tmp");
-			filePath = tmpFilePath;
-			filePath.replace_extension();
-		} while (std::filesystem::exists(filePath) or std::filesystem::exists(tmpFilePath));
+			lockFilePath = m_FilesystemPath / (m_OutboundDirectionName + std::to_string(MWR::Utils::GenerateRandomValue<int>(10000, 99999)) + OBF(".lock"));
+			packetFilePath = lockFilePath;
+			packetFilePath.replace_extension();
+		} while (std::filesystem::exists(packetFilePath) or std::filesystem::exists(lockFilePath));
 
+		auto createFile = [](auto const& path)
 		{
 			// Create file with FullAccess to "Everyone" group
-			auto file = WinTools::UniqueHandle(CreateFileA(tmpFilePath.generic_string().c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, g_FullAccessDACL.get(), CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
+			auto file = WinTools::UniqueHandle(CreateFileA(path.generic_string().c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, g_FullAccessDACL.get(), CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
 			if (file.get() == INVALID_HANDLE_VALUE)
-				throw std::runtime_error(OBF_STR("UncShareFile channel: failed to create a file ") + tmpFilePath.generic_string());
-		}
+				throw std::runtime_error(OBF_STR("UncShareFile channel: failed to create a file ") + path.generic_string());
+		};
+		createFile(lockFilePath);
+		createFile(packetFilePath);
 		{
 			// Write the contents of a file
-			std::ofstream tmpFile(tmpFilePath, std::ios::trunc | std::ios::binary);
-			tmpFile << std::string_view{ data };
+			std::ofstream packetFile(packetFilePath, std::ios::trunc | std::ios::binary);
+			packetFile << std::string_view{ data };
 		}
-		std::filesystem::rename(tmpFilePath, filePath);
+		RemoveFile(lockFilePath);
 
 		return data.size();
 	}
@@ -144,11 +147,17 @@ bool MWR::C3::Interfaces::Channels::UncShareFile::BelongToChannel(std::filesyste
 	if (filename.size() < m_InboundDirectionName.size())
 		return false;
 
-	if (path.extension() == ".tmp")
+	auto startsWith = std::string_view{ filename }.substr(0, m_InboundDirectionName.size());
+	if (startsWith != m_InboundDirectionName)
 		return false;
 
-	auto startsWith = std::string_view{ filename }.substr(0, m_InboundDirectionName.size());
-	return startsWith == m_InboundDirectionName;
+	if (path.extension() == OBF(".lock"))
+		return false;
+
+	// Check if file is still locked by it's writer
+	auto lockfile = path;
+	lockfile.replace_extension(OBF(".lock"));
+	return !std::filesystem::exists(lockfile);
 }
 
 void MWR::C3::Interfaces::Channels::UncShareFile::RemoveFile(std::filesystem::path const& path)
