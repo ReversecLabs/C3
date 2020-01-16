@@ -23,6 +23,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\HostInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\StructuredExceptionHandling.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\WinTools\InjectionBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -86,5 +88,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\OneDrive365RestFile.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Outlook365RestTask.h" />
   </ItemGroup>
 </Project>
