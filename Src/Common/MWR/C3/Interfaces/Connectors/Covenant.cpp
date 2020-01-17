@@ -260,11 +260,11 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		task = webClientBridge.request(request);
 		resp = task.get();
 
-		if (resp.status_code() == web::http::status_codes::OK)
-			if(!UpdateListenerId()) //now get the id of the listener
-				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
-		else
+		if (resp.status_code() != web::http::status_codes::OK)
 			throw std::exception((OBF("[Covenant] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
+		
+		if(!UpdateListenerId()) //now get the id of the listener
+				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
 	}
 
 	InitializeSockets();
