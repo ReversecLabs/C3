@@ -15,9 +15,6 @@ T Rva2Va(V base, U rva)
 	return reinterpret_cast<T>((ULONG_PTR)base + rva);
 }
 
-#define RVA(type, base, rva) Rva2Va<type>(base, rva)
-
-
 static inline size_t AlignValueUp(size_t value, size_t alignment)
 {
 	return (value + alignment - 1) & ~(alignment - 1);
@@ -35,13 +32,11 @@ typedef struct
 typedef BOOL(WINAPI* DllEntryPoint)(HINSTANCE, DWORD, LPVOID);
 typedef void (*ExportFunc)(void);
 
-struct ModuleData
+struct
 {
 	UINT_PTR m_DllBaseAddress;
 	DWORD m_SizeOfTheDll;
-};
-
-ModuleData moduleData;
+} moduleData;
 
 /// Used both by VEH and SetUnhandledExceptionFilter. Based on BlackBone memory injection toolkit.
 /// @param exceptionInfo filled _EXCEPTION_POINTERS structure describing occurred exception.
@@ -169,17 +164,17 @@ int LoadPe(void* dllData, std::string_view callExport)
 
 	if (dataDir->Size)
 	{
-		auto importDesc = RVA(PIMAGE_IMPORT_DESCRIPTOR, baseAddress, dataDir->VirtualAddress);
+		auto importDesc = Rva2Va<PIMAGE_IMPORT_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
 		auto importCount = 0;
 		for (; importDesc->Name; importDesc++)
 			importCount++;
 
-		importDesc = RVA(PIMAGE_IMPORT_DESCRIPTOR, baseAddress, dataDir->VirtualAddress);
+		importDesc = Rva2Va<PIMAGE_IMPORT_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
 		for (; importDesc->Name; importDesc++)
 		{
 			auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + importDesc->Name));
-			auto firstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, importDesc->FirstThunk);
-			auto origFirstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, importDesc->OriginalFirstThunk);
+			auto firstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, importDesc->FirstThunk);
+			auto origFirstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, importDesc->OriginalFirstThunk);
 
 			// iterate through all imported functions, importing by ordinal if no name present
 			for (; origFirstThunk->u1.Function; firstThunk++, origFirstThunk++)
@@ -190,7 +185,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 				}
 				else
 				{
-					auto importByName = RVA(PIMAGE_IMPORT_BY_NAME, baseAddress, origFirstThunk->u1.AddressOfData);
+					auto importByName = Rva2Va<PIMAGE_IMPORT_BY_NAME>(baseAddress, origFirstThunk->u1.AddressOfData);
 					firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, importByName->Name);
 				}
 			}
@@ -205,13 +200,13 @@ int LoadPe(void* dllData, std::string_view callExport)
 
 	if (dataDir->Size)
 	{
-		auto delayDesc = RVA(PIMAGE_DELAYLOAD_DESCRIPTOR, baseAddress, dataDir->VirtualAddress);
+		auto delayDesc = Rva2Va<PIMAGE_DELAYLOAD_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
 
 		for (; delayDesc->DllNameRVA; delayDesc++)
 		{
 			auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + delayDesc->DllNameRVA));
-			auto firstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, delayDesc->ImportAddressTableRVA);
-			auto origFirstThunk = RVA(PIMAGE_THUNK_DATA, baseAddress, delayDesc->ImportNameTableRVA);
+			auto firstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, delayDesc->ImportAddressTableRVA);
+			auto origFirstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, delayDesc->ImportNameTableRVA);
 
 			// iterate through all imported functions, importing by ordinal if no name present
 			for (; firstThunk->u1.Function; firstThunk++, origFirstThunk++)
@@ -222,7 +217,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 				}
 				else
 				{
-					auto importByName = RVA(PIMAGE_IMPORT_BY_NAME, baseAddress, origFirstThunk->u1.AddressOfData);
+					auto importByName = Rva2Va<PIMAGE_IMPORT_BY_NAME>(baseAddress, origFirstThunk->u1.AddressOfData);
 					firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, importByName->Name);
 				}
 			}
@@ -265,7 +260,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 				protect |= PAGE_NOCACHE;
 
 			// change memory access flags
-			VirtualProtect(RVA(LPVOID, baseAddress, sectionHeader->VirtualAddress), sectionHeader->SizeOfRawData, protect, &protect);
+			VirtualProtect(Rva2Va<LPVOID>(baseAddress, sectionHeader->VirtualAddress), sectionHeader->SizeOfRawData, protect, &protect);
 		}
 	}
 
@@ -284,7 +279,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 
 	if (dataDir->Size)
 	{
-		auto tlsDir = RVA(PIMAGE_TLS_DIRECTORY, baseAddress, dataDir->VirtualAddress);
+		auto tlsDir = Rva2Va<PIMAGE_TLS_DIRECTORY>(baseAddress, dataDir->VirtualAddress);
 		auto callback = (PIMAGE_TLS_CALLBACK*)(tlsDir->AddressOfCallBacks);
 
 		for (; *callback; callback++)
@@ -319,7 +314,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 	///
 	// STEP 9: call our images entry point
 	///
-	auto dllEntryPoint = RVA(DllEntryPoint, baseAddress, ntHeaders->OptionalHeader.AddressOfEntryPoint);
+	auto dllEntryPoint = Rva2Va<DllEntryPoint>(baseAddress, ntHeaders->OptionalHeader.AddressOfEntryPoint);
 	dllEntryPoint((HINSTANCE)baseAddress, DLL_PROCESS_ATTACH, NULL);
 
 	///
@@ -337,19 +332,19 @@ int LoadPe(void* dllData, std::string_view callExport)
 			if (!exportDir->NumberOfNames || !exportDir->NumberOfFunctions)
 				break;
 
-			auto expName = RVA(PDWORD, baseAddress, exportDir->AddressOfNames);
-			auto expOrdinal = RVA(PWORD, baseAddress, exportDir->AddressOfNameOrdinals);
+			auto expName = Rva2Va<PDWORD>(baseAddress, exportDir->AddressOfNames);
+			auto expOrdinal = Rva2Va<PWORD>(baseAddress, exportDir->AddressOfNameOrdinals);
 
 			for (size_t i = 0; i < exportDir->NumberOfNames; i++, expName++, expOrdinal++)
 			{
-				auto expNameStr = RVA(LPCSTR, baseAddress, *expName);
+				auto expNameStr = Rva2Va<LPCSTR>(baseAddress, *expName);
 
 				if (!expNameStr)
 					break;
 
 				if (expNameStr == callExport && expOrdinal)
 				{
-					auto exportFunc = RVA(ExportFunc, baseAddress, *(PDWORD)(baseAddress + exportDir->AddressOfFunctions + (*expOrdinal * 4)));
+					auto exportFunc = Rva2Va<ExportFunc>(baseAddress, *(PDWORD)(baseAddress + exportDir->AddressOfFunctions + (*expOrdinal * 4)));
 					exportFunc();
 					break;
 				}
