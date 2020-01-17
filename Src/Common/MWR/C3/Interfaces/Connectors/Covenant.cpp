@@ -144,6 +144,7 @@ namespace MWR::C3::Interfaces::Connectors
 bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
 {
 	std::string url = this->m_webHost + OBF("/api/listeners");
+	std::pair<std::string, uint16_t> data;
 	json response;
 
 	web::http::client::http_client_config config;
@@ -160,7 +161,9 @@ bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
 	
 	web::http::http_response resp = task.get();
 	
-	if (resp.status_code() == web::http::status_codes::OK)
+	if (resp.status_code() != web::http::status_codes::OK)
+		throw std::exception((OBF("[Covenant] Error getting Listeners, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
+	else
 	{
 		//Get the json response
 		auto respData = resp.extract_string();
@@ -168,7 +171,9 @@ bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
 
 		for (auto& listeners : response)
 		{
-			if (listeners[OBF("name")] == OBF("C3Bridge"))
+			if (listeners[OBF("name")] != OBF("C3Bridge"))
+				continue;
+			else
 			{
 				this->m_ListenerId = listeners[OBF("id")].get<int>();
 				this->m_ListeningPostAddress = listeners[OBF("connectAddresses")][0].get<std::string>();
@@ -179,8 +184,6 @@ bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
 
 		return false; //we didn't find the listener
 	}
-	else
-		throw std::exception((OBF("[Covenant] Error getting Listeners, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
 	
 }
 
@@ -240,6 +243,9 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		start = url.find("://") + 3;
 		end = url.find(":", start + 1);
 		
+		if (start == std::string::npos || end == std::string::npos || end > url.size())
+			throw std::exception(OBF("[Covenenat] Incorrect URL, must be of the form http|https://hostname|ip:port - eg https://192.168.133.171:7443"));
+
 		this->m_ListeningPostAddress = url.substr(start, end - start);
 
 		///Create the bridge listener
@@ -407,7 +413,9 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 			{
 				"type": "uint16",
 				"name": "C2BridgePort",
-				"min": 1,
+				"min": 2,
+				"defaultValue": 8000,
+				"randomize": true,
 				"description": "The port for the C2Bridge Listener if it doesn't already exist."
 			},
 			{
