@@ -33,7 +33,8 @@ Limitations for the new loader:
 
 ## CebuLoader
 
-Xenos injector (underlying Blackbone library) implements both static TLS data and EH.
+CebuLoader is derived from [sRDI](https://github.com/monoxgas/sRDI/tree/master/ShellcodeRDI)
+TLS and EH support is based on [Blackbone](https://github.com/DarthTon/Blackbone)
 
 TLS:
  - call private function `ntdll!LdrpHandleTlsData`
@@ -51,4 +52,4 @@ Embedding target dll in CebuLoader
  - embedded resource has format [16 byte guid][1 byte terminator 0xff][4 byte size][body][4 byte size][ExportName (null terminated)] (the guid if 0xff terminated to avoid finding the guid c-string when searching the module memory)
 
 Limitations:
- - EH works only if both the embedded dll is statically linked with CRT. // TODO check if CebuLoader also has to be linked statically (currently it is)
+ - EH works only if the embedded dll is statically linked with CRT. // TODO check if CebuLoader also has to be linked statically (currently it is)
