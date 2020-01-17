@@ -154,7 +154,10 @@ namespace MWR::Loader::UnexportedWinApi
 			auto sectionHeader = IMAGE_FIRST_SECTION(ntHeaders);
 			for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++)
 			{
-				if (_stricmp(section.c_str(), (char*)sectionHeader->Name) == 0)
+				char currentSection[9];
+				memcpy(currentSection, sectionHeader->Name, 8);
+				currentSection[8] = 0; // ensure null-termination
+				if (_stricmp(section.c_str(), currentSection) == 0)
 				{
 					auto sectionVa = Rva2Va<char*>(dllBase, sectionHeader->VirtualAddress);
 					return { sectionVa, sectionVa + sectionHeader->Misc.VirtualSize };
