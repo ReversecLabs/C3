@@ -137,11 +137,11 @@ namespace MWR::C3::Interfaces::Connectors
 		/// Map of all connections.
 		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
 
-		bool GetListenerId();
+		bool UpdateListenerId();
 	};
 }
 
-bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
+bool MWR::C3::Interfaces::Connectors::Covenant::UpdateListenerId()
 {
 	std::string url = this->m_webHost + OBF("/api/listeners");
 	std::pair<std::string, uint16_t> data;
@@ -163,28 +163,23 @@ bool MWR::C3::Interfaces::Connectors::Covenant::GetListenerId()
 	
 	if (resp.status_code() != web::http::status_codes::OK)
 		throw std::exception((OBF("[Covenant] Error getting Listeners, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
-	else
-	{
-		//Get the json response
-		auto respData = resp.extract_string();
-		response = json::parse(respData.get());
-
-		for (auto& listeners : response)
-		{
-			if (listeners[OBF("name")] != OBF("C3Bridge"))
-				continue;
-			else
-			{
-				this->m_ListenerId = listeners[OBF("id")].get<int>();
-				this->m_ListeningPostAddress = listeners[OBF("connectAddresses")][0].get<std::string>();
-				this->m_ListeningPostPort = listeners[OBF("connectPort")];
-				return true;
-			}
-		}
-
-		return false; //we didn't find the listener
-	}
 	
+	//Get the json response
+	auto respData = resp.extract_string();
+	response = json::parse(respData.get());
+
+	for (auto& listeners : response)
+	{
+		if (listeners[OBF("name")] != OBF("C3Bridge"))
+			continue;
+	
+		this->m_ListenerId = listeners[OBF("id")].get<int>();
+		this->m_ListeningPostAddress = listeners[OBF("connectAddresses")][0].get<std::string>();
+		this->m_ListeningPostPort = listeners[OBF("connectPort")];
+		return true;
+	}
+
+	return false; //we didn't find the listener
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,7 +231,7 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		throw std::exception(OBF("[Covenant] Could not get token, invalid logon"));
 
 	//If the listener doesn't already exist create it.
-	if (!GetListenerId())
+	if (!UpdateListenerId())
 	{
 		//extract ip address from url
 		size_t start = 0, end = 0;
