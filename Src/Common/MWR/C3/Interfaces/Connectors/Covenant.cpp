@@ -92,7 +92,7 @@ namespace MWR::C3::Interfaces::Connectors
 		/// @param jitter percent to jitter the delay by
 		/// @param listenerId the id of the Bridge listener for covenant
 		/// @return generated payload.
-		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId, uint32_t connectAttempts);
+		MWR::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts);
 
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
@@ -262,9 +262,10 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 
 		if (resp.status_code() != web::http::status_codes::OK)
 			throw std::exception((OBF("[Covenant] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
-		
+
 		if(!UpdateListenerId()) //now get the id of the listener
 				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
+	
 	}
 
 	InitializeSockets();
@@ -306,7 +307,7 @@ bool MWR::C3::Interfaces::Connectors::Covenant::DeinitializeSockets()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t listenerId, uint32_t connectAttempts)
+MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
 {
 	if (binderId.empty() || pipename.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
@@ -418,7 +419,8 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 				"type": "string",
 				"name": "Covenant Web Host",
 				"min": 1,
-				"description": "Host for Covenant - eg https://localhost:7443/"
+				"defaultValue": "https://127.0.0.1:7443/",
+				"description": "Host for Covenant - eg https://127.0.0.1:7443/"
 			},
 			{
 				"type": "string",
@@ -579,11 +581,10 @@ bool MWR::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStarted(
 
 MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, listenerId, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t, uint32_t>();
+	auto [pipeName, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t>();
 
 
-	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, listenerId, connectAttempts), connectAttempts);
+	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, connectAttempts), connectAttempts);
 }
-
 
 

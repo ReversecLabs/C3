@@ -260,13 +260,6 @@ MWR::ByteView MWR::C3::Interfaces::Peripherals::Grunt::GetCapability()
 			{
 				"type": "int32",
 				"min": 1,
-				"defaultValue" : 1,
-				"name": "Listener ID",
-				"description": "Id of the Bridge Listener in Covenant"
-			},
-			{
-				"type": "int32",
-				"min": 1,
 				"defaultValue" : 30,
 				"name": "Delay",
 				"description": "Delay"
@@ -291,4 +284,5 @@ MWR::ByteView MWR::C3::Interfaces::Peripherals::Grunt::GetCapability()
 }
 )";
 }
+
 
