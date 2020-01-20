@@ -42,7 +42,7 @@ namespace MWR::C3::Interfaces::Connectors
 
 	private:
 		/// Represents a single C3 <-> Covenant connection, as well as each Grunt in network.
-		struct Connection
+		struct Connection : std::enable_shared_from_this<Connection>
 		{
 			/// Constructor.
 			/// @param listeningPostAddress adders of Bridge.
@@ -548,12 +548,13 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::Connection::Receive()
 void MWR::C3::Interfaces::Connectors::Covenant::Connection::StartUpdatingInSeparateThread()
 {
 	m_SecondThreadStarted = true;
-	std::thread([&]()
+	std::thread([this]()
 		{
 			// Lock pointers.
 			auto owner = m_Owner.lock();
 			auto bridge = owner->GetBridge();
-			while (bridge->IsAlive())
+			auto self = shared_from_this();
+			while (bridge->IsAlive() && self.use_count() > 1)
 			{
 				try
 				{
