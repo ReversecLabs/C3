@@ -68,7 +68,12 @@ size_t MWR::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(ByteV
 				s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ stoul(response.headers().find(OBF_W(L"Retry-After"))->second) };
 				throw std::runtime_error{ OBF("Too many requests") };
 			}
+			if(response.status_code() == web::http::status_codes::Unauthorized)
+			{
+				RefreshAccessToken();
+				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
 
+			}
 			if (response.status_code() == web::http::status_codes::BadRequest)
 			{
 				RefreshAccessToken();
@@ -115,7 +120,12 @@ MWR::ByteVector MWR::C3::Interfaces::Channels::OneDrive365RestFile::OnReceiveFro
 				s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ stoul(response.headers().find(OBF_W(L"Retry-After"))->second) };
 				throw std::runtime_error{ OBF("Too many requests") };
 			}
+			if(response.status_code() == web::http::status_codes::Unauthorized)
+ 			{
+			        RefreshAccessToken();
+			        throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
 
+			}
 			if (response.status_code() == web::http::status_codes::BadRequest)
 			{
 				RefreshAccessToken();
