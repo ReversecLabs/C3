@@ -24,6 +24,7 @@
       :selected="selectedCompress"
       :options="{
         None: 'None',
+	Aplib: 'aPLib',
         Lznt1: 'Lznt1',
         Xpress: 'Xpress',
         Xpress_huff: 'Xpress_huff'

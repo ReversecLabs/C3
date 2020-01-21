@@ -20,11 +20,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-<<<<<<< HEAD
-          :options="{'dll': 'dll', 'exe': 'exe', 'shellcode': 'shellcode'}"
-=======
           :options="{ dll: 'dll', exe: 'exe', shellcode: 'shellcode'}"
->>>>>>> donut-front
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
