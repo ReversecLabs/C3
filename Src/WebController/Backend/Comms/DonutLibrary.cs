@@ -70,9 +70,10 @@ namespace MWR.C3.WebController.Comms
         public enum ComperssionEngine
         {
             NONE = 1,
-            LZNT1 = 2,  // COMPRESSION_FORMAT_LZNT1
-            XPRESS = 3,  // COMPRESSION_FORMAT_XPRESS
-            XPRESS_HUFF = 4,  // COMPRESSION_FORMAT_XPRESS_HUFF
+            APLIB = 2,
+            LZNT1 = 3,  // COMPRESSION_FORMAT_LZNT1
+            XPRESS = 4,  // COMPRESSION_FORMAT_XPRESS
+            XPRESS_HUFF = 5,  // COMPRESSION_FORMAT_XPRESS_HUFF
         }
 
         // entropy level
