@@ -3,7 +3,7 @@
     <div class="c3modal-details">
       <div class="c3modal-title-wrapper">
         <h1>Gateway Setup</h1>
-        <!-- <span class="c3modal-config-link" v-on:click="openModal('', 'OPTIONS')">EDIT CONFIG</span> -->
+        <span class="c3modal-config-link" v-on:click="openModal('', 'OPTIONS')">EDIT CONFIG</span>
       </div>
       <p>Please setup a Gateway to begin using c3.</p>
       <Input
