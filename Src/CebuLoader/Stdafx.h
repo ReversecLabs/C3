@@ -14,6 +14,7 @@
 #include "QuietAbort.h"
 #include "PeUtils.h"
 #include "UnexportedWinApi.h"
+#include "LoadPe.h"
 
 // C3 includes
 //#include "Common/MWR/CppTools/ByteConverter.h"
