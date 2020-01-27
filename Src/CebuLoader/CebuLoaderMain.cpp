@@ -9,17 +9,6 @@
 #define HOST_MACHINE IMAGE_FILE_MACHINE_I386
 #endif
 
-template<typename T, typename V, typename U>
-T Rva2Va(V base, U rva)
-{
-	return reinterpret_cast<T>((ULONG_PTR)base + rva);
-}
-
-static inline size_t AlignValueUp(size_t value, size_t alignment)
-{
-	return (value + alignment - 1) & ~(alignment - 1);
-}
-
 #pragma warning( push )
 #pragma warning( disable : 4214 ) // nonstandard extension
 typedef struct
@@ -64,6 +53,7 @@ LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
 /// @param callExport - name of an exported function to call. Function must have a signature of ExportFunc [typedef void (*ExportFunc)(void)]
 int LoadPe(void* dllData, std::string_view callExport)
 {
+	using namespace MWR::Loader;
 	// Loader code based on Shellcode Reflective DLL Injection by Nick Landers https://github.com/monoxgas/sRDI
 	// which is derived from "Improved Reflective DLL Injection" from Dan Staples https://disman.tl/2015/01/30/an-improved-reflective-dll-injection-technique.html
 	// which itself is derived from the original project by Stephen Fewer. https://github.com/stephenfewer/ReflectiveDLLInjection
@@ -105,7 +95,7 @@ int LoadPe(void* dllData, std::string_view callExport)
 	if (alignedImageSize != AlignValueUp(lastSectionEnd, sysInfo.dwPageSize))
 		return 1;
 
-	UINT_PTR baseAddress = (UINT_PTR)VirtualAlloc(NULL, alignedImageSize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+	UINT_PTR baseAddress = (UINT_PTR)VirtualAlloc(NULL, alignedImageSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	if (!baseAddress)
 		return 1;
 
@@ -165,11 +155,6 @@ int LoadPe(void* dllData, std::string_view callExport)
 	if (dataDir->Size)
 	{
 		auto importDesc = Rva2Va<PIMAGE_IMPORT_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
-		auto importCount = 0;
-		for (; importDesc->Name; importDesc++)
-			importCount++;
-
-		importDesc = Rva2Va<PIMAGE_IMPORT_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
 		for (; importDesc->Name; importDesc++)
 		{
 			auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + importDesc->Name));

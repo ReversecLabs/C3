@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "UnexportedWinApi.h"
-
+#include "PeUtils.h"
 #include <algorithm>
 #include <string>
 using namespace std::string_literals;
@@ -139,31 +139,6 @@ namespace MWR::Loader::UnexportedWinApi
 			if (match == end)
 				QuietAbort();
 			return (void*)(match - offsetData.second);
-		}
-
-		template<typename T, typename V, typename U>
-		T Rva2Va(V base, U rva)
-		{
-			return reinterpret_cast<T>((ULONG_PTR)base + rva);
-		}
-
-		std::pair<void*, void*> GetSectionRange(void* dllBase, std::string const& section)
-		{
-			auto dosHeaders = reinterpret_cast<PIMAGE_DOS_HEADER>(dllBase);
-			auto ntHeaders = Rva2Va<PIMAGE_NT_HEADERS>(dllBase, dosHeaders->e_lfanew);
-			auto sectionHeader = IMAGE_FIRST_SECTION(ntHeaders);
-			for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++, sectionHeader++)
-			{
-				char currentSection[9];
-				memcpy(currentSection, sectionHeader->Name, 8);
-				currentSection[8] = 0; // ensure null-termination
-				if (_stricmp(section.c_str(), currentSection) == 0)
-				{
-					auto sectionVa = Rva2Va<char*>(dllBase, sectionHeader->VirtualAddress);
-					return { sectionVa, sectionVa + sectionHeader->Misc.VirtualSize };
-				}
-			}
-			return {};
 		}
 
 		void* FindInSection(std::wstring const& dll, std::string const& section, std::pair<std::string, size_t> const& offsetData)

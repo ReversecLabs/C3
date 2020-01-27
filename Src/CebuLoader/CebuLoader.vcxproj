@@ -239,7 +239,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <SupportJustMyCode>true</SupportJustMyCode>
+      <SupportJustMyCode>false</SupportJustMyCode>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -310,7 +310,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <SupportJustMyCode>true</SupportJustMyCode>
+      <SupportJustMyCode>false</SupportJustMyCode>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -346,6 +346,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|x64'">StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="UnexportedWinApi.cpp" />
+    <ClCompile Include="PeUtils.cpp" />
     <ClCompile Include="WindowsVersion.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -354,6 +355,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="UnexportedWinApi.h" />
+    <ClInclude Include="PeUtils.h" />
     <ClInclude Include="WindowsVersion.h" />
   </ItemGroup>
   <ItemGroup>

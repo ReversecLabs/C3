@@ -2,15 +2,6 @@
 
 namespace MWR::Loader::UnexportedWinApi
 {
-	/// Get size of image from NT headers
-	/// @param baseAddress - base address of PE file image
-	/// @returns size of image specified image
-	inline DWORD GetSizeOfImage(UINT_PTR baseAddress)
-	{
-		auto ntHeader = baseAddress + ((PIMAGE_DOS_HEADER)baseAddress)->e_lfanew;
-		return reinterpret_cast<PIMAGE_NT_HEADERS>(ntHeader)->OptionalHeader.SizeOfImage;
-	}
-
 	/// Wrapper around private ntdll!LdrpHandleTlsData
 	/// Initializes static data from .tls section
 	/// @param baseAddress of PE file image
