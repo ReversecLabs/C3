@@ -28,25 +28,25 @@ namespace MWR::Loader
 		DWORD m_SizeOfTheDll;
 	} moduleData;
 
-	/// Used both by VEH and SetUnhandledExceptionFilter. Based on BlackBone memory injection toolkit.
-	/// @param exceptionInfo filled _EXCEPTION_POINTERS structure describing occurred exception.
-	/// @return always returns EXCEPTION_CONTINUE_SEARCH.
-	LONG CALLBACK PatchCppException(PEXCEPTION_POINTERS exceptionInfo)
+	PVOID RtlPcToFileHeaderHook(PVOID pc, PVOID* baseOfImage)
 	{
-		// Filter by Visual Studio magic for C++ exception, see https://web.archive.org/web/20170911103343/https://support.microsoft.com/en-us/help/185294/prb-exception-code-0xe06d7363-when-calling-win32-seh-apis
-		if (exceptionInfo->ExceptionRecord->ExceptionCode == EH_EXCEPTION_NUMBER &&
-			exceptionInfo->ExceptionRecord->NumberParameters == 4 &&
-			exceptionInfo->ExceptionRecord->ExceptionInformation[2] >= moduleData.m_DllBaseAddress &&					// Check exception site image boundaries.
-			exceptionInfo->ExceptionRecord->ExceptionInformation[2] <= moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll &&
-			exceptionInfo->ExceptionRecord->ExceptionInformation[0] == EH_PURE_MAGIC_NUMBER1 &&
-			exceptionInfo->ExceptionRecord->ExceptionInformation[3] == 0)
+		if (pc > (void*)moduleData.m_DllBaseAddress and pc < (void*)(moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll))
 		{
-			exceptionInfo->ExceptionRecord->ExceptionInformation[0] = (ULONG_PTR)EH_MAGIC_NUMBER1;					//< CRT magic number, used in exception records for native or mixed C++ thrown objects.
-			exceptionInfo->ExceptionRecord->ExceptionInformation[3] = (ULONG_PTR)moduleData.m_DllBaseAddress;		//< Fix exception image base.
+			*baseOfImage = 0;
+			return (void*)moduleData.m_DllBaseAddress;
 		}
+		else
+		{
+			return RtlPcToFileHeader(pc, baseOfImage);
+		}
+	}
 
-		// Continue the handler search.
-		return EXCEPTION_CONTINUE_SEARCH;
+	void* GetHookAddress(const char* dllName, const char* funcName)
+	{
+		if (_stricmp(dllName,"kernel32.dll") == 0 && strcmp(funcName, "RtlPcToFileHeader") == 0)
+			return (void*)RtlPcToFileHeaderHook;
+
+		return nullptr;
 	}
 
 	int LoadPe(void* dllData, std::string_view callExport)
@@ -154,7 +154,8 @@ namespace MWR::Loader
 			auto importDesc = Rva2Va<PIMAGE_IMPORT_DESCRIPTOR>(baseAddress, dataDir->VirtualAddress);
 			for (; importDesc->Name; importDesc++)
 			{
-				auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + importDesc->Name));
+				auto libName = (LPCSTR)(baseAddress + importDesc->Name);
+				auto libraryAddress = (PBYTE)LoadLibraryA(libName);
 				auto firstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, importDesc->FirstThunk);
 				auto origFirstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, importDesc->OriginalFirstThunk);
 
@@ -168,7 +169,10 @@ namespace MWR::Loader
 					else
 					{
 						auto importByName = Rva2Va<PIMAGE_IMPORT_BY_NAME>(baseAddress, origFirstThunk->u1.AddressOfData);
-						firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, importByName->Name);
+						void* addr = GetHookAddress(libName, importByName->Name);
+						if (!addr)
+							addr = GetProcAddress((HMODULE)libraryAddress, importByName->Name);
+						firstThunk->u1.Function = (ULONG_PTR)addr;
 					}
 				}
 			}
@@ -186,7 +190,8 @@ namespace MWR::Loader
 
 			for (; delayDesc->DllNameRVA; delayDesc++)
 			{
-				auto libraryAddress = (PBYTE)LoadLibraryA((LPCSTR)(baseAddress + delayDesc->DllNameRVA));
+				auto libName = (LPCSTR)(baseAddress + delayDesc->DllNameRVA);
+				auto libraryAddress = (PBYTE)LoadLibraryA(libName);
 				auto firstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, delayDesc->ImportAddressTableRVA);
 				auto origFirstThunk = Rva2Va<PIMAGE_THUNK_DATA>(baseAddress, delayDesc->ImportNameTableRVA);
 
@@ -200,7 +205,10 @@ namespace MWR::Loader
 					else
 					{
 						auto importByName = Rva2Va<PIMAGE_IMPORT_BY_NAME>(baseAddress, origFirstThunk->u1.AddressOfData);
-						firstThunk->u1.Function = (ULONG_PTR)GetProcAddress((HMODULE)libraryAddress, importByName->Name);
+						void* addr = GetHookAddress(libName, importByName->Name);
+						if (!addr)
+							addr = GetProcAddress((HMODULE)libraryAddress, importByName->Name);
+						firstThunk->u1.Function = (ULONG_PTR)addr;
 					}
 				}
 			}
@@ -285,9 +293,6 @@ namespace MWR::Loader
 		// register VEH
 		moduleData.m_DllBaseAddress = baseAddress;
 		moduleData.m_SizeOfTheDll = ntHeaders->OptionalHeader.SizeOfImage;
-		auto veh = AddVectoredExceptionHandler(0, PatchCppException);
-		if (!veh)
-			return 1;
 
 #elif defined _M_IX86
 		MWR::Loader::UnexportedWinApi::RtlInsertInvertedFunctionTable((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
@@ -336,7 +341,6 @@ namespace MWR::Loader
 
 		// STEP 11 Cleanup
 #if defined _M_X64
-		RemoveVectoredExceptionHandler(veh);
 		if (pImageEntryException->Size > 0)
 		{
 			auto functionTable = Rva2Va<PRUNTIME_FUNCTION>(baseAddress, pImageEntryException->VirtualAddress);
