@@ -28,7 +28,8 @@ namespace MWR::Loader
 		DWORD m_SizeOfTheDll;
 	} moduleData;
 
-	PVOID RtlPcToFileHeaderHook(PVOID pc, PVOID* baseOfImage)
+#if defined _M_AMD64
+	void* RtlPcToFileHeaderHook(PVOID pc, PVOID* baseOfImage)
 	{
 		if (pc > (void*)moduleData.m_DllBaseAddress and pc < (void*)(moduleData.m_DllBaseAddress + moduleData.m_SizeOfTheDll))
 		{
@@ -40,11 +41,14 @@ namespace MWR::Loader
 			return RtlPcToFileHeader(pc, baseOfImage);
 		}
 	}
+#endif
 
 	void* GetHookAddress(const char* dllName, const char* funcName)
 	{
+#if defined _M_AMD64
 		if (_stricmp(dllName,"kernel32.dll") == 0 && strcmp(funcName, "RtlPcToFileHeader") == 0)
 			return (void*)RtlPcToFileHeaderHook;
+#endif
 
 		return nullptr;
 	}
