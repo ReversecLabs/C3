@@ -14,7 +14,7 @@ namespace MWR.C3.WebController.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
+                .HasAnnotation("ProductVersion", "2.1.14-servicing-32113");
 
             modelBuilder.Entity("MWR.C3.WebController.Models.Agent", b =>
                 {
@@ -177,6 +177,9 @@ namespace MWR.C3.WebController.Migrations
                 {
                     b.HasBaseType("MWR.C3.WebController.Models.Agent");
 
+
+                    b.ToTable("Gateway");
+
                     b.HasDiscriminator().HasValue("Gateway");
                 });
 
@@ -187,6 +190,8 @@ namespace MWR.C3.WebController.Migrations
                     b.Property<ulong>("GatewayAgentId");
 
                     b.HasIndex("GatewayAgentId");
+
+                    b.ToTable("Relay");
 
                     b.HasDiscriminator().HasValue("Relay");
                 });
@@ -199,6 +204,8 @@ namespace MWR.C3.WebController.Migrations
 
                     b.Property<string>("RelayCommands");
 
+                    b.ToTable("GatewayBuild");
+
                     b.HasDiscriminator().HasValue("GatewayBuild");
                 });
 
@@ -207,6 +214,8 @@ namespace MWR.C3.WebController.Migrations
                     b.HasBaseType("MWR.C3.WebController.Models.Build");
 
                     b.Property<string>("StartupCommands");
+
+                    b.ToTable("RelayBuild");
 
                     b.HasDiscriminator().HasValue("RelayBuild");
                 });
@@ -283,8 +292,6 @@ namespace MWR.C3.WebController.Migrations
                             b1.Property<uint>("ProcessId");
 
                             b1.Property<string>("UserName");
-
-                            b1.HasKey("RelayAgentId");
 
                             b1.ToTable("Agent");
 

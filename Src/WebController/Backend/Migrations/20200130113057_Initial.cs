@@ -11,12 +11,12 @@ namespace MWR.C3.WebController.Migrations
                 name: "Builds",
                 columns: table => new
                 {
-                    BuildId = table.Column<ulong>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
                     Type = table.Column<int>(nullable: false),
                     Arch = table.Column<int>(nullable: false),
                     PublicKey = table.Column<byte[]>(nullable: true),
                     BroadcastKey = table.Column<byte[]>(nullable: true),
+                    BuildId = table.Column<ulong>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Commands = table.Column<string>(nullable: true),
                     Peripherals = table.Column<string>(nullable: true),
                     Channels = table.Column<string>(nullable: true),
@@ -35,12 +35,12 @@ namespace MWR.C3.WebController.Migrations
                 name: "Commands",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
                     GatewayAgentId = table.Column<ulong>(nullable: false),
                     RelayAgentId = table.Column<ulong>(nullable: true),
                     InterfaceId = table.Column<ulong>(nullable: true),
                     DeviceType = table.Column<string>(nullable: true),
+                    Id = table.Column<ulong>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: false),
                     Data = table.Column<string>(nullable: true)
                 },
@@ -83,7 +83,6 @@ namespace MWR.C3.WebController.Migrations
                 name: "Agent",
                 columns: table => new
                 {
-                    RelayAgentId = table.Column<ulong>(nullable: false),
                     ComputerName = table.Column<string>(nullable: true),
                     UserName = table.Column<string>(nullable: true),
                     Domain = table.Column<string>(nullable: true),
@@ -94,7 +93,8 @@ namespace MWR.C3.WebController.Migrations
                     OsServicePackMinor = table.Column<ushort>(nullable: false),
                     OsProductType = table.Column<byte>(nullable: false),
                     ProcessId = table.Column<uint>(nullable: false),
-                    IsElevated = table.Column<bool>(nullable: false)
+                    IsElevated = table.Column<bool>(nullable: false),
+                    RelayAgentId = table.Column<ulong>(nullable: false)
                 },
                 constraints: table =>
                 {
