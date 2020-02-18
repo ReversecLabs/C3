@@ -22,25 +22,25 @@ namespace FSecure
 		/// Write a message to the channel this Slack object is set to.
 		/// @param text - the text of the message
 		/// @return - a timestamp of the message that was written to the channel.
-		std::string WriteMessage(std::string text);
+		std::string WriteMessage(std::string const& text);
 
 		/// Set the channel that this object uses for communications
 		/// @param channel - the channelId (not name), for example CGPMGFGSH.
-		void SetChannel(std::string const &channelId);
+		void SetChannel(std::string const& channelId);
 
 		/// set the token for this object.
 		/// @param token - the textual api token.
-		void SetToken(std::string const &token);
+		void SetToken(std::string const& token);
 
 		/// Creates a channel on slack, if the channel exists already, will call ListChannels internally to get the channelId.
 		/// @param channelName - the actual name of the channel, such as "general".
 		/// @return - the channelId of the new or already existing channel.
-		std::string CreateChannel(std::string const &channelName);
+		std::string CreateChannel(std::string const& channelName);
 
 		/// Read the replies to a message
 		/// @param timestamp - the timestamp of the original message, from which we can gather the replies.
 		/// @return - an array of json objects contaning the replies to the original message.
-		std::vector<json> ReadReplies(std::string const &timestamp);
+		std::vector<json> ReadReplies(std::string const& timestamp);
 
 		/// List all the channels in the workspace the object's token is tied to.
 		/// @return - a map of {channelName -> channelId}
@@ -49,21 +49,21 @@ namespace FSecure
 		/// Get all of the messages by a direction. This is a C3 specific method, used by a server relay to get client messages and vice versa.
 		/// @param direction - the direction to search for (eg. "S2C").
 		/// @return - a vector of timestamps, where timestamp allows replies to be read later
-		std::vector<std::string> GetMessagesByDirection(std::string const &direction);
+		std::vector<std::string> GetMessagesByDirection(std::string const& direction);
 
 		/// Edit a previously sent message.
 		/// @param message - the message to update to, this will overwrite the previous message.
 		/// @param timestamp - the timestamp of the message to update.
-		void UpdateMessage(std::string const &message, std::string const &timestamp);
+		void UpdateMessage(std::string const& message, std::string const& timestamp);
 
 		/// Create a thread on a message by writing a reply to it.
 		/// @param text - the text to send as a reply.
 		/// @param timestamp - the timestamp of the message that the reply is for.
-		void WriteReply(std::string const &text, std::string const &timestamp);
+		void WriteReply(std::string const& text, std::string const& timestamp);
 
 		/// Delete a message from the channel
 		/// @param timestamp - the timestamp of the message to delete.
-		void DeleteMessage(std::string const &timestamp);
+		void DeleteMessage(std::string const& timestamp);
 
 
 
@@ -73,7 +73,7 @@ namespace FSecure
 		/// This method is only used when replies are sent.
 		/// @param data - the payload to be sent.
 		/// @param ts - the timestamp of the original message to reply to.
-		void WriteReplyLarge(std::string const &data, std::string const &ts);
+		void WriteReplyLarge(std::string const& data, std::string const& ts);
 
 		/// The channel through which messages are sent and recieved, will be sent when the object is created.
 		std::string m_Channel;
@@ -81,20 +81,25 @@ namespace FSecure
 		/// The Slack API token that allows the object access to the workspace. Needs to be manually created as described in documentation.
 		std::string m_Token;
 
+		/// Hold proxy settings
 		web::http::client::http_client_config m_HttpConfig;
 
-		json SendHttpRequest(std::string const& host, std::string const& contentType, json const& data);
+		/// Send http request, uses preset token for authentication
+		json SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data);
+
+		/// Send http request with json data, uses preset token for authentication
+		json SendJsonRequest(std::string const& url, json const& data);
 
 		/// Use Slack's file API to upload data as files. This is useful when a payload is large (for example during implant staging).
 		/// This function is called internally whenever a WriteReply is called with a payload of more than 120k characters.
 		/// @param data - the data to be sent.
 		/// @param ts - the timestamp, needed as this method is only used during WriteReply.
-		void UploadFile(std::string const  &data, std::string const &ts);
+		void UploadFile(std::string const& data, std::string const& ts);
 
 		/// Use Slack's File API to retrieve files.
 		/// @param url - the url where the file can be retrieved.
 		/// @return - the data within the file.
-		std::string GetFile(std::string const &url);
+		std::string GetFile(std::string const& url);
 
 	};
 

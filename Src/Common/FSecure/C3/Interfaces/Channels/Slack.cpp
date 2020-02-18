@@ -38,21 +38,21 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Slack::OnReceiveFromChann
 	for (std::vector<std::string>::reverse_iterator ts = messages.rbegin(); ts != messages.rend(); ++ts)
 	{
 
-		std::vector<json> replies = m_slackObj.ReadReplies(ts->c_str());
+		std::vector<json> replies = m_slackObj.ReadReplies(*ts);
 		std::vector<std::string> repliesTs;
 
 		std::string message;
 
 		//Get all of the messages from the replies.
-		for (size_t i = 0u; i < replies.size(); i++)
+		for (auto&& reply : replies)
 		{
-			message.append(replies[i][OBF("text")]);
-			repliesTs.push_back(replies[i][OBF("ts")]); //get all of the timestamps for later deletion
+			message.append(reply[OBF("text")]);
+			repliesTs.push_back(reply[OBF("ts")]); //get all of the timestamps for later deletion
 		}
 
 		//Base64 decode the entire message
 		auto relayMsg = cppcodec::base64_rfc4648::decode(message);
-		m_slackObj.DeleteMessage(ts->c_str());	//delete the message
+		m_slackObj.DeleteMessage(*ts);	//delete the message
 		DeleteReplies(repliesTs); //delete the replies.
 		return relayMsg;
 	}
