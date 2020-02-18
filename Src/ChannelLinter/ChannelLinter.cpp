@@ -13,7 +13,25 @@ namespace MWR::C3::Linter
 		/// @throws std::runtime_error if channel with given name was not registered
 		auto const& GetChannelInfo(std::string_view channelName)
 		{
-			return InterfaceFactory::Instance().Find<AbstractChannel>(channelName)->second;
+			try
+			{
+				return InterfaceFactory::Instance().Find<AbstractChannel>(channelName)->second;
+			}
+			catch (std::runtime_error & e)
+			{
+				// registered interface with this name was not registered, try finding one using case insensitive comparison
+				auto const& channels = InterfaceFactory::Instance().GetMap<AbstractChannel>();
+				std::string channelNameStr{ channelName };
+				auto it = std::find_if(cbegin(channels), cend(channels), [&channelNameStr](auto&& ch)
+					{
+						return _stricmp(channelNameStr.c_str(), ch.second.m_Name.c_str()) == 0;
+					});
+
+				if (it != cend(channels))
+					throw std::runtime_error(e.what() + ". Did you mean "s + it->second.m_Name + '?');
+				else
+					throw;
+			}
 		}
 
 		/// Get Channel capability supplemented with build-in capability
