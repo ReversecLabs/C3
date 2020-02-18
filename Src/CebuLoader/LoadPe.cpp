@@ -329,6 +329,9 @@ namespace MWR::Loader
 		MWR::Loader::UnexportedWinApi::RtlInsertInvertedFunctionTable((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
 #endif
 
+		// wipe the headers
+		SecureZeroMemory((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfHeaders);
+
 		///
 		// STEP 9: call our images entry point
 		///
