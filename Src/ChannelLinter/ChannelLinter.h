@@ -57,8 +57,17 @@ namespace MWR::C3::Linter
 		/// Selected Channel create form
 		const Form m_CreateForm;
 
+		struct ChannelCommand
+		{
+			uint16_t m_Id = 0;
+			std::string m_Name = "";
+			Form m_ArgumentsForm;
+
+			ChannelCommand(json const& commandDefinition);
+		};
+
 		/// Selected Channel command forms
-		std::vector<Form> m_CommandForms;
+		std::map<uint16_t, ChannelCommand> m_ChannelCommands;
 	};
 }
 

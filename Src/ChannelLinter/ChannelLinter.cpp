@@ -42,7 +42,11 @@ namespace MWR::C3::Linter
 			try
 			{
 				auto ret = json::parse(channelInfo.m_Capability);
-				C3::Core::Profiler::Gateway::EnsureCreateExists(ret);
+				if(!ret.contains("create"))
+				{
+					std::cout << "[Warning] create property does not exist, generating default one." << std::endl;
+					C3::Core::Profiler::Gateway::EnsureCreateExists(ret);
+				}
 				C3::Core::Profiler::Gateway::AddBuildInCommands(ret, true);
 				return ret;
 			}
@@ -68,10 +72,29 @@ namespace MWR::C3::Linter
 		m_Config(std::move(config)),
 		m_ChannelData(GetChannelInfo(m_Config.m_ChannelName)),
 		m_ChannelCapability(GetChannelCapability(m_ChannelData)),
-		m_CreateForm(m_ChannelCapability.at("/create/arguments"_json_pointer))
+		m_CreateForm{ [this]
+			{
+				std::cout << "Parsing create arguments ... " << std::flush;
+				decltype(m_CreateForm) form(m_ChannelCapability.at("/create/arguments"_json_pointer));
+				std::cout << "OK" << std::endl;
+				return form;
+			}()
+		}
 	{
+		std::cout << "Parsing command definitions ... " << std::flush;
 		for (auto&& command : m_ChannelCapability.at("commands"))
-			m_CommandForms.emplace_back(command.at("arguments"));
+		{
+			auto parsedCommand = ChannelCommand(command);
+			auto id = parsedCommand.m_Id;
+			if(m_ChannelCommands.count(id))
+				throw std::invalid_argument("Command with id = " + std::to_string(id) + " already exists.");
+			 m_ChannelCommands.emplace(id, std::move(parsedCommand));
+		}
+		std::cout << "OK" << std::endl;
+		std::cout << "Registered commands: \nid\tname\n";
+		for (auto [k, v] : m_ChannelCommands)
+			std::cout << k << '\t' << v.m_Name << '\n';
+		std::cout << std::flush;
 	}
 
 	void ChannelLinter::Process()
@@ -159,22 +182,25 @@ namespace MWR::C3::Linter
 	void ChannelLinter::TestCommand(std::shared_ptr<MockDeviceBridge> const& channel)
 	{
 		assert(m_Config.m_Command);
+		std::cout << "Executing command ... " << std::flush;
 		auto binaryCommand = TranslateCommand(*m_Config.m_Command);
 		channel->RunCommand(binaryCommand);
+		std::cout << "OK" << std::endl;
 	}
 
 	MWR::ByteVector ChannelLinter::TranslateCommand(StringVector const& commandParams)
 	{
 		uint16_t commandId = GetCommandId(commandParams.at(0));
 
-		auto& commands = m_ChannelCapability.at("commands");
-		auto commandIt = std::find_if(begin(commands), end(commands), [commandId](auto const& c) { return c.contains("id") && c["id"].get<uint16_t>() == commandId; });
-		if (commandIt == end(commands))
+		if (!m_ChannelCommands.count(commandId))
 			throw std::runtime_error("Failed to find a command with id: " + std::to_string(commandId));
 
-		json command = *commandIt;
-		Form commandForm(command.at("arguments"));
-		command["arguments"] = commandForm.Fill({begin(commandParams) + 1, end(commandParams)}); // + 1 to omit command id
+		Form commandForm = m_ChannelCommands.at(commandId).m_ArgumentsForm;
+		json command
+		{
+			{ "id", commandId},
+			{ "arguments", commandForm.Fill({begin(commandParams) + 1, end(commandParams)})}, // + 1 to omit command id}
+		};
 		return C3::Core::Profiler::TranslateCommand(command);
 	}
 
@@ -182,5 +208,15 @@ namespace MWR::C3::Linter
 	{
 		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
 		return m_Config.m_ComplementaryChannelArguments ? *m_Config.m_ComplementaryChannelArguments : form.GetComplementaryArgs(*m_Config.m_ChannelArguments);
+	}
+
+	ChannelLinter::ChannelCommand::ChannelCommand(json const& commandDefinition) : m_ArgumentsForm(commandDefinition.at("arguments"))
+	{
+		if (!commandDefinition.contains("id"))
+			throw std::invalid_argument{ "Command definition must contain 'id' property. Invalid command:\n" + commandDefinition.dump(4) };
+		m_Id = commandDefinition["id"].get<uint16_t>();
+		if (!commandDefinition.contains("name"))
+			throw std::invalid_argument{ "Command definition id = " + std::to_string(m_Id) + " must contain 'name' property" };
+		m_Name = commandDefinition["name"].get<std::string>();
 	}
 }
