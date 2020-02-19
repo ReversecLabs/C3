@@ -9,10 +9,10 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD, LPVOID)
 
 /// Starts a NodeRelay.
 /// @param leaveImmediately if false then waits for Relay to be shut down internally by a C3 API Command.
-extern "C" __declspec(dllexport) void StartNodeRelay(bool leaveImmediately)
+extern "C" __declspec(dllexport) void StartNodeRelay()
 {
 	MWR::WinTools::StructuredExceptionHandling::SehWrapper(
-	[leaveImmediately]()
+	[]()
 	{
 		try
 		{
@@ -24,8 +24,7 @@ extern "C" __declspec(dllexport) void StartNodeRelay(bool leaveImmediately)
 				EmbeddedData::Instance()[2],
 				EmbeddedData::Instance().FindMatching(3));
 
-			if (leaveImmediately)
-				relay->Join();
+			relay->Join();
 		}
 		catch (...)
 		{

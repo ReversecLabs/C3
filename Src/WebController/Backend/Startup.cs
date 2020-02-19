@@ -37,6 +37,8 @@ namespace MWR.C3.WebController
             {
                 c.SwaggerDoc("v1", new Info { Title = "C3 API", Version = "v1" });
             });
+            services.Configure<DonutServiceOptions>(Configuration.GetSection("Donut"));
+            services.AddTransient<IDonutService, DonutService>();
             services.AddTransient<ICustomizer, Customizer>();
             services.AddScoped<GatewayResponseProcessor>();
             services.AddDbContext<C3WebAPIContext>(options => options.UseSqlite("Data Source=C3API.db"));

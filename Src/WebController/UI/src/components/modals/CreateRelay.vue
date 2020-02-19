@@ -2,9 +2,7 @@
   <div class="c3modal-body">
     <div class="c3modal-details">
       <h1>Relay Setup</h1>
-      <p>
-        Please setup a Relay.
-      </p>
+      <p>Please setup a Relay.</p>
       <Input
         legend="Name / Auto Generated ID"
         class="form-element"
@@ -22,7 +20,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-          :options="{ dll: 'dll', exe: 'exe' }"
+          :options="{ dll: 'dll', exe: 'exe', shellcode: 'shellcode'}"
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
@@ -36,10 +34,11 @@
         />
       </div>
       <div class="c3modal-form">
+        <DonutForm v-if="donutSelected" @change="changeDonutForm($event, formData)" />
+      </div>
+      <div class="c3modal-form">
         <h1>Add Command</h1>
-        <p>
-          Please Select the first command to the Relay.
-        </p>
+        <p>Please Select the first command to the Relay.</p>
         <CommandCenterModal
           class="embeded-modal"
           :target-id="'new'"
@@ -49,16 +48,12 @@
         />
       </div>
       <dir class="flex-row c3modal-actions">
-        <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">
-          Cancel
-        </button>
+        <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">Cancel</button>
         <button
           class="c3btn c3btn"
           v-on:click="createNewRelay()"
           :disabled="formIsValid"
-        >
-          Create and Download Relay
-        </button>
+        >Create and Download Relay</button>
       </dir>
     </div>
   </div>
@@ -79,6 +74,7 @@ import {
 import C3 from '@/c3';
 import Input from '@/components/form/Input.vue';
 import Select from '@/components/form/Select.vue';
+import DonutForm from '@/components/partial/DonutForm.vue';
 import GeneralForm from '@/components/form/GeneralForm.vue';
 import AddChannelForm from '@/components/form/AddChannelForm.vue';
 import CommandCenterModal from './CommandCenter.vue';
@@ -91,6 +87,7 @@ const C3OptionsModule = namespace('optionsModule');
   components: {
     Input,
     Select,
+    DonutForm,
     GeneralForm,
     CommandCenterModal
   }
@@ -111,6 +108,8 @@ export default class CreateRelayModal extends Mixins(C3) {
   public architecture: string = 'x64';
   public commandGroup: string = 'Relay';
   public commandTarget: string = '';
+  public donutSelected: boolean = false;
+  public donutFormData: object = {};
 
   get formIsValid() {
     return !this.isValid;
@@ -205,8 +204,17 @@ export default class CreateRelayModal extends Mixins(C3) {
     this.formData = data.data;
   }
 
+  public changeDonutForm(data: any): void {
+    this.donutFormData = data;
+  }
+
   public changeTargetSuffix(t: string): void {
     this.targetSuffix = t;
+    if (this.targetSuffix === 'shellcode') {
+      this.donutSelected = true;
+    } else {
+      this.donutSelected = false;
+    }
   }
 
   public changeArchitecture(a: string): void {
@@ -219,7 +227,8 @@ export default class CreateRelayModal extends Mixins(C3) {
       architecture: this.selectedArchitecture,
       parentGatewayBuildId: this.gatewayBuildsId,
       name: this.relayName,
-      startupCommands: [this.formData]
+      startupCommands: [this.formData],
+      donut: this.donutFormData
     };
     axios({
       url: '/api/build/customize',

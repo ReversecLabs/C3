@@ -247,7 +247,7 @@ export default class Modal extends Mixins(C3) {
       margin-left: 16px
   &.options
     .c3modal-back.c3modal-back
-      display: none
+      display: flex
     h1
       margin-bottom: 16px
   &-title-wrapper
@@ -271,6 +271,6 @@ export default class Modal extends Mixins(C3) {
     display: flex
     align-self: flex-end
     text-align: right
-    margin: 0 0 14px
+    margin: 0 100px 14px 0
     cursor: pointer
 </style>
