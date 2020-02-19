@@ -11,7 +11,12 @@ try
 	using namespace MWR;
 	C3::Linter::ArgumentParser argParser(argc, argv);
 	auto const& config = argParser.GetConfig();
-	C3::Linter::ChannelLinter(config).Process();
+	std::cout << "Channel: " << config.m_ChannelName << std::endl;
+	auto channelLinter = C3::Linter::ChannelLinter(config);
+	std::cout << config.m_ChannelName << "'s Capability json verified OK." << std::endl;
+
+	channelLinter.Process();
+	return 0;
 }
 catch (std::exception& e)
 {

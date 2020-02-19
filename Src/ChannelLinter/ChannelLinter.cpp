@@ -78,13 +78,20 @@ namespace MWR::C3::Linter
 	{
 		std::shared_ptr<MockDeviceBridge> channel;
 		if (m_Config.ShouldCreateChannel())
+		{
+			std::cout << "Creating channel ... " << std::flush;
 			channel = MakeChannel(*m_Config.m_ChannelArguments);
+			std::cout << "OK" << std::endl;
+		}
 
 		if (m_Config.m_TestChannelIO)
 		{
 			assert(channel); // First channel should already be created
+			std::cout << "Creating complementary channel ... " << std::flush;
 			auto complementaryArgs = GetComplementaryChannelArgs();
 			auto complementaryChannel = MakeChannel(complementaryArgs);
+			std::cout << "OK" << std::endl;
+
 			TestChannelIO(channel, complementaryChannel);
 		}
 
@@ -97,7 +104,6 @@ namespace MWR::C3::Linter
 
 	std::shared_ptr<MWR::C3::Linter::MockDeviceBridge> ChannelLinter::MakeChannel(StringVector const& channnelArguments) const
 	{
-		std::cout << "Create channel " << std::endl;
 		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
 		auto createParams = form.Fill(channnelArguments);
 		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
@@ -116,11 +122,38 @@ namespace MWR::C3::Linter
 		assert(channel);
 		assert(complementary);
 
-		auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(64)));
-		channel->GetDevice()->OnSendToChannelInternal(data);
-		auto received = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
-		if (data != received.at(0))
-			throw std::exception("Data sent and received mismatch");
+		for (size_t packetLen : { 8, 64, 1024, 1024 * 1024})
+		{
+			std::cout << "Testing channel with " << packetLen << " bytes of data ... " << std::flush;
+			auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(packetLen)));
+
+			// call send and receive interleaved
+			size_t sentTotal = 0;
+			ByteVector received;
+			ByteView sendView{ data };
+			while (sentTotal != packetLen && received.size() != packetLen)
+			{
+				if (sentTotal != packetLen)
+				{
+					auto sent = channel->GetDevice()->OnSendToChannelInternal(sendView);
+					sendView.remove_prefix(sent);
+					sentTotal += sent;
+				}
+
+				std::this_thread::sleep_for(channel->GetDevice()->GetUpdateDelay());
+
+				if (received.size() != packetLen)
+				{
+					auto receivedPackets = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
+					for (auto&& packet : receivedPackets)
+						received.Concat(packet);
+				}
+			}
+
+			if (data != received)
+				throw std::exception("Data sent and received mismatch");
+			std::cout << "OK" << std::endl;
+		}
 	}
 
 	void ChannelLinter::TestCommand(std::shared_ptr<MockDeviceBridge> const& channel)

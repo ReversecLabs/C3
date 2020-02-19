@@ -4,7 +4,7 @@ Standalone tool to ease the development and debugging of channels.
 
 ## Usage
 
-This tool provides console frontend for real channel usage
+This tool provides console frontend for channel usage
 
 1. Parse the json returned from `GetCapability()` and validate it against C3 rules:
     `-n ChannelName` 
