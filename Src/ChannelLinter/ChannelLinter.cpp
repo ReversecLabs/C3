@@ -70,7 +70,7 @@ namespace MWR::C3::Linter
 
 	ChannelLinter::ChannelLinter(AppConfig config) :
 		m_Config(std::move(config)),
-		m_ChannelData(GetChannelInfo(m_Config.m_ChannelName)),
+		m_ChannelData(GetChannelInfo(*m_Config.m_ChannelName)),
 		m_ChannelCapability(GetChannelCapability(m_ChannelData)),
 		m_CreateForm{ [this]
 			{

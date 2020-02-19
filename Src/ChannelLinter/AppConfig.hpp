@@ -13,8 +13,14 @@ namespace MWR::C3::Linter
 			return m_ChannelArguments || m_Command || m_TestChannelIO;
 		}
 
+		/// Whether -h was set
+		bool m_ShowHelp = false;
+
+		/// Whether -l was set
+		bool m_ListChannels = false;
+
 		/// Channel name e.g. Slack
-		std::string m_ChannelName;
+		std::optional<std::string> m_ChannelName;
 
 		/// String representation of arguments passed to create a channel
 		std::optional<StringVector> m_ChannelArguments;

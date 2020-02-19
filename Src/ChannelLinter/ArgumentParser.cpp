@@ -6,17 +6,22 @@ namespace MWR::C3::Linter
 	ArgumentParser::ArgumentParser(int argc, char** argv) : m_ArgParser()
 	{
 		ConfigureParser();
+		m_AppName = argv[0];
 		m_ArgParser.parse(argc, argv);
-		m_Config = CreateConfig();
+		FillConfig();
+		ValidateConfig();
 	}
 
 	void ArgumentParser::ConfigureParser()
 	{
-		m_ArgParser.addArgument("-n", "--name", 1, false);
+		m_ArgParser.addArgument("-h", "--help");
+		m_ArgParser.addArgument("-l", "--list");
+		m_ArgParser.addArgument("-n", "--name", 1);
 		m_ArgParser.addArgument("-a", "--args", '*');
 		m_ArgParser.addArgument("-c", "--complementary", '*');
 		m_ArgParser.addArgument("-i", "--test-io");
 		m_ArgParser.addArgument("-x", "--command", '+');
+		m_ArgParser.useExceptions(true);
 	}
 
 	AppConfig const& ArgumentParser::GetConfig() const
@@ -26,31 +31,57 @@ namespace MWR::C3::Linter
 
 	std::string ArgumentParser::GetUsage() const
 	{
-		return m_ArgParser.usage();
+		return "Usage: " + m_AppName.filename().string() + R"( {-h|-l|-n NAME [options]}
+Mode:
+  -h, --help            Show this message and exit.
+
+  -l, --list            List registered Channels and exit.
+
+  -n <NAME>, --name <NAME>
+                        Select channel with given <NAME> for further processing
+
+Options:
+  -a [ARGS...], --args [ARGS...]
+                        Create channel with given ARGS using the Capability/create/arguments.
+
+  -c [ARGS...], --complementary [ARGS...]
+                        Create a complementary channel with given ARGS.
+
+  -i, --test-io         Create a pair of channels and send packets through.
+                        If this option is present -a [ARGS...] must be specified.
+                        If -c is not present, complementary channel arguments are deduced by swapping
+                        parameters from Capability/create/arguments arrays.
+
+  -x <ID> [ARGS... ], --command <ID> [ARGS... ]
+                        Execute a command with a given <ID> and arguments [ARGS...]
+)";
 	}
 
-	MWR::C3::Linter::AppConfig ArgumentParser::CreateConfig() const
+	void ArgumentParser::FillConfig()
 	{
-		AppConfig config;
-		config.m_ChannelName = m_ArgParser.retrieve<std::string>("name");
+		m_Config.m_ShowHelp = m_ArgParser.exists("help");
+		m_Config.m_ListChannels = m_ArgParser.exists("list");
+
+		if (m_ArgParser.exists("name"))
+			m_Config.m_ChannelName = m_ArgParser.retrieve<std::string>("name");
 
 		if (m_ArgParser.exists("args"))
-			config.m_ChannelArguments = m_ArgParser.retrieve<std::vector<std::string>>("args");
+			m_Config.m_ChannelArguments = m_ArgParser.retrieve<std::vector<std::string>>("args");
 
 		if (m_ArgParser.exists("complementary"))
-			config.m_ComplementaryChannelArguments = m_ArgParser.retrieve<std::vector<std::string>>("complementary");
+			m_Config.m_ComplementaryChannelArguments = m_ArgParser.retrieve<std::vector<std::string>>("complementary");
 
-		config.m_TestChannelIO = m_ArgParser.exists("test-io");
+		m_Config.m_TestChannelIO = m_ArgParser.exists("test-io");
 
 		if (m_ArgParser.exists("command"))
-			config.m_Command = m_ArgParser.retrieve<StringVector>("command");
-
-		ValidateConfig();
-		return config;
+			m_Config.m_Command = m_ArgParser.retrieve<StringVector>("command");
 	}
 
 	void ArgumentParser::ValidateConfig() const
 	{
+		if(!(m_Config.m_ShowHelp || m_Config.m_ListChannels || m_Config.m_ChannelName))
+			throw std::invalid_argument("Argument error: either -h (--help), -l (--list) or -n (--name) must be specified");
+
 		if (m_Config.m_TestChannelIO && !m_Config.m_ChannelArguments)
 			throw std::invalid_argument("Argument error: specified -i (--test-io) without -a (--args)");
 
