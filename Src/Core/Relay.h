@@ -21,6 +21,8 @@ namespace MWR::C3::Core
 		virtual void DetachDevice(DeviceId const& iidOfDeviceToDetach);
 
 	protected:
+		using Distributor::On;
+
 		/// A protected constructor. @see Distributor::Distributor.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to Interface factory.

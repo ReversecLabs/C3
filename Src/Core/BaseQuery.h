@@ -8,7 +8,6 @@ namespace MWR::C3::Core
 	// Typedefs and constants.
 	using ProceduresUnderlyingType = std::int8_t;																		///< Underlying type for Procedure number field.
 	using SequenceNumberFieldUnderlyingType = std::uint32_t;															/// Underlying type for Query/Response sequence numbers (including type bits = 2 bits).
-	static constexpr unsigned s_SequenceNumberBitLength = sizeof SequenceNumberFieldUnderlyingType * 8 - 2;				///< Number of bits sequence number occupy in the SequenceNumberType type.
 
 	/// Abstract class for all Queries.
 	struct BaseQuery
@@ -83,7 +82,7 @@ namespace MWR::C3::Core
 		using SequenceNumberFieldUnderlyingType = std::uint32_t;
 
 		/// Number of bits sequence number occupy in the SequenceNumberType type.
-		static constexpr unsigned s_SequenceNumberBitLength = sizeof SequenceNumberFieldUnderlyingType * 8 - 2;
+		static constexpr unsigned s_SequenceNumberBitLength = sizeof(SequenceNumberFieldUnderlyingType) * 8 - 2;
 
 		/// Sequence number
 		const SequenceNumberFieldUnderlyingType m_SequenceNumber;

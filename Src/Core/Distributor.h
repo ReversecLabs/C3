@@ -34,6 +34,10 @@ namespace MWR::C3::Core
 		virtual void OnPacketReceived(ByteView packet, std::shared_ptr<DeviceBridge> sender);
 
 	protected:
+		/// Expose all base classes `On` methods.
+		using ProceduresN2N::RequestHandler::On;
+		using ProceduresS2G::RequestHandler::On;
+
 		/// A protected ctor.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param decryptionKey Relay's private asymmetric key.

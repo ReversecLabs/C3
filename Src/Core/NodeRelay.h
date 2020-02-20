@@ -57,13 +57,17 @@ namespace MWR::C3::Core
 		/// @param channel Interface that will be used to send the packet.
 		void PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> channel) override;
 
+		/// Expose all base classes `On` methods.
+		using Relay::On;
+		using ProceduresG2X::RequestHandler::On;
+
 		/// Handler fired when a N2N::InitializeRoute Procedure Query arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresN2N::InitializeRouteQuery&& query) override;
+		void On(ProceduresN2N::InitializeRouteQuery query) override;
 
 		/// Handler fired when a N2N::InitializeRoute Procedure arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresS2G::InitializeRouteQuery&& query) override;
+		void On(ProceduresS2G::InitializeRouteQuery query) override;
 
 		/// Handler fired when a G2X::AddRoute Procedure Query arrives.
 		/// @param query object representing the Query.

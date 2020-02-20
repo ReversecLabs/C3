@@ -284,7 +284,7 @@ void MWR::C3::Core::GateRelay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 {
 	auto decryptedPacket = query.GetQueryPacket(this->m_AuthenticationKey, this->m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -308,7 +308,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 {
 	// whole message.
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);

@@ -188,7 +188,7 @@ void MWR::C3::Core::NodeRelay::NegotiateChannel(std::shared_ptr<DeviceBridge> co
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void MWR::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery query)
 {
 	// Retrieve GRC.
 	auto grc = GetGatewayReturnChannel();
@@ -201,7 +201,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void MWR::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery query)
 {
 	throw std::logic_error{ OBF("Wrong recipient.") };
 }

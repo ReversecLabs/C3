@@ -31,7 +31,7 @@ namespace MWR::C3::Core::ProceduresG2X
 			: BaseQuery{ responseType }
 			, m_Propagation{ propagation }
 			, m_ReceiverRid{ receiverRid }
-			, m_GatewayPrivateSignature{ gatewayPrivateSignature }
+			, m_GatewayPrivateSignature{ &gatewayPrivateSignature }
 		{
 		}
 
@@ -51,11 +51,12 @@ namespace MWR::C3::Core::ProceduresG2X
 		/// @return buffer containing whole packet.
 		ByteVector ComposeQueryPacket() const override
 		{
-			return CompileProtocolHeader().Concat(Crypto::SignMessage(m_ReceiverRid.ToByteVector().Concat(GetQueryHeader()).Concat(m_QueryPacketBody), m_GatewayPrivateSignature));
+			assert(m_GatewayPrivateSignature);
+			return CompileProtocolHeader().Concat(Crypto::SignMessage(m_ReceiverRid.ToByteVector().Concat(GetQueryHeader()).Concat(m_QueryPacketBody), *m_GatewayPrivateSignature));
 		}
 
 	protected:
-		Crypto::PrivateSignature const& m_GatewayPrivateSignature;														///< Gateway signature used to sign the query.
+		const Crypto::PrivateSignature* const m_GatewayPrivateSignature;														///< Gateway signature used to sign the query.
 		ByteVector m_QueryPacketBody;																					///< Whole Query packet along with all the headers.
 
 	private:
@@ -122,7 +123,7 @@ namespace MWR::C3::Core::ProceduresG2X
 		}
 
 		/// Forwarded constructors.
-		using Query::Query;
+		using Query<ProcedureNumber>::Query;
 	};
 
 	/// Helper to template creating Queries to Route
@@ -132,7 +133,7 @@ namespace MWR::C3::Core::ProceduresG2X
 	{
 
 		/// Forwarded constructors.
-		using Query::Query;
+		using Query<ProcedureNumber>::Query;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

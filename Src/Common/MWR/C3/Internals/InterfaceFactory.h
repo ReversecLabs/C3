@@ -76,7 +76,7 @@ namespace MWR::C3
 		}
 
 		/// Get proper map member for type T.
-		template <typename T> auto& GetMap() { static_assert(false, "Template type not supported."); }
+		template <typename T> auto& GetMap() = delete;
 		template <> auto& GetMap<AbstractChannel>() { return m_Channels; }
 		template <> auto& GetMap<AbstractPeripheral>() { return m_Peripherals; }
 		template <> auto& GetMap<AbstractConnector>() { return m_Connectors; }

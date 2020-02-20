@@ -184,7 +184,7 @@ namespace MWR::C3::Core
 		struct RequestHandler
 		{
 			/// Declaration of support for InitializeRouteQuery Request.
-			virtual void On(InitializeRouteQuery&&) = 0;
+			virtual void On(InitializeRouteQuery) = 0;
 
 			/// Declaration of support for ChannelIdExchangeStep1 Request.
 			virtual void On(ChannelIdExchangeStep1) = 0;
@@ -461,7 +461,7 @@ namespace MWR::C3::Core
 		struct RequestHandler
 		{
 			/// Declaration of support for InitializeRouteQuery Request.
-			virtual void On(InitializeRouteQuery&&) = 0;
+			virtual void On(InitializeRouteQuery) = 0;
 
 			/// Default empty handler for AddDeviceResponse Request.
 			virtual void On(AddDeviceResponse) {};
