@@ -1,7 +1,9 @@
 #pragma once
-
-#include "ByteArray.h"
 #include "Utils.h"
+
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace MWR
 {
@@ -23,8 +25,8 @@ namespace MWR
 	template <typename T>
 	class ByteSizeFunctionType
 	{
-		template <typename C> static uint32_t test(decltype(MWR::ByteConverter<T>::Size(std::declval<C>())));
-		template <typename C> static uint16_t test(decltype(MWR::ByteConverter<T>::Size(std::void_t<C>)));
+		template <typename C> static uint32_t test(decltype(MWR::ByteConverter<C>::Size(std::declval<C>())));
+		template <typename C> static uint16_t test(decltype(MWR::ByteConverter<C>::Size()));
 		template <typename C> static uint8_t test(...);
 
 	public:
@@ -162,30 +164,25 @@ namespace MWR
 		template <typename T, typename ...Ts, typename = std::enable_if_t<Utils::IsOneOf<T, ByteView, ByteVector>::value>>
 		ByteVector& Concat(T const& arg, Ts const& ...args)
 		{
-			if constexpr (!sizeof...(Ts))
-			{
-				auto oldSize = size();
-				resize(oldSize + arg.size());
-				memcpy(data() + oldSize, arg.data(), arg.size());
-			}
-			else
-			{
-				Concat(arg);
+			auto oldSize = size();
+			resize(oldSize + arg.size());
+			memcpy(data() + oldSize, arg.data(), arg.size());
+			if constexpr (sizeof...(Ts) != 0)
 				Concat(args...);
-			}
 
 			return *this;
 		}
 
-		// msvc can handle fold expression in debug mode, but fails with internal compiler error in release.
+		// Some versions of msvc can handle fold expression in debug mode, but fails with internal compiler error in release.
+		// For this reason recursive version is used as deafult.
 		//template <typename ...T, typename = std::enable_if_t<((Utils::IsOneOf<T, ByteView, ByteVector>::value && ...))>>
-		//ByteVector& Concat(T const& ...arg)
+		//ByteVector& Concat(T const& ...args)
 		//{
 		//	auto oldSize = size();
-		//	auto foldSize = (arg.size() + ...);
+		//	auto foldSize = (args.size() + ...);
 		//	resize(oldSize + foldSize);
 		//	auto ptr = data() + oldSize;
-		//	((memcpy(ptr, arg.data(), arg.size()), (ptr += arg.size())), ...);
+		//	((memcpy(ptr, args.data(), args.size()), (ptr += args.size())), ...);
 		//	return *this;
 		//}
 
@@ -200,13 +197,6 @@ namespace MWR
 			return ByteVector{}.Write(arg, args...);
 		}
 
-		/// Proxy function to ByteView::Read.
-		/// This function is added for convenience, but it does not change the state of ByteVector in a way ByteView::Read moves to next stored element after each Read.
-		template<typename ...T, typename = std::void_t<decltype(std::declval<ByteView>().Read<T...>())>>
-		auto Read() const
-		{
-			return ByteView{ *this }.Read<T...>();
-		}
 
 		/// Calculate the size that the argument will take in memory
 		/// @param arg. Argument to be stored.
@@ -215,20 +205,14 @@ namespace MWR
 		template<typename T, typename ...Ts>
 		static size_t Size(T const& arg, Ts const& ...args)
 		{
-			if constexpr (!sizeof...(Ts))
-			{
-				// There is only one type to calculate size for. Find implementation of Size for that type.
-				if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::compileTime)
-					return MWR::ByteConverter<T>::Size();
-				else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::runTime)
-					return MWR::ByteConverter<T>::Size(arg);
-				else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::absent)
-					return MWR::ByteConverter<T>::To(arg).size();
-			}
-			else
-			{
+			if constexpr (sizeof...(Ts) != 0)
 				return Size(arg) + Size(args...);
-			}
+			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::compileTime)
+				return MWR::ByteConverter<T>::Size();
+			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::runTime)
+				return MWR::ByteConverter<T>::Size(arg);
+			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::absent)
+				return MWR::ByteConverter<T>::To(arg).size();
 		}
 
 	private:
@@ -237,17 +221,12 @@ namespace MWR
 		/// @param args. Rest of objects that will be handled with recursion.
 		/// @return itself to allow chaining.
 		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(MWR::ByteConverter<T>::To(std::declval<T>())), MWR::ByteVector >, int> = 0>
-		ByteVector & Store(T const& arg, Ts const& ...args)
+		ByteVector& Store(T const& arg, Ts const& ...args)
 		{
-			if constexpr (!sizeof...(Ts))
-			{
-				Concat(MWR::ByteConverter<T>::To(arg));
-			}
-			else
-			{
-				Store(arg);
+
+			Concat(MWR::ByteConverter<T>::To(arg));
+			if constexpr (sizeof...(Ts) != 0)
 				Store(args...);
-			}
 
 			return *this;
 		}
@@ -264,13 +243,13 @@ namespace MWR
 			auto elementSize = static_cast<uint32_t>(obj.size());
 			ret.resize(Size(obj));
 			memcpy(ret.data(), &elementSize, sizeof(elementSize));
-			memcpy(ret.data() + sizeof(elementSize), obj.data(), elementSize * sizeof(T::value_type));
+			memcpy(ret.data() + sizeof(elementSize), obj.data(), elementSize * sizeof(typename T::value_type));
 			return ret;
 		}
 
 		static size_t Size(T const& obj)
 		{
-			return sizeof(uint32_t) + (obj.size() * sizeof(T::value_type));
+			return sizeof(uint32_t) + (obj.size() * sizeof(typename T::value_type));
 		}
 
 		// Reading functions are part of ByteView implementation. To deserialize data include ByteView.h
