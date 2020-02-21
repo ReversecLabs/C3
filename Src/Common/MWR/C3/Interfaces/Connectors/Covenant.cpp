@@ -267,7 +267,8 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
 	
 	}
-
+	//Set the listening address to the C2-Bridge on localhost
+	this->m_ListeningPostAddress = "127.0.0.1";
 	InitializeSockets();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
