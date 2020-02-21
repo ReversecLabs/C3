@@ -247,7 +247,8 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 	std::shared_ptr<DeviceBridge> bridge;
 	if (recipient.GetAgentId() == GetAgentId())
 	{
-		bridge = m_Devices.Find([&](auto& wp) { auto sp = wp.lock(); return sp ? sp->GetDid() == directionDid : false; }).lock();
+		auto& dir = directionDid;
+		bridge = m_Devices.Find([&](auto& wp) { auto sp = wp.lock(); return sp ? sp->GetDid() == dir : false; }).lock();
 		if (!bridge)
 			throw std::runtime_error{OBF("Cannot find bridge.")};
 	}
