@@ -9,7 +9,7 @@ struct NodeRelayService : MWR::CppCommons::WinTools::AbstractService
 	{
 		// Just try and start the NodeRelay.
 		MWR::C3::Utils::CreateNodeRelayFromImagePatch([](MWR::C3::LogMessage const&, std::string_view) {}, MWR::C3::InterfaceFactory::Instance(), EmbeddedData::Instance()[0], EmbeddedData::Instance()[1], EmbeddedData::Instance()[2], EmbeddedData::Instance().FindMatching(3));
-		return NO_ERROR;
+		return { NO_ERROR };
 	}
 };
 
@@ -24,7 +24,7 @@ void Log(MWR::C3::LogMessage const& message, std::string_view sender)
 /// Entry point of the application.
 /// @param argc number of program arguments.
 /// @param argv vector of program arguments.
-int main(DWORD argc, char * argv[])
+int main(int argc, char * argv[])
 {
 	MWR::WinTools::StructuredExceptionHandling::SehWrapper(
 		[]() {
