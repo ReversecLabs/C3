@@ -103,8 +103,8 @@ namespace MWR::C3
 			Channel()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				Iface::m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				Iface::m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				this->m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				this->m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 
 			/// Callback that is periodically called for every Device to update itself.
@@ -210,8 +210,8 @@ namespace MWR::C3
 			Peripheral()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				Iface::m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				Iface::m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				this->m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				this->m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 #pragma warning( pop )
