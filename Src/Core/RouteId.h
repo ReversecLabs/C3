@@ -16,7 +16,11 @@ namespace MWR::C3
 		/// A copy-like public ctor.
 		/// @param aid Agent ID.
 		/// @param iid Channel ID.
-		constexpr RouteId(AgentId aid, DeviceId iid);
+		constexpr RouteId(AgentId aid, DeviceId iid)
+			: m_AgentId(std::move(aid))
+			, m_InterfaceId(std::move(iid))
+		{
+		}
 
 		/// Creates a RouteId object from a hex string.
 		/// @param textId text containing the identifier.
