@@ -135,7 +135,7 @@ namespace MWR::C3::Interfaces::Connectors
 		std::mutex  m_SendMutex;
 
 		/// Map of all connections.
-		std::unordered_map<std::string, std::unique_ptr<Connection>> m_ConnectionMap;
+		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 
 		bool UpdateListenerId();
 	};
@@ -158,12 +158,12 @@ bool MWR::C3::Interfaces::Connectors::Covenant::UpdateListenerId()
 	std::string authHeader = OBF("Bearer ") + this->m_token;
 	request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
 	pplx::task<web::http::http_response> task = webClient.request(request);
-	
+
 	web::http::http_response resp = task.get();
-	
+
 	if (resp.status_code() != web::http::status_codes::OK)
 		throw std::exception((OBF("[Covenant] Error getting Listeners, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
-	
+
 	//Get the json response
 	auto respData = resp.extract_string();
 	response = json::parse(respData.get());
@@ -172,7 +172,7 @@ bool MWR::C3::Interfaces::Connectors::Covenant::UpdateListenerId()
 	{
 		if (listeners[OBF("name")] != OBF("C3Bridge"))
 			continue;
-	
+
 		this->m_ListenerId = listeners[OBF("id")].get<int>();
 		this->m_ListeningPostAddress = listeners[OBF("connectAddresses")][0].get<std::string>();
 		this->m_ListeningPostPort = listeners[OBF("connectPort")];
@@ -237,7 +237,7 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		size_t start = 0, end = 0;
 		start = url.find("://") + 3;
 		end = url.find(":", start + 1);
-		
+
 		if (start == std::string::npos || end == std::string::npos || end > url.size())
 			throw std::exception(OBF("[Covenenat] Incorrect URL, must be of the form http|https://hostname|ip:port - eg https://192.168.133.171:7443"));
 
@@ -265,7 +265,7 @@ MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 
 		if(!UpdateListenerId()) //now get the id of the listener
 				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
-	
+
 	}
 	//Set the listening address to the C2-Bridge on localhost
 	this->m_ListeningPostAddress = "127.0.0.1";
@@ -366,9 +366,9 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteV
 			throw std::runtime_error(OBF("[Covenant] Non-200 HTTP code returned: ") + std::to_string(resp.status_code()));
 
 		auto payload = cppcodec::base64_rfc4648::decode(binary);
-		
+
 		//Finally connect to the socket.
-		auto connection = std::make_unique<Connection>(m_ListeningPostAddress, m_ListeningPostPort, std::static_pointer_cast<Covenant>(shared_from_this()), binderId);
+		auto connection = std::make_shared<Connection>(m_ListeningPostAddress, m_ListeningPostPort, std::static_pointer_cast<Covenant>(shared_from_this()), binderId);
 		m_ConnectionMap.emplace(std::string{ binderId }, std::move(connection));
 		return payload;
 	}
