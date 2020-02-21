@@ -72,7 +72,7 @@ size_t MWR::WinTools::WritePipe::Write(ByteView data)
 		throw std::runtime_error{ OBF("Write error, too much data.") };
 
 	ConnectNamedPipe(m_Pipe.get(), nullptr);
-	SCOPE_GUARD{ DisconnectNamedPipe(m_Pipe.get()); };
+	SCOPE_GUARD( DisconnectNamedPipe(m_Pipe.get()); );
 	DWORD written;
 	uint32_t len = static_cast<uint32_t>(data.size());
 	WriteFile(m_Pipe.get(), &len, sizeof(len), nullptr, nullptr);
@@ -99,7 +99,7 @@ MWR::ByteVector MWR::WinTools::ReadPipe::Read()
 	if (pipe == INVALID_HANDLE_VALUE)
 		return {};
 
-	SCOPE_GUARD{ CloseHandle(pipe); };
+	SCOPE_GUARD( CloseHandle(pipe); );
 
 	DWORD chunkSize;
 	uint32_t pipeBufferSize = 512u;

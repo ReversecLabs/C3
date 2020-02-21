@@ -124,6 +124,7 @@ namespace MWR::C3::Core::ProceduresG2X
 
 		/// Forwarded constructors.
 		using Query<ProcedureNumber>::Query;
+		using Query<ProcedureNumber>::CompileQueryHeader;
 	};
 
 	/// Helper to template creating Queries to Route

@@ -3,7 +3,7 @@
 /// Entry point of the application.
 /// @param argc number of program arguments.
 /// @param argv vector of program arguments.
-int main(DWORD argc, char* argv[])
+int main(int argc, char* argv[])
 try
 {
 	std::cout << "Custom Command and Control - Channel linter. BUILD: " << C3_BUILD_VERSION << std::endl;
