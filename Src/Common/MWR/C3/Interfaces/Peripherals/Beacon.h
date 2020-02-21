@@ -30,8 +30,8 @@ namespace MWR::C3::Interfaces::Peripherals
 		ByteVector OnReceiveFromPeripheral() override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability description in JSON format.
+		static const char* GetCapability();
 
 		/// Close Peripheral Beacon
 		/// Calls superclass Close and prepares to exit without deadlocking

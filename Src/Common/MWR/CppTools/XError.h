@@ -100,7 +100,7 @@ namespace MWR::CppCommons::CppTools
 	{
 		/// Public ctor.
 		/// @param value object value
-		XErrorImpl(UnderlyingType value) : XErrorBase(value) { }
+		XErrorImpl(UnderlyingType value) : XErrorBase<UnderlyingType>(value) { }
 
 		/// Success translator.
 		/// @return true if current state of the object indicates success.

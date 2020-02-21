@@ -26,8 +26,8 @@ namespace MWR::C3::Interfaces::Peripherals
 		ByteVector OnReceiveFromPeripheral() override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability description in JSON format.
+		static const char* GetCapability();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.

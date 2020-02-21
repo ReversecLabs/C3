@@ -18,8 +18,8 @@ namespace MWR::C3::Interfaces::Connectors
 		void OnCommandFromBinder(ByteView binderId, ByteView command) override;
 
 		/// Returns json with Commands.
-		/// @return Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability in JSON format
+		static const char* GetCapability();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.
@@ -161,7 +161,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::MockServer::PeripheralCreationC
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteView MWR::C3::Interfaces::Connectors::MockServer::GetCapability()
+const char* MWR::C3::Interfaces::Connectors::MockServer::GetCapability()
 {
 	return R"(
 {

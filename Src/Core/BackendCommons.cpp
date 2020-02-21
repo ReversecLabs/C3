@@ -25,7 +25,7 @@ namespace
 				{
 					try
 					{
-						return cppcodec::base64_rfc4648::decode(keys[entryName].get<std::string>());
+						return cppcodec::base64_rfc4648::decode<MWR::ByteVector>(keys[entryName].get<std::string>());
 					}
 					catch (std::exception& exception)
 					{

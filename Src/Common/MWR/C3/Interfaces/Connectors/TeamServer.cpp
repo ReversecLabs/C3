@@ -31,8 +31,8 @@ namespace MWR::C3::Interfaces::Connectors
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability in JSON format
+		static const char* GetCapability();
 
 	private:
 		/// Represents a single C3 <-> Team Server connection, as well as each beacon in network.
@@ -208,7 +208,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::OnRunCommand(ByteVi
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteView MWR::C3::Interfaces::Connectors::TeamServer::GetCapability()
+const char* MWR::C3::Interfaces::Connectors::TeamServer::GetCapability()
 {
 	return R"(
 {
@@ -340,7 +340,7 @@ MWR::ByteVector MWR::C3::Interfaces::Connectors::TeamServer::Connection::Receive
 		case 0:
 			return {};																									//< The connection has been gracefully closed.
 
-		case SOCKET_ERROR:
+		case static_cast<DWORD>(SOCKET_ERROR):
 			throw MWR::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 		}
 

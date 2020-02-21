@@ -65,7 +65,7 @@ template<typename UnderlyingIntegerType>
 std::string MWR::C3::Identifier<UnderlyingIntegerType>::ToString() const
 {
 	// Initialize buffers and pointers.
-	std::string ret(sizeof UnderlyingIntegerType * 2 + 1, '0');
+	std::string ret(sizeof(UnderlyingIntegerType) * 2 + 1, '0');
 	char* rp = ret.data();
 
 	// Note: this function adds a null terminator.
@@ -74,7 +74,7 @@ std::string MWR::C3::Identifier<UnderlyingIntegerType>::ToString() const
 		sprintf_s(&rp[i * 2], 3, OBF("%02hhX"), p[sizeof(UnderlyingIntegerType) - i - 1]);
 
 	// Remove the trailing null.
-	return ret.substr(0, sizeof UnderlyingIntegerType * 2);
+	return ret.substr(0, sizeof(UnderlyingIntegerType) * 2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -61,7 +61,7 @@ namespace MWR::C3
 			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateDelay, Iface::s_MaxUpdateDelay);
 #ifdef		C3_IS_GATEWAY
 			ret.m_Name = GetInterfaceName<Iface>();
-			ret.m_Capability = EnsureDefaultCapability<Iface>::GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
+			ret.m_Capability = EnsureDefaultCapability<Iface>::template GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
 #endif		//C3_IS_GATEWAY
 
 			return ret;

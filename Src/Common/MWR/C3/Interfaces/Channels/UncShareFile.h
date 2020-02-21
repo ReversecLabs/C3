@@ -20,8 +20,8 @@ namespace MWR::C3::Interfaces::Channels
 		std::vector<ByteVector> OnReceiveFromChannel();
 
 		/// Get channel capability.
-		/// @returns ByteView view of channel capability.
-		static ByteView GetCapability();
+		/// @returns Channel capability in JSON format
+		static const char* GetCapability();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.
