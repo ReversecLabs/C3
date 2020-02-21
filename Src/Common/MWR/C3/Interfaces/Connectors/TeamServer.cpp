@@ -312,7 +312,7 @@ void MWR::C3::Interfaces::Connectors::TeamServer::Connection::Send(ByteView data
 
 	std::unique_lock<std::mutex> lock{ owner->m_SendMutex };
 	// Write four bytes indicating the length of the next chunk of data.
-	DWORD chunkLength = static_cast<DWORD>(data.size()), bytesWritten = 0;
+	DWORD chunkLength = static_cast<DWORD>(data.size());
 	if (SOCKET_ERROR == send(m_Socket, reinterpret_cast<char*>(&chunkLength), 4, 0))
 		throw MWR::SocketsException(OBF("Error sending to Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 

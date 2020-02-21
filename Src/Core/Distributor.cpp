@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Core::Distributor::Distributor(LoggerCallback callbackOnLog, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey)
 	: m_CallbackOnLog{ callbackOnLog }
-	, m_DecryptionKey{ decryptionKey }
 	, m_BroadcastKey{ broadcastKey }
+	, m_DecryptionKey{ decryptionKey }
 {
 }
 

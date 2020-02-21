@@ -49,8 +49,6 @@ std::map<std::string, std::string> MWR::Slack::ListChannels()
 
 	json response = SendHttpRequest(url, OBF("application/json"), NULL);
 
-	size_t size = response[OBF("channels")].size();
-
 	for (auto &channel : response[OBF("channels")])
 	{
 		std::string cName = channel[OBF("name")];
@@ -206,8 +204,6 @@ void MWR::Slack::WriteReply(std::string const &text, std::string const &timestam
 		return this->WriteReplyLarge(text, timestamp);
 	}
 
-	int totalSent = 0;
-
 	json j;
 	j[OBF("channel")] = this->m_Channel;
 	j[OBF("text")] = text;
@@ -235,7 +231,6 @@ void MWR::Slack::WriteReplyLarge(std::string const &data, std::string const &ts)
 	std::string ret;
 	int start = 0;
 	int size = static_cast<int>(data.length());
-	int end = size;
 
 	//Write 40k character messages at a time
 	while (size > 40000)

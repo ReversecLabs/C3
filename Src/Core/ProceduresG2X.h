@@ -15,9 +15,9 @@ namespace MWR::C3::Core::ProceduresG2X
 		/// @param packetAfterProcedureNumber body of query.
 		QueryG2X(std::weak_ptr<DeviceBridge> sender, RouteId destinationRid, ProceduresUnderlyingType procedureNo, ByteView packetAfterProcedureNumber)
 			: BaseQuery{ sender }
-			, m_ReceiverRid{ destinationRid }
+			, m_GatewayPrivateSignature{nullptr}
 			, m_QueryPacketBody{ packetAfterProcedureNumber }
-			, m_GatewayPrivateSignature{} // FIXME it's just bad to default construct this
+			, m_ReceiverRid{ destinationRid }
 		{
 			// In the future - parse packet. Currently it's not used anywhere.
 		}
@@ -29,9 +29,9 @@ namespace MWR::C3::Core::ProceduresG2X
 		/// @param responseType - requested response type [Not used]
 		QueryG2X(Propagation propagation, RouteId receiverRid, Crypto::PrivateSignature const& gatewayPrivateSignature, ResponseType responseType = ResponseType::None)
 			: BaseQuery{ responseType }
+			, m_GatewayPrivateSignature{ &gatewayPrivateSignature }
 			, m_Propagation{ propagation }
 			, m_ReceiverRid{ receiverRid }
-			, m_GatewayPrivateSignature{ &gatewayPrivateSignature }
 		{
 		}
 
@@ -125,6 +125,7 @@ namespace MWR::C3::Core::ProceduresG2X
 		/// Forwarded constructors.
 		using Query<ProcedureNumber>::Query;
 		using Query<ProcedureNumber>::CompileQueryHeader;
+		using Query<ProcedureNumber>::m_QueryPacketBody;
 	};
 
 	/// Helper to template creating Queries to Route
@@ -140,7 +141,7 @@ namespace MWR::C3::Core::ProceduresG2X
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// Query agent to run a command
-	struct RunCommandOnAgentQuery : QueryToAgent<0>
+	struct RunCommandOnAgentQuery final : QueryToAgent<0>
 	{
 		/// Create new instance.
 		/// @param receiverRid - destination route id
@@ -163,7 +164,7 @@ namespace MWR::C3::Core::ProceduresG2X
 	};
 
 	/// Query to add a new route (eg. to new agent)
-	struct AddRoute : QueryToRoute<1>
+	struct AddRoute final : QueryToRoute<1>
 	{
 		/// Create new instance.
 		/// @param receiverRid - destination route id
@@ -184,7 +185,7 @@ namespace MWR::C3::Core::ProceduresG2X
 	};
 
 	/// Query agent to run command on it's device
-	struct RunCommandOnDeviceQuery : QueryToAgent<2>
+	struct RunCommandOnDeviceQuery final : QueryToAgent<2>
 	{
 		/// Create new instance.
 		/// @param receiverRid - destination route id
@@ -208,7 +209,7 @@ namespace MWR::C3::Core::ProceduresG2X
 	};
 
 	/// Query agent to run command on it's device
-	struct DeliverToBinder : QueryToAgent<3>
+	struct DeliverToBinder final : QueryToAgent<3>
 	{
 		/// Create new instance.
 		/// @param receiverRid - destination route id

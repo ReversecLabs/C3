@@ -86,11 +86,13 @@ void MWR::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std::sha
 void MWR::C3::Core::GateRelay::PostCommandToPeripheral(ByteView command, RouteId routeId)
 {
  	// Check if Peripheral is attached to Gateway.
- 	if (routeId.GetAgentId() == GetAgentId())
+	if (routeId.GetAgentId() == GetAgentId())
+	{
  		if (auto peripheral = m_Devices.Find([&](auto const& e) {auto sp = e.lock(); return sp &&  sp->GetDid() == routeId.GetInterfaceId(); }).lock(); peripheral)
  			return peripheral->OnCommandFromConnector(command);
  		else
  			throw std::runtime_error{ "Couldn't find Gateway's recipient Peripheral." };
+	}
 
 	auto route = FindRoute(routeId.GetAgentId());
 	if (!route)

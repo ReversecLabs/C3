@@ -3,7 +3,7 @@
 namespace MWR::C3::Linter
 {
 	/// Device bridge used to mock its functionality
-	class MockDeviceBridge : public MWR::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
+	class MockDeviceBridge final : public MWR::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
 	{
 	public:
 		/// Create Mock device bridge to device

@@ -14,12 +14,12 @@ namespace
 		pSA->nLength = sizeof(SECURITY_ATTRIBUTES);
 		pSA->bInheritHandle = true;
 
-		TCHAR* szSD = TEXT("D:(A;ID;FA;;;S-1-1-0)");
+		const wchar_t* szSD = OBF_W(L"D:(A;ID;FA;;;S-1-1-0)");
 
 		if (NULL == pSA)
 			return FALSE;
 
-		return ConvertStringSecurityDescriptorToSecurityDescriptor(
+		return ConvertStringSecurityDescriptorToSecurityDescriptorW(
 			szSD,
 			SDDL_REVISION_1,
 			&(pSA->lpSecurityDescriptor),

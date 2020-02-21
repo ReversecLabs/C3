@@ -4,12 +4,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::C3::Core::DeviceBridge::DeviceBridge(std::shared_ptr<Relay>&& relay, DeviceId did, HashT typeNameHash, std::shared_ptr<Device>&& device, bool isNegotiationChannel, bool isSlave, ByteVector args /*= ByteVector()*/)
-	: m_Relay{ relay }
-	, m_Device{ std::move(device) }
+	: m_IsNegotiationChannel(isNegotiationChannel)
+	, m_IsSlave(isSlave)
 	, m_Did{ did }
 	, m_TypeNameHash(typeNameHash)
-	, m_IsNegotiationChannel(isNegotiationChannel)
-	, m_IsSlave(isSlave)
+	, m_Relay{ relay }
+	, m_Device{ std::move(device) }
 {
 	if (!isNegotiationChannel)
 		return;

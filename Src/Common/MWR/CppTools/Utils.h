@@ -53,7 +53,7 @@ namespace MWR::Utils
 		T randomString;
 		randomString.resize(size);
 		for (auto& e : randomString)
-			e = static_cast<T::value_type>(charset[uni(gen)]);
+			e = static_cast<typename T::value_type>(charset[uni(gen)]);
 
 		return randomString;
 	}

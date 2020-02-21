@@ -103,8 +103,8 @@ namespace MWR::C3
 			Channel()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				Iface::m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				Iface::m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 
 			/// Callback that is periodically called for every Device to update itself.
@@ -195,7 +195,7 @@ namespace MWR::C3
 		class Connector : public AbstractConnector
 		{
 		};
-#endif C3_IS_GATEWAY
+#endif // C3_IS_GATEWAY
 
 #pragma warning( push )
 #pragma warning( disable : 4307)
@@ -210,8 +210,8 @@ namespace MWR::C3
 			Peripheral()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				Iface::m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				Iface::m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 #pragma warning( pop )
