@@ -50,7 +50,7 @@ namespace MWR::C3
 	namespace Utils
 	{
 		/// Gate/Node Relay starters logger callback prototype.
-		using LoggerCallback = void(*)(LogMessage const&, std::string_view*);
+		using LoggerCallback = void(*)(LogMessage const&, std::string_view);
 
 		/// Creates a Gateway.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
@@ -70,7 +70,7 @@ namespace MWR::C3
 		/// @param message information to log.
 		/// @param sender ID of the Interface reporting the message. If sender.empty() then the message comes from internal Relay mechanisms. If sender is null then it comes from outside the Relay.
 		/// @return Constructed string.
-		std::string ConvertLogMessageToConsoleText(std::string_view relayName, MWR::C3::LogMessage const& message, std::string_view* sender);
+		std::string ConvertLogMessageToConsoleText(std::string_view relayName, MWR::C3::LogMessage const& message, std::string_view sender);
 	}
 
 	/// Device bridge between C3 Core and C3 Mantle.

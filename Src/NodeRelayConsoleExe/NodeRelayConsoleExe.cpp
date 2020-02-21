@@ -8,12 +8,12 @@ struct NodeRelayService : MWR::CppCommons::WinTools::AbstractService
 	MWR::CppCommons::CppTools::XError<MWR::CppCommons::CppTools::SystemErrorCode> OnServiceRun() override
 	{
 		// Just try and start the NodeRelay.
-		MWR::C3::Utils::CreateNodeRelayFromImagePatch([](MWR::C3::LogMessage const&, std::string_view*) {}, MWR::C3::InterfaceFactory::Instance(), EmbeddedData::Instance()[0], EmbeddedData::Instance()[1], EmbeddedData::Instance()[2], EmbeddedData::Instance().FindMatching(3));
+		MWR::C3::Utils::CreateNodeRelayFromImagePatch([](MWR::C3::LogMessage const&, std::string_view) {}, MWR::C3::InterfaceFactory::Instance(), EmbeddedData::Instance()[0], EmbeddedData::Instance()[1], EmbeddedData::Instance()[2], EmbeddedData::Instance().FindMatching(3));
 		return NO_ERROR;
 	}
 };
 
-void Log(MWR::C3::LogMessage const& message, std::string_view* sender)
+void Log(MWR::C3::LogMessage const& message, std::string_view sender)
 {
 	// Synchronize and show message on screen.
 	static std::mutex mutex;

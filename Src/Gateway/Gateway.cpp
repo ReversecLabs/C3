@@ -10,7 +10,7 @@ int main(int argc, char * argv[])
 	try
 	{
 		// Helper lambda used to render Log entries on the screen.
-		auto Log = [](MWR::C3::LogMessage const& message, std::string_view* sender)
+		auto Log = [](MWR::C3::LogMessage const& message, std::string_view sender)
 		{
 			// Synchronize and print.
 			static std::mutex mutex;

@@ -17,7 +17,7 @@ extern "C" __declspec(dllexport) void StartNodeRelay(bool leaveImmediately)
 		try
 		{
 			auto relay = MWR::C3::Utils::CreateNodeRelayFromImagePatch(
-				[](MWR::C3::LogMessage const&, std::string_view*) {},
+				[](MWR::C3::LogMessage const&, std::string_view) {},
 				MWR::C3::InterfaceFactory::Instance(),
 				EmbeddedData::Instance()[0],
 				EmbeddedData::Instance()[1],

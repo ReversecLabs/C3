@@ -20,7 +20,7 @@ namespace MWR::C3::Core
 	/// Relay's lowest layer - responsible for managing packet transmission.
 	struct Distributor : std::enable_shared_from_this<Distributor>, RouteManager, ProceduresN2N::RequestHandler, ProceduresS2G::RequestHandler
 	{
-		using LoggerCallback = void(*)(LogMessage const&, std::string_view*);
+		using LoggerCallback = Utils::LoggerCallback;
 
 		/// Logs a message. Used by internal Relay mechanisms and attached Interfaces to report errors, warnings, informations and debug messages.
 		/// @param message information to log.
