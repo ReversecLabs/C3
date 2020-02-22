@@ -22,7 +22,7 @@ Finally, for ease of integration it helps if the chosen framework provides acces
 
 At a high level, the objective of integration would result in the communication flow described in the figure below:
 
-<img src="../ContributionGuide/figure1.png"/>
+<img src="./ContributionGuide/figure1.png"/>
 
 
 
