@@ -136,7 +136,8 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 }
 ```
 The resulting form is shown in the next figure. Note that no changes were made to the actual web interface of C3.
-FIGURE2
+
+<img src="./ContributionGuide/figure2.png"
 
 **Stage 2 - Handle User Input**
 
@@ -502,7 +503,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 
 The final stage of this integration involves making a change as to how the C3 Relay communicates with the SMB Grunt. Simply put, C3 needs to match how the C2 framework it is communicating with reads and writes data. For example, the SMB Grunt writes data as such:
 
-```c#
+```csharp
 public static void Write(PipeStream pipe, byte[] bytes)
         {
             byte[] compressed = Compress(bytes);
