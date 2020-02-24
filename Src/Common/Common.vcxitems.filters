@@ -92,6 +92,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Compression.h" /> b4902e76... Add zlib and Compression
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Compression.h" />
   </ItemGroup>
 </Project>
