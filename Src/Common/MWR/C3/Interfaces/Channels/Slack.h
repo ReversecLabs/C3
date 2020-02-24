@@ -10,6 +10,9 @@ namespace MWR::C3::Interfaces::Channels
 		/// @param arguments factory arguments.
 		Slack(ByteView arguments);
 
+		/// Destructor
+		virtual ~Slack() = default;
+
 		/// OnSend callback implementation.
 		/// @param packet data to send to Channel.
 		/// @returns size_t number of bytes successfully written.

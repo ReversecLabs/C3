@@ -15,6 +15,9 @@ namespace MWR::C3
 	/// Abstract Relay.
 	struct Relay
 	{
+		/// Destructor
+		virtual ~Relay() = default;
+
 		/// Waits for Relay to be terminated internally by a C3 API Command (e.g. from WebController).
 		virtual void Join() = 0;
 	};
@@ -76,6 +79,9 @@ namespace MWR::C3
 	/// Device bridge between C3 Core and C3 Mantle.
 	struct AbstractDeviceBridge
 	{
+		/// Destructor
+		virtual ~AbstractDeviceBridge() = default;
+
 		/// Called by Relay just after the Device creation.
 		virtual void OnAttach() = 0;
 
@@ -133,6 +139,9 @@ namespace MWR::C3
  	/// Connector bridge between C3 Core and C3 Mantle.
  	struct AbstractConnectorBridge
 	{
+		/// Destructor
+		virtual ~AbstractConnectorBridge() = default;
+
 		/// Called by Relay just after creation of the Connector.
 		virtual void OnAttach() = 0;
 

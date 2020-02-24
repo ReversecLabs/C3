@@ -12,6 +12,9 @@ namespace MWR::C3::Interfaces::Connectors
 		/// @param arguments factory arguments.
 		MockServer(ByteView);
 
+		/// Destructor
+		virtual ~MockServer() = default;
+
 		/// OnCommandFromBinder callback implementation.
 		/// @param binderId Identifier of Peripheral who sends the Command.
 		/// @param command full Command with arguments.

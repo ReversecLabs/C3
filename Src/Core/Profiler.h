@@ -116,6 +116,9 @@ namespace MWR::C3::Core
 			/// @param owner - Profile that owns this element
 			ProfileElement(std::weak_ptr<Profiler> owner);
 
+			/// Destructor
+			virtual ~ProfileElement() = default;
+
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
 			virtual json CreateProfileSnapshot() const;
@@ -137,6 +140,9 @@ namespace MWR::C3::Core
 			/// @param id Device Identifier.
 			/// @param typeHash Type of the Device.
 			Device(std::weak_ptr<Profiler> owner, Id id, HashT typeHash);
+
+			/// Destructor
+			virtual ~Device() = default;
 
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
@@ -162,6 +168,9 @@ namespace MWR::C3::Core
 			/// @param typeHash Type of the Device.
 			Channel(std::weak_ptr<Profiler> owner, Id id, HashT typeHash, bool isReturnChannel = false, bool isNegotiationChannel = false);
 
+			/// Destructor
+			virtual ~Channel() = default;
+
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
 			json CreateProfileSnapshot() const override;
@@ -182,6 +191,9 @@ namespace MWR::C3::Core
 			/// @param outgoingDeviceId
 			/// @param isNeighbour - if agent specified by rid is neighbouring the owner agent
 			Route(std::weak_ptr<Profiler> owner, RouteId rid, Device::Id outgoingDeviceId, bool isNeighbour = false);
+
+			/// Destructor
+			virtual ~Route() = default;
 
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
@@ -207,6 +219,9 @@ namespace MWR::C3::Core
 			/// @param encryptionKey asymmetric public key used to encrypt all outgoing transmission.
 			/// @param isBanned flag indicating whether Agent should be added to the black-list.
 			Relay(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, int32_t lastSeen);
+
+			/// Destructor
+			virtual ~Relay() = default;
 
 			using Id = AgentId;																							///< ID typedef.
 			Id m_Id;																									///< Dynamic ID of the Relay.
@@ -276,6 +291,9 @@ namespace MWR::C3::Core
 			/// @param hostInfo agent's host information
 			Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, MWR::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo);
 
+			/// Destructor
+			virtual ~Agent() = default;
+
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
 			json CreateProfileSnapshot() const override;
@@ -331,6 +349,9 @@ namespace MWR::C3::Core
 			/// A public ctor.
 			/// @param gateway pointer to Gate Relay.
 			Gateway(std::weak_ptr<Profiler> owner, std::string name, std::shared_ptr<GateRelay> gateway);
+
+			/// Destructor
+			virtual ~Gateway() = default;
 
 			/// Reprofile: TurnOnConnector.
 			/// @param typeNameHash type name hash of a Connector that was turned on.
@@ -415,6 +436,9 @@ namespace MWR::C3::Core
 				/// @param connector the Connector object.
 				Connector(std::weak_ptr<Profiler> owner, Id id, std::shared_ptr<ConnectorBridge> connector);
 
+				/// Destructor
+				virtual ~Connector() = default;
+
 				/// Dumps Profile to JSON.
 				/// @return Network Profile in JSON format.
 				json CreateProfileSnapshot() const override;
@@ -434,10 +458,10 @@ namespace MWR::C3::Core
 
 			struct CreateCommand
 			{
-				const uint16_t m_Id;
-				const uint32_t m_Hash;
-				const bool m_IsDevice;
-				const bool m_IsNegotiableChannel;
+				uint16_t m_Id;
+				uint32_t m_Hash;
+				bool m_IsDevice;
+				bool m_IsNegotiableChannel;
 			};
 
 			std::vector<CreateCommand> m_CreateCommands;

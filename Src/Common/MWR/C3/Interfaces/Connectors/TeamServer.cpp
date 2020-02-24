@@ -11,7 +11,7 @@ namespace MWR::C3::Interfaces::Connectors
 		TeamServer(ByteView arguments);
 
 		/// A public destructor.
-		~TeamServer();
+		virtual ~TeamServer();
 
 		/// OnCommandFromConnector callback implementation.
 		/// @param binderId Identifier of Peripheral who sends the Command.

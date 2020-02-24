@@ -183,6 +183,9 @@ namespace MWR::C3::Core
 		/// Class representing support for C3 N2N Requests.
 		struct RequestHandler
 		{
+			/// Destructor
+			virtual ~RequestHandler() = default;
+
 			/// Declaration of support for InitializeRouteQuery Request.
 			virtual void On(InitializeRouteQuery) = 0;
 
@@ -460,6 +463,9 @@ namespace MWR::C3::Core
 		/// Class representing support for C3 N2N Requests.
 		struct RequestHandler
 		{
+			/// Destructor
+			virtual ~RequestHandler() = default;
+
 			/// Declaration of support for InitializeRouteQuery Request.
 			virtual void On(InitializeRouteQuery) = 0;
 

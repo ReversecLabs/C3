@@ -235,6 +235,9 @@ namespace MWR::C3::Core::ProceduresG2X
 	/// Base class for G2X queries request handler
 	struct RequestHandler
 	{
+		/// Destructor
+		virtual ~RequestHandler() = default;
+
 		/// empty RunCommandOnAgentQuery handler
 		virtual void On(RunCommandOnAgentQuery) {};
 		/// empty AddRoute handler

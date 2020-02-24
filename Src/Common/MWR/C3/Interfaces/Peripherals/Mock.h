@@ -17,6 +17,9 @@ namespace MWR::C3::Interfaces::Peripherals
 		/// @param ByteView unused.
 		Mock(ByteView);
 
+		/// Destructor
+		virtual ~Mock() = default;
+
 		/// Sending callback implementation.
 		/// @param packet to send to the Implant.
 		void OnCommandFromConnector(ByteView packet) override;

@@ -17,6 +17,9 @@ namespace MWR::C3::Core
 		// Friendships.
 		friend struct Profiler;
 
+		/// Destructor
+		virtual ~GateRelay() = default;
+
 		/// Factory method.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to interface factory.

@@ -19,7 +19,7 @@ namespace MWR::C3::Interfaces::Peripherals
 		Beacon(ByteView arguments);
 
 		/// Destructor
-		~Beacon();
+		virtual ~Beacon();
 
 		/// Sending callback implementation.
 		/// @param packet to send to the Implant.

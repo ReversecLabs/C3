@@ -25,6 +25,9 @@ namespace MWR::C3::Linter
 			Binary,
 		};
 
+		/// Destructor
+		virtual ~FormElement() = default;
+
 		/// Validate input against argument and set as value
 		virtual void ValidateAndSet(std::string_view input) = 0;
 

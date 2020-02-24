@@ -7,6 +7,9 @@ namespace MWR::C3::Core
 	/// Relay class specialization that implements a "client" Relay.
 	struct NodeRelay : Relay, ProceduresG2X::RequestHandler
 	{
+		/// Destructor
+		virtual ~NodeRelay() = default;
+
 		/// Factory method.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to interface factory.

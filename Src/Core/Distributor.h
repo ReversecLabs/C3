@@ -22,6 +22,9 @@ namespace MWR::C3::Core
 	{
 		using LoggerCallback = Utils::LoggerCallback;
 
+		/// Destructor
+		virtual ~Distributor() = default;
+
 		/// Logs a message. Used by internal Relay mechanisms and attached Interfaces to report errors, warnings, informations and debug messages.
 		/// @param message information to log.
 		/// @param sender Interface reporting the message. If sender.IsNull() then the message comes from internal Relay mechanisms.

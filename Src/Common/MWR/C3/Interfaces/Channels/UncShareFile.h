@@ -10,6 +10,9 @@ namespace MWR::C3::Interfaces::Channels
 		/// @param arguments factory arguments.
 		UncShareFile(ByteView arguments);
 
+		/// Destructor
+		virtual ~UncShareFile() = default;
+
 		/// OnSend callback implementation.
 		/// @param blob data to send to Channel.
 		/// @returns size_t number of bytes successfully written.
