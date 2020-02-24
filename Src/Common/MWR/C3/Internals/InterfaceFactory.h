@@ -101,7 +101,7 @@ namespace MWR::C3
 	std::string GetInterfaceName()
 	{
 #		ifndef _MSC_VER
-		static_assert(false, "Current implementation supports only MSVC.");
+		static_assert(false, "Current implementation supports only MSVC and clang-cl.");
 #		endif
 
 		std::string_view fullName = __FUNCSIG__;
