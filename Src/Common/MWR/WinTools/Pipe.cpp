@@ -125,8 +125,18 @@ MWR::ByteVector MWR::WinTools::ReadPipe::Read()
 MWR::WinTools::DuplexPipe::DuplexPipe(ByteView inputPipeName, ByteView outputPipeName)
 	: m_InputPipe(inputPipeName), m_OutputPipe(outputPipeName)
 {
-
 }
+
+
+
+/* write a frame to a file */
+void write_frame(HANDLE my_handle, char* buffer, DWORD length) {
+	DWORD wrote = 0;
+	WriteFile(my_handle, (void*)& length, 4, &wrote, NULL);
+	WriteFile(my_handle, buffer, length, &wrote, NULL);
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::ByteVector MWR::WinTools::DuplexPipe::Read()
@@ -153,6 +163,39 @@ MWR::WinTools::AlternatingPipe::AlternatingPipe(ByteView pipename)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+MWR::ByteVector MWR::WinTools::AlternatingPipe::ReadCov()
+{
+	DWORD temp = 0, total = 0;
+	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
+		return{};
+
+	//The SMB Grunt writes the size of the chunk in a loop like the below, mimic that here.
+	BYTE size[4] = { 0 };
+	int totalReadBytes = 0;
+	for(int i = 0; i < 4; i++)
+		ReadFile(m_Pipe.get(), size + i, 1, &temp, NULL);
+	
+
+	DWORD32 len = (size[0] << 24) + (size[1] << 16) + (size[2] << 8) + size[3];
+
+	ByteVector buffer;
+	buffer.resize(len);
+
+	//Now read the actual data
+	DWORD read = 0;
+	temp = 0;
+	while (total < len) {
+		bool didRead = ReadFile(m_Pipe.get(), (LPVOID)& buffer[read], len - total, &temp,
+			NULL);
+		total += temp;
+		read += temp;
+	}
+
+	return buffer;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 MWR::ByteVector MWR::WinTools::AlternatingPipe::Read()
 {
 	// Wait other side to read the pipe.
@@ -175,6 +218,40 @@ MWR::ByteVector MWR::WinTools::AlternatingPipe::Read()
 	return buffer;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+size_t MWR::WinTools::AlternatingPipe::WriteCov(ByteView data)
+{
+	DWORD written;
+	int start = 0, size = data.size();
+	int end = 0;
+
+	uint32_t len = static_cast<uint32_t>(data.size());
+	BYTE* bytes = (BYTE*)& len;
+	DWORD32 chunkLength = (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
+
+	//Write the length first
+	WriteFile(m_Pipe.get(), &chunkLength, 4, nullptr, nullptr);
+	
+	//We have to write in chunks of 1024, this is mirrored in how the Grunt reads.
+	const uint8_t* d = &data.front();
+	while (size > 1024)
+	{
+		WriteFile(m_Pipe.get(), d+start, 1024, &written, nullptr);
+		start += 1024;
+		size -= 1024;
+	}
+	WriteFile(m_Pipe.get(), d + start, size, &written, nullptr);
+	start += size;
+
+	if (start != data.size())
+		throw std::runtime_error{ OBF("Write pipe failed ") };
+
+	// Let Read() know that the pipe is ready to be read.
+	SetEvent(m_Event.get());
+
+	return data.size();
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t MWR::WinTools::AlternatingPipe::Write(ByteView data)
 {
@@ -192,3 +269,4 @@ size_t MWR::WinTools::AlternatingPipe::Write(ByteView data)
 
 	return data.size();
 }
+

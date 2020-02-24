@@ -17,11 +17,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Slack.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\MockServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Connectors\TeamServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\InterfaceFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Compression.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MWR\Slack\SlackApi.cpp" />
@@ -51,6 +54,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\Slack.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Channels\UncShareFile.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Beacon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Interfaces\Peripherals\Grunt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\AutomaticRegistrator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\BackendCommons.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\C3\Internals\HasConstructor.h" />
@@ -64,6 +68,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\ByteView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Compression.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Encryption.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Hash.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\CppTools\Payload.h" />
@@ -99,5 +104,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\UniqueHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MWR\WinTools\XError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
   </ItemGroup>
 </Project>
