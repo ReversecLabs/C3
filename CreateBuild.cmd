@@ -3,7 +3,7 @@
 @REM Adjust values below before running this script.
 @SETLOCAL
 @SET BUILD_MAJOR_NO=1
-@SET BUILD_MINOR_NO=0
+@SET BUILD_MINOR_NO=1
 @SET BUILD_REVISION_NO=0
 @SET BUILD_PREFIX=C3
 @SET BUILD_HEADER_FILE=Src\Common\C3_BUILD_VERSION_HASH_PART.hxx
@@ -54,6 +54,8 @@ COPY "Bin\\GatewayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bi
 COPY "Bin\\NodeRelayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayConsoleExe_r86.exe" || GOTO :ERROR
 COPY "Bin\\NodeRelayDll_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r64.dll" || GOTO :ERROR
 COPY "Bin\\NodeRelayDll_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r86.dll" || GOTO :ERROR
+COPY "Bin\\CebuLoader_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r64.dll" || GOTO :ERROR
+COPY "Bin\\CebuLoader_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r86.dll" || GOTO :ERROR
 
 ECHO.
 ECHO Copying sample Gateway configuration...
@@ -63,7 +65,7 @@ ECHO.
 ECHO Building WebController...
 IF EXIST "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController" (RMDIR /s /q "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController") || GOTO :ERROR
 dotnet publish -c Release "Src\\WebController\\Backend" || GOTO :ERROR
-XCOPY /s /q "Bin\\WebController\\Release\\netcoreapp2.2\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
+XCOPY /s /q "Bin\\WebController\\Release\\netcoreapp2.1\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
 
 ECHO.
 ECHO Copying scripts...
