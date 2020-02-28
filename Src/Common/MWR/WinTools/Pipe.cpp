@@ -174,7 +174,7 @@ MWR::ByteVector MWR::WinTools::AlternatingPipe::ReadCov()
 	int totalReadBytes = 0;
 	for(int i = 0; i < 4; i++)
 		ReadFile(m_Pipe.get(), size + i, 1, &temp, NULL);
-	
+
 
 	DWORD32 len = (size[0] << 24) + (size[1] << 16) + (size[2] << 8) + size[3];
 
@@ -223,8 +223,7 @@ MWR::ByteVector MWR::WinTools::AlternatingPipe::Read()
 size_t MWR::WinTools::AlternatingPipe::WriteCov(ByteView data)
 {
 	DWORD written;
-	int start = 0, size = data.size();
-	int end = 0;
+	DWORD start = 0, size = static_cast<DWORD>(data.size());
 
 	uint32_t len = static_cast<uint32_t>(data.size());
 	BYTE* bytes = (BYTE*)& len;
@@ -232,12 +231,12 @@ size_t MWR::WinTools::AlternatingPipe::WriteCov(ByteView data)
 
 	//Write the length first
 	WriteFile(m_Pipe.get(), &chunkLength, 4, nullptr, nullptr);
-	
+
 	//We have to write in chunks of 1024, this is mirrored in how the Grunt reads.
 	const uint8_t* d = &data.front();
 	while (size > 1024)
 	{
-		WriteFile(m_Pipe.get(), d+start, 1024, &written, nullptr);
+		WriteFile(m_Pipe.get(), d + start, 1024, &written, nullptr);
 		start += 1024;
 		size -= 1024;
 	}

@@ -31,7 +31,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 	{
 		goto Cleanup;
 	}
-	
+
 	hr = pMetaHost->GetRuntime(OBF_W(L"v4.0.30319"), IID_PPV_ARGS(&pRuntimeInfo));
 	if (FAILED(hr))
 	{
@@ -76,7 +76,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 
 
 	SAFEARRAYBOUND bounds[1];
-	bounds[0].cElements = assemblyLen;
+	bounds[0].cElements = static_cast<ULONG>(assemblyLen);
 	bounds[0].lLbound = 0;
 
 	arr = SafeArrayCreate(VT_UI1, 1, bounds);
@@ -85,7 +85,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 	pbAssemblyIndex = pbAssembly;
 	pbDataIndex = (PBYTE)arr->pvData;
 
-	while (pbAssemblyIndex - pbAssembly < assemblyLen)
+	while (static_cast<SIZE_T>(pbAssemblyIndex - pbAssembly) < assemblyLen)
 		* (BYTE*)pbDataIndex++ = *(BYTE*)pbAssemblyIndex++;
 
 	SafeArrayUnlock(arr);
@@ -115,7 +115,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 	hr = spType->InvokeMember_3(bstrStaticMethodName, static_cast<BindingFlags>(
 		BindingFlags_InvokeMethod | BindingFlags_Static | BindingFlags_Public),
 		NULL, vtEmpty, NULL, &output);
-	
+
 	if (FAILED(hr))
 	{
 		goto Cleanup;
@@ -161,7 +161,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 {
 
 	auto [pipeName, payload, connectAttempts] = arguments.Read<std::string, ByteVector, uint32_t>();
-	
+
 	BYTE *x = (BYTE *)payload.data();
 	SIZE_T len = payload.size();
 
@@ -178,7 +178,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give Grunt thread time to start pipe.
-	for (int i = 0; i < connectAttempts; i++)
+	for (auto i = 0u; i < connectAttempts; i++)
 	{
 		try
 		{
@@ -192,7 +192,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 			std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
 		}
 	}
-	
+
 	throw std::runtime_error{ OBF("Grunt creation failed") };
 }
 
@@ -201,36 +201,36 @@ void MWR::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView da
 	// Get access to write when whole read is done.
 	std::unique_lock<std::mutex> lock{ m_Mutex };
 	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
-	
+
 	if(m_Close)
 		return;
-	// Write to Covenant specific pipe 
+	// Write to Covenant specific pipe
 	m_Pipe->WriteCov(data);
 
 	// Unlock, and block writing until read is done.
 	m_ReadingState = true;
 	lock.unlock();
 	m_ConditionalVariable.notify_one();
-	
+
 }
 
 MWR::ByteVector MWR::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
-{	
+{
 	std::unique_lock<std::mutex> lock{ m_Mutex };
 	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
-	
+
 	if(m_Close)
 		return {};
 
 	// Read
 	auto ret = m_Pipe->ReadCov();
-	
+
 	m_ReadingState = false;
 	lock.unlock();
 	m_ConditionalVariable.notify_one();
-	
+
 	return  ret;
-	
+
 }
 
 void MWR::C3::Interfaces::Peripherals::Grunt::Close()
