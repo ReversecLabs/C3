@@ -11,13 +11,16 @@ namespace MWR::C3
 	template <typename Iface, typename AbstractType, HashT clousureConnectorHash = 0>
 	struct Register : AbstractType
 	{
-		Register()
+		virtual ~Register()
 		{
-			// Addressing variable in constructor prevents compiler from skipping template instantiation, because of possible side effects.
+			// Addressing variable in virtual destructor prevents compiler from skipping template instantiation, because of possible side effects.
+			// Similar effect can be achieved in gcc with attribute 'used'
+			// Clang can ignore both approaches, if Iface does not declare any custom constructor.
 			static_cast<void>(m_Registered);
 			static_cast<void>(s_InterfaceHash);
 		}
 
+	private:
 		/// Main function responsible for registration of interface.
 		/// Return value of function is used to initialize static variable assuring execution of code before main.
 		/// @returns true.
@@ -27,7 +30,6 @@ namespace MWR::C3
 			return InterfaceFactory::Instance().Register<AbstractType>(Iface::s_InterfaceHash, CreateInterfaceData());
 		}
 
-	private:
 		template <typename T>
 		class EnsureDefaultCapability
 		{
