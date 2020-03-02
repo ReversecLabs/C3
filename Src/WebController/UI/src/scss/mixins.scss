@@ -19,9 +19,9 @@ $add-comment: 'add-comment';
 
 @mixin generate-checkbox-icons($size, $hover-size: $size) {
   &.#{$checkbox}-on {
-    @include checkboxon('2297ff', $size);
+    @include checkboxon('a1d1ff', $size);
     &:hover {
-      @include checkboxon('2297ff', $hover-size);
+      @include checkboxon('a1d1ff', $hover-size);
     }
   }
   &.#{$checkbox}-on--disabled {
