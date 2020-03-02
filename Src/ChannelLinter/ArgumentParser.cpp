@@ -54,6 +54,19 @@ Options:
 
   -x <ID> [ARGS... ], --command <ID> [ARGS... ]
                         Execute a command with a given <ID> and arguments [ARGS...]
+
+Examples:
+    1. Parse the json returned from GetCapability and validate it against C3 rules:
+        ChannelLinter.exe -n UncShareFile
+
+     2. Create instance of a channel:
+         ChannelLinter.exe -n UncShareFile --args inputId outputId C:\Temp\C3Store false
+
+     3. Test channel permeability - create a complementary pair of channels and send messages through.
+         ChannelLinter.exe -n UncShareFile --args inputId outputId C:\Temp\C3Store false -i
+
+     4. Execute channel command:
+         ChannelLinter.exe -n UncShareFile --args inputId outputId C:\Temp\C3Store false -x 0
 )";
 	}
 
