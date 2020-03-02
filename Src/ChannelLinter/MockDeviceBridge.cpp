@@ -62,7 +62,7 @@ namespace MWR::C3::Linter
 	{
 		static std::mutex mutex;
 		std::lock_guard lock(mutex);
-		std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText("", message, nullptr) << std::endl;
+		std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText("", message, "") << std::endl;
 	}
 
 	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateDelay, std::chrono::milliseconds maxUpdateDelay)
