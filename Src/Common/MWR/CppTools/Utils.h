@@ -45,6 +45,15 @@ namespace MWR::Utils
 		return true;
 	}
 
+	/// Align value up
+	/// @param value to align
+	/// @param alignment required, must be a power of 2
+	/// @returns value aligned to requirement
+	static inline size_t AlignValueUp(size_t value, size_t alignment)
+	{
+		return (value + alignment - 1) & ~(alignment - 1);
+	}
+
 	/// Generate random string.
 	/// @param size of returned string.
 	template <typename T = std::string, std::enable_if_t<IsOneOf<T, std::string, std::wstring>::value, int> = 0>
@@ -61,6 +70,24 @@ namespace MWR::Utils
 			e = static_cast<T::value_type>(charset[uni(gen)]);
 
 		return randomString;
+	}
+
+	/// Generate random data.
+	/// @param size of returned string.
+	template <typename T = std::vector<uint8_t>, std::enable_if_t<IsOneOf<T, std::vector<uint8_t>, std::string>::value, int> = 0>
+	T GenerateRandomData(size_t size)
+	{
+		static std::random_device rd;
+		static std::mt19937_64 gen(rd());
+
+		T randomData;
+		auto alignedSize = AlignValueUp(size, sizeof(uint64_t));
+		randomData.resize(alignedSize);
+		for (size_t i = 0; i < alignedSize / sizeof(uint64_t); ++i)
+			reinterpret_cast<uint64_t&>(randomData[sizeof(uint64_t) * i]) = gen();
+
+		randomData.resize(size);
+		return randomData;
 	}
 
 	/// Generate random unsigned int value.

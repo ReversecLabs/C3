@@ -148,7 +148,7 @@ namespace MWR::C3::Linter
 		for (size_t packetLen : { 8, 64, 1024, 1024 * 1024})
 		{
 			std::cout << "Testing channel with " << packetLen << " bytes of data ... " << std::flush;
-			auto data = ByteVector(ByteView(MWR::Utils::GenerateRandomString(packetLen)));
+			auto data = ByteVector(MWR::Utils::GenerateRandomData(packetLen));
 
 			// call send and receive interleaved
 			size_t sentTotal = 0;
