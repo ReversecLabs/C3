@@ -39,11 +39,11 @@ if ""=="%~1" (
 
 ECHO.
 ECHO Building x64 binaries...
-%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll" "/p:Configuration=Release" "/p:Platform=x64" || GOTO :ERROR
+%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x64" || GOTO :ERROR
 
 ECHO.
 ECHO Building x86 binaries...
-%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll" "/p:Configuration=Release" "/p:Platform=x86" || GOTO :ERROR
+%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x86" || GOTO :ERROR
 
 ECHO.
 ECHO Copying binaries...
