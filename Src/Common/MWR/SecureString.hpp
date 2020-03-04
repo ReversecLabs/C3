@@ -70,11 +70,14 @@ namespace MWR
 		return false;
 	}
 
+	template<typename CharT>
+	using BasicSecureString = std::basic_string<CharT, std::char_traits<CharT>, SecureAllocator<CharT>>;
+
 	/// alias for string with SecureAllocator
-	using SecureString = std::basic_string<char, std::char_traits<char>, SecureAllocator<char>>;
+	using SecureString = BasicSecureString<char>;
 
 	/// alias for wstring with SecureAllocator
-	using SecureWString = std::basic_string<wchar_t, std::char_traits<wchar_t>, SecureAllocator<wchar_t>>;
+	using SecureWString = BasicSecureString<wchar_t>;
 }
 
 namespace std
@@ -97,11 +100,6 @@ namespace std
 
 		// This is a copy of basic_string dtor
 		_Tidy_deallocate();
-// for some reason this can't be used when compiling into precompiled header
-//#if _ITERATOR_DEBUG_LEVEL != 0
-//		auto && _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-//		_Delete_plain(_Alproxy, _STD exchange(_Get_data()._Myproxy, nullptr));
-//#endif // _ITERATOR_DEBUG_LEVEL != 0
 	}
 
 	/// Specialized SecureWString destructor.
@@ -122,10 +120,5 @@ namespace std
 
 		// This is a copy of basic_string dtor
 		_Tidy_deallocate();
-// for some reason this can't be used when compiling into precompiled header
-//#if _ITERATOR_DEBUG_LEVEL != 0
-//		auto && _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-//		_Delete_plain(_Alproxy, _STD exchange(_Get_data()._Myproxy, nullptr));
-//#endif // _ITERATOR_DEBUG_LEVEL != 0
 	}
 }
