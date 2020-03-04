@@ -127,6 +127,5 @@ namespace std
 //		auto && _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
 //		_Delete_plain(_Alproxy, _STD exchange(_Get_data()._Myproxy, nullptr));
 //#endif // _ITERATOR_DEBUG_LEVEL != 0
-		SecureZeroMemory(this, sizeof * this);
 	}
 }
