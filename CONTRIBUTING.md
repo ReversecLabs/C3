@@ -87,7 +87,7 @@ Testing channel with 64 bytes of data ... OK
 Testing channel with 1024 bytes of data ... OK
 Testing channel with 1048576 bytes of data ... OK
 ```
-Re-starting the C3 C3 web application and gateway is all that is required after compilation to use the newly created channel.
+Re-starting the C3 web application and gateway is all that is required after compilation to use the newly created channel.
 
 ![C3](Res/ContributionGuide/02.png)
 
