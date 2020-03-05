@@ -37,6 +37,7 @@ The most commonly used terms in C3:
 
 BSD 3-Clause License
 
+Copyright (c) 2019-2020, F-Secure
 Copyright (c) 2018-2019, MWR Infosecurity
 All rights reserved.
 

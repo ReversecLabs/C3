@@ -28,12 +28,12 @@ At a high level, the objective of integration would result in the communication 
 
 ## Getting Started - Code Reuse is Good
 
-The first step for integrating Covenant involves creating the new source files within C3. Initially this is performed by copying the the code from `/src/Common/MWR/C3/Interfaces/Connectors/TeamServer.cpp` to `Covenant.cpp`. 
+The first step for integrating Covenant involves creating the new source files within C3. Initially this is performed by copying the the code from `/src/Common/FSecure/C3/Interfaces/Connectors/TeamServer.cpp` to `Covenant.cpp`. 
 
 After replacing references to TeamServer, we end up with a number of methods that we simply need to redesign to work with Covenant. Highlighted below are the main functions which require alteration.
 
 ```c++
-namespace MWR::C3::Interfaces::Connectors
+namespace FSecure::C3::Interfaces::Connectors
 {
 	/// A class representing communication with Covenant.
 	struct Covenant : Connector<Covenant>
@@ -46,17 +46,17 @@ namespace MWR::C3::Interfaces::Connectors
 <...Snipped...>
 }
 
-MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
+FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 {
 <...Snipped...>
 }
 
-MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
 {
 <...Snipped...>
 }
 
-MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
+FSecure::ByteView FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
 {
 <...Snipped...>
 }
@@ -78,7 +78,7 @@ The first function to be implemented is `GetCapability`, this is the form that u
 
 This is achieved through the code below:
 ```c++
-MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
+FSecure::ByteView FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
 {
 	return R"(
 	{
@@ -144,7 +144,7 @@ The resulting form is shown in the next figure. Note that no changes were made t
 Once this form is submitted the only thing we need to know is that the connector's constructor is called and passed a `ByteView` containing the user supplied arguments. As well as adding the form above, we also made sure to create member variables for the Covenant connector object that will store the user supplied arguments. As such, when the constructor is called we are able to retrieve and store the arguments by simply doing:
 
 ```c++
-MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
+FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 {
 	std::tie(m_ListeningPostPort, m_webHost, m_username, m_password) = arguments.Read<uint16_t, std::string, std::string, std::string>();
 <...Snipped...>
@@ -164,7 +164,7 @@ The code below demonstrates how we authenticate to Covenant within the construct
 3. Make the request and if successful, retrieve the authentication token.
 
 ```c++
-MWR::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
+FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 {
 	json postData;
 	json response;
@@ -289,7 +289,7 @@ The final 2 lines of the Covenant connector's constructor may cause confusion. T
 Payload generation is implemented in the `GeneratePayload` method, which in-turn is called from the `PeripheralCreationCommand` method as shown below.
 
 ```c++
-MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
 	auto [pipeName, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t>();
 
@@ -315,7 +315,7 @@ It is worth noting that we do not need to know where the payload is being return
 The logic for the above actions is as such:
 
 ```c++
-MWR::ByteVector MWR::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
 {
 if (binderId.empty() || pipename.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
@@ -389,7 +389,7 @@ if (binderId.empty() || pipename.empty())
 
 ## Adding the Grunt Peripheral
 
-As described, when testing the code above we cheated by adding a call the `GeneratePayload` in the connector's constructor. What we actually need to do is add a Peripheral called `Grunt` to C3. In similar fashion to how the Covenant.cpp connector code was developed, we start by copying `/Src/Common/MWR/C3/Interfaces/Peripherals/Beacon.cpp` to `Src/Common/MWR/C3/Interfaces/Peripherals/Grunt.cpp` - the same is done for the header files. 
+As described, when testing the code above we cheated by adding a call the `GeneratePayload` in the connector's constructor. What we actually need to do is add a Peripheral called `Grunt` to C3. In similar fashion to how the Covenant.cpp connector code was developed, we start by copying `/Src/Common/FSecure/C3/Interfaces/Peripherals/Beacon.cpp` to `Src/Common/FSecure/C3/Interfaces/Peripherals/Grunt.cpp` - the same is done for the header files. 
 
 
 **Stage 1 - Getting User Input**
@@ -397,7 +397,7 @@ As described, when testing the code above we cheated by adding a call the `Gener
 In order to get user input that is passed to the Covenant connector `GeneratePayload` method, we need to edit the Grunt Peripheral's `GetCapability` function:
 
 ```c++
-MWR::ByteView MWR::C3::Interfaces::Peripherals::Grunt::GetCapability()
+FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
 {
 	return R"(
 {
@@ -458,7 +458,7 @@ First and foremost, when the user submits the form above and a payload is genera
 The constructor for a Grunt is slightly complex, essentially we execute the .NET assembly in our own CLR instance running in a seperate thread. Note the `arguments.Read` call below, these are passed in the same order they are presented in the web form.
 
 ```c++
-MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
+FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 {
 
 	auto [pipeName, payload, connectAttempts] = arguments.Read<std::string, ByteVector, uint32_t>();
@@ -467,7 +467,7 @@ MWR::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	SIZE_T len = payload.size();
 
 	//Setup the arguments to run the .NET assembly in a seperate thread.
-	namespace SEH = MWR::WinTools::StructuredExceptionHandling;
+	namespace SEH = FSecure::WinTools::StructuredExceptionHandling;
 	SEH::gruntArgs args;
 	args.gruntStager = x;
 	args.len = len;
@@ -523,10 +523,10 @@ public static void Write(PipeStream pipe, byte[] bytes)
         }
 ```
 
-In order for the C3 Relay to read this data, we must alter the named pipe communications. This requires creating a custom named pipe communication specific to Covenant. Essentially, we create a new read method `ReadCov` in `/Src/Common/MWR/WinTools/Pipe.cpp` as part of the `AlternatingPipe` class. This method reflects how an SMB Grunt writes data.
+In order for the C3 Relay to read this data, we must alter the named pipe communications. This requires creating a custom named pipe communication specific to Covenant. Essentially, we create a new read method `ReadCov` in `/Src/Common/FSecure/WinTools/Pipe.cpp` as part of the `AlternatingPipe` class. This method reflects how an SMB Grunt writes data.
 
 ```c++
-MWR::ByteVector MWR::WinTools::AlternatingPipe::ReadCov()
+FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 {
 	DWORD temp = 0, total = 0;
 	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
@@ -563,7 +563,7 @@ MWR::ByteVector MWR::WinTools::AlternatingPipe::ReadCov()
 Back in the Grunt.cpp code, we alter the `OnReceiveFromPeripheral` method to make use of this new logic:
 
 ```c++
-MWR::ByteVector MWR::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
+FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
 {	
 	std::unique_lock<std::mutex> lock{ m_Mutex };
 	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });

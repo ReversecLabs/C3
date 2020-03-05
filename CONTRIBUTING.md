@@ -3,7 +3,7 @@
 The following tutorials describe the process of C3 channel development in a step by step matter, along with detailed explanations and best practices. This section will demonstrate how to create a channel that utilizes regular files for communication.
 
 ## Basic Tutorial
-This tutorial focuses only on a bare minimum effort required to develop a C3 Channel. First, open the C3 solution file in MS Visual Studio and add a new `*.cpp` file to the “Common” project. The Preferred location is: *“Src/Common/MWR/C3/Interfaces/Channels”* or its sub folder.
+This tutorial focuses only on a bare minimum effort required to develop a C3 Channel. First, open the C3 solution file in MS Visual Studio and add a new `*.cpp` file to the “Common” project. The Preferred location is: *“Src/Common/FSecure/C3/Interfaces/Channels”* or its sub folder.
 
 ![C3](Res/ContributionGuide/01.png)
 
@@ -12,16 +12,16 @@ Next, open the newly created file and enter a type that will represent the Chann
 #include "StdAfx.h"
 #include <fstream>
 
-namespace MWR::C3::Interfaces::Channels
+namespace FSecure::C3::Interfaces::Channels
 {
-    class MyChannel : public MWR::C3::Interfaces::Channel<MyChannel>
+    class MyChannel : public FSecure::C3::Interfaces::Channel<MyChannel>
     {
     public:
-        MyChannel(MWR::ByteView bv) : m_Filename("MyChannelFile")
+        MyChannel(FSecure::ByteView bv) : m_Filename("MyChannelFile")
         {
         }
 
-        size_t OnSendToChannel(MWR::ByteView packet)
+        size_t OnSendToChannel(FSecure::ByteView packet)
         {
             // Create/open binary file with m_Filename
             std::ofstream file(m_Filename, std::ios::binary);
@@ -32,13 +32,13 @@ namespace MWR::C3::Interfaces::Channels
             return packet.length();
         }
 
-        MWR::ByteVector OnReceiveFromChannel()
+        FSecure::ByteVector OnReceiveFromChannel()
         {
             // Open binary file with m_Filename
             std::ifstream file{ m_Filename, std::ios::binary };
 
             // read packet from file
-            return MWR::ByteVector{ std::istreambuf_iterator<char>{file}, {} };
+            return FSecure::ByteVector{ std::istreambuf_iterator<char>{file}, {} };
         }
 
     private:
@@ -52,7 +52,7 @@ A breakdown of this code is as such:
 + The first line is required by Visual Studio for projects using precompiled headers.
 + Channels must be defined in `Something::Interfaces::Channels` namespace.
 + The `MyChannel` class definition publicly inherits from a *CRTP type* called `Channel<>`, which is required by the C3 framework in order to register the Channel.
-+ Next there are three required methods – `OnSendToChannel`, `OnReceiveFromChannel` and a constructor that takes one `MWR::ByteView` argument. These methods are used to bind the channel’s functionality with the C3 framework.
++ Next there are three required methods – `OnSendToChannel`, `OnReceiveFromChannel` and a constructor that takes one `FSecure::ByteView` argument. These methods are used to bind the channel’s functionality with the C3 framework.
 + For this basic tutorial the argument for the `MyChannel` constructor is ignored. Instead the file name member variable is initialised with a hardcoded value.
 + `OnSendToChannel`'s implementation simply takes its parameter (packet) and writes it to the file.
 + `OnReceiveFromChannel` reads from the file and returns the buffer.
@@ -175,7 +175,7 @@ There are 2 parameters defined, both need to be at least 4 characters long and r
 The next step in this tutorial involves updating `MyChannel’s` constructor to read the new arguments:
 
 ```cpp
-MyChannel(MWR::ByteView bv)
+MyChannel(FSecure::ByteView bv)
   : m_InFile(bv.Read<std::string>())
   , m_OutFile(bv.Read<std::string>())
 {
@@ -186,7 +186,7 @@ MyChannel(MWR::ByteView bv)
 
 **Note:** The Read method “moves” `ByteView` according to the length of data that was read and allows for multiple parameters to be read at once (e.g. `auto[integer, text, real] = args.Read<int8_t, std::string, float>()`).
 
-**Note:** `std::string` and `MWR::ByteVector` types are stored in a buffer in a way that keeps track of their length (by preceding them with 4 byte-long size).
+**Note:** `std::string` and `FSecure::ByteVector` types are stored in a buffer in a way that keeps track of their length (by preceding them with 4 byte-long size).
 
 **Note:** Arithmetic types are always stored in the little-endian byte order.
 
@@ -264,7 +264,7 @@ ByteVector TestCommand(ByteView args)
 }
 ```
 
-The `TestCommand` method adds a debug text entry to C3’s *Log*. `DebugInformation` is used which is rendered in a Relay’s console window only when compiled in debug mode. The message consists of two elements: a hard-coded text "Custom Command : " and a string that is provided by a user in the UI. Note the use of the `OBF` macro, this is used to encrypt strings at compile-time, which are decrypted at run-time only when required. Also of note is that the `TestCommand` handler returns an empty `MWR::ByteVector` as there’s nothing to send back to the Gateway.
+The `TestCommand` method adds a debug text entry to C3’s *Log*. `DebugInformation` is used which is rendered in a Relay’s console window only when compiled in debug mode. The message consists of two elements: a hard-coded text "Custom Command : " and a string that is provided by a user in the UI. Note the use of the `OBF` macro, this is used to encrypt strings at compile-time, which are decrypted at run-time only when required. Also of note is that the `TestCommand` handler returns an empty `FSecure::ByteVector` as there’s nothing to send back to the Gateway.
 
 **Note:** The `GetCapability` method is compiled only when building Gateway’s executable and therefore it’s not required to use the `OBF` macro to obfuscate its strings. 
 
@@ -277,29 +277,29 @@ After rebuilding the solution once again and launching C3 the Test Command becom
 
 ### Putting it all Together
 
-After developing a functionally working channel, the next stage is to refactor the code. The `MyChannel` type is still quite small, but for larger classes it’s common to split the implementation between a header and a compilation unit file. For `MyChannel` this involves adding a new *MyChannel.h* file in the same location as *MyChannel.cpp*. This also involves embracing the channel with the appropriate namespace declaration - `MWR::C3::Interfaces::Channels`. Finally, doxygen-style documentation is added to improve readability. *MyChannel.h* is then as such:
+After developing a functionally working channel, the next stage is to refactor the code. The `MyChannel` type is still quite small, but for larger classes it’s common to split the implementation between a header and a compilation unit file. For `MyChannel` this involves adding a new *MyChannel.h* file in the same location as *MyChannel.cpp*. This also involves embracing the channel with the appropriate namespace declaration - `FSecure::C3::Interfaces::Channels`. Finally, doxygen-style documentation is added to improve readability. *MyChannel.h* is then as such:
 
 ```cpp
 #pragma once
 
-namespace MWR::C3::Interfaces::Channels
+namespace FSecure::C3::Interfaces::Channels
 {
     /// Implementation of a File Channel.
-    class MyChannel : public MWR::C3::Interfaces::Channel<MyChannel>
+    class MyChannel : public FSecure::C3::Interfaces::Channel<MyChannel>
     {
     public:
         /// Public constructor.
         /// @param arguments factory arguments.
-        MyChannel(MWR::ByteView arguments);
+        MyChannel(FSecure::ByteView arguments);
 
         /// OnSend callback implementation. Called every time attached Relay wants to send a packet through this Channel Device. @see Device::OnSendToChannelInternal.
         /// @param packet data to send through the Channel.
         /// @return number of bytes successfully sent through the Channel. One call does not have to send all data. In that case chunking will take place, Chunks must be at least 64 bytes or equal to packet.size() to be accepted,
-        size_t OnSendToChannel(MWR::ByteView packet);
+        size_t OnSendToChannel(FSecure::ByteView packet);
 
         /// Reads a single C3 packet from Channel. Periodically called by attached Relay. Implementation should read the data (or return an empty buffer if there's nothing in the Channel waiting to read) and leave as soon as possible.
         /// @return ByteVector that contains a single packet retrieved from Channel.
-        MWR::ByteVector OnReceiveFromChannel();
+        FSecure::ByteVector OnReceiveFromChannel();
 
         /// Processes Commands addressed to this Channel.
         /// @param command a buffer containing whole command and it's parameters.
@@ -337,15 +337,15 @@ And the implementation within MyChannel.cpp:
 #include <fstream>
 #include <filesystem>
 
-namespace MWR::C3::Interfaces::Channels
+namespace FSecure::C3::Interfaces::Channels
 {
-    MyChannel::MyChannel(MWR::ByteView bv)
+    MyChannel::MyChannel(FSecure::ByteView bv)
         : m_InFile(bv.Read<std::string>())
         , m_OutFile(bv.Read<std::string>())
     {
     }
 
-    size_t MyChannel::OnSendToChannel(MWR::ByteView packet)
+    size_t MyChannel::OnSendToChannel(FSecure::ByteView packet)
     {
         // Create/open binary file with m_OutFile name.
         std::ofstream file(m_OutFile, std::ios::binary);
@@ -356,12 +356,12 @@ namespace MWR::C3::Interfaces::Channels
         return packet.length();
     }
 
-    MWR::ByteVector MyChannel::OnReceiveFromChannel()
+    FSecure::ByteVector MyChannel::OnReceiveFromChannel()
     {
         // Open binary file with m_InFile name.
         std::ifstream file{ m_InFile, std::ios::binary };
         // read packet from file
-        auto packet = MWR::ByteVector{ std::istreambuf_iterator<char>{file}, {} };
+        auto packet = FSecure::ByteVector{ std::istreambuf_iterator<char>{file}, {} };
         file.close();
         std::filesystem::remove(m_OutFile);
         return packet;
@@ -441,7 +441,7 @@ The tutorials provided here have discussed all the elements required to develop 
 + `OnReceiveFromChannel` is called periodically, while `OnSendToChannel` is called only if there’s something to send through the Channel. Bear in mind that calls to both methods could be made at the same time from two different threads. Implement appropriate synchronization mechanisms if they share any non-atomic objects.
 + `OnSendToChannel` returns the number of bytes successfully sent to the channel. If it’s less than the size of the provided packet, but more than 63, *automatic chunking* kicks in. If a channel sends less than 64 bytes, C3 will attempt to resend the packet and therefore call `OnSendToChannel` with the same buffer again, while the complementary Channel automatically rejects the packet. It follows from the above that it is necessary for every C3 Channel to be able to send chunks of size 64 bytes and more. For Channels that fail to meet this requirement, C3 will be stuck useless. This "magic" value of 64 is called *C3 Minimal MTU*.
 + `OnReceiveFromChannel` can have one of two signatures:
-  + `MWR::ByteVector OnReceiveFromChannel();` if it can retrieve only one packet at a time.
-  + `std::vector<MWR::ByteVector> OnReceiveFromChannel();` if it can retrieve multiple packets at a time (eg. a whole page of messages in a single HTTP request)
+  + `FSecure::ByteVector OnReceiveFromChannel();` if it can retrieve only one packet at a time.
+  + `std::vector<FSecure::ByteVector> OnReceiveFromChannel();` if it can retrieve multiple packets at a time (eg. a whole page of messages in a single HTTP request)
   In case there is nothing to read Channel should return an empty container.
 + Both methods should perform the minimal number of operations and leave as soon as possible. There is a possibility to add single-threaded Relays to C3 in the future, which means that only one thread of execution will be shared between all interfaces and all their methods. Bear in mind that one stalling Channel will block the whole Relay, until this method returns. That’s why if a Channel’s methods (especially updates - `OnReceiveFromChannel`) require more time to execute, the implementation should be split into smaller pieces, *Update Delay Jitter* should be increased, and those pieces invoked in an interlaced manner.
