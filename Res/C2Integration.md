@@ -137,7 +137,7 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 ```
 The resulting form is shown in the next figure. Note that no changes were made to the actual web interface of C3.
 
-<img src="./ContributionGuide/figure2.png" />
+<img src="./Usageimages/figure1.png" />
 
 **Stage 2 - Handle User Input**
 
