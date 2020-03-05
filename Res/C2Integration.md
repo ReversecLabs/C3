@@ -137,7 +137,7 @@ MWR::ByteView MWR::C3::Interfaces::Connectors::Covenant::GetCapability()
 ```
 The resulting form is shown in the next figure. Note that no changes were made to the actual web interface of C3.
 
-<img src="./Usageimages/figure1.png" />
+<img src="./UsageImages/figure1.png" />
 
 **Stage 2 - Handle User Input**
 
@@ -282,7 +282,7 @@ The second step involves parsing the user supplied data and then fudging a reque
 
 ```
 
-The final 2 lines of the Covenant connector's constructor may cause confusion. The listener that is created does not expect direct connections from Grunts. Instead, the C2Bridge project is meant to be used as a middle man. This is demonstrated in the Video here https://www.youtube.com/watch?v=0TVFBy_QXaI&feature=youtu.be.
+The final 2 lines of the Covenant connector's constructor may cause confusion. The listener that is created does not expect direct connections from Grunts. Instead, the C2Bridge project is meant to be used as a middle man. This is demonstrated in the Video here https://www.youtube.com/watch?v=QDnDaVgnSuA&amp=&feature=youtu.be
 
 ## Payload Generation
 
