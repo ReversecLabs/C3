@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::Loader::UnexportedWinApi
+namespace FSecure::Loader::UnexportedWinApi
 {
 	/// Wrapper around private ntdll!LdrpHandleTlsData
 	/// Initializes static data from .tls section

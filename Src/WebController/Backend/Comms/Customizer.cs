@@ -1,4 +1,4 @@
-﻿using MWR.C3.WebController.Models;
+﻿using FSecure.C3.WebController.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public class Customizer : ICustomizer
     {

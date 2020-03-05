@@ -2,7 +2,7 @@
 #include "LoadPe.h"
 
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 
 #pragma warning( push )
@@ -295,7 +295,7 @@ namespace MWR::Loader
 		///
 		// STEP 7.1: Set static TLS values
 		///
-		MWR::Loader::UnexportedWinApi::LdrpHandleTlsData((void*)baseAddress);
+		FSecure::Loader::UnexportedWinApi::LdrpHandleTlsData((void*)baseAddress);
 
 		///
 		// STEP 8: execute TLS callbacks
@@ -326,7 +326,7 @@ namespace MWR::Loader
 		}
 
 #elif defined _M_IX86
-		MWR::Loader::UnexportedWinApi::RtlInsertInvertedFunctionTable((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
+		FSecure::Loader::UnexportedWinApi::RtlInsertInvertedFunctionTable((void*)baseAddress, ntHeaders->OptionalHeader.SizeOfImage);
 #endif
 
 		// wipe the headers

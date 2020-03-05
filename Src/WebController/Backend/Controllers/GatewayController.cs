@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using MWR.C3.WebController.Models;
-using MWR.C3.WebController.HttpExtentions;
+using FSecure.C3.WebController.Models;
+using FSecure.C3.WebController.HttpExtentions;
 using Microsoft.EntityFrameworkCore;
-using MWR.C3.WebController.Comms;
-using MWR.C3.WebController.LinqExtentions;
+using FSecure.C3.WebController.Comms;
+using FSecure.C3.WebController.LinqExtentions;
 using System.IO;
 using System.IO.Compression;
-using MWR.C3.WebController.RandomExtentions;
+using FSecure.C3.WebController.RandomExtentions;
 
-namespace MWR.C3.WebController.Controllers
+namespace FSecure.C3.WebController.Controllers
 {
 
     [Route("api/[controller]")]

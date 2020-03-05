@@ -2,44 +2,44 @@
 #include "RouteManager.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::RouteManager::Route::Route(RouteId routeId, std::weak_ptr<DeviceBridge> iface)
+FSecure::C3::Core::RouteManager::Route::Route(RouteId routeId, std::weak_ptr<DeviceBridge> iface)
 	: m_RouteId(routeId)
 	, m_Channel(iface)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::RouteManager::Route> MWR::C3::Core::RouteManager::FindRoute(RouteId const& routeId) const noexcept
+std::shared_ptr<FSecure::C3::Core::RouteManager::Route> FSecure::C3::Core::RouteManager::FindRoute(RouteId const& routeId) const noexcept
 {
 	return m_Routes.Find([&routeId](std::shared_ptr<Route> const& c) { return c->m_RouteId == routeId; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::RouteManager::Route> MWR::C3::Core::RouteManager::FindRoute(AgentId const& agentId) const noexcept
+std::shared_ptr<FSecure::C3::Core::RouteManager::Route> FSecure::C3::Core::RouteManager::FindRoute(AgentId const& agentId) const noexcept
 {
 	return m_Routes.Find([&agentId](std::shared_ptr<Route> const& c) { return c->m_RouteId.GetAgentId() == agentId; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::RouteManager::Route> MWR::C3::Core::RouteManager::AddRoute(RouteId routeId, std::shared_ptr<DeviceBridge> channel)
+std::shared_ptr<FSecure::C3::Core::RouteManager::Route> FSecure::C3::Core::RouteManager::AddRoute(RouteId routeId, std::shared_ptr<DeviceBridge> channel)
 {
 	return m_Routes.TryAdd([&routeId](std::shared_ptr<Route> const& c) { return c->m_RouteId == routeId; }, std::make_shared<Route>(routeId, channel));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::RouteManager::RemoveRoute(RouteId const& routeId)
+void FSecure::C3::Core::RouteManager::RemoveRoute(RouteId const& routeId)
 {
 	m_Routes.Remove([&routeId](std::shared_ptr<Route> const& c) { return c->m_RouteId == routeId; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::RouteManager::Route> MWR::C3::Core::RouteManager::FindRouteByOutgoingChannel(DeviceId deviceId) const noexcept
+std::shared_ptr<FSecure::C3::Core::RouteManager::Route> FSecure::C3::Core::RouteManager::FindRouteByOutgoingChannel(DeviceId deviceId) const noexcept
 {
 	return m_Routes.Find([&deviceId](auto const& e) {auto pin = e->m_Channel.lock(); return pin ? pin->GetDid() == deviceId : false; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::RouteManager::RemoveAllRoutes()
+void FSecure::C3::Core::RouteManager::RemoveAllRoutes()
 {
 	m_Routes.Clear();
 }

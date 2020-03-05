@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ArgumentParser.h"
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	ArgumentParser::ArgumentParser(int argc, char** argv) : m_ArgParser()
 	{

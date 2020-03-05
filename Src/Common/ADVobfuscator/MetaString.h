@@ -23,7 +23,7 @@
 #include "Inline.h"
 #include "Indexes.h"
 #include "MetaRandom.h"
-#include "Common/MWR/SecureString.hpp"
+#include "Common/FSecure/SecureString.hpp"
 
 namespace andrivet::ADVobfuscator
 {
@@ -260,7 +260,7 @@ namespace andrivet::ADVobfuscator
 #define OBF_STR(str) (std::string{DEF_OBFUSCATED(str).decrypt()})
 #define OBF_WSTR(str) (std::wstring{DEF_OBFUSCATED_W(str).decrypt()})
 
-#define OBF_SEC(str) (MWR::SecureString{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSEC(str) (MWR::SecureWString{DEF_OBFUSCATED_W(str).decrypt()})
+#define OBF_SEC(str) (FSecure::SecureString{DEF_OBFUSCATED(str).decrypt()})
+#define OBF_WSEC(str) (FSecure::SecureWString{DEF_OBFUSCATED_W(str).decrypt()})
 
 #endif

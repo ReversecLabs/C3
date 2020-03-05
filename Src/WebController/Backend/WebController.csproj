@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
 	<AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
-    <RootNamespace>MWR.C3.WebController</RootNamespace>
+    <RootNamespace>FSecure.C3.WebController</RootNamespace>
     <AssemblyName>C3WebController</AssemblyName>
     <Configurations>Debug;Release;ReleaseWithDebInfo</Configurations>
   </PropertyGroup>

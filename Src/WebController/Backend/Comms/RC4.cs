@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     // as found on https://gist.github.com/hoiogi/89cf2e9aa99ffc3640a4
     public class RC4

@@ -1,7 +1,7 @@
-﻿using MWR.C3.WebController.Comms;
+﻿using FSecure.C3.WebController.Comms;
 using System.ComponentModel;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     [TypeConverter(typeof(HexIdTypeConverter))]
     public class HexId

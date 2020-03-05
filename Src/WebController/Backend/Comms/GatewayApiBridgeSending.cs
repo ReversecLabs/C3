@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MWR.C3.WebController.Comms.GatewayRequests;
-using MWR.C3.WebController.Models;
+using FSecure.C3.WebController.Comms.GatewayRequests;
+using FSecure.C3.WebController.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public partial class GatewayConnectionHandler
     {

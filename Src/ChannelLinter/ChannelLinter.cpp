@@ -3,7 +3,7 @@
 
 #include "Core/Profiler.h"
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	namespace
 	{
@@ -125,11 +125,11 @@ namespace MWR::C3::Linter
 		}
 	}
 
-	std::shared_ptr<MWR::C3::Linter::MockDeviceBridge> ChannelLinter::MakeChannel(StringVector const& channnelArguments) const
+	std::shared_ptr<FSecure::C3::Linter::MockDeviceBridge> ChannelLinter::MakeChannel(StringVector const& channnelArguments) const
 	{
 		Form form(m_ChannelCapability.at("/create/arguments"_json_pointer));
 		auto createParams = form.Fill(channnelArguments);
-		auto blob = MWR::C3::Core::Profiler::TranslateArguments(createParams);
+		auto blob = FSecure::C3::Core::Profiler::TranslateArguments(createParams);
 		return MakeChannel(blob);
 	}
 
@@ -148,7 +148,7 @@ namespace MWR::C3::Linter
 		for (size_t packetLen : { 8, 64, 1024, 1024 * 1024})
 		{
 			std::cout << "Testing channel with " << packetLen << " bytes of data ... " << std::flush;
-			auto data = ByteVector(MWR::Utils::GenerateRandomData(packetLen));
+			auto data = ByteVector(FSecure::Utils::GenerateRandomData(packetLen));
 
 			// call send and receive interleaved
 			size_t sentTotal = 0;
@@ -188,7 +188,7 @@ namespace MWR::C3::Linter
 		std::cout << "OK" << std::endl;
 	}
 
-	MWR::ByteVector ChannelLinter::TranslateCommand(StringVector const& commandParams)
+	FSecure::ByteVector ChannelLinter::TranslateCommand(StringVector const& commandParams)
 	{
 		uint16_t commandId = GetCommandId(commandParams.at(0));
 

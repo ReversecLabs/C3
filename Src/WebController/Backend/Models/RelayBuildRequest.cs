@@ -1,12 +1,12 @@
-﻿using MWR.C3.WebController.Comms;
+﻿using FSecure.C3.WebController.Comms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using static MWR.C3.WebController.Models.Build;
+using static FSecure.C3.WebController.Models.Build;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     public class RelayBuildRequest
     {

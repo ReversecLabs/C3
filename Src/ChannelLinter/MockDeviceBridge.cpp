@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MockDeviceBridge.h"
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	MockDeviceBridge::MockDeviceBridge(std::shared_ptr<Device> device ) :
 		m_Device(move(device))
@@ -48,12 +48,12 @@ namespace MWR::C3::Linter
 		throw std::logic_error("The method or operation is not implemented.");
 	}
 
-	MWR::ByteVector MockDeviceBridge::RunCommand(ByteView command)
+	FSecure::ByteVector MockDeviceBridge::RunCommand(ByteView command)
 	{
 		return GetDevice()->OnRunCommand(command);
 	}
 
-	MWR::ByteVector MockDeviceBridge::WhoAreYou()
+	FSecure::ByteVector MockDeviceBridge::WhoAreYou()
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}
@@ -62,7 +62,7 @@ namespace MWR::C3::Linter
 	{
 		static std::mutex mutex;
 		std::lock_guard lock(mutex);
-		std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText("", message, nullptr) << std::endl;
+		std::cout << FSecure::C3::Utils::ConvertLogMessageToConsoleText("", message, nullptr) << std::endl;
 	}
 
 	void MockDeviceBridge::SetUpdateDelay(std::chrono::milliseconds minUpdateDelay, std::chrono::milliseconds maxUpdateDelay)
@@ -85,7 +85,7 @@ namespace MWR::C3::Linter
 		throw std::logic_error("The method or operation is not implemented.");
 	}
 
-	std::shared_ptr<MWR::C3::Device> MockDeviceBridge::GetDevice() const
+	std::shared_ptr<FSecure::C3::Device> MockDeviceBridge::GetDevice() const
 	{
 		return m_Device;
 	}

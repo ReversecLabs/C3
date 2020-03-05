@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
-using MWR.C3.WebController.Models;
-using MWR.C3.WebController.RandomExtentions;
+using FSecure.C3.WebController.Models;
+using FSecure.C3.WebController.RandomExtentions;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public class DonutService : IDonutService
     {

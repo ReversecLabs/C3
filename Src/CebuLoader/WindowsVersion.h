@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <winternl.h>
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	enum Win32WinNt
 	{

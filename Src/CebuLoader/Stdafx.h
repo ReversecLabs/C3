@@ -17,7 +17,7 @@
 #include "LoadPe.h"
 
 // C3 includes
-//#include "Common/MWR/CppTools/ByteConverter.h"
+//#include "Common/FSecure/CppTools/ByteConverter.h"
 
 // Windows includes
 #define NOMINMAX

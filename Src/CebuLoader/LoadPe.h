@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	/// type of function that can be called by LoadPe
 	typedef void (*ExportFunc)(void);

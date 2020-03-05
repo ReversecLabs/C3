@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Http;
 
-namespace MWR.C3.WebController.HttpExtentions
+namespace FSecure.C3.WebController.HttpExtentions
 {
     public static class HttpResponseExtentions
     {

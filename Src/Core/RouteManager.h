@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Common/MWR/CppTools/SafeSmartPointerContainer.h"
+#include "Common/FSecure/CppTools/SafeSmartPointerContainer.h"
 #include "RouteId.h"
 #include "DeviceBridge.h"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// A template class responsible for managing C3 connections.
 	struct RouteManager

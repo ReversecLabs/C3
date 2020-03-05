@@ -328,7 +328,7 @@
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="..\Common\MWR\WinTools\OsVersion.manifest" />
+    <Manifest Include="..\Common\FSecure\WinTools\OsVersion.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

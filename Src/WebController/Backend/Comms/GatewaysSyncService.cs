@@ -7,10 +7,10 @@ using Serilog;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Linq;
-using MWR.C3.Comms;
+using FSecure.C3.Comms;
 using System.Collections.Generic;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public class GatewaysSyncService : IHostedService
     {

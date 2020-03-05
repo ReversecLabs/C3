@@ -1,10 +1,10 @@
 #include "StdAfx.h"
 #include "Distributor.h"
 #include "DeviceBridge.h"
-#include "Common/MWR/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteView.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::Distributor::Distributor(LoggerCallback callbackOnLog, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey)
+FSecure::C3::Core::Distributor::Distributor(LoggerCallback callbackOnLog, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey)
 	: m_CallbackOnLog{ callbackOnLog }
 	, m_DecryptionKey{ decryptionKey }
 	, m_BroadcastKey{ broadcastKey }
@@ -12,13 +12,13 @@ MWR::C3::Core::Distributor::Distributor(LoggerCallback callbackOnLog, Crypto::Pr
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Distributor::Log(LogMessage const& message, DeviceId sender) noexcept
+void FSecure::C3::Core::Distributor::Log(LogMessage const& message, DeviceId sender) noexcept
 {
 	m_CallbackOnLog(message, &std::string_view{ sender.IsNull() ? OBF("") : sender.ToString() });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Distributor::OnPacketReceived(ByteView packet, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::Distributor::OnPacketReceived(ByteView packet, std::shared_ptr<DeviceBridge> sender)
 {
 	try
 	{
@@ -53,13 +53,13 @@ void MWR::C3::Core::Distributor::OnPacketReceived(ByteView packet, std::shared_p
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool MWR::C3::Core::Distributor::IsAgentBanned(AgentId agentId)
+bool FSecure::C3::Core::Distributor::IsAgentBanned(AgentId agentId)
 {
 	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Distributor::OnProtocolN2N(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::Distributor::OnProtocolN2N(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	// Protocol structure: [NeighborToNeighbor][SENDERS AID.IID][N2N Procedure][FIELDS]...
 	try
@@ -83,13 +83,13 @@ void MWR::C3::Core::Distributor::OnProtocolN2N(ByteView packet0, std::shared_ptr
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Distributor::LockAndSendPacket(ByteView packet, std::shared_ptr<DeviceBridge> channel)
+void FSecure::C3::Core::Distributor::LockAndSendPacket(ByteView packet, std::shared_ptr<DeviceBridge> channel)
 {
-	channel->OnPassNetworkPacket(MWR::Crypto::EncryptAnonymously(packet, m_BroadcastKey));
+	channel->OnPassNetworkPacket(FSecure::Crypto::EncryptAnonymously(packet, m_BroadcastKey));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::Core::Distributor::UnlockPacket(ByteView packet)
+FSecure::ByteVector FSecure::C3::Core::Distributor::UnlockPacket(ByteView packet)
 {
-	return MWR::Crypto::DecryptFromAnonymous(packet, m_BroadcastKey);
+	return FSecure::Crypto::DecryptFromAnonymous(packet, m_BroadcastKey);
 }

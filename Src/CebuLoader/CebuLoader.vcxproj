@@ -361,7 +361,7 @@
     <ClInclude Include="WindowsVersion.h" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="..\Common\MWR\WinTools\OsVersion.manifest" />
+    <Manifest Include="..\Common\FSecure\WinTools\OsVersion.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CebuLoader.rc" />

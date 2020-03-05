@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PeUtils.h"
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	PIMAGE_DOS_HEADER GetDosHeader(UINT_PTR baseAddress)
 	{

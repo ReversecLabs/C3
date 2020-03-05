@@ -4,7 +4,7 @@
 #include <functional>
 #include "RouteId.h"
 
-namespace MWR::C3
+namespace FSecure::C3
 {
 	/// A structure that handles Quality of Service of C3 protocols.
 	class QualityOfService

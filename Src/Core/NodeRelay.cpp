@@ -1,10 +1,10 @@
 #include "StdAfx.h"
 #include "NodeRelay.h"
 #include "DeviceBridge.h"
-#include "Common/MWR/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteView.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::NodeRelay> MWR::C3::Core::NodeRelay::CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
+std::shared_ptr<FSecure::C3::Core::NodeRelay> FSecure::C3::Core::NodeRelay::CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
 	Crypto::PublicSignature const& gatewaySignature, Crypto::SymmetricKey const& broadcastKey, std::vector<ByteVector> const& gatewayInitialPackets, BuildId buildId, AgentId agentId,
 	Crypto::AsymmetricKeys const& asymmetricKeys)
 {
@@ -32,7 +32,7 @@ std::shared_ptr<MWR::C3::Core::NodeRelay> MWR::C3::Core::NodeRelay::CreateAndRun
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::NodeRelay::NodeRelay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
+FSecure::C3::Core::NodeRelay::NodeRelay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
 	Crypto::PublicSignature const& gatewaySignature, Crypto::SymmetricKey const& broadcastKey, BuildId buildId, AgentId agentId, Crypto::AsymmetricKeys const& asymmetricKeys)
 	: Relay{ callbackOnLog, interfaceFactory, asymmetricKeys.first, broadcastKey, buildId, agentId }
 	, m_GatewaySignature{ gatewaySignature }
@@ -43,7 +43,7 @@ MWR::C3::Core::NodeRelay::NodeRelay(LoggerCallback callbackOnLog, InterfaceFacto
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::NodeRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	auto grc = GetGatewayReturnChannel();
 	if (!grc)
@@ -60,7 +60,7 @@ void MWR::C3::Core::NodeRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<D
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::NodeRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	try
 	{
@@ -87,7 +87,7 @@ void MWR::C3::Core::NodeRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<D
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::NodeRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	try
 	{
@@ -110,7 +110,7 @@ void MWR::C3::Core::NodeRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<D
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::MultiSendPacketFurtherThroughRouteId(ByteView packet0, RouteId routeId)
+void FSecure::C3::Core::NodeRelay::MultiSendPacketFurtherThroughRouteId(ByteView packet0, RouteId routeId)
 {
 	auto route = FindRoute(routeId);
 	if (!route)
@@ -123,25 +123,25 @@ void MWR::C3::Core::NodeRelay::MultiSendPacketFurtherThroughRouteId(ByteView pac
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> senderPeripheral)
+void FSecure::C3::Core::NodeRelay::PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> senderPeripheral)
 {
 	auto grc = GetGatewayReturnChannel();
 	if (!grc)
 		throw std::runtime_error{ OBF("No GRC set while trying to send a S2G packet.") };
 
 	auto connectorHash = InterfaceFactory::Instance().Find<AbstractPeripheral>(senderPeripheral->GetTypeNameHash())->second.m_ClousureConnectorHash;
-	auto query = ProceduresS2G::DeliverToBinder::Create(RouteId{ GetAgentId(), grc->GetDid() }, MWR::Utils::TimeSinceEpoch(), senderPeripheral->GetDid(), connectorHash, command, m_GatewayEncryptionKey);
+	auto query = ProceduresS2G::DeliverToBinder::Create(RouteId{ GetAgentId(), grc->GetDid() }, FSecure::Utils::TimeSinceEpoch(), senderPeripheral->GetDid(), connectorHash, command, m_GatewayEncryptionKey);
 	LockAndSendPacket(query->ComposeQueryPacket(), grc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::SetGatewayReturnChannel(std::shared_ptr<DeviceBridge> const& gatewayReturnChannel)
+void FSecure::C3::Core::NodeRelay::SetGatewayReturnChannel(std::shared_ptr<DeviceBridge> const& gatewayReturnChannel)
 {
 	m_GatewayReturnChannel = gatewayReturnChannel;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::SetGatewayReturnChannel(MWR::ByteView args)
+void FSecure::C3::Core::NodeRelay::SetGatewayReturnChannel(FSecure::ByteView args)
 {
 	auto channel = m_Devices.Find([did = DeviceId{ args.Read<std::string>() } ](auto const& e) { auto l = e.lock(); return l ? l->GetDid() == did && l->IsChannel() : false; }).lock();
 	if (!channel)
@@ -151,13 +151,13 @@ void MWR::C3::Core::NodeRelay::SetGatewayReturnChannel(MWR::ByteView args)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::NodeRelay::GetGatewayReturnChannel() const
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::NodeRelay::GetGatewayReturnChannel() const
 {
 	return m_GatewayReturnChannel.lock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::NodeRelay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::NodeRelay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
 {
 	// Call the original CreateNewDevice.
 	auto device = Relay::CreateAndAttachDevice(iid, deviceNameHash, isNegotiationChannel, commandLine, negotiationClient);
@@ -168,7 +168,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::NodeRelay::CreateAnd
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::InitializeRoute()
+void FSecure::C3::Core::NodeRelay::InitializeRoute()
 {
 	// Sanity check.
 	auto grc = GetGatewayReturnChannel();
@@ -176,19 +176,19 @@ void MWR::C3::Core::NodeRelay::InitializeRoute()
 		throw std::runtime_error{ OBF("No GRC.") };
 
 	// And post it to Neighbor through GRC.
-	auto query = ProceduresN2N::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, GetBuildId(), m_GatewayEncryptionKey, m_MyEncryptionKey, grc->GetTypeNameHash(), MWR::Utils::TimeSinceEpoch());
+	auto query = ProceduresN2N::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, GetBuildId(), m_GatewayEncryptionKey, m_MyEncryptionKey, grc->GetTypeNameHash(), FSecure::Utils::TimeSinceEpoch());
 	LockAndSendPacket(query->ComposeQueryPacket(), grc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::NegotiateChannel(std::shared_ptr<DeviceBridge> const& device)
+void FSecure::C3::Core::NodeRelay::NegotiateChannel(std::shared_ptr<DeviceBridge> const& device)
 {
 	auto query = ProceduresN2N::ChannelIdExchangeStep1::Create(RouteId{ m_AgentId, device->GetDid()}, device->GetInputId());
 	LockAndSendPacket(query->ComposeQueryPacket(), device);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 {
 	// Retrieve GRC.
 	auto grc = GetGatewayReturnChannel();
@@ -196,18 +196,18 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 		throw std::runtime_error(OBF("Cannot get GRC"));
 
 
-	auto queryS2G = ProceduresS2G::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, MWR::Utils::TimeSinceEpoch(), query.GetSenderRouteId(), query.GetSenderChannel().lock()->GetDid(), query.GetQueryPacket(), m_GatewayEncryptionKey);
+	auto queryS2G = ProceduresS2G::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, FSecure::Utils::TimeSinceEpoch(), query.GetSenderRouteId(), query.GetSenderChannel().lock()->GetDid(), query.GetQueryPacket(), m_GatewayEncryptionKey);
 	LockAndSendPacket(queryS2G->ComposeQueryPacket(), grc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 {
 	throw std::logic_error{ OBF("Wrong recipient.") };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnAgentQuery query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnAgentQuery query)
 {
 	ByteView queryBody = query.GetPacketBody();
 	auto command = static_cast<Command>(queryBody.Read<std::underlying_type_t<Command>>());
@@ -240,7 +240,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnAgentQuery query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 {
 	auto recipient = query.GetRecipientRouteId();
 	auto [newRoute, directionDid] = ByteView{ query.GetPacketBody() }.Read<RouteId, DeviceId>();
@@ -266,7 +266,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnDeviceQuery query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnDeviceQuery query)
 {
 	ByteView queryBody = query.GetPacketBody();
 	auto deviceId = DeviceId (queryBody.Read<DeviceId::UnderlyingIntegerType>());
@@ -279,7 +279,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::RunCommandOnDeviceQuery query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresG2X::DeliverToBinder query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresG2X::DeliverToBinder query)
 {
 	ByteView queryBody = query.GetPacketBody();
 	auto deviceId = DeviceId(queryBody.Read<DeviceId::UnderlyingIntegerType>());
@@ -292,12 +292,12 @@ void MWR::C3::Core::NodeRelay::On(ProceduresG2X::DeliverToBinder query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
 	auto newOutputId = readView.Read<ByteView>();
 
-	auto newInputId = MWR::Utils::GenerateRandomString(newOutputId.size());
+	auto newInputId = FSecure::Utils::GenerateRandomString(newOutputId.size());
 	auto sender = query.GetSenderChannel().lock();
 	if (!sender)
 		throw std::runtime_error(OBF("Invalid sender channel"));
@@ -315,7 +315,7 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
 	auto newOutputId = readView.Read<ByteView>();
@@ -342,40 +342,40 @@ void MWR::C3::Core::NodeRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::NodeRelay::RunCommandAddDevice(ByteView commandArgs)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::NodeRelay::RunCommandAddDevice(ByteView commandArgs)
 {
 	auto [deviceId, isNegotiable, deviceTypeHash] = commandArgs.Read<DeviceId::UnderlyingIntegerType, bool, HashT>();
 	return CreateAndAttachDevice(deviceId, deviceTypeHash, isNegotiable, commandArgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::SendNewDeviceNotification(std::shared_ptr<MWR::C3::Core::DeviceBridge> const& device)
+void FSecure::C3::Core::NodeRelay::SendNewDeviceNotification(std::shared_ptr<FSecure::C3::Core::DeviceBridge> const& device)
 {
 	auto grc = GetGatewayReturnChannel();
 	if (!grc)
 		throw std::runtime_error(OBF("Failed to lock gateway return channel"));
 
-	auto response = ProceduresS2G::AddDeviceResponse::Create(RouteId(m_AgentId, grc->GetDid()), MWR::Utils::TimeSinceEpoch(), device->GetDid(), device->GetTypeNameHash(), device->IsChannel(), device->IsNegotiationChannel(), m_GatewayEncryptionKey);
+	auto response = ProceduresS2G::AddDeviceResponse::Create(RouteId(m_AgentId, grc->GetDid()), FSecure::Utils::TimeSinceEpoch(), device->GetDid(), device->GetTypeNameHash(), device->IsChannel(), device->IsNegotiationChannel(), m_GatewayEncryptionKey);
 	LockAndSendPacket(response->ComposeQueryPacket(), grc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::NodeRelay::SendNewNegotiatedChannelNotification(DeviceId newDeviceId, DeviceId negotiatorId, ByteView inId, ByteView outId)
+void FSecure::C3::Core::NodeRelay::SendNewNegotiatedChannelNotification(DeviceId newDeviceId, DeviceId negotiatorId, ByteView inId, ByteView outId)
 {
 	auto grc = GetGatewayReturnChannel();
 	if (!grc)
 		throw std::runtime_error(OBF("Failed to lock gateway return channel"));
 
-	auto response = ProceduresS2G::NewNegotiatedChannelNotification::Create(RouteId(m_AgentId, grc->GetDid()), MWR::Utils::TimeSinceEpoch(), newDeviceId, negotiatorId, inId, outId, m_GatewayEncryptionKey);
+	auto response = ProceduresS2G::NewNegotiatedChannelNotification::Create(RouteId(m_AgentId, grc->GetDid()), FSecure::Utils::TimeSinceEpoch(), newDeviceId, negotiatorId, inId, outId, m_GatewayEncryptionKey);
 	LockAndSendPacket(response->ComposeQueryPacket(), grc);
 }
 
-void MWR::C3::Core::NodeRelay::Ping(MWR::ByteView args)
+void FSecure::C3::Core::NodeRelay::Ping(FSecure::ByteView args)
 {
 	auto grc = GetGatewayReturnChannel();
 	if (!grc)
 		throw std::runtime_error(OBF("Failed to lock gateway return channel"));
 
-	auto response = ProceduresS2G::Notification::Create(RouteId(m_AgentId, grc->GetDid()), MWR::Utils::TimeSinceEpoch(), ByteView{}, m_GatewayEncryptionKey);
+	auto response = ProceduresS2G::Notification::Create(RouteId(m_AgentId, grc->GetDid()), FSecure::Utils::TimeSinceEpoch(), ByteView{}, m_GatewayEncryptionKey);
 	LockAndSendPacket(response->ComposeQueryPacket(), grc);
 }

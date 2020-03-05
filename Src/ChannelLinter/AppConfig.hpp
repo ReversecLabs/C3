@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	using StringVector = std::vector<std::string>;
 

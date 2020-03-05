@@ -2,19 +2,19 @@
 #include "GateRelay.h"
 #include "Profiler.h"
 #include "DeviceBridge.h"
-#include "Common/MWR/Sockets/SocketsException.h"
+#include "Common/FSecure/Sockets/SocketsException.h"
 #include "ConnectorBridge.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::GateRelay> MWR::C3::Core::GateRelay::CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
-	std::string_view apiBridgeIp, std::uint16_t apiBrigdePort, MWR::Crypto::SignatureKeys const& signatures, MWR::Crypto::SymmetricKey const& broadcastKey,
-	MWR::C3::BuildId buildId, std::filesystem::path snapshotPath, MWR::C3::AgentId agentId /*= MWR::C3::AgentId::GenerateRandom()*/, std::string name /*= ""*/)
+std::shared_ptr<FSecure::C3::Core::GateRelay> FSecure::C3::Core::GateRelay::CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,
+	std::string_view apiBridgeIp, std::uint16_t apiBrigdePort, FSecure::Crypto::SignatureKeys const& signatures, FSecure::Crypto::SymmetricKey const& broadcastKey,
+	FSecure::C3::BuildId buildId, std::filesystem::path snapshotPath, FSecure::C3::AgentId agentId /*= FSecure::C3::AgentId::GenerateRandom()*/, std::string name /*= ""*/)
 {
 	// Create GateRelay.
 	auto gateNode = std::shared_ptr<GateRelay>{ new GateRelay(callbackOnLog, interfaceFactory, apiBridgeIp, apiBrigdePort, signatures, broadcastKey, buildId, std::move(snapshotPath), agentId) };
 	gateNode->m_Profiler->Initialize(std::move(name), gateNode);
 	// Start API bridge.
-	gateNode->Log({ "Starting API bridge on " + std::string{ apiBridgeIp } + ":" + std::to_string(apiBrigdePort), MWR::C3::LogMessage::Severity::Information });
+	gateNode->Log({ "Starting API bridge on " + std::string{ apiBridgeIp } + ":" + std::to_string(apiBrigdePort), FSecure::C3::LogMessage::Severity::Information });
 	std::thread([self = gateNode, controllerIp = std::string{ apiBridgeIp }, apiBrigdePort]() mutable { self->RunApiBrige(controllerIp, apiBrigdePort); }).detach();
 
 	// Done.
@@ -22,18 +22,18 @@ std::shared_ptr<MWR::C3::Core::GateRelay> MWR::C3::Core::GateRelay::CreateAndRun
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::GateRelay::GateRelay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::string_view selfIp, std::uint16_t apiBrigdePort,
-	MWR::Crypto::SignatureKeys const& signatures, MWR::Crypto::SymmetricKey const& broadcastKey, MWR::C3::BuildId buildId, std::filesystem::path snapshotPath, MWR::C3::AgentId agentId)
+FSecure::C3::Core::GateRelay::GateRelay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::string_view selfIp, std::uint16_t apiBrigdePort,
+	FSecure::Crypto::SignatureKeys const& signatures, FSecure::Crypto::SymmetricKey const& broadcastKey, FSecure::C3::BuildId buildId, std::filesystem::path snapshotPath, FSecure::C3::AgentId agentId)
 	: Relay(callbackOnLog, interfaceFactory, Crypto::ConvertToKey(signatures.first), broadcastKey, buildId, agentId)
 	, m_AuthenticationKey{ Crypto::ConvertToKey(signatures.second) }
 	, m_Signature{ signatures.first }
 	, m_Profiler(std::make_shared<Profiler>(std::move(snapshotPath)))
 {
-	Log({ "Gateway launched.", MWR::C3::LogMessage::Severity::Information });
+	Log({ "Gateway launched.", FSecure::C3::LogMessage::Severity::Information });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool MWR::C3::Core::GateRelay::IsAgentBanned(AgentId agentId)
+bool FSecure::C3::Core::GateRelay::IsAgentBanned(AgentId agentId)
 {
 	if (auto agent = m_Profiler->Get().m_Gateway.m_Agents.Find(agentId))
 		return agent->m_IsBanned;
@@ -42,11 +42,11 @@ bool MWR::C3::Core::GateRelay::IsAgentBanned(AgentId agentId)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	try
 	{
-		auto decrypted = MWR::Crypto::DecryptFromAnonymous(packet0.SubString(1), m_AuthenticationKey, m_DecryptionKey);
+		auto decrypted = FSecure::Crypto::DecryptFromAnonymous(packet0.SubString(1), m_AuthenticationKey, m_DecryptionKey);
 		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, RouteId, int32_t>();
 		if (!m_Profiler->Get().m_Gateway.ConnectionExist(rid.GetAgentId()))
 			throw std::runtime_error{ "S2G packet received from not connected source." };
@@ -60,19 +60,19 @@ void MWR::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_ptr<D
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::GateRelay::OnProtocolG2A(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	throw std::runtime_error{ "G2A packet received from Channel: " + sender->GetDid().ToString() + "." };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
+void FSecure::C3::Core::GateRelay::OnProtocolG2R(ByteView packet0, std::shared_ptr<DeviceBridge> sender)
 {
 	throw std::runtime_error{ "G2R packet received from Channel: " + sender->GetDid().ToString() + "." };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> senderPeripheral)
+void FSecure::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> senderPeripheral)
 {
 	auto connectorHash = InterfaceFactory::Instance().Find<AbstractPeripheral>(senderPeripheral->GetTypeNameHash())->second.m_ClousureConnectorHash;
 	auto connector = m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
@@ -83,7 +83,7 @@ void MWR::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std::sha
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::PostCommandToPeripheral(ByteView command, RouteId routeId)
+void FSecure::C3::Core::GateRelay::PostCommandToPeripheral(ByteView command, RouteId routeId)
 {
  	// Check if Peripheral is attached to Gateway.
  	if (routeId.GetAgentId() == GetAgentId())
@@ -109,7 +109,7 @@ void MWR::C3::Core::GateRelay::PostCommandToPeripheral(ByteView command, RouteId
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::uint16_t apiBrigdePort) noexcept
+void FSecure::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::uint16_t apiBrigdePort) noexcept
 {
 	std::chrono::seconds reconnectWait = 0s;
 	while (m_IsAlive)
@@ -146,14 +146,14 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 						{
 							auto decrypted = Crypto::Decrypt(encryptedMessagePacket, self->m_SessionKeys.first);
 							ByteView messagePacket = decrypted;
-							self->Log({ "Received message: " + std::string{messagePacket} , MWR::C3::LogMessage::Severity::DebugInformation });
+							self->Log({ "Received message: " + std::string{messagePacket} , FSecure::C3::LogMessage::Severity::DebugInformation });
 							auto response = self->HandleMessage(json::parse(std::string{ messagePacket }));
 							if (!response.is_null())
 								connection.Send(ByteView{ Crypto::Encrypt(ByteView{response.dump()}, self->m_SessionKeys.second) });
 						}
 						catch (std::exception& exception)
 						{
-							self->Log({ "Caught an exception while processing message from Controller. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
+							self->Log({ "Caught an exception while processing message from Controller. "s + exception.what(), FSecure::C3::LogMessage::Severity::Error });
 						}
 					}
 				));
@@ -165,7 +165,7 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 				});
 			});
 
-			Log({ "API bridge connection established on " + std::string{apiBrigdeIp} +':' + std::to_string(apiBrigdePort), MWR::C3::LogMessage::Severity::Information });
+			Log({ "API bridge connection established on " + std::string{apiBrigdeIp} +':' + std::to_string(apiBrigdePort), FSecure::C3::LogMessage::Severity::Information });
 			reconnectWait = 0s;
 			// Enter main loop.
 			auto sp = m_Profiler->GetSnapshotProxy();
@@ -181,7 +181,7 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 					}
 					catch (std::exception& exception)
 					{
-						Log({ "Caught an exception while sending Profile. "s + exception.what(), MWR::C3::LogMessage::Severity::Error });
+						Log({ "Caught an exception while sending Profile. "s + exception.what(), FSecure::C3::LogMessage::Severity::Error });
 						break;
 					}
 				}
@@ -189,7 +189,7 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 		}
 		catch (SocketsException& exception)
 		{
-			Log({ "Connection to Controller failed. "s + exception.what() + ". Reconnect after " + std::to_string(reconnectWait.count()) + "s", MWR::C3::LogMessage::Severity::Error });
+			Log({ "Connection to Controller failed. "s + exception.what() + ". Reconnect after " + std::to_string(reconnectWait.count()) + "s", FSecure::C3::LogMessage::Severity::Error });
 			std::this_thread::sleep_for(reconnectWait);
 			reconnectWait += 10s;
 		}
@@ -197,7 +197,7 @@ void MWR::C3::Core::GateRelay::RunApiBrige(std::string_view apiBrigdeIp, std::ui
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::TurnOnConnector(HashT connectorNameHash, ByteView commandLine)
+void FSecure::C3::Core::GateRelay::TurnOnConnector(HashT connectorNameHash, ByteView commandLine)
 {
 	// Find the right factory and turn Connector on.
 	if (auto connectorData = InterfaceFactory::Instance().GetInterfaceData<AbstractConnector>(connectorNameHash); !connectorData)
@@ -229,7 +229,7 @@ void MWR::C3::Core::GateRelay::TurnOnConnector(HashT connectorNameHash, ByteView
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::TurnOffConnector(HashT connectorNameHash)
+void FSecure::C3::Core::GateRelay::TurnOffConnector(HashT connectorNameHash)
 {
 	m_Profiler->Get().m_Gateway.ReTurnOffConnector(connectorNameHash);
 	m_Connectors.Remove([&connectorNameHash](std::shared_ptr<ConnectorBridge> c)
@@ -244,20 +244,20 @@ void MWR::C3::Core::GateRelay::TurnOffConnector(HashT connectorNameHash)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::ConnectorBridge> MWR::C3::Core::GateRelay::GetConnector(HashT connectorNameHash)
+std::shared_ptr<FSecure::C3::Core::ConnectorBridge> FSecure::C3::Core::GateRelay::GetConnector(HashT connectorNameHash)
 {
 	return m_Connectors.Find([&](auto& e) { return e->GetNameHash() == connectorNameHash; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::Close()
+void FSecure::C3::Core::GateRelay::Close()
 {
 	CloseDevicesAndConnectors();
 	m_IsAlive = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::GateRelay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::GateRelay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
 {
 	// Call the original CreateNewDevice.
 	auto device = Relay::CreateAndAttachDevice(iid, deviceNameHash, isNegotiationChannel, commandLine, negotiationClient);
@@ -273,7 +273,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::GateRelay::CreateAnd
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
+void FSecure::C3::Core::GateRelay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 {
 	if (FindDevice(iidOfDeviceToDetach)->IsChannel())
 		m_Profiler->Get().m_Gateway.ReDeleteChannel(iidOfDeviceToDetach);
@@ -284,7 +284,7 @@ void MWR::C3::Core::GateRelay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 {
 	auto decryptedPacket = query.GetQueryPacket(this->m_AuthenticationKey, this->m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -308,7 +308,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 {
 	// whole message.
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
@@ -345,7 +345,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 {
 	// whole message.
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
@@ -383,7 +383,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 {
 	auto decryptedPacket = response.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -405,12 +405,12 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::AddDeviceResponse response)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
+void FSecure::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 {
 	auto readView = ByteView{ query.GetQueryPacket() };
 	auto newOutputId = readView.Read<ByteView>();
 
-	auto newInputId = MWR::Utils::GenerateRandomString(newOutputId.size());
+	auto newInputId = FSecure::Utils::GenerateRandomString(newOutputId.size());
 	auto sender = query.GetSenderChannel().lock();
 	if (!sender)
 		throw std::runtime_error("Invalid sender channel");
@@ -431,13 +431,13 @@ void MWR::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep1 query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
+void FSecure::C3::Core::GateRelay::On(ProceduresN2N::ChannelIdExchangeStep2 query)
 {
 	throw std::logic_error("Gateway should never receive the second step message of channel Id negotiation");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotification query)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotification query)
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -459,7 +459,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::NewNegotiatedChannelNotificatio
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
 {
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -474,7 +474,7 @@ void MWR::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-nlohmann::json MWR::C3::Core::GateRelay::HandleMessage(nlohmann::json const& message)
+nlohmann::json FSecure::C3::Core::GateRelay::HandleMessage(nlohmann::json const& message)
 {
 	auto messageType = message.at("MessageType").get<std::string>();
 	auto sequenceNumber = message.value("SequenceNumber", 0ul);
@@ -521,7 +521,7 @@ nlohmann::json MWR::C3::Core::GateRelay::HandleMessage(nlohmann::json const& mes
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::CloseDevicesAndConnectors()
+void FSecure::C3::Core::GateRelay::CloseDevicesAndConnectors()
 {
 	Relay::Close();
 
@@ -535,7 +535,7 @@ void MWR::C3::Core::GateRelay::CloseDevicesAndConnectors()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::GateRelay::Reset()
+void FSecure::C3::Core::GateRelay::Reset()
 {
 	CloseDevicesAndConnectors();
 	RemoveAllRoutes();

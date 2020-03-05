@@ -3,7 +3,7 @@
 #include "Procedures.h"
 
 /// Gateway -> X [Agent|Route]
-namespace MWR::C3::Core::ProceduresG2X
+namespace FSecure::C3::Core::ProceduresG2X
 {
 	/// Base for Gateway -> [Agent|Route] Queries.
 	struct QueryG2X : BaseQuery

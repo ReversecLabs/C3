@@ -7,7 +7,7 @@ using namespace std::string_literals;
 
 // Based on Blackbone https://github.com/DarthTon/Blackbone
 
-namespace MWR::Loader::UnexportedWinApi
+namespace FSecure::Loader::UnexportedWinApi
 {
 	namespace
 	{
@@ -217,4 +217,4 @@ namespace MWR::Loader::UnexportedWinApi
 	}
 #endif // defined _M_IX86
 
-} // namespace MWR::Loader
+} // namespace FSecure::Loader
