@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	/// Representation of arguments form used in Capability json
 	class Form

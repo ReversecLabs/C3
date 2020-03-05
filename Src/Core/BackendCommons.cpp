@@ -1,6 +1,6 @@
 #include "Stdafx.h"
-#include "Common/MWR/C3/Internals/BackendCommons.h"
-#include "Common/MWR/Crypto/Base64.h"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/Crypto/Base64.h"
 #include "GateRelay.h"
 #include "NodeRelay.h"
 
@@ -11,7 +11,7 @@ namespace
 	/// Obtains Gateway's encryption keys. If the key file exists, it's contents will be Base64 decoded and validated. Otherwise they will be generated.
 	/// @param keysFilePath path to the keys file.
 	/// @return std::tuple with a flag (true if keys were read, false if generated) and all the keys.
-	std::tuple<bool, MWR::Crypto::SignatureKeys, MWR::Crypto::SymmetricKey> ReadFromFileOrGenerateGatewayKeys(std::filesystem::path const& keysFilePath)
+	std::tuple<bool, FSecure::Crypto::SignatureKeys, FSecure::Crypto::SymmetricKey> ReadFromFileOrGenerateGatewayKeys(std::filesystem::path const& keysFilePath)
 	{
 		// Check if file exists.
 		if (std::filesystem::exists(keysFilePath))
@@ -38,8 +38,8 @@ namespace
 				};
 
 				// Parse and return keys.
-				return std::make_tuple(true, MWR::Crypto::SignatureKeys{ ParseEntry((MWR::Crypto::PrivateSignature*)nullptr, OBF("Private signature")),
-					ParseEntry((MWR::Crypto::PublicSignature*)nullptr, OBF("Public signature")) }, ParseEntry((MWR::Crypto::SymmetricKey*)nullptr, OBF("Broadcast key")));
+				return std::make_tuple(true, FSecure::Crypto::SignatureKeys{ ParseEntry((FSecure::Crypto::PrivateSignature*)nullptr, OBF("Private signature")),
+					ParseEntry((FSecure::Crypto::PublicSignature*)nullptr, OBF("Public signature")) }, ParseEntry((FSecure::Crypto::SymmetricKey*)nullptr, OBF("Broadcast key")));
 			}
 			catch (const std::exception & exception)
 			{
@@ -47,14 +47,14 @@ namespace
 			}
 
 		// File doesn't exist. Generate all the keys.
-		auto singatures = MWR::Crypto::GenerateSignatureKeys();
-		auto broadcastKey = MWR::Crypto::GenerateSymmetricKey();
+		auto singatures = FSecure::Crypto::GenerateSignatureKeys();
+		auto broadcastKey = FSecure::Crypto::GenerateSymmetricKey();
 
 		// Create json tree.
 		auto keys = json{};
-		keys[OBF("Private signature")] = cppcodec::base64_rfc4648::encode(singatures.first.ToByteVector().data(), MWR::Crypto::PrivateSignature::Size);
-		keys[OBF("Public signature")] = cppcodec::base64_rfc4648::encode(singatures.second.ToByteVector().data(), MWR::Crypto::PublicSignature::Size);
-		keys[OBF("Broadcast key")] = cppcodec::base64_rfc4648::encode(broadcastKey.ToByteVector().data(), MWR::Crypto::SymmetricKey::Size);
+		keys[OBF("Private signature")] = cppcodec::base64_rfc4648::encode(singatures.first.ToByteVector().data(), FSecure::Crypto::PrivateSignature::Size);
+		keys[OBF("Public signature")] = cppcodec::base64_rfc4648::encode(singatures.second.ToByteVector().data(), FSecure::Crypto::PublicSignature::Size);
+		keys[OBF("Broadcast key")] = cppcodec::base64_rfc4648::encode(broadcastKey.ToByteVector().data(), FSecure::Crypto::SymmetricKey::Size);
 
 		// Store them in provided file and return.
 		std::ofstream{ keysFilePath, std::ios::out | std::ios::trunc } << keys.dump(4);									// dump(4) adds 4 space indentation to file.
@@ -81,15 +81,15 @@ namespace
 		(
 			jsonValueClosure(OBF("API Bridge IP"), OBF("127.0.0.1")),
 			jsonValueClosure(OBF("API Bridge port"), std::uint16_t{ 2323 }),
-			MWR::C3::BuildId{ jsonValueClosure(OBF("BuildId"), MWR::C3::BuildId::GenerateRandom().ToString()) },
-			MWR::C3::AgentId{ jsonValueClosure(OBF("AgentId"), MWR::C3::AgentId::GenerateRandom().ToString()) },
+			FSecure::C3::BuildId{ jsonValueClosure(OBF("BuildId"), FSecure::C3::BuildId::GenerateRandom().ToString()) },
+			FSecure::C3::AgentId{ jsonValueClosure(OBF("AgentId"), FSecure::C3::AgentId::GenerateRandom().ToString()) },
 			jsonValueClosure("Name", "")
 		);
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Relay> MWR::C3::Utils::CreateGatewayFromConfigurationFiles(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::filesystem::path const& keysFileName, std::filesystem::path const& configurationFileName)
+std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateGatewayFromConfigurationFiles(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::filesystem::path const& keysFileName, std::filesystem::path const& configurationFileName)
 {
 	// Identify and store the directory that the executable is running in (-not- the current directory) using WinAPI.
 	wchar_t executableFilePath[MAX_PATH];
@@ -108,27 +108,27 @@ std::shared_ptr<MWR::C3::Relay> MWR::C3::Utils::CreateGatewayFromConfigurationFi
 		callbackOnLog({ OBF("Generated new keys/signatures and stored them on disk."), LogMessage::Severity::Information }, nullptr);
 
 	callbackOnLog({ OBF("Starting Gateway..."), LogMessage::Severity::Information }, nullptr);
-	return MWR::C3::Core::GateRelay::CreateAndRun(callbackOnLog, interfaceFactory, apiBridgeIp, apiBrigdePort, signatures, broadcastKey, buildId, snapshotPath, agentId, name);
+	return FSecure::C3::Core::GateRelay::CreateAndRun(callbackOnLog, interfaceFactory, apiBridgeIp, apiBrigdePort, signatures, broadcastKey, buildId, snapshotPath, agentId, name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Relay> MWR::C3::Utils::CreateNodeRelayFromImagePatch(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, ByteView buildId, ByteView gatewaySignature, ByteView broadcastKey, std::vector<ByteVector> const& gatewayInitialPackets)
+std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateNodeRelayFromImagePatch(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, ByteView buildId, ByteView gatewaySignature, ByteView broadcastKey, std::vector<ByteVector> const& gatewayInitialPackets)
 {
 	return Core::NodeRelay::CreateAndRun(callbackOnLog, interfaceFactory, gatewaySignature, broadcastKey, gatewayInitialPackets, buildId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string MWR::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view* sender)
+std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view* sender)
 {
 	// Format message as: "[relay]|@> [InterfaceID] message", where @ is different for each severity.
 	std::string retVal = sender ? (std::string(relayName) + '|').c_str() : OBF("");
 
 	switch (message.m_Severity)
 	{
-	case MWR::C3::LogMessage::Severity::Error: retVal += OBF("Error> "); break;
-	case MWR::C3::LogMessage::Severity::Information: retVal += OBF("Info> "); break;
-	case MWR::C3::LogMessage::Severity::Warning: retVal += OBF("Warning> "); break;
-	case MWR::C3::LogMessage::Severity::DebugInformation: retVal += OBF("Debug> "); break;
+	case FSecure::C3::LogMessage::Severity::Error: retVal += OBF("Error> "); break;
+	case FSecure::C3::LogMessage::Severity::Information: retVal += OBF("Info> "); break;
+	case FSecure::C3::LogMessage::Severity::Warning: retVal += OBF("Warning> "); break;
+	case FSecure::C3::LogMessage::Severity::DebugInformation: retVal += OBF("Debug> "); break;
 	default: retVal += OBF("???> ");
 	}
 

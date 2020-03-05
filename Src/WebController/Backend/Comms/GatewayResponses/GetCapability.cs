@@ -1,4 +1,4 @@
-﻿using MWR.C3.WebController.Models;
+﻿using FSecure.C3.WebController.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.Comms.GatewayResponses
+namespace FSecure.C3.WebController.Comms.GatewayResponses
 {
     public partial class GetCapability
     {

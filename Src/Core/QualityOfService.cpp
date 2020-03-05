@@ -1,16 +1,16 @@
 #include "StdAfx.h"
 #include "QualityOfService.h"
 #include "RouteId.h"
-#include "Common/MWR/CppTools/ScopeGuard.h"
+#include "Common/FSecure/CppTools/ScopeGuard.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32_t MWR::C3::QualityOfService::GetOutgouingPacketId()
+uint32_t FSecure::C3::QualityOfService::GetOutgouingPacketId()
 {
 	return m_OutgouingPacketId++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::QualityOfService::GetNextPacket()
+FSecure::ByteVector FSecure::C3::QualityOfService::GetNextPacket()
 {
 	auto it = std::find_if(m_ReciveQueue.begin(), m_ReciveQueue.end(), [](auto& e) {return e.second.IsReady(); });
 	if (it == m_ReciveQueue.end())
@@ -22,7 +22,7 @@ MWR::ByteVector MWR::C3::QualityOfService::GetNextPacket()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
+void FSecure::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
 {
 	if (chunkWithHeader.size() < QualityOfService::s_HeaderSize) // Data is to short to even be chunk of packet.
 		return; // skip this chunk. there is nothing that can be done with it. If sender knows it pushed chunk to short it will retransmit it.
@@ -32,7 +32,7 @@ void MWR::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk)
+void FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk)
 {
 	auto it = m_ReciveQueue.find(packetId);
 	if (it == m_ReciveQueue.end())
@@ -42,7 +42,7 @@ void MWR::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t ch
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::QualityOfService::Packet::Packet(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
+FSecure::C3::QualityOfService::Packet::Packet(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
 	: m_ExpectedSize(expectedSize)
 {
 
@@ -54,7 +54,7 @@ MWR::C3::QualityOfService::Packet::Packet(uint32_t chunkId, uint32_t expectedSiz
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::QualityOfService::Packet::PushNextChunk(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
+void FSecure::C3::QualityOfService::Packet::PushNextChunk(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
 {
 	if (expectedSize != m_ExpectedSize)
 		throw std::runtime_error{ OBF("QoS error. Received chunk of packet has wrong expected size") };
@@ -71,7 +71,7 @@ void MWR::C3::QualityOfService::Packet::PushNextChunk(uint32_t chunkId, uint32_t
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::ByteVector MWR::C3::QualityOfService::Packet::Read()
+FSecure::ByteVector FSecure::C3::QualityOfService::Packet::Read()
 {
 	if (!IsReady())
 		throw std::runtime_error{ OBF("QoS error. Packet is not ready") };
@@ -89,7 +89,7 @@ MWR::ByteVector MWR::C3::QualityOfService::Packet::Read()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool MWR::C3::QualityOfService::Packet::IsReady()
+bool FSecure::C3::QualityOfService::Packet::IsReady()
 {
 	if (m_Size > m_ExpectedSize)
 		throw std::runtime_error{ OBF("QoS error. Packet size is longer than expected, wrong chunks must been set.") };

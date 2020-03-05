@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace MWR.C3.WebController.RandomExtentions
+namespace FSecure.C3.WebController.RandomExtentions
 {
     public static class RandomExtentions
     {

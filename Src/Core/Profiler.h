@@ -1,9 +1,9 @@
 #pragma once
 
 #include "GateRelay.h"
-#include "Common/MWR/Sockets/Sockets.hpp"
+#include "Common/FSecure/Sockets/Sockets.hpp"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// Virtualizes whole C3 Network with it's remote elements.
 	struct Profiler : std::enable_shared_from_this<Profiler>
@@ -274,7 +274,7 @@ namespace MWR::C3::Core
 			/// @param isBanned flag indicating whether Agent should be added to the black-list.
 			/// @param lastSeen timestamp when agent was last seen (responded)
 			/// @param hostInfo agent's host information
-			Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, MWR::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo);
+			Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo);
 
 			/// Dumps current Profile to JSON.
 			/// @return Network Profile in JSON format.
@@ -316,7 +316,7 @@ namespace MWR::C3::Core
 			/// @returns return channel or nullptr
 			Channel* FindGrc();
 
-			MWR::Crypto::PublicKey m_EncryptionKey;																		///< Agent's public key.
+			FSecure::Crypto::PublicKey m_EncryptionKey;																		///< Agent's public key.
 			HostInfo m_HostInfo;																						///< Agent's Host information
 			bool m_IsBanned;																							///< Is Agent black-listed?
 			bool m_IsX64;
@@ -344,7 +344,7 @@ namespace MWR::C3::Core
 			/// @param isBanned - is agent banned
 			/// @param lastSeen - when agent was last seen
 			/// @param hostInfo - new agnet's host information
-			Agent* ReAddAgent(AgentId agentId, BuildId buildId, MWR::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, HostInfo hostInfo);
+			Agent* ReAddAgent(AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, HostInfo hostInfo);
 
 			/// Reprofile: Add remote agent (agent not neigbouring with gateway)
 			/// @param agentId - new agent Id
@@ -354,7 +354,7 @@ namespace MWR::C3::Core
 			/// @param childGrcHash - new agent's
 			/// @param lastSeen - when agent was last seen
 			/// @param hostInfo - new agnet's host information
-			Agent* ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, MWR::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t lastSeen, HostInfo hostInfo);
+			Agent* ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t lastSeen, HostInfo hostInfo);
 
 			/// Find an agent directly connected to relay through given channel
 			/// @param relay - relay whose neighbour to find

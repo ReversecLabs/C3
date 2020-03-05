@@ -7,12 +7,12 @@
 /// @param baseAddress of this Module
 void ExecResource(void* baseAddress)
 {
-	MWR_SET_QUIET_ABORT(
+	FSECURE_SET_QUIET_ABORT(
 		if (auto resource = FindStartOfResource(baseAddress))
 		{
 			auto dllData = GetPayload(resource);
 			auto exportFunc = GetExportName(resource);
-			MWR::Loader::LoadPe(dllData, exportFunc);
+			FSecure::Loader::LoadPe(dllData, exportFunc);
 		}
 	);
 }

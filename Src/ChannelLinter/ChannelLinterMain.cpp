@@ -8,7 +8,7 @@ try
 {
 	std::cout << "Custom Command and Control - Channel linter. BUILD: " << C3_BUILD_VERSION << std::endl;
 
-	using namespace MWR;
+	using namespace FSecure;
 	C3::Linter::ArgumentParser argParser(argc, argv);
 	auto const& config = argParser.GetConfig();
 	if (config.m_ShowHelp)

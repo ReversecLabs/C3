@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MWR.C3.Comms;
-using MWR.C3.WebController.Models;
+using FSecure.C3.Comms;
+using FSecure.C3.WebController.Models;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public partial class GatewayConnectionHandler
     {

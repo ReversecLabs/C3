@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Common/MWR/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
 #include "Identifiers.h"
-#include "Common/MWR/C3/Internals/Interface.h"
+#include "Common/FSecure/C3/Internals/Interface.h"
 #include "QualityOfService.h"
 
 // Forward declarations.
-namespace MWR::C3
+namespace FSecure::C3
 {
 	struct Device;
 	namespace Core
@@ -15,7 +15,7 @@ namespace MWR::C3
 	}
 }
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// PIMPL for Device type.
 	struct DeviceBridge : AbstractDeviceBridge, std::enable_shared_from_this<DeviceBridge>

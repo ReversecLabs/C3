@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.LinqExtentions
+namespace FSecure.C3.WebController.LinqExtentions
 {
     public static class IQueryableExtentions
     {

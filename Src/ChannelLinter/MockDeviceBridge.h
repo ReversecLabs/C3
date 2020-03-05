@@ -1,9 +1,9 @@
 #pragma once
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	/// Device bridge used to mock its functionality
-	class MockDeviceBridge : public MWR::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
+	class MockDeviceBridge : public FSecure::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
 	{
 	public:
 		/// Create Mock device bridge to device
@@ -64,7 +64,7 @@ namespace MWR::C3::Linter
 		std::string GetErrorStatus() override;
 
 		/// @returns Bridged device
-		std::shared_ptr<MWR::C3::Device> GetDevice() const;
+		std::shared_ptr<FSecure::C3::Device> GetDevice() const;
 
 	private:
 		/// Bridged device

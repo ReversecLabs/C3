@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	/// Calculate VA from base address and RVA
 	/// @tparam T - type of return value

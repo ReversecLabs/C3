@@ -10,16 +10,16 @@ int main(DWORD argc, char * argv[])
 	try
 	{
 		// Helper lambda used to render Log entries on the screen.
-		auto Log = [](MWR::C3::LogMessage const& message, std::string_view* sender)
+		auto Log = [](FSecure::C3::LogMessage const& message, std::string_view* sender)
 		{
 			// Synchronize and print.
 			static std::mutex mutex;
 			std::lock_guard lock(mutex);
-			std::cout << MWR::C3::Utils::ConvertLogMessageToConsoleText(OBF("Gateway"), message, sender) << std::endl;
+			std::cout << FSecure::C3::Utils::ConvertLogMessageToConsoleText(OBF("Gateway"), message, sender) << std::endl;
 		};
 
 		// Simply create a Gateway providing Log lambda, configuration and keys files, then join its threads.
-		MWR::C3::Utils::CreateGatewayFromConfigurationFiles(Log, MWR::C3::InterfaceFactory::Instance(), OBF("GatewayKeys.json"), OBF("GatewayConfiguration.json"))->Join();
+		FSecure::C3::Utils::CreateGatewayFromConfigurationFiles(Log, FSecure::C3::InterfaceFactory::Instance(), OBF("GatewayKeys.json"), OBF("GatewayConfiguration.json"))->Join();
 	}
 	catch (std::exception const& exception)
 	{

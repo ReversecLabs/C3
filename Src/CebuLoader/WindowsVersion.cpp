@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "WindowsVersion.h"
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	WinVersion g_WinVer;
 

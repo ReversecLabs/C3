@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using MWR.C3.WebController.Models;
+using FSecure.C3.WebController.Models;
 using Serilog;
 using Serilog.AspNetCore;
-using MWR.C3.WebController.HttpExtentions;
-using MWR.C3.WebController.LinqExtentions;
+using FSecure.C3.WebController.HttpExtentions;
+using FSecure.C3.WebController.LinqExtentions;
 using Microsoft.EntityFrameworkCore;
 
-namespace MWR.C3.WebController.Controllers
+namespace FSecure.C3.WebController.Controllers
 {
 
     [Route("api/gateway/{gatewayId}/[controller]")]

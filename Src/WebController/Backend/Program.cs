@@ -12,7 +12,7 @@ using Serilog.Sinks.File;
 using Serilog.Events;
 using Serilog.Context;
 
-namespace MWR.C3.WebController
+namespace FSecure.C3.WebController
 {
     public class Program
     {

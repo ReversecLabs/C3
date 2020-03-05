@@ -1,7 +1,7 @@
-﻿using MWR.C3.WebController.Comms;
+﻿using FSecure.C3.WebController.Comms;
 using Newtonsoft.Json;
 using System;
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     public class Route
     {

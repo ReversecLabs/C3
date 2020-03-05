@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common/MWR/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
 
 // Forward declarations.
-namespace MWR::C3
+namespace FSecure::C3
 {
 	struct AbstractConnector;
 	namespace Core
@@ -12,7 +12,7 @@ namespace MWR::C3
 	}
 }
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// PIMPL for Connector type.
 	struct ConnectorBridge : AbstractConnectorBridge, std::enable_shared_from_this<ConnectorBridge>

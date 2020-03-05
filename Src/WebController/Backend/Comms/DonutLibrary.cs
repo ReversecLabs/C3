@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 // https://github.com/TheWover/donut/blob/master/lib/donut.h
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public class DonutLibrary
     {

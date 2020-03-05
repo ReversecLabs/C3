@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Swagger;
-using MWR.C3.Comms;
-using MWR.C3.WebController.Models;
-using MWR.C3.WebController.Comms;
+using FSecure.C3.Comms;
+using FSecure.C3.WebController.Models;
+using FSecure.C3.WebController.Comms;
 using System.Threading;
 
-namespace MWR.C3.WebController
+namespace FSecure.C3.WebController
 {
     public class Startup
     {

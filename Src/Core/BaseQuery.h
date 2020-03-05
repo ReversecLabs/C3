@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	// Forward declarations.
 	struct DeviceBridge;

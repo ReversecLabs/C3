@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace MWR.C3.WebController.Migrations
+namespace FSecure.C3.WebController.Migrations
 {
     public partial class Initial : Migration
     {

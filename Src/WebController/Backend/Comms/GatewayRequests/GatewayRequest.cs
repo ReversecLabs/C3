@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.Comms.GatewayRequests
+namespace FSecure.C3.WebController.Comms.GatewayRequests
 {
     public class GatewayRequest
     {

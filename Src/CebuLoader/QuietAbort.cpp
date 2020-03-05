@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "QuietAbort.h"
 
-namespace MWR::Loader
+namespace FSecure::Loader
 {
 	std::jmp_buf g_JmpBuf;
 

@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     [Owned]
     public class HostInfo

@@ -1,7 +1,7 @@
-﻿using MWR.C3.WebController.Models;
+﻿using FSecure.C3.WebController.Models;
 using System.Collections.Generic;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public interface IDonutService
     {

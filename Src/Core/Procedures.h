@@ -1,11 +1,11 @@
 #pragma once
 
 #include "BaseQuery.h"
-#include "Common/MWR/Crypto/Crypto.hpp"
-#include "Common/MWR/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/Crypto/Crypto.hpp"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
 #include "RouteId.h"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	// Typedefs.
 	using ProtocolsUnderlyingType = std::uint8_t;
@@ -434,7 +434,7 @@ namespace MWR::C3::Core
 			/// @param timestamp reported time at relay.
 			/// @param blob unspecified data
 			/// @param gatewayPublicEncryptionKey key used to encrypt package. Only gateway will be able to decrypt package.
-			static std::unique_ptr<Notification> Create(RouteId rid, int32_t timestamp, MWR::ByteView blob, Crypto::PublicKey gatewayPublicEncryptionKey)
+			static std::unique_ptr<Notification> Create(RouteId rid, int32_t timestamp, FSecure::ByteView blob, Crypto::PublicKey gatewayPublicEncryptionKey)
 			{
 				auto query = std::make_unique<Notification>(rid, timestamp, ResponseType::None);
 				query->m_QueryPacketBody = Crypto::EncryptAnonymously(query->CompileQueryHeader().Write(rid, timestamp, blob), gatewayPublicEncryptionKey);

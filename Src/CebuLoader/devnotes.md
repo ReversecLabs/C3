@@ -3,7 +3,7 @@
 ## Thread local storage
 Thread safe static variable initialization is often used to implement singleton pattern. (C3 uses it to automate registration of Interfaces).
 ```
-MWR::C3::InterfaceFactory& MWR::C3::InterfaceFactory::Instance()
+FSecure::C3::InterfaceFactory& FSecure::C3::InterfaceFactory::Instance()
 {
 	static auto instance = InterfaceFactory{};
 	return instance;

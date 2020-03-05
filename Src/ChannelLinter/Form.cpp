@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Form.h"
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	Form::Form(json argumentForm) :
 		m_ArgumentsForm(std::move(argumentForm))

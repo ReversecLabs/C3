@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Relay.h"
-#include "Common/MWR/C3/Internals/BackendCommons.h"
-#include "Common/MWR/Sockets/Sockets.hpp"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/Sockets/Sockets.hpp"
 #include "Common/json/json.hpp"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	// Forward declarations.
 	struct Profiler;
@@ -29,8 +29,8 @@ namespace MWR::C3::Core
 		/// @param agentId Agent identifier.
 		/// @param name optional name provided for gateway.
 		static std::shared_ptr<GateRelay> CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::string_view apiBridgeIp,
-			std::uint16_t apiBrigdePort, MWR::Crypto::SignatureKeys const& signatures, MWR::Crypto::SymmetricKey const& broadcastKey, MWR::C3::BuildId buildId, std::filesystem::path snapshotPath,
-			MWR::C3::AgentId agentId = MWR::C3::AgentId::GenerateRandom(), std::string name = "");
+			std::uint16_t apiBrigdePort, FSecure::Crypto::SignatureKeys const& signatures, FSecure::Crypto::SymmetricKey const& broadcastKey, FSecure::C3::BuildId buildId, std::filesystem::path snapshotPath,
+			FSecure::C3::AgentId agentId = FSecure::C3::AgentId::GenerateRandom(), std::string name = "");
 
 		/// Turns on specified Connector.
 		/// @param connectorNameHash hash value of Connector's name.
@@ -46,7 +46,7 @@ namespace MWR::C3::Core
 		/// Gets Connector if it's turned on.
 		/// @param connectorNameHash hash value of Connector's name.
 		/// @return Connector pointer if found or null.
-		std::shared_ptr<MWR::C3::Core::ConnectorBridge> GetConnector(HashT connectorNameHash);
+		std::shared_ptr<FSecure::C3::Core::ConnectorBridge> GetConnector(HashT connectorNameHash);
 
 		/// Called whenever an attached Binder Connector wants to send a Command to its Peripheral Binder.
 		/// @param command full Command with arguments.
@@ -65,7 +65,7 @@ namespace MWR::C3::Core
 		/// @param snapshotPath path to json file with current state of network. Used in case of gateway restart.
 		/// @param agentId Agent identifier.
 		GateRelay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, std::string_view abiBridgeIp, std::uint16_t apiBrigdePort,
-			MWR::Crypto::SignatureKeys const& signatures, MWR::Crypto::SymmetricKey const& broadcastKey, MWR::C3::BuildId buildId, std::filesystem::path snapshotPath, MWR::C3::AgentId agentId = MWR::C3::AgentId::GenerateRandom());
+			FSecure::Crypto::SignatureKeys const& signatures, FSecure::Crypto::SymmetricKey const& broadcastKey, FSecure::C3::BuildId buildId, std::filesystem::path snapshotPath, FSecure::C3::AgentId agentId = FSecure::C3::AgentId::GenerateRandom());
 
 		/// Close Gateway.
 		void Close() override;
@@ -167,7 +167,7 @@ namespace MWR::C3::Core
 		Crypto::PublicKey m_AuthenticationKey;																			///< Gateway's pubic key. Used to decrypt authenticated messages.
 		Crypto::PrivateSignature m_Signature;																			///< Used to authenticate as Network's Gateway.
 		Crypto::SessionKeys m_SessionKeys;																				///< Used for communication with controller.
-		MWR::InitializeSockets m_InitializeSockets;																		///< Sockets initializer object used by API bridge.
+		FSecure::InitializeSockets m_InitializeSockets;																		///< Sockets initializer object used by API bridge.
 		bool m_IsAlive = true;																							///< Equals false if Controller sent the exit Command.
 
 		std::shared_ptr<Profiler> m_Profiler;																			///< Virtual shape of the network.
