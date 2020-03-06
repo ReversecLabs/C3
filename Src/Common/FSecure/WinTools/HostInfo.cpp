@@ -57,7 +57,7 @@ namespace FSecure
 			m_UserName.resize(0);
 
 		using fnRtlGetVersion = NTSTATUS(NTAPI*)(PRTL_OSVERSIONINFOEXW lpVersionInformation);
-		auto RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(OBF_W(L"ntdll.dll")), OBF("RtlGetVersion"));
+		auto RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(OBF(L"ntdll.dll")), OBF("RtlGetVersion"));
 		if (RtlGetVersion)
 		{
 			RtlGetVersion(&m_OsVersionInfo);
