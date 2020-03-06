@@ -121,7 +121,7 @@ std::pair<MWR::CppCommons::WinTools::Services::Status, HRESULT> MWR::CppCommons:
 void MWR::CppCommons::WinTools::Services::ServiceMain(DWORD argc, LPTSTR* argv)
 {
 	// Register the control request handler
-	if (s_ServiceStatusHandle = RegisterServiceCtrlHandler(OBF_W(TEXT("AdsaServicePoX")), ControlHandler), !s_ServiceStatusHandle)
+	if (s_ServiceStatusHandle = RegisterServiceCtrlHandler(OBF(TEXT("AdsaServicePoX")), ControlHandler), !s_ServiceStatusHandle)
 	{
 		//SvcReportEvent(TEXT("RegisterServiceCtrlHandler")); Windows event viewer
 		return;

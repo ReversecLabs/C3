@@ -95,16 +95,10 @@ namespace andrivet::ADVobfuscator
 }
 
 // Prefix notation
-#define DEF_OBFUSCATED(str) andrivet::ADVobfuscator::XorString<andrivet::ADVobfuscator::MetaRandomKey<char, __COUNTER__>, andrivet::ADVobfuscator::MetaRandomKey<char, __COUNTER__>, std::make_index_sequence<sizeof(str) - 1>>(str)
-#define DEF_OBFUSCATED_W(str) andrivet::ADVobfuscator::XorWString<andrivet::ADVobfuscator::MetaRandomKey<wchar_t, __COUNTER__>, andrivet::ADVobfuscator::MetaRandomKey<wchar_t, __COUNTER__>, std::make_index_sequence<sizeof(str)/(sizeof(wchar_t)) - 1>>(str)
-
+#define PEEL(x) std::remove_const_t<std::remove_all_extents_t<std::remove_reference_t<decltype(x)>>>
+#define DEF_OBFUSCATED(str) andrivet::ADVobfuscator::XorStringT<PEEL(str), andrivet::ADVobfuscator::MetaRandomKey<PEEL(str), __COUNTER__>, andrivet::ADVobfuscator::MetaRandomKey<PEEL(str), __COUNTER__>, std::make_index_sequence<sizeof(str)/(sizeof(PEEL(str))) - 1>>{ str }
 #define OBF(str) (DEF_OBFUSCATED(str).decrypt())
-#define OBF_W(str) (DEF_OBFUSCATED_W(str).decrypt())
-
-#define OBF_STR(str) (std::string{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSTR(str) (std::wstring{DEF_OBFUSCATED_W(str).decrypt()})
-
-#define OBF_SEC(str) (MWR::SecureString{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSEC(str) (MWR::SecureWString{DEF_OBFUSCATED_W(str).decrypt()})
+#define OBF_STR(str) (std::basic_string<PEEL(str)>{ OBF(str) })
+#define OBF_SEC(str) (MWR::BasicSecureString<PEEL(str)>{ OBF(str) })
 
 #endif
