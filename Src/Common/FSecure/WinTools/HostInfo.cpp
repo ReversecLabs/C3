@@ -56,11 +56,12 @@ namespace FSecure
 		else
 			m_UserName.resize(0);
 
-#pragma warning( push )
-#pragma warning(disable : 4996) // disable deprecation warning
-		// Retrieve Operating system version.
-		::GetVersionExA(reinterpret_cast<LPOSVERSIONINFOA>(&m_OsVersionInfo));
-#pragma warning( pop )
+		using fnRtlGetVersion = NTSTATUS(NTAPI*)(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+		auto RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(OBF_W(L"ntdll.dll")), OBF("RtlGetVersion"));
+		if (RtlGetVersion)
+		{
+			RtlGetVersion(&m_OsVersionInfo);
+		}
 
 		m_ProcessId = ::GetCurrentProcessId();
 
@@ -75,7 +76,7 @@ namespace FSecure
 		}
 	}
 
-	HostInfo::HostInfo(std::string computerName, std::string userName, std::string domain, OSVERSIONINFOEXA osVersionInfo, DWORD processId, bool isElevated)
+	HostInfo::HostInfo(std::string computerName, std::string userName, std::string domain, RTL_OSVERSIONINFOEXW osVersionInfo, DWORD processId, bool isElevated)
 		: m_ComputerName{ std::move(computerName) }
 		, m_UserName{ std::move(userName) }
 		, m_Domain{ std::move(domain) }

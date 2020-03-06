@@ -14,7 +14,7 @@ namespace FSecure
 		std::string m_ComputerName;												///< Host name.
 		std::string m_UserName;													///< Currently logged user name.
 		std::string m_Domain;													///< Domain name
-		OSVERSIONINFOEXA m_OsVersionInfo;										///< MS windows version info
+		RTL_OSVERSIONINFOEXW m_OsVersionInfo;									///< MS windows version info
 		DWORD m_ProcessId;														///< Process Id
 		bool m_IsElevated;														///< Is process run with elevated rights
 
@@ -22,7 +22,7 @@ namespace FSecure
 		HostInfo();
 
 		/// Aggregate constructor.
-		HostInfo(std::string computerName, std::string userName, std::string domain, OSVERSIONINFOEXA osVersionInfo, DWORD processId, bool isElevated);
+		HostInfo(std::string computerName, std::string userName, std::string domain, RTL_OSVERSIONINFOEXW osVersionInfo, DWORD processId, bool isElevated);
 
 		/// Constructor from json
 		/// @param json to read from
@@ -34,14 +34,14 @@ namespace FSecure
 	/// @param host info to write
 	void to_json(json& j, const HostInfo& hi);
 
-	/// overload ByteConverter for OSVERSIONINFOEXA. szCSDVersion and wSuiteMask are omitted.
+	/// overload ByteConverter for RTL_OSVERSIONINFOEXW. szCSDVersion and wSuiteMask are omitted.
 	template<>
-	struct ByteConverter<OSVERSIONINFOEXA>
+	struct ByteConverter<RTL_OSVERSIONINFOEXW>
 	{
 		/// Serialize HostInfo type to ByteVector.
 		/// @param obj. Object to be serialized.
 		/// @param bv. ByteVector to be expanded.
-		static void To(OSVERSIONINFOEXA const& obj, ByteVector& bv)
+		static void To(RTL_OSVERSIONINFOEXW const& obj, ByteVector& bv)
 		{
 			bv.Store(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
 		}
@@ -51,16 +51,16 @@ namespace FSecure
 		/// @return size_t. Number of bytes used after serialization.
 		static size_t Size()
 		{
-			OSVERSIONINFOEXA* p = nullptr;
+			RTL_OSVERSIONINFOEXW* p = nullptr;
 			return ByteVector::Size(p->dwOSVersionInfoSize, p->dwMajorVersion, p->dwMinorVersion, p->dwBuildNumber, p->dwPlatformId, p->wServicePackMajor, p->wServicePackMinor, p->wProductType);
 		}
 
 		/// Deserialize from ByteView.
 		/// @param bv. Buffer with serialized data.
-		/// @return OSVERSIONINFOEXA.
-		static OSVERSIONINFOEXA From(ByteView& bv)
+		/// @return RTL_OSVERSIONINFOEXW.
+		static RTL_OSVERSIONINFOEXW From(ByteView& bv)
 		{
-			OSVERSIONINFOEXA obj = {0,};
+			RTL_OSVERSIONINFOEXW obj = {0,};
 			ByteReader{ bv }.Read(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
 			return obj;
 		}
