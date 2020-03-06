@@ -92,19 +92,17 @@ namespace andrivet::ADVobfuscator
 
 	template<std::make_unsigned_t<wchar_t> Seed, std::make_unsigned_t<wchar_t> Multiplier, typename Indexes>
 	using XorWString = XorStringT<wchar_t, Seed, Multiplier, Indexes>;
+
+	template <typename T>
+	using PeelT = std::remove_const_t<std::remove_all_extents_t<std::remove_reference_t<T>>>;
 }
 
+namespace Obfuscator = andrivet::ADVobfuscator;
+
 // Prefix notation
-#define DEF_OBFUSCATED(str) andrivet::ADVobfuscator::XorString<andrivet::ADVobfuscator::MetaRandomKey<char, __COUNTER__>, andrivet::ADVobfuscator::MetaRandomKey<char, __COUNTER__>, std::make_index_sequence<sizeof(str) - 1>>(str)
-#define DEF_OBFUSCATED_W(str) andrivet::ADVobfuscator::XorWString<andrivet::ADVobfuscator::MetaRandomKey<wchar_t, __COUNTER__>, andrivet::ADVobfuscator::MetaRandomKey<wchar_t, __COUNTER__>, std::make_index_sequence<sizeof(str)/(sizeof(wchar_t)) - 1>>(str)
-
+#define DEF_OBFUSCATED(str) Obfuscator::XorStringT<Obfuscator::PeelT<decltype(str)>, Obfuscator::MetaRandomKey<Obfuscator::PeelT<decltype(str)>, __COUNTER__>, Obfuscator::MetaRandomKey<Obfuscator::PeelT<decltype(str)>, __COUNTER__>, std::make_index_sequence<sizeof(str)/(sizeof(Obfuscator::PeelT<decltype(str)>)) - 1>>{ str }
 #define OBF(str) (DEF_OBFUSCATED(str).decrypt())
-#define OBF_W(str) (DEF_OBFUSCATED_W(str).decrypt())
-
-#define OBF_STR(str) (std::string{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSTR(str) (std::wstring{DEF_OBFUSCATED_W(str).decrypt()})
-
-#define OBF_SEC(str) (MWR::SecureString{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSEC(str) (MWR::SecureWString{DEF_OBFUSCATED_W(str).decrypt()})
+#define OBF_STR(str) (std::basic_string<Obfuscator::PeelT<decltype(str)>>{ OBF(str) })
+#define OBF_SEC(str) (MWR::BasicSecureString<Obfuscator::PeelT<decltype(str)>>{ OBF(str) })
 
 #endif

@@ -32,7 +32,7 @@ int main(DWORD argc, char * argv[])
 			{
 				// Check if we're run as a Windows Service.
 				NodeRelayService service;
-				if (SUCCEEDED(MWR::CppCommons::WinTools::Services::TryStartAsService(service, OBF_W(L"C3NodeRelayServiceName_Change_That"))))	// TODO: Change that!
+				if (SUCCEEDED(MWR::CppCommons::WinTools::Services::TryStartAsService(service, OBF(L"C3NodeRelayServiceName_Change_That"))))	// TODO: Change that!
 					return;
 
 				// If not then proceed as a user-land application.
