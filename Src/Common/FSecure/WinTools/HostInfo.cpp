@@ -37,8 +37,7 @@ namespace FSecure
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	HostInfo::HostInfo()
-		: m_OsVersionInfo{ sizeof(m_OsVersionInfo) }
+	HostInfo::HostInfo() : m_OsVersionInfo{ sizeof m_OsVersionInfo }
 	{
 		// Reserve buffers for winapi calls.
 		DWORD computerNameBufferLength = MAX_COMPUTERNAME_LENGTH + 1, userNameBufferLength = UNLEN + 1;
@@ -100,19 +99,6 @@ namespace FSecure
 		json.at("OsProductType").get_to(m_OsVersionInfo.wProductType);
 		json.at("ProcessId").get_to(m_ProcessId);
 		json.at("IsElevated").get_to(m_IsElevated);
-	}
-
-	std::ostream& operator<<(std::ostream& os, HostInfo const& hi)
-	{
-		return os << "Computer name:\t" << hi.m_ComputerName << '\n'
-			<< "Domain: \t" << hi.m_Domain << '\n'
-			<< "User name:\t" << hi.m_UserName << '\n'
-			<< "Is Elevated:\t" << std::boolalpha << hi.m_IsElevated << '\n'
-			<< "Os version:\t" << "Windows "s << hi.m_OsVersionInfo.dwMajorVersion << '.' << hi.m_OsVersionInfo.dwMinorVersion
-			<< (VER_NT_WORKSTATION == hi.m_OsVersionInfo.wProductType ? " Workstation SP: " : " Server SP: ")
-			<< hi.m_OsVersionInfo.wServicePackMajor << '.' << hi.m_OsVersionInfo.wServicePackMinor
-			<< " Build " << hi.m_OsVersionInfo.dwBuildNumber << '\n'
-			<< "Process Id:\t" << hi.m_ProcessId << '\n';
 	}
 
 	void to_json(json& j, const HostInfo& hi)

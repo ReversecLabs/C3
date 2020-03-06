@@ -29,11 +29,6 @@ namespace FSecure
 		HostInfo(const json& json);
 	};
 
-	/// Overload ostream operator << for HostInfo
-	/// @param ostream to write to
-	/// @param host info to write
-	std::ostream& operator <<(std::ostream& os, HostInfo const& hi);
-
 	/// overload to_json for HostInfo
 	/// @param json to write to
 	/// @param host info to write
