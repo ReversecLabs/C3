@@ -383,7 +383,7 @@ namespace FSecure::Loader
 #elif defined _M_IX86
 	// TODO cleanup after RtlInsertInvertedFunctionTable -> see ntdll!_RtlRemoveInvertedFunctionTable@4
 #endif
-		VirtualFree((void*)baseAddress, alignedImageSize, MEM_RELEASE);
+		VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
 		return 0;
 	}
 }
