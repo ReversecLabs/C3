@@ -121,7 +121,7 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateNodeRelayFromImage
 std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view* sender)
 {
 	// Format message as: "[relay]|@> [InterfaceID] message", where @ is different for each severity.
-	std::string retVal = sender ? (std::string(relayName) + '|').c_str() : OBF("");
+	std::string retVal = sender ? (std::string(relayName) + '|').c_str() : "";
 
 	switch (message.m_Severity)
 	{
@@ -132,6 +132,6 @@ std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view 
 	default: retVal += OBF("???> ");
 	}
 
-	retVal += sender && !sender->empty() ? '[' + std::string(*sender) + OBF("] ") : OBF("");
+	retVal += sender && !sender->empty() ? '[' + std::string(*sender) + OBF("] ") : "";
 	return retVal += message.m_Body;
 }

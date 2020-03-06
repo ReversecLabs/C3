@@ -8,7 +8,7 @@
 FSecure::Slack::Slack(std::string const& token, std::string const& channelName)
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_HttpConfig.set_proxy(winProxy == OBF_W(L"auto") ? web::web_proxy::use_auto_discovery : web::web_proxy(winProxy));
+		this->m_HttpConfig.set_proxy(winProxy == OBF(L"auto") ? web::web_proxy::use_auto_discovery : web::web_proxy(winProxy));
 
 	this->m_Token = token;
 
@@ -278,7 +278,7 @@ json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const&
 		{
 			request = web::http::http_request(web::http::methods::GET);
 		}
-		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
 		pplx::task<web::http::http_response> task = webClient.request(request).then([&](web::http::http_response response)
 			{
@@ -328,7 +328,7 @@ std::string FSecure::Slack::GetFile(std::string const &url)
 	web::http::client::http_client webClient(utility::conversions::to_string_t(host), this->m_HttpConfig);
 	web::http::http_request request;
 
-	request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+	request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
 	pplx::task<std::string> task = webClient.request(request).then([&](web::http::http_response response)
 		{

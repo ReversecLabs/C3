@@ -21,246 +21,88 @@
 #define MetaString_h
 
 #include "Inline.h"
-#include "Indexes.h"
 #include "MetaRandom.h"
 #include "Common/FSecure/SecureString.hpp"
 
 namespace andrivet::ADVobfuscator
 {
-	// Helper to generate a key
+	namespace detail
+	{
+		// Helper to generate a key
+		template<typename T, size_t N>
+		struct MetaRandomKeyImpl
+		{
+			static const T value = static_cast<T>(1 + MetaRandom<N, T, std::numeric_limits<T>::max() - 1>);
+		};
+	}
+
 	template<typename T, int N>
-	struct MetaRandomChar
+	inline static constexpr std::make_unsigned_t<T> MetaRandomKey = detail::MetaRandomKeyImpl<std::make_unsigned_t<T>, N>::value;
+
+	template<typename CharT, typename Encryptor, typename Indexes>
+	struct ObfString;
+
+	template<typename CharT, typename Encryptor, size_t ...I>
+	struct ObfString<CharT, Encryptor, std::index_sequence<I...>>
 	{
-		// Use 0x7F as maximum value since most of the time, char is signed (we have however 1 bit less of randomness)
-		static const char value = static_cast<T>(1 + MetaRandom<N, 0x7F - 1>::value);
-	};
+		constexpr ALWAYS_INLINE ObfString(const CharT* str) noexcept
+			: m_Encryptor{}, m_Buffer{ m_Encryptor.Encrypt<I>(str[I])... } { }
 
-	// Represents an obfuscated string, parametrized with an algorithm number N, a list of indexes Indexes and a key Key
-	template<int N, char Key, typename Indexes>
-	struct MetaString;
-
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 0
-	// Each character is encrypted (XOR) with the same key
-
-	template<char K, int... I>
-	struct MetaString<0, K, Indexes<I...>>
-	{
-		// Constructor. Evaluated at compile time.
-		constexpr ALWAYS_INLINE MetaString(const char* str)
-			: key_{ K }, buffer_{ encrypt(str[I], K)... } { }
-
-		// Runtime decryption. Most of the time, inlined
-		inline const char* decrypt()
+		~ObfString() noexcept
 		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i]);
-			buffer_[sizeof...(I)] = 0;
-			return const_cast<const char*>(buffer_);
+			SecureZeroMemory((void*)m_Buffer, sizeof(m_Buffer));
 		}
 
-		~MetaString()
+		constexpr const CharT* decrypt() noexcept
 		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
+			m_Encryptor.Decrypt(m_Buffer, sizeof...(I));
+			m_Buffer[sizeof...(I)] = 0;
+			return m_Buffer;
 		}
 
 	private:
-		// Encrypt / decrypt a character of the original string with the key
-		constexpr char key() const { return key_; }
-		constexpr char ALWAYS_INLINE encrypt(char c, int k) const { return c ^ k; }
-		constexpr char decrypt(char c) const { return encrypt(c, key()); }
-
-		volatile int key_; // key. "volatile" is important to avoid uncontrolled over-optimization by the compiler
-		volatile char buffer_[sizeof...(I) + 1]; // Buffer to store the encrypted string + terminating null byte
+		Encryptor m_Encryptor;
+		CharT m_Buffer[sizeof...(I) + 1]; // Buffer to store the encrypted string
 	};
 
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 1
-	// Each character is encrypted (XOR) with an incremented key.
-
-	template<char K, int... I>
-	struct MetaString<1, K, Indexes<I...>>
+	template<typename CharT, std::make_unsigned_t<CharT> Seed, std::make_unsigned_t<CharT> Multiplier>
+	struct XorEncryptor
 	{
-		// Constructor. Evaluated at compile time.
-		constexpr ALWAYS_INLINE MetaString(const char* str)
-			: key_(K), buffer_{ encrypt(str[I], I)... } { }
+		template<size_t Index>
+		constexpr ALWAYS_INLINE CharT Encrypt(CharT a) const noexcept { return Encrypt(a, Index); }
 
-		// Runtime decryption. Most of the time, inlined
-		inline const char* decrypt()
+		constexpr void Decrypt(CharT* buf, size_t size) const noexcept
 		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i], i);
-			buffer_[sizeof...(I)] = 0;
-			return const_cast<const char*>(buffer_);
-		}
-
-		~MetaString()
-		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
+			for (size_t i = 0; i < size; ++i, ++buf)
+				*buf = Encrypt(*buf, i);
 		}
 
 	private:
-		// Encrypt / decrypt a character of the original string with the key
-		constexpr char key(size_t position) const { return static_cast<char>(key_ + position); }
-		constexpr char ALWAYS_INLINE encrypt(char c, size_t position) const { return c ^ key(position); }
-		constexpr char decrypt(char c, size_t position) const { return encrypt(c, position); }
-
-		volatile int key_; // key. "volatile" is important to avoid uncontrolled over-optimization by the compiler
-		volatile char buffer_[sizeof...(I) + 1]; // Buffer to store the encrypted string + terminating null byte
+		constexpr static ALWAYS_INLINE CharT Encrypt(CharT c, size_t index) noexcept
+		{
+			return c ^ (Seed + static_cast<std::make_unsigned_t<CharT>>(index * Multiplier));
+		}
 	};
 
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 2
-	// Shift the value of each character and does not store the key. It is only used at compile-time.
+	template<typename CharT, std::make_unsigned_t<CharT> Seed, std::make_unsigned_t<CharT> Multiplier, typename Indexes>
+	using XorStringT = ObfString<CharT, XorEncryptor<CharT, Seed, Multiplier>, Indexes>;
 
-	template<char K, int... I>
-	struct MetaString<2, K, Indexes<I...>>
-	{
-		// Constructor. Evaluated at compile time. Key is *not* stored
-		constexpr ALWAYS_INLINE MetaString(const char* str)
-			: buffer_{ encrypt(str[I])..., 0 } { }
+	template<std::make_unsigned_t<char> Seed, std::make_unsigned_t<char> Multiplier, typename Indexes>
+	using XorString = XorStringT<char, Seed, Multiplier, Indexes>;
 
-		// Runtime decryption. Most of the time, inlined
-		inline const char* decrypt()
-		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i]);
-			return const_cast<const char*>(buffer_);
-		}
+	template<std::make_unsigned_t<wchar_t> Seed, std::make_unsigned_t<wchar_t> Multiplier, typename Indexes>
+	using XorWString = XorStringT<wchar_t, Seed, Multiplier, Indexes>;
 
-		~MetaString()
-		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
-		}
-
-	private:
-		// Encrypt / decrypt a character of the original string with the key
-		// Be sure that the encryption key is never 0.
-		constexpr char key(char key) const { return 1 + (key % 13); }
-		constexpr char ALWAYS_INLINE encrypt(char c) const { return c + key(K); }
-		constexpr char decrypt(char c) const { return c - key(K); }
-
-		// Buffer to store the encrypted string + terminating null byte. Key is not stored
-		volatile char buffer_[sizeof...(I) + 1];
-	};
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Wchar
-	// Represents an obfuscated string, parametrized with an algorithm number N, a list of indexes Indexes and a key Key
-	template<int N, wchar_t Key, typename Indexes>
-	struct MetaWString;
-
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 0
-	// Each wchar_tacter is encrypted (XOR) with the same key
-
-	template<wchar_t K, int... I>
-	struct MetaWString<0, K, Indexes<I...>>
-	{
-		// Constructor. Evaluated at compile time.
-		constexpr ALWAYS_INLINE MetaWString(const wchar_t* str)
-			: key_{ K }, buffer_{ encrypt(str[I], K)... } { }
-
-		// Runtime decryption. Most of the time, inlined
-		inline const wchar_t* decrypt()
-		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i]);
-			buffer_[sizeof...(I)] = 0;
-			return const_cast<const wchar_t*>(buffer_);
-		}
-
-		~MetaWString()
-		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
-		}
-
-	private:
-		// Encrypt / decrypt a wchar_tacter of the original string with the key
-		constexpr wchar_t key() const { return key_; }
-		constexpr wchar_t ALWAYS_INLINE encrypt(wchar_t c, int k) const { return c ^ k; }
-		constexpr wchar_t decrypt(wchar_t c) const { return encrypt(c, key()); }
-
-		volatile int key_; // key. "volatile" is important to avoid uncontrolled over-optimization by the compiler
-		volatile wchar_t buffer_[sizeof...(I) + 1]; // Buffer to store the encrypted string + terminating null byte
-	};
-
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 1
-	// Each wchar_tacter is encrypted (XOR) with an incremented key.
-
-	template<wchar_t K, int... I>
-	struct MetaWString<1, K, Indexes<I...>>
-	{
-		// Constructor. Evaluated at compile time.
-		constexpr ALWAYS_INLINE MetaWString(const wchar_t* str)
-			: key_(K), buffer_{ encrypt(str[I], I)... } { }
-
-		// Runtime decryption. Most of the time, inlined
-		inline const wchar_t* decrypt()
-		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i], i);
-			buffer_[sizeof...(I)] = 0;
-			return const_cast<const wchar_t*>(buffer_);
-		}
-
-		~MetaWString()
-		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
-		}
-
-	private:
-		// Encrypt / decrypt a wchar_tacter of the original string with the key
-		constexpr wchar_t key(size_t position) const { return static_cast<wchar_t>(key_ + position); }
-		constexpr wchar_t ALWAYS_INLINE encrypt(wchar_t c, size_t position) const { return c ^ key(position); }
-		constexpr wchar_t decrypt(wchar_t c, size_t position) const { return encrypt(c, position); }
-
-		volatile int key_; // key. "volatile" is important to avoid uncontrolled over-optimization by the compiler
-		volatile wchar_t buffer_[sizeof...(I) + 1]; // Buffer to store the encrypted string + terminating null byte
-	};
-
-	// Partial specialization with a list of indexes I, a key K and algorithm N = 2
-	// Shift the value of each wchar_tacter and does not store the key. It is only used at compile-time.
-
-	template<wchar_t K, int... I>
-	struct MetaWString<2, K, Indexes<I...>>
-	{
-		// Constructor. Evaluated at compile time. Key is *not* stored
-		constexpr ALWAYS_INLINE MetaWString(const wchar_t* str)
-			: buffer_{ encrypt(str[I])..., 0 } { }
-
-		// Runtime decryption. Most of the time, inlined
-		inline const wchar_t* decrypt()
-		{
-			for (size_t i = 0; i < sizeof...(I); ++i)
-				buffer_[i] = decrypt(buffer_[i]);
-			return const_cast<const wchar_t*>(buffer_);
-		}
-
-		~MetaWString()
-		{
-			SecureZeroMemory((void*)buffer_, sizeof(buffer_));
-		}
-
-	private:
-		// Encrypt / decrypt a wchar_tacter of the original string with the key
-		// Be sure that the encryption key is never 0.
-		constexpr wchar_t key(wchar_t key) const { return 1 + (key % 13); }
-		constexpr wchar_t ALWAYS_INLINE encrypt(wchar_t c) const { return c + key(K); }
-		constexpr wchar_t decrypt(wchar_t c) const { return c - key(K); }
-
-		// Buffer to store the encrypted string + terminating null byte. Key is not stored
-		volatile wchar_t buffer_[sizeof...(I) + 1];
-	};
+	template <typename T>
+	using PeelT = std::remove_const_t<std::remove_all_extents_t<std::remove_reference_t<T>>>;
 }
 
+namespace Obfuscator = andrivet::ADVobfuscator;
+
 // Prefix notation
-#define DEF_OBFUSCATED(str) andrivet::ADVobfuscator::MetaString<andrivet::ADVobfuscator::MetaRandom<__COUNTER__, 3>::value, andrivet::ADVobfuscator::MetaRandomChar<char, __COUNTER__>::value, andrivet::ADVobfuscator::Make_Indexes<sizeof(str) - 1>::type>(str)
-#define DEF_OBFUSCATED_W(str) andrivet::ADVobfuscator::MetaWString<andrivet::ADVobfuscator::MetaRandom<__COUNTER__, 3>::value, andrivet::ADVobfuscator::MetaRandomChar<wchar_t, __COUNTER__>::value, andrivet::ADVobfuscator::Make_Indexes<sizeof(str)/(sizeof(wchar_t)) - 1>::type>(str)
-
+#define DEF_OBFUSCATED(str) Obfuscator::XorStringT<Obfuscator::PeelT<decltype(str)>, Obfuscator::MetaRandomKey<Obfuscator::PeelT<decltype(str)>, __COUNTER__>, Obfuscator::MetaRandomKey<Obfuscator::PeelT<decltype(str)>, __COUNTER__>, std::make_index_sequence<sizeof(str)/(sizeof(Obfuscator::PeelT<decltype(str)>)) - 1>>{ str }
 #define OBF(str) (DEF_OBFUSCATED(str).decrypt())
-#define OBF_W(str) (DEF_OBFUSCATED_W(str).decrypt())
-
-#define OBF_STR(str) (std::string{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSTR(str) (std::wstring{DEF_OBFUSCATED_W(str).decrypt()})
-
-#define OBF_SEC(str) (FSecure::SecureString{DEF_OBFUSCATED(str).decrypt()})
-#define OBF_WSEC(str) (FSecure::SecureWString{DEF_OBFUSCATED_W(str).decrypt()})
+#define OBF_STR(str) (std::basic_string<Obfuscator::PeelT<decltype(str)>>{ OBF(str) })
+#define OBF_SEC(str) (FSecure::BasicSecureString<Obfuscator::PeelT<decltype(str)>>{ OBF(str) })
 
 #endif

@@ -25,69 +25,72 @@
 // For a more complete and sophisticated example, see:
 // http://www.researchgate.net/profile/Zalan_Szgyi/publication/259005783_Random_number_generator_for_C_template_metaprograms/file/e0b49529b48272c5a6.pdf
 
-#include <random>
+#include <numeric>
 
-namespace andrivet { namespace ADVobfuscator {
-
-namespace
+namespace andrivet::ADVobfuscator
 {
-    // I use current (compile time) as a seed
+	namespace detail
+	{
+		// I use current (compile time) as a seed
 
-    constexpr char time[] = __TIME__; // __TIME__ has the following format: hh:mm:ss in 24-hour time
+		constexpr char time[] = __TIME__; // __TIME__ has the following format: hh:mm:ss in 24-hour time
 
-    // Convert time string (hh:mm:ss) into a number
-    constexpr int DigitToInt(char c) { return c - '0'; }
-    const int seed = DigitToInt(time[7]) +
-                     DigitToInt(time[6]) * 10 +
-                     DigitToInt(time[4]) * 60 +
-                     DigitToInt(time[3]) * 600 +
-                     DigitToInt(time[1]) * 3600 +
-                     DigitToInt(time[0]) * 36000;
-}
+		// Convert time string (hh:mm:ss) into a number
+		constexpr unsigned DigitToInt(char c) { return c - '0'; }
+		const int unsigned seed = DigitToInt(time[7]) +
+			DigitToInt(time[6]) * 10 +
+			DigitToInt(time[4]) * 60 +
+			DigitToInt(time[3]) * 600 +
+			DigitToInt(time[1]) * 3600 +
+			DigitToInt(time[0]) * 36000;
 
-// 1988, Stephen Park and Keith Miller
-// "Random Number Generators: Good Ones Are Hard To Find", considered as "minimal standard"
-// Park-Miller 31 bit pseudo-random number generator, implemented with G. Carta's optimisation:
-// with 32-bit math and without division
+		// 1988, Stephen Park and Keith Miller
+		// "Random Number Generators: Good Ones Are Hard To Find", considered as "minimal standard"
+		// Park-Miller 31 bit pseudo-random number generator, implemented with G. Carta's optimisation:
+		// with 32-bit math and without division
 
-template<int N>
-struct MetaRandomGenerator
-{
-private:
-    static constexpr unsigned a = 16807;        // 7^5
-    static constexpr unsigned m = 2147483647;   // 2^31 - 1
 
-    static constexpr unsigned s = MetaRandomGenerator<N - 1>::value;
-    static constexpr unsigned lo = a * (s & 0xFFFF);                // Multiply lower 16 bits by 16807
-    static constexpr unsigned hi = a * (s >> 16);                   // Multiply higher 16 bits by 16807
-    static constexpr unsigned lo2 = lo + ((hi & 0x7FFF) << 16);     // Combine lower 15 bits of hi with lo's upper bits
-    static constexpr unsigned hi2 = hi >> 15;                       // Discard lower 15 bits of hi
-    static constexpr unsigned lo3 = lo2 + hi;
+		template<size_t N>
+		struct MetaRandomGenerator
+		{
+		private:
+			static constexpr unsigned a = 16807;        // 7^5
+			static constexpr unsigned m = 2147483647;   // 2^31 - 1
 
-public:
-    static constexpr unsigned max = m;
-    static constexpr unsigned value = lo3 > m ? lo3 - m : lo3;
-};
+			static constexpr unsigned s = MetaRandomGenerator<N - 1>::value;
+			static constexpr unsigned lo = a * (s & 0xFFFF);                // Multiply lower 16 bits by 16807
+			static constexpr unsigned hi = a * (s >> 16);                   // Multiply higher 16 bits by 16807
+			static constexpr unsigned lo2 = lo + ((hi & 0x7FFF) << 16);     // Combine lower 15 bits of hi with lo's upper bits
+			static constexpr unsigned hi2 = hi >> 15;                       // Discard lower 15 bits of hi
+			static constexpr unsigned lo3 = lo2 + hi;
 
-template<>
-struct MetaRandomGenerator<0>
-{
-    static constexpr unsigned value = seed;
-};
+		public:
+			static constexpr unsigned max = m;
+			static constexpr unsigned value = lo3 > m ? lo3 - m : lo3;
+		};
 
-// Note: A bias is introduced by the modulo operation.
-// However, I do belive it is neglictable in this case (M is far lower than 2^31 - 1)
+		template<>
+		struct MetaRandomGenerator<0>
+		{
+			static constexpr unsigned value = seed;
+		};
 
-template<int N, int M>
-struct MetaRandom
-{
+		// Note: A bias is introduced by the modulo operation.
+		// However, I do believe it is neglictable in this case (M is far lower than 2^31 - 1)
+
+		template<unsigned N, unsigned M = std::numeric_limits<unsigned>::max()>
+		struct MetaRandomImpl
+		{
 #ifdef NDEBUG
-	static constexpr int value = MetaRandomGenerator<N + 1>::value % M;
+			static constexpr unsigned value = detail::MetaRandomGenerator<N + 1>::value % M;
 #else
-	static constexpr int value = N % M;
+			static constexpr unsigned value = N % M;
 #endif // NDEBUG
-};
+		};
+	}
 
-}}
+	template<unsigned N, typename T = unsigned, T M = std::numeric_limits<T>::max()>
+	inline static constexpr T MetaRandom = static_cast<T>(detail::MetaRandomImpl<N, M>::value);
+}
 
 #endif

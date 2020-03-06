@@ -32,7 +32,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 		goto Cleanup;
 	}
 
-	hr = pMetaHost->GetRuntime(OBF_W(L"v4.0.30319"), IID_PPV_ARGS(&pRuntimeInfo));
+	hr = pMetaHost->GetRuntime(OBF(L"v4.0.30319"), IID_PPV_ARGS(&pRuntimeInfo));
 	if (FAILED(hr))
 	{
 		goto Cleanup;
@@ -62,7 +62,7 @@ static void RuntimeV4Host(PBYTE pbAssembly, SIZE_T assemblyLen)
 		goto Cleanup;
 	}
 
-	hr = pCorRuntimeHost->CreateDomain(OBF_W(L"AppDomain"), NULL, &spAppDomainThunk);
+	hr = pCorRuntimeHost->CreateDomain(OBF(L"AppDomain"), NULL, &spAppDomainThunk);
 	if (FAILED(hr))
 	{
 		goto Cleanup;
