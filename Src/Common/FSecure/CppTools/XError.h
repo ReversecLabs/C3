@@ -100,15 +100,15 @@ namespace FSecure::CppCommons::CppTools
 	{
 		/// Public ctor.
 		/// @param value object value
-		XErrorImpl(UnderlyingType value) : XErrorBase(value) { }
+		XErrorImpl(UnderlyingType value) : XErrorBase<UnderlyingType>(value) { }
 
 		/// Success translator.
 		/// @return true if current state of the object indicates success.
-		bool IsSuccess() const { return m_Value.IsSuccess(); }
+		bool IsSuccess() const { return this->m_Value.IsSuccess(); }
 
 		/// Failure translator.
 		/// @return true if current state of the object indicates failure.
-		bool IsFailure() const { return m_Value.IsFailure(); }
+		bool IsFailure() const { return this->m_Value.IsFailure(); }
 	};
 
 	/// XError specialization for HRESULT - let's provide IsSuccess and IsFailure. @note You shouldn't use XErrorImpl templates directly. They have internal purposes. Use XError template instead.

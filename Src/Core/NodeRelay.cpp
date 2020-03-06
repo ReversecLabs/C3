@@ -188,7 +188,7 @@ void FSecure::C3::Core::NodeRelay::NegotiateChannel(std::shared_ptr<DeviceBridge
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery query)
 {
 	// Retrieve GRC.
 	auto grc = GetGatewayReturnChannel();
@@ -201,7 +201,7 @@ void FSecure::C3::Core::NodeRelay::On(ProceduresN2N::InitializeRouteQuery&& quer
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void FSecure::C3::Core::NodeRelay::On(ProceduresS2G::InitializeRouteQuery query)
 {
 	throw std::logic_error{ OBF("Wrong recipient.") };
 }
@@ -247,7 +247,8 @@ void FSecure::C3::Core::NodeRelay::On(ProceduresG2X::AddRoute query)
 	std::shared_ptr<DeviceBridge> bridge;
 	if (recipient.GetAgentId() == GetAgentId())
 	{
-		bridge = m_Devices.Find([&](auto& wp) { auto sp = wp.lock(); return sp ? sp->GetDid() == directionDid : false; }).lock();
+		auto& dir = directionDid;
+		bridge = m_Devices.Find([&](auto& wp) { auto sp = wp.lock(); return sp ? sp->GetDid() == dir : false; }).lock();
 		if (!bridge)
 			throw std::runtime_error{OBF("Cannot find bridge.")};
 	}

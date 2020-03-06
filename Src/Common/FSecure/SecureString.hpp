@@ -85,7 +85,7 @@ namespace std
 	/// Specialized SecureString destructor.
 	/// Overwrites internal buffer (if SSO is in effect)
 	template<>
-	basic_string<char, std::char_traits<char>, FSecure::SecureAllocator<char>>::~basic_string()
+	inline basic_string<char, std::char_traits<char>, FSecure::SecureAllocator<char>>::~basic_string() noexcept
 	{
 		// Clear internal buffer if SSO is in effect
 #if _MSC_VER >= 1920 // v142 toolset
@@ -105,7 +105,7 @@ namespace std
 	/// Specialized SecureWString destructor.
 	/// Overwrites internal buffer (if SSO is in effect)
 	template<>
-	basic_string<wchar_t, std::char_traits<wchar_t>, FSecure::SecureAllocator<wchar_t>>::~basic_string()
+	inline basic_string<wchar_t, std::char_traits<wchar_t>, FSecure::SecureAllocator<wchar_t>>::~basic_string() noexcept
 	{
 		// Clear internal buffer if SSO is in effect
 #if _MSC_VER >= 1920 // v142 toolset

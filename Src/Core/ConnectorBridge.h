@@ -24,6 +24,9 @@ namespace FSecure::C3::Core
 		/// @param nameHash hash of connector.
 		ConnectorBridge(std::shared_ptr<GateRelay>&& gateway, std::shared_ptr<AbstractConnector>&& connector, std::string name, HashT nameHash);
 
+		/// Destructor
+		virtual ~ConnectorBridge() = default;
+
 		/// Called by GateRelay just after the Connector creation.
 		void OnAttach() override;
 

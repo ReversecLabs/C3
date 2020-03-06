@@ -4,10 +4,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Core::ConnectorBridge::ConnectorBridge(std::shared_ptr<GateRelay>&& gateway, std::shared_ptr<AbstractConnector>&& connector, std::string name, HashT nameHash)
-	: m_GateRelay{ gateway }
-	, m_Connector{ std::move(connector) }
-	, m_Name{ name }
+	: m_Name{ name }
 	, m_NameHash{ nameHash }
+	, m_GateRelay{ gateway }
+	, m_Connector{ std::move(connector) }
 {
 }
 

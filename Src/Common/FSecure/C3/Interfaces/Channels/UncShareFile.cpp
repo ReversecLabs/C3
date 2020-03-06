@@ -14,12 +14,12 @@ namespace
 		pSA->nLength = sizeof(SECURITY_ATTRIBUTES);
 		pSA->bInheritHandle = true;
 
-		TCHAR* szSD = TEXT("D:(A;ID;FA;;;S-1-1-0)");
+		const wchar_t* szSD = OBF(L"D:(A;ID;FA;;;S-1-1-0)");
 
 		if (NULL == pSA)
 			return FALSE;
 
-		return ConvertStringSecurityDescriptorToSecurityDescriptor(
+		return ConvertStringSecurityDescriptorToSecurityDescriptorW(
 			szSD,
 			SDDL_REVISION_1,
 			&(pSA->lpSecurityDescriptor),
@@ -194,7 +194,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::UncShareFile::OnRunComman
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteView FSecure::C3::Interfaces::Channels::UncShareFile::GetCapability()
+const char* FSecure::C3::Interfaces::Channels::UncShareFile::GetCapability()
 {
 	return R"(
 {

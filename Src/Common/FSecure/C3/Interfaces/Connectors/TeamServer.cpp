@@ -11,7 +11,7 @@ namespace FSecure::C3::Interfaces::Connectors
 		TeamServer(ByteView arguments);
 
 		/// A public destructor.
-		~TeamServer();
+		virtual ~TeamServer();
 
 		/// OnCommandFromConnector callback implementation.
 		/// @param binderId Identifier of Peripheral who sends the Command.
@@ -31,8 +31,8 @@ namespace FSecure::C3::Interfaces::Connectors
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability in JSON format
+		static const char* GetCapability();
 
 	private:
 		/// Represents a single C3 <-> Team Server connection, as well as each beacon in network.
@@ -208,7 +208,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::OnRunComman
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteView FSecure::C3::Interfaces::Connectors::TeamServer::GetCapability()
+const char* FSecure::C3::Interfaces::Connectors::TeamServer::GetCapability()
 {
 	return R"(
 {
@@ -312,7 +312,7 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::Send(ByteView 
 
 	std::unique_lock<std::mutex> lock{ owner->m_SendMutex };
 	// Write four bytes indicating the length of the next chunk of data.
-	DWORD chunkLength = static_cast<DWORD>(data.size()), bytesWritten = 0;
+	DWORD chunkLength = static_cast<DWORD>(data.size());
 	if (SOCKET_ERROR == send(m_Socket, reinterpret_cast<char*>(&chunkLength), 4, 0))
 		throw FSecure::SocketsException(OBF("Error sending to Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 
@@ -340,7 +340,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::Connection:
 		case 0:
 			return {};																									//< The connection has been gracefully closed.
 
-		case SOCKET_ERROR:
+		case static_cast<DWORD>(SOCKET_ERROR):
 			throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 		}
 

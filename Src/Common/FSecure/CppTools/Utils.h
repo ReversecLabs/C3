@@ -29,6 +29,10 @@ namespace FSecure::Utils
 		constexpr static bool value = [](bool ret) { return ret; }((std::is_same_v<T, Ts> || ...));
 	};
 
+	/// Template to strip type out of const, volatile and reference.
+	template <typename T>
+	using RemoveCVR = std::remove_cv_t<std::remove_reference_t<T>>;
+
 	/// Changes value to default if it is out of provided range.
 	/// @param value to be clamped.
 	/// @param minValue lowest accepted value.
@@ -67,7 +71,7 @@ namespace FSecure::Utils
 		T randomString;
 		randomString.resize(size);
 		for (auto& e : randomString)
-			e = static_cast<T::value_type>(charset[uni(gen)]);
+			e = static_cast<typename T::value_type>(charset[uni(gen)]);
 
 		return randomString;
 	}

@@ -3,7 +3,7 @@
 namespace FSecure::C3::Linter
 {
 	/// Device bridge used to mock its functionality
-	class MockDeviceBridge : public FSecure::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
+	class MockDeviceBridge final : public FSecure::C3::AbstractDeviceBridge, public std::enable_shared_from_this<MockDeviceBridge>
 	{
 	public:
 		/// Create Mock device bridge to device

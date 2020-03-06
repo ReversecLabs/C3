@@ -8,6 +8,9 @@ namespace FSecure::C3::Core
 	/// Last base layer class for both Relay types.
 	struct Relay : Distributor, FSecure::C3::Relay
 	{
+		/// Destructor
+		virtual ~Relay() = default;
+
 		/// Called whenever an attached Binder Peripheral wants to send a Command to its Connector Binder.
 		/// @param command full Command with arguments.
 		/// @param sender Interface that is sending the Command.
@@ -21,6 +24,8 @@ namespace FSecure::C3::Core
 		virtual void DetachDevice(DeviceId const& iidOfDeviceToDetach);
 
 	protected:
+		using Distributor::On;
+
 		/// A protected constructor. @see Distributor::Distributor.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to Interface factory.

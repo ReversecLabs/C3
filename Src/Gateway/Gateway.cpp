@@ -3,14 +3,14 @@
 /// Entry point of the application.
 /// @param argc number of program arguments.
 /// @param argv vector of program arguments.
-int main(DWORD argc, char * argv[])
+int main(int argc, char * argv[])
 {
 	std::cout << OBF("Custom Command and Control - GatewayConsoleExe. BUILD: ") << OBF(C3_BUILD_VERSION) << std::endl << std::endl;
 
 	try
 	{
 		// Helper lambda used to render Log entries on the screen.
-		auto Log = [](FSecure::C3::LogMessage const& message, std::string_view* sender)
+		auto Log = [](FSecure::C3::LogMessage const& message, std::string_view sender)
 		{
 			// Synchronize and print.
 			static std::mutex mutex;

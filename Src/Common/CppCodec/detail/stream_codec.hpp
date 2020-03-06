@@ -90,11 +90,7 @@ struct enc {
         if (num_symbols == NumSymbols) {
             data::put(encoded, state, CodecVariant::symbol(Codec::template index_last<SymbolIndex>(src)));
             padder<CodecVariant::generates_padding()> pad;
-#ifdef _MSC_VER
-            pad.operator()<CodecVariant>(encoded, state, Codec::encoded_block_size() - NumSymbols);
-#else
             pad.template operator()<CodecVariant>(encoded, state, Codec::encoded_block_size() - NumSymbols);
-#endif
             return;
         }
         data::put(encoded, state, CodecVariant::symbol(Codec::template index<SymbolIndex>(src)));

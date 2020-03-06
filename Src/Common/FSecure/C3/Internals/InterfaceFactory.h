@@ -76,7 +76,7 @@ namespace FSecure::C3
 		}
 
 		/// Get proper map member for type T.
-		template <typename T> auto& GetMap() { static_assert(false, "Template type not supported."); }
+		template <typename T> auto& GetMap() = delete;
 		template <> auto& GetMap<AbstractChannel>() { return m_Channels; }
 		template <> auto& GetMap<AbstractPeripheral>() { return m_Peripherals; }
 		template <> auto& GetMap<AbstractConnector>() { return m_Connectors; }
@@ -101,7 +101,7 @@ namespace FSecure::C3
 	std::string GetInterfaceName()
 	{
 #		ifndef _MSC_VER
-		static_assert(false, "Current implementation supports only MSVC.");
+		static_assert(false, "Current implementation supports only MSVC and clang-cl.");
 #		endif
 
 		std::string_view fullName = __FUNCSIG__;
@@ -119,7 +119,13 @@ namespace FSecure::C3
 
 		auto retVal = std::string{ fullName.substr(offset + "::"sv.size()) };
 
-		if ((offset = retVal.rfind('>')) == std::string::npos)
+#		if defined (_MSC_VER) && !defined(__clang__) // MSVC
+		char afterName = '>';
+#		elif defined (_MSC_VER) && defined(__clang__) // Clang-cl
+		char afterName = ']';
+#		endif
+
+		if ((offset = retVal.rfind(afterName)) == std::string::npos)
 			throw std::logic_error{ OBF("Cannot generate interface name.") };
 
 		retVal = retVal.substr(0, offset);

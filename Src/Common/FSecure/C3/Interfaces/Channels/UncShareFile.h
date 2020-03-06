@@ -10,6 +10,9 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @param arguments factory arguments.
 		UncShareFile(ByteView arguments);
 
+		/// Destructor
+		virtual ~UncShareFile() = default;
+
 		/// OnSend callback implementation.
 		/// @param blob data to send to Channel.
 		/// @returns size_t number of bytes successfully written.
@@ -20,8 +23,8 @@ namespace FSecure::C3::Interfaces::Channels
 		std::vector<ByteVector> OnReceiveFromChannel();
 
 		/// Get channel capability.
-		/// @returns ByteView view of channel capability.
-		static ByteView GetCapability();
+		/// @returns Channel capability in JSON format
+		static const char* GetCapability();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.

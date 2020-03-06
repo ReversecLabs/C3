@@ -25,7 +25,7 @@ namespace
 				{
 					try
 					{
-						return cppcodec::base64_rfc4648::decode(keys[entryName].get<std::string>());
+						return cppcodec::base64_rfc4648::decode<FSecure::ByteVector>(keys[entryName].template get<std::string>());
 					}
 					catch (std::exception& exception)
 					{
@@ -105,7 +105,7 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateGatewayFromConfigu
 
 	// Create and run the Gateway.
 	if (!wereKeysReadOrGenerated)
-		callbackOnLog({ OBF("Generated new keys/signatures and stored them on disk."), LogMessage::Severity::Information }, nullptr);
+		callbackOnLog({ OBF("Generated new keys/signatures and stored them on disk."), LogMessage::Severity::Information }, "");
 
 	callbackOnLog({ OBF("Starting Gateway..."), LogMessage::Severity::Information }, nullptr);
 	return FSecure::C3::Core::GateRelay::CreateAndRun(callbackOnLog, interfaceFactory, apiBridgeIp, apiBrigdePort, signatures, broadcastKey, buildId, snapshotPath, agentId, name);
@@ -118,10 +118,10 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateNodeRelayFromImage
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view* sender)
+std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view sender)
 {
 	// Format message as: "[relay]|@> [InterfaceID] message", where @ is different for each severity.
-	std::string retVal = sender ? (std::string(relayName) + '|').c_str() : "";
+	std::string retVal = sender.empty() ? (std::string(relayName) + '|') : ""s;
 
 	switch (message.m_Severity)
 	{
@@ -132,6 +132,6 @@ std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view 
 	default: retVal += OBF("???> ");
 	}
 
-	retVal += sender && !sender->empty() ? '[' + std::string(*sender) + OBF("] ") : "";
+	retVal += !sender.empty() ? '[' + std::string(sender) + "] " : "";
 	return retVal += message.m_Body;
 }

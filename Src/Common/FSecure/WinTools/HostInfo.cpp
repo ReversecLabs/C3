@@ -26,7 +26,7 @@ namespace FSecure
 			if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
 				return false;
 
-			SCOPE_GUARD{ CloseHandle(hToken); };
+			SCOPE_GUARD( CloseHandle(hToken); );
 			TOKEN_ELEVATION Elevation;
 			DWORD cbSize = sizeof(TOKEN_ELEVATION);
 			if (!GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize))
@@ -69,7 +69,7 @@ namespace FSecure
 		LPWSTR buf = nullptr;
 		if (NETSETUP_JOIN_STATUS status; NERR_Success == ::NetGetJoinInformation(nullptr, &buf, &status))
 		{
-			SCOPE_GUARD{ ::NetApiBufferFree(buf); };
+			SCOPE_GUARD( ::NetApiBufferFree(buf); );
 			if(status == NetSetupDomainName)
 				m_Domain = WidestringToString(buf);
 		}

@@ -17,6 +17,9 @@ namespace FSecure::C3::Core
 		// Friendships.
 		friend struct Profiler;
 
+		/// Destructor
+		virtual ~GateRelay() = default;
+
 		/// Factory method.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to interface factory.
@@ -104,13 +107,17 @@ namespace FSecure::C3::Core
 		/// @param senderPeripheral Interface that is sending the Command.
 		void PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> senderPeripheral) override;
 
+		/// Expose all base classes `On` methods.
+		using ProceduresG2X::RequestHandler::On;
+		using Relay::On;
+
 		/// Handler fired when a N2N::InitializeRoute Procedure Query arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresN2N::InitializeRouteQuery&& query) override;
+		void On(ProceduresN2N::InitializeRouteQuery query) override;
 
 		/// Handler fired when a S2G::InitializeRoute Procedure Query arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresS2G::InitializeRouteQuery&& query) override;
+		void On(ProceduresS2G::InitializeRouteQuery query) override;
 
 		/// Handler fired when a N2N::ChannelIdExchangeStep1 Procedure Query arrives.
 		/// Gateway opens a new channel and sends parameters to relay.

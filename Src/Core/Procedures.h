@@ -53,8 +53,8 @@ namespace FSecure::C3::Core
 			/// @param packetAfterProcedureNumber body of query.
 			QueryN2N(std::weak_ptr<DeviceBridge> sender, RouteId neighborRouteId, ProceduresUnderlyingType procedureNo, ByteView packetAfterProcedureNumber)
 				: BaseQuery{ sender }
-				, m_SendersRid{ neighborRouteId }
 				, m_QueryPacketBody{ packetAfterProcedureNumber }
+				, m_SendersRid{ neighborRouteId }
 			{
 
 			}
@@ -122,7 +122,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Query type used to join network.
-		struct InitializeRouteQuery : Query<0>
+		struct InitializeRouteQuery final : Query<0>
 		{
 			/// Create new instance.
 			/// @param sendersRid RouteId created from relay AgentId, and grc DeviceId.
@@ -145,7 +145,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Start of negotiation process. New relay request unique connection.
-		struct ChannelIdExchangeStep1 : Query<2>
+		struct ChannelIdExchangeStep1 final : Query<2>
 		{
 			/// Create query.
 			/// @param sendersRid route id of sender.
@@ -163,7 +163,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Closure of negotiation process. Network relay accepts unique connection.
-		struct ChannelIdExchangeStep2 : Query<3>
+		struct ChannelIdExchangeStep2 final : Query<3>
 		{
 			/// Create query.
 			/// @param sendersRid route id of sender.
@@ -183,8 +183,11 @@ namespace FSecure::C3::Core
 		/// Class representing support for C3 N2N Requests.
 		struct RequestHandler
 		{
+			/// Destructor
+			virtual ~RequestHandler() = default;
+
 			/// Declaration of support for InitializeRouteQuery Request.
-			virtual void On(InitializeRouteQuery&&) = 0;
+			virtual void On(InitializeRouteQuery) = 0;
 
 			/// Declaration of support for ChannelIdExchangeStep1 Request.
 			virtual void On(ChannelIdExchangeStep1) = 0;
@@ -236,9 +239,9 @@ namespace FSecure::C3::Core
 			/// @param packetAfterProcedureNumber body of query.
 			QueryS2G(std::weak_ptr<DeviceBridge> sender, RouteId sendersRid, int32_t timestamp, ByteView packetAfterProcedureNumber)
 				: BaseQuery{ sender }
+				, m_QueryPacketBody{ packetAfterProcedureNumber }
 				, m_SendersRid{ sendersRid }
 				, m_Timestamp{timestamp}
-				, m_QueryPacketBody{ packetAfterProcedureNumber }
 			{
 
 			}
@@ -313,7 +316,7 @@ namespace FSecure::C3::Core
 		/// Query used by relay in network, when new relay wants to join.
 		/// New Relay can only send N2N::InitializeRouteQuery to direct neigbor, but cannot communicate with wwhole network.
 		/// Network relay will send S2G::InitializeRouteQuery to gateway, announcing new relay.
-		struct InitializeRouteQuery : Query<0>
+		struct InitializeRouteQuery final : Query<0>
 		{
 			/// Create new instance.
 			/// @param rid of relay sending S2G
@@ -346,7 +349,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Request to gateway announcing new device in network.
-		struct AddDeviceResponse : Query<1>
+		struct AddDeviceResponse final : Query<1>
 		{
 			/// Create new instance.
 			/// @param rid of relay sending S2G
@@ -370,7 +373,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Request to gateway when peripheral received new packet of data
-		struct DeliverToBinder : Query<2>
+		struct DeliverToBinder final : Query<2>
 		{
 			/// Create new instance.
 			/// @param rid of relay sending S2G
@@ -403,7 +406,7 @@ namespace FSecure::C3::Core
 		};
 
 		/// Request to gateway that new channel was negotiated.
-		struct NewNegotiatedChannelNotification : Query<3>
+		struct NewNegotiatedChannelNotification final : Query<3>
 		{
 			/// Create new instance.
 			/// @param rid of relay sending S2G
@@ -427,7 +430,7 @@ namespace FSecure::C3::Core
 
 		/// Request carrying unspecified blob of data.
 		/// Use carefully, creating new request is recommended instead of using Notification.
-		struct Notification : Query<4>
+		struct Notification final : Query<4>
 		{
 			/// Create new instance.
 			/// @param rid of relay sending S2G
@@ -460,8 +463,11 @@ namespace FSecure::C3::Core
 		/// Class representing support for C3 N2N Requests.
 		struct RequestHandler
 		{
+			/// Destructor
+			virtual ~RequestHandler() = default;
+
 			/// Declaration of support for InitializeRouteQuery Request.
-			virtual void On(InitializeRouteQuery&&) = 0;
+			virtual void On(InitializeRouteQuery) = 0;
 
 			/// Default empty handler for AddDeviceResponse Request.
 			virtual void On(AddDeviceResponse) {};

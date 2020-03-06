@@ -16,7 +16,7 @@ std::pair<FSecure::CppCommons::WinTools::Services::ReturnEnum, HRESULT> FSecure:
 
 	// Try to open the service
 	if (SC_HANDLE service = ::OpenService(manager, serviceName.c_str(), SERVICE_QUERY_CONFIG))
-		return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : XERROR_GETLASTERROR));
+		return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : HRESULT_FROM_WIN32(GetLastError())));
 
 	// Failed to open the Service. Make sure to return the right error.
 	auto retVal = XERROR_GETLASTERROR;
@@ -35,7 +35,7 @@ std::pair<FSecure::CppCommons::WinTools::Services::ReturnEnum, HRESULT> FSecure:
 	// Create the service
 	if (SC_HANDLE service = ::CreateServiceW(manager, serviceName.c_str(), serviceName.c_str(), SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
 		binaryPath.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr))
-		return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : XERROR_GETLASTERROR));
+		return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : HRESULT_FROM_WIN32(GetLastError())));
 
 	// Failed to open the Service. Make sure to return right error.
 	auto retVal = XERROR_GETLASTERROR;
@@ -55,7 +55,7 @@ std::pair<FSecure::CppCommons::WinTools::Services::ReturnEnum, HRESULT> FSecure:
 	if (SC_HANDLE service = ::OpenService(manager, serviceName.c_str(), STANDARD_RIGHTS_REQUIRED))
 	{
 		if (::DeleteService(service))
-			return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : XERROR_GETLASTERROR));
+			return std::make_pair(ReturnEnum::ClosingHandles, (::CloseServiceHandle(service) && ::CloseServiceHandle(manager) ? S_OK : HRESULT_FROM_WIN32(GetLastError())));
 
 		// Failed to open the Service. Make sure to return right error.
 		auto retVal = XERROR_GETLASTERROR;
@@ -80,7 +80,7 @@ FSecure::CppCommons::CppTools::XError<HRESULT> FSecure::CppCommons::WinTools::Se
 	// Copy Service object and start the Service.
 	s_Service = &theOnlyService;
 	SERVICE_TABLE_ENTRY table[] = { { const_cast<LPTSTR>(serviceName.c_str()), ServiceMain }, { nullptr, nullptr } };
-	return ::StartServiceCtrlDispatcher(table) ? S_OK : XERROR_GETLASTERROR;
+	return ::StartServiceCtrlDispatcher(table) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,5 +196,5 @@ FSecure::CppCommons::CppTools::XError<FSecure::CppCommons::CppTools::SystemError
 	s_ServiceStatus.dwCheckPoint = (state == SERVICE_RUNNING || state == SERVICE_STOPPED ? 0 : checkPoint++);
 
 	// Report the status of the service to the SCM.
-	return ::SetServiceStatus(s_ServiceStatusHandle, &s_ServiceStatus) ? NO_ERROR : GetLastError();
+	return { ::SetServiceStatus(s_ServiceStatusHandle, &s_ServiceStatus) ? NO_ERROR : GetLastError() };
 }
