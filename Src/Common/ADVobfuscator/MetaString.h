@@ -56,7 +56,7 @@ namespace andrivet::ADVobfuscator
 		constexpr const CharT* decrypt() noexcept
 		{
 			m_Encryptor.Decrypt(m_Buffer, sizeof...(I));
-			m_Buffer[sizeof(m_Buffer)] = 0;
+			m_Buffer[sizeof...(I)] = 0;
 			return m_Buffer;
 		}
 
