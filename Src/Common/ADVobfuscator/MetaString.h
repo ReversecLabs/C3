@@ -46,7 +46,7 @@ namespace andrivet::ADVobfuscator
 	struct ObfString<CharT, Encryptor, std::index_sequence<I...>>
 	{
 		constexpr ALWAYS_INLINE ObfString(const CharT* str) noexcept
-			: m_Encryptor{}, m_Buffer{ m_Encryptor.Encrypt<I>(str[I])... } { }
+			: m_Encryptor{}, m_Buffer{ m_Encryptor.template Encrypt<I>(str[I])... } { }
 
 		~ObfString() noexcept
 		{

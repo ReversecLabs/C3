@@ -1,5 +1,15 @@
 #include "StdAfx.h"
+
+#if defined (__clang__)
+#warning("Compilation of Grunt peripheral is only supported with MSVC")
+#elif defined (_MSC_VER)
+
 #include "Grunt.h"
+
+//For loading of CLR
+#pragma comment(lib, "mscoree.lib")
+#import "mscorlib.tlb" raw_interfaces_only high_property_prefixes("_get", "_put", "_putref") rename("ReportEvent", "InteropServices_ReportEvent") auto_rename
+
 using namespace mscorlib;
 
 //This function will run the .NET assembly
@@ -285,4 +295,4 @@ FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
 )";
 }
 
-
+#endif

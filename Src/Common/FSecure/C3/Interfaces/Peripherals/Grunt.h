@@ -1,12 +1,11 @@
 #pragma once
 
+#if defined (__clang__)
++#warning("Compilation of Grunt peripheral is only supported with MSVC")
+#elif defined (_MSC_VER)
+
 #include <optional>
 #include <metahost.h>
-
-//For loading of CLR
-#pragma comment(lib, "mscoree.lib")
-#import "mscorlib.tlb" raw_interfaces_only high_property_prefixes("_get", "_put", "_putref") rename("ReportEvent", "InteropServices_ReportEvent") auto_rename
-using namespace mscorlib;
 
 #include "Common/FSecure/WinTools/Pipe.h"
 
@@ -36,7 +35,7 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Return json with commands.
 		/// @return ByteView Commands description in JSON format.
 		static ByteView GetCapability();
-		
+
 		/// Close peripheral Grunt
 		/// Calls superclass CLose and prepares to exit without deadlocking
 		void Close() override;
@@ -60,3 +59,4 @@ namespace FSecure::C3::Interfaces::Peripherals
 		bool m_Close = false;
 	};
 }
+#endif
