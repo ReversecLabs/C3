@@ -21,14 +21,14 @@
 // Static libraries.
 #ifdef _WIN64
 #	ifdef _DEBUG
-#		pragma comment(lib, "Common/libSodium/libsodium-x64-v141-debug.lib")
+#		pragma comment(lib, C3_SOLUTION_DIR "Common/libSodium/libsodium-x64-v141-debug.lib")
 #	else
-#		pragma comment(lib, "Common/libSodium/libsodium-x64-v141-release.lib")
+#		pragma comment(lib, C3_SOLUTION_DIR "Common/libSodium/libsodium-x64-v141-release.lib")
 #	endif
 #else
 #	ifdef _DEBUG
-#		pragma comment(lib, "Common/libSodium/libsodium-x86-v141-debug.lib")
+#		pragma comment(lib, C3_SOLUTION_DIR "Common/libSodium/libsodium-x86-v141-debug.lib")
 #	else
-#		pragma comment(lib, "Common/libSodium/libsodium-x86-v141-release.lib")
+#		pragma comment(lib, C3_SOLUTION_DIR "Common/libSodium/libsodium-x86-v141-release.lib")
 #	endif
 #endif

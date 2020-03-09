@@ -49,8 +49,7 @@ END
 //
 // DATA
 //
-
-IDR_DATA_!         RCDATA      "gen\EmbeddedResource.dat"
+IDR_DATA_!         RCDATA      "EmbeddedResource.dat"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

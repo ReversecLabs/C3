@@ -7,18 +7,18 @@
 // C3 Core static library.
 #ifdef _WIN64
 #	ifdef _DEBUG
-#		pragma comment(lib, "../Bin/Core_d64.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_d64.lib")
 #	elif defined(C3_RWDI)
-#		pragma comment(lib, "../Bin/Core_rwdi64.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_rwdi64.lib")
 #	else
-#		pragma comment(lib, "../Bin/Core_r64.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_r64.lib")
 #	endif
 #else
 #	ifdef _DEBUG
-#		pragma comment(lib, "../Bin/Core_d86.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_d86.lib")
 #	elif defined(C3_RWDI)
-#		pragma comment(lib, "../Bin/Core_rwdi86.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_rwdi86.lib")
 #	else
-#		pragma comment(lib, "../Bin/Core_r86.lib")
+#		pragma comment(lib, C3_BIN_DIR "Core_r86.lib")
 #	endif
 #endif
