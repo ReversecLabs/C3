@@ -11,22 +11,22 @@ const localVue = createLocalVue();
 localVue.use(Vuex);
 localVue.use(VeeValidate, {
   inject: false,
-  validity: true,
+  validity: true
 });
 
 describe('@/components/form/Textarea.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Textarea is a Vue instance', () => {
     const wrapper = shallowMount(Textarea, {
       propsData: {
         legend: 'legend...perPage',
-        help: 'help text...',
+        help: 'help text...'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/datatables/DataTableFooter.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('DataTableFooter is a Vue instance', () => {

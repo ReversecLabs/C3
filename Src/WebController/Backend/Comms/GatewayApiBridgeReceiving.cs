@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.DependencyInjection;
-using MWR.C3.WebController.Comms.GatewayResponses;
+using FSecure.C3.WebController.Comms.GatewayResponses;
 using Newtonsoft.Json;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public partial class GatewayConnectionHandler
     {

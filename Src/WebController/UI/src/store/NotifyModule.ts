@@ -20,7 +20,7 @@ interface NotifyState {
 // State
 
 export const state: NotifyState = {
-  notifys: [],
+  notifys: []
 };
 
 // Getters
@@ -28,7 +28,7 @@ export const state: NotifyState = {
 const getters: GetterTree<NotifyState, RootState> = {
   getNotifies(notifyState): Notify[] {
     return notifyState.notifys;
-  },
+  }
 };
 
 // Mutations
@@ -43,14 +43,14 @@ export const mutations: MutationTree<NotifyState> = {
   },
 
   updateNotify(notifyState, notify: Notify): void {
-    const notifyIndex = notifyState.notifys.findIndex((n) => n.id === notify.id);
+    const notifyIndex = notifyState.notifys.findIndex(n => n.id === notify.id);
     if (notifyIndex > -1) {
       notifyState.notifys[notifyIndex] = notify;
     }
   },
 
   removeNotify(notifyState, id: string): void {
-    const notifyIndex = notifyState.notifys.findIndex((n) => n.id === id);
+    const notifyIndex = notifyState.notifys.findIndex(n => n.id === id);
     if (notifyIndex > -1) {
       notifyState.notifys.splice(notifyIndex, 1);
     }
@@ -66,7 +66,7 @@ export const mutations: MutationTree<NotifyState> = {
       }
       notifyState.notifys.splice(0, 1);
     }
-  },
+  }
 };
 
 // Actions
@@ -76,7 +76,9 @@ export type InsertNotifyFn = (notify: Notify) => void;
 const actions: ActionTree<NotifyState, RootState> = {
   insertNotify(context, notify: Notify) {
     const addNotification = (notification: Notify) => {
-      notify.id = Math.random().toString(36).substr(2);
+      notify.id = Math.random()
+        .toString(36)
+        .substr(2);
       notify.timeoutID = setTimeout((): boolean => {
         context.commit('removeNotify', notify.id);
         return true;
@@ -113,7 +115,7 @@ const actions: ActionTree<NotifyState, RootState> = {
     if (notifyCount >= maximumToast) {
       context.commit('removeOldestNotify');
     }
-  },
+  }
 };
 
 export const notifyModule: Module<NotifyState, RootState> = {
@@ -121,5 +123,5 @@ export const notifyModule: Module<NotifyState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

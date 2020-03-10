@@ -1,4 +1,4 @@
-﻿using MWR.C3.WebController.Comms;
+﻿using FSecure.C3.WebController.Comms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     public class RelayBuild: Build
     {

@@ -11,13 +11,19 @@ localVue.use(Vuex);
 
 describe('@/components/modals/CreateRelay.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CreateRelayModal is a Vue instance', () => {
     const wrapper = shallowMount(CreateRelayModal, {
+      propsData: {
+        options: {
+          formDefault: {},
+          source: {}
+        }
+      },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

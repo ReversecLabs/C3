@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="c3CommandList"
-     v-if="c3Interfaces.length || displayEmpty"
-  >
+  <div class="c3CommandList" v-if="c3Interfaces.length || displayEmpty">
     <h1 v-show="hasTitle">{{ title }}</h1>
     <template v-if="c3Interfaces.length">
       <table class="datatable">
@@ -22,13 +19,16 @@
             v-on:click="openModal(c3Interface.uid, c3Interface.klass)"
           >
             <td class="c3link">
-                <span
-                  class="c3tab-info-dot"
-                  :class="{ 'is-return': !!c3Interface.isReturnChannel, 'has-error': !!c3Interface.error }"
-                ></span>
+              <span
+                class="c3tab-info-dot"
+                :class="{
+                  'is-return': !!c3Interface.isReturnChannel,
+                  'has-error': !!c3Interface.error
+                }"
+              ></span>
               {{ c3Interface.id }}
             </td>
-            <td class="capitalize">{{c3Interface.klass.toLowerCase() }}</td>
+            <td class="capitalize">{{ c3Interface.klass.toLowerCase() }}</td>
             <td>{{ interfaceTypeName(c3Interface) }}</td>
             <td>{{ interfaceType(c3Interface) }}</td>
           </tr>
@@ -46,7 +46,13 @@ import { namespace } from 'vuex-class';
 import { Component, Prop, Mixins, Provide } from 'vue-property-decorator';
 
 import { GetNodeKlassFn, GetInterfacesFn } from '@/store/C3Module';
-import { NodeKlass, C3Node, C3Command, C3Gateway, nullNode } from '@/types/c3types';
+import {
+  NodeKlass,
+  C3Node,
+  C3Command,
+  C3Gateway,
+  nullNode
+} from '@/types/c3types';
 
 import C3 from '@/c3';
 import Partial from '@/components/partial/Partial';
@@ -67,7 +73,7 @@ export default class InterfaceList extends Mixins(C3, Partial) {
     if (this.interfaceTypeFilter === 'ALL') {
       interfaces = this.getInterfaces();
     } else {
-      interfaces = this.getInterfaces([(this.interfaceTypeFilter as NodeKlass)]);
+      interfaces = this.getInterfaces([this.interfaceTypeFilter as NodeKlass]);
     }
 
     if (this.returnChannelFilter === 'YES') {

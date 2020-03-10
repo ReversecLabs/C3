@@ -2,7 +2,7 @@
 using System.Linq;
 using Sodium;
 
-namespace MWR.C3.WebController.Comms.Crypto
+namespace FSecure.C3.WebController.Comms.Crypto
 {
     public class KeyExchange
     {

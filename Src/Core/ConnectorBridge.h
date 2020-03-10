@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common/MWR/C3/Internals/BackendCommons.h"
+#include "Common/FSecure/C3/Internals/BackendCommons.h"
 
 // Forward declarations.
-namespace MWR::C3
+namespace FSecure::C3
 {
 	struct AbstractConnector;
 	namespace Core
@@ -12,7 +12,7 @@ namespace MWR::C3
 	}
 }
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// PIMPL for Connector type.
 	struct ConnectorBridge : AbstractConnectorBridge, std::enable_shared_from_this<ConnectorBridge>
@@ -23,6 +23,9 @@ namespace MWR::C3::Core
 		/// @param name of connector
 		/// @param nameHash hash of connector.
 		ConnectorBridge(std::shared_ptr<GateRelay>&& gateway, std::shared_ptr<AbstractConnector>&& connector, std::string name, HashT nameHash);
+
+		/// Destructor
+		virtual ~ConnectorBridge() = default;
 
 		/// Called by GateRelay just after the Connector creation.
 		void OnAttach() override;

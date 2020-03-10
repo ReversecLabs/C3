@@ -12,7 +12,7 @@ localVue.use(Vuex);
 
 describe('@/components/datatables/Commands.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CommandsTab is a Vue instance', () => {

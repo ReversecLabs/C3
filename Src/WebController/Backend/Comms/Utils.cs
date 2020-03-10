@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MWR.C3.WebController.Models;
+using FSecure.C3.WebController.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Text;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public static class Utils
     {

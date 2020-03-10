@@ -2,11 +2,14 @@
 
 #include "Relay.h"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// Relay class specialization that implements a "client" Relay.
 	struct NodeRelay : Relay, ProceduresG2X::RequestHandler
 	{
+		/// Destructor
+		virtual ~NodeRelay() = default;
+
 		/// Factory method.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to interface factory.
@@ -57,13 +60,17 @@ namespace MWR::C3::Core
 		/// @param channel Interface that will be used to send the packet.
 		void PostCommandToConnector(ByteView command, std::shared_ptr<DeviceBridge> channel) override;
 
+		/// Expose all base classes `On` methods.
+		using Relay::On;
+		using ProceduresG2X::RequestHandler::On;
+
 		/// Handler fired when a N2N::InitializeRoute Procedure Query arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresN2N::InitializeRouteQuery&& query) override;
+		void On(ProceduresN2N::InitializeRouteQuery query) override;
 
 		/// Handler fired when a N2N::InitializeRoute Procedure arrives.
 		/// @param query object representing the Query.
-		void On(ProceduresS2G::InitializeRouteQuery&& query) override;
+		void On(ProceduresS2G::InitializeRouteQuery query) override;
 
 		/// Handler fired when a G2X::AddRoute Procedure Query arrives.
 		/// @param query object representing the Query.
@@ -85,11 +92,11 @@ namespace MWR::C3::Core
 
 		/// Sets the default Device used in communication with the server.
 		/// @param args Device id stored in byte form.
-		void SetGatewayReturnChannel(MWR::ByteView args);
+		void SetGatewayReturnChannel(FSecure::ByteView args);
 
 		/// Returns timestamp to Gateway.
 		/// @param args unused.
-		void Ping(MWR::ByteView args);
+		void Ping(FSecure::ByteView args);
 
 		/// Gets the default Device used in communication with the server.
 		/// @return current Gateway return channel.
@@ -126,7 +133,7 @@ namespace MWR::C3::Core
 
 		/// Inform gateway that new Device was added correctly.
 		/// @param device pointer to newly created device.
-		void SendNewDeviceNotification(std::shared_ptr<MWR::C3::Core::DeviceBridge> const& device);
+		void SendNewDeviceNotification(std::shared_ptr<FSecure::C3::Core::DeviceBridge> const& device);
 
 		/// Inform gateway that new Device was added by negotiation process.
 		/// @param newDeviceId id of new device in relay.
@@ -137,7 +144,7 @@ namespace MWR::C3::Core
 
 		/// Creates device from provided byte form of arguments @see CreateAndAttachDevice.
 		/// @param commandArgs all arguments for CreateAndAttachDevice packed in byte form.
-		std::shared_ptr<MWR::C3::Core::DeviceBridge> RunCommandAddDevice(ByteView commandArgs);
+		std::shared_ptr<FSecure::C3::Core::DeviceBridge> RunCommandAddDevice(ByteView commandArgs);
 
 	private:
 		std::atomic<DeviceId::UnderlyingIntegerType> m_LastResevedDeviceId = ~(1 << (8 * DeviceId::BinarySize - 1));	///< DeviceId with MSB set are used for deviceId assigned by Node

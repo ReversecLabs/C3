@@ -1,4 +1,4 @@
-﻿using MWR.C3.WebController.Comms;
+﻿using FSecure.C3.WebController.Comms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     public class Command
     {

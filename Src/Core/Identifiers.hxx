@@ -3,25 +3,25 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename UnderlyingIntegerType>
-const MWR::C3::Identifier<UnderlyingIntegerType> MWR::C3::Identifier<UnderlyingIntegerType>::Null{ static_cast<UnderlyingIntegerType>(0) };
+const FSecure::C3::Identifier<UnderlyingIntegerType> FSecure::C3::Identifier<UnderlyingIntegerType>::Null{ static_cast<UnderlyingIntegerType>(0) };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-constexpr MWR::C3::Identifier<UnderlyingIntegerType>::Identifier()
+constexpr FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier()
 	: m_Id(0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-constexpr MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(UnderlyingIntegerType id)
+constexpr FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(UnderlyingIntegerType id)
 	: m_Id(id)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string_view textId)
+FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string_view textId)
 {
 	// Sanity check.
 	//if (textId.size() != TextSize)
@@ -36,14 +36,14 @@ MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string_view textId)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string const& textId)
+FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string const& textId)
 	: Identifier{ std::string_view{textId} }
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(ByteView byteId)
+FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(ByteView byteId)
 {
 	// Sanity check.
 	if (byteId.size() != BinarySize)
@@ -55,17 +55,17 @@ MWR::C3::Identifier<UnderlyingIntegerType>::Identifier(ByteView byteId)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-MWR::C3::Identifier<UnderlyingIntegerType> MWR::C3::Identifier<UnderlyingIntegerType>::GenerateRandom()
+FSecure::C3::Identifier<UnderlyingIntegerType> FSecure::C3::Identifier<UnderlyingIntegerType>::GenerateRandom()
 {
-	return MWR::Utils::GenerateRandomValue<UnderlyingIntegerType>();
+	return FSecure::Utils::GenerateRandomValue<UnderlyingIntegerType>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-std::string MWR::C3::Identifier<UnderlyingIntegerType>::ToString() const
+std::string FSecure::C3::Identifier<UnderlyingIntegerType>::ToString() const
 {
 	// Initialize buffers and pointers.
-	std::string ret(sizeof UnderlyingIntegerType * 2 + 1, '0');
+	std::string ret(sizeof(UnderlyingIntegerType) * 2 + 1, '0');
 	char* rp = ret.data();
 
 	// Note: this function adds a null terminator.
@@ -74,53 +74,53 @@ std::string MWR::C3::Identifier<UnderlyingIntegerType>::ToString() const
 		sprintf_s(&rp[i * 2], 3, OBF("%02hhX"), p[sizeof(UnderlyingIntegerType) - i - 1]);
 
 	// Remove the trailing null.
-	return ret.substr(0, sizeof UnderlyingIntegerType * 2);
+	return ret.substr(0, sizeof(UnderlyingIntegerType) * 2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-MWR::ByteVector MWR::C3::Identifier<UnderlyingIntegerType>::ToByteVector() const
+FSecure::ByteVector FSecure::C3::Identifier<UnderlyingIntegerType>::ToByteVector() const
 {
 	return { reinterpret_cast<const std::uint8_t*>(&m_Id), reinterpret_cast<const std::uint8_t*>(&m_Id) + sizeof(m_Id) };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-bool MWR::C3::Identifier<UnderlyingIntegerType>::operator!() const
+bool FSecure::C3::Identifier<UnderlyingIntegerType>::operator!() const
 {
 	return IsNull();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-bool MWR::C3::Identifier<UnderlyingIntegerType>::operator==(Identifier const& c) const
+bool FSecure::C3::Identifier<UnderlyingIntegerType>::operator==(Identifier const& c) const
 {
 	return c.m_Id == m_Id;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-bool MWR::C3::Identifier<UnderlyingIntegerType>::operator!=(Identifier const& c) const
+bool FSecure::C3::Identifier<UnderlyingIntegerType>::operator!=(Identifier const& c) const
 {
 	return !operator == (c);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-bool MWR::C3::Identifier<UnderlyingIntegerType>::operator<(Identifier const& c) const
+bool FSecure::C3::Identifier<UnderlyingIntegerType>::operator<(Identifier const& c) const
 {
 	return m_Id < c.m_Id;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-bool MWR::C3::Identifier<UnderlyingIntegerType>::IsNull() const
+bool FSecure::C3::Identifier<UnderlyingIntegerType>::IsNull() const
 {
 	return m_Id == 0;
 }
 
 template<typename UnderlyingIntegerType>
-UnderlyingIntegerType MWR::C3::Identifier<UnderlyingIntegerType>::ToUnderlyingType() const
+UnderlyingIntegerType FSecure::C3::Identifier<UnderlyingIntegerType>::ToUnderlyingType() const
 {
 	return m_Id;
 }

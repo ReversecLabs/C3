@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 
-namespace MWR.C3.Comms
+namespace FSecure.C3.Comms
 {
     /// <summary>
     /// Class representing C3 API bridge

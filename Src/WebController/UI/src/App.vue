@@ -1,22 +1,19 @@
 <template>
   <div id="app">
-    <Navbar/>
+    <Navbar />
     <div class="c3body" v-if="hasSelectedGateway === true">
       <div class="c3body-main">
-        <GatewayForm/>
-        <Canvas/>
-        <Controll/>
+        <GatewayForm />
+        <Canvas />
+        <Controll />
       </div>
-      <SideMenu/>
+      <SideMenu />
     </div>
-    <div
-      v-if="hasSelectedGateway === false"
-      class="c3body-no-gateway-message"
-    >
+    <div v-if="hasSelectedGateway === false" class="c3body-no-gateway-message">
       <h1>There are currently no active Gateways</h1>
       <p>
-        Once a gateway has been detected it will automatically show up
-        and this message will not appear, c3 checks for any gateway every minute.
+        Once a gateway has been detected it will automatically show up and this
+        message will not appear, c3 checks for any gateway every minute.
       </p>
     </div>
     <CreateGatewayModal
@@ -24,9 +21,9 @@
       class="c3body-gateway"
     />
     <div></div>
-    <Footer/>
-    <Modal/>
-    <Notification/>
+    <Footer />
+    <Modal />
+    <Notification />
   </div>
 </template>
 
@@ -68,8 +65,8 @@ const C3OptionsModule = namespace('optionsModule');
     Footer,
     Modal,
     Notification,
-    CreateGatewayModal,
-  },
+    CreateGatewayModal
+  }
 })
 export default class App extends Vue {
   @PaginateModule.Mutation public setActualPage!: SetActualPageFn;
@@ -124,21 +121,20 @@ export default class App extends Vue {
     this.setTime = setInterval(this.updateData, this.refreshRate);
   }
 
-
   @Watch('getGrapData')
   public onGetGrapDataChange(value: any, oldValue: any) {
     if ((window as any).networkc3 !== undefined) {
       (window as any).networkc3.setData(this.getGrapData);
     }
     this.fetchCommands(this.gateway.id);
-    this.fetchCapability({gatewayId: this.gateway.id});
+    this.fetchCapability({ gatewayId: this.gateway.id });
   }
 
   public updateData(): void {
     if (this.getAutoUpdateEnabled === true) {
       this.fetchGateways();
       if (this.gateway && this.gateway.klass !== NodeKlass.Undefined) {
-        this.fetchGateway({gatewayId: this.gateway.id});
+        this.fetchGateway({ gatewayId: this.gateway.id });
       }
     }
   }

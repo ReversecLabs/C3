@@ -1,9 +1,8 @@
 <template>
   <div class="c3navbar">
-    <img class="c3navbar-logo" alt="C3 logo" src="@/assets/logo.png">
+    <img class="c3navbar-logo" alt="C3 logo" src="@/assets/logo.svg" />
     <div class="c3navbar-left">
       <span class="c3navbar-left--title">C3</span>
-      <span class="c3navbar-left--secondary">dashboard</span>
     </div>
   </div>
 </template>

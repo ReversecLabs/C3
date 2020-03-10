@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
-using MWR.C3.WebController.Models;
+using FSecure.C3.WebController.Models;
 using System.Collections.Concurrent;
-using MWR.C3.WebController.Comms.GatewayRequests;
-using MWR.C3.WebController.Comms.GatewayResponses;
+using FSecure.C3.WebController.Comms.GatewayRequests;
+using FSecure.C3.WebController.Comms.GatewayResponses;
 using System.Collections.Generic;
 
-namespace MWR.C3.WebController.Comms
+namespace FSecure.C3.WebController.Comms
 {
     public class CommandQueues
     {

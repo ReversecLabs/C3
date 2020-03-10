@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
-using MWR.C3.WebController.Comms;
+using FSecure.C3.WebController.Comms;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json.Linq;
 
-namespace MWR.C3.WebController.Models
+namespace FSecure.C3.WebController.Models
 {
     public class Peripheral
     {

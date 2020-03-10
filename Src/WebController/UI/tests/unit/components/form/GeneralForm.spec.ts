@@ -12,7 +12,7 @@ localVue.use(Vuex);
 
 describe('@/components/datatables/Relays.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('GeneralForm is a Vue instance', () => {

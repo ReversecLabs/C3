@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	/// Abstract form element
 	class FormElement
@@ -24,6 +24,9 @@ namespace MWR::C3::Linter
 			Ip,
 			Binary,
 		};
+
+		/// Destructor
+		virtual ~FormElement() = default;
 
 		/// Validate input against argument and set as value
 		virtual void ValidateAndSet(std::string_view input) = 0;

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Swagger;
-using MWR.C3.Comms;
-using MWR.C3.WebController.Models;
-using MWR.C3.WebController.Comms;
+using FSecure.C3.Comms;
+using FSecure.C3.WebController.Models;
+using FSecure.C3.WebController.Comms;
 using System.Threading;
 
-namespace MWR.C3.WebController
+namespace FSecure.C3.WebController
 {
     public class Startup
     {
@@ -25,8 +26,9 @@ namespace MWR.C3.WebController
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            CheckCryptoLib();
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(options => {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
@@ -35,6 +37,8 @@ namespace MWR.C3.WebController
             {
                 c.SwaggerDoc("v1", new Info { Title = "C3 API", Version = "v1" });
             });
+            services.Configure<DonutServiceOptions>(Configuration.GetSection("Donut"));
+            services.AddTransient<IDonutService, DonutService>();
             services.AddTransient<ICustomizer, Customizer>();
             services.AddScoped<GatewayResponseProcessor>();
             services.AddDbContext<C3WebAPIContext>(options => options.UseSqlite("Data Source=C3API.db"));
@@ -73,6 +77,11 @@ namespace MWR.C3.WebController
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "C3 Web API");
             });
+        }
+
+        private static void CheckCryptoLib()
+        {
+            Sodium.SodiumCore.Init();
         }
     }
 }

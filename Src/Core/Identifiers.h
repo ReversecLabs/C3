@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MWR::C3
+namespace FSecure::C3
 {
 	/// An abstract used as a base class for various identifiers used in C3.
 	template<typename UnderlyingIntegerType = std::uint16_t>
@@ -87,7 +87,7 @@ namespace MWR::C3
 	using BuildId = Identifier<std::uint32_t>;																			///< ID of Relay's configuration.
 }
 
-namespace MWR
+namespace FSecure
 {
 	/// Specialize ByteConverter for identifiers.
 	template <typename T>

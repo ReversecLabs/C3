@@ -18,25 +18,6 @@
 
 #pragma once
 
-// Static libraries.
-#pragma comment(lib, "crypt32.lib")																						//< For Windows Crypto API.
-#pragma comment(lib, "wldap32")																							//< For LDAP.
-#pragma comment(lib, "Normaliz")																						//< For IDN.
-#define CURL_STATICLIB
-#ifdef _WIN64
-#	ifdef _DEBUG
-#		pragma comment(lib, "Common/curl/libcurl-vc15-x64-debug-static-ipv6-sspi-winssl.lib")
-#	else
-#		pragma comment(lib, "Common/curl/libcurl-vc15-x64-release-static-ipv6-sspi-winssl.lib")
-#	endif
-#else
-#	ifdef _DEBUG
-#		pragma comment(lib, "Common/curl/libcurl-vc15-x86-debug-static-ipv6-sspi-winssl.lib")
-#	else
-#		pragma comment(lib, "Common/curl/libcurl-vc15-x86-release-static-ipv6-sspi-winssl.lib")
-#	endif
-#endif
-
 #include <algorithm>
 #include <cctype>
 #include <chrono>

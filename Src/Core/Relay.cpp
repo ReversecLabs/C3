@@ -1,11 +1,11 @@
 #include "StdAfx.h"
 #include "Relay.h"
 #include "DeviceBridge.h"
-#include "Common/MWR/CppTools/ByteView.h"
-#include "Common/MWR/C3/Internals/InterfaceFactory.h"
+#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/C3/Internals/InterfaceFactory.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-MWR::C3::Core::Relay::Relay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey,
+FSecure::C3::Core::Relay::Relay(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey,
 	BuildId buildId, AgentId agentId)
 	: Distributor{ callbackOnLog, decryptionKey, broadcastKey }
 	, m_BuildId{ buildId }
@@ -15,7 +15,7 @@ MWR::C3::Core::Relay::Relay(LoggerCallback callbackOnLog, InterfaceFactory& inte
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::AttachDevice(std::shared_ptr<MWR::C3::Core::DeviceBridge> device)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::Relay::AttachDevice(std::shared_ptr<FSecure::C3::Core::DeviceBridge> device)
 {
 	m_Devices.TryAdd(
 		[did = device->GetDid()](std::weak_ptr<DeviceBridge> const& c)
@@ -32,7 +32,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::AttachDevice(
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::Relay::CreateAndAttachDevice(DeviceId iid, HashT deviceNameHash, bool isNegotiationChannel, ByteView commandLine, bool negotiationClient /*= false*/)
 {
 	// Find the right factory, call it and attach returned Device.
 	if (auto deviceData = InterfaceFactory::Instance().GetInterfaceData<AbstractChannel>(deviceNameHash); deviceData)
@@ -43,7 +43,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::CreateAndAtta
 			auto readView = commandLine;
 			auto negotiationId = readView.Read<ByteView>();
 			helper.reserve(commandLine.size() + negotiationId.size() + sizeof(std::uint32_t));
-			auto generatedId = MWR::Utils::GenerateRandomString(negotiationId.size());
+			auto generatedId = FSecure::Utils::GenerateRandomString(negotiationId.size());
 			if (negotiationClient)
 				helper.Write(generatedId, negotiationId);
 			else
@@ -62,7 +62,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::CreateAndAtta
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Relay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
+void FSecure::C3::Core::Relay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 {
 	// Find specified Device.
 	m_Devices.Remove([&iidOfDeviceToDetach](std::weak_ptr<DeviceBridge> const& c)
@@ -78,9 +78,9 @@ void MWR::C3::Core::Relay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::FindDevice(DeviceId did)
+std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::Relay::FindDevice(DeviceId did)
 {
-	std::shared_ptr<MWR::C3::Core::DeviceBridge> retVal;
+	std::shared_ptr<FSecure::C3::Core::DeviceBridge> retVal;
 	m_Devices.Find([&did, &retVal](std::weak_ptr<DeviceBridge> const& c)
 		{
 			if (auto ri = c.lock(); ri && ri->GetDid() == did)
@@ -96,7 +96,7 @@ std::shared_ptr<MWR::C3::Core::DeviceBridge> MWR::C3::Core::Relay::FindDevice(De
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Relay::Close()
+void FSecure::C3::Core::Relay::Close()
 {
 	m_Devices.For([](auto c)
 		{
@@ -110,7 +110,7 @@ void MWR::C3::Core::Relay::Close()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Relay::Join()
+void FSecure::C3::Core::Relay::Join()
 {
 	auto self = shared_from_this();
 	// The main thread has a shared_ptr on which that Join method is called ->
@@ -119,7 +119,7 @@ void MWR::C3::Core::Relay::Join()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Relay::CreateRoute(ByteView args)
+void FSecure::C3::Core::Relay::CreateRoute(ByteView args)
 {
 	auto [ridStr, didStr] = args.Read<std::string_view, std::string_view>();
 	auto channel = m_Devices.Find([did = DeviceId{ didStr }](auto const& e) { auto l = e.lock(); return l ? l->GetDid() == did : false; }).lock();
@@ -130,7 +130,7 @@ void MWR::C3::Core::Relay::CreateRoute(ByteView args)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MWR::C3::Core::Relay::RemoveRoute(ByteView args)
+void FSecure::C3::Core::Relay::RemoveRoute(ByteView args)
 {
 	auto ridStr = args.Read<std::string_view>();
 	RouteManager::RemoveRoute(ridStr);

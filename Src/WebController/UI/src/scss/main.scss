@@ -4,7 +4,8 @@
 
 @import './components/button.scss';
 
-html, body {
+html,
+body {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -31,10 +32,10 @@ span.icon {
   width: 24px;
   height: 24px;
   // color, hover-color, size, hover-size?
-  @include generate-gray-icons("828282", "828282", 24px);
-  @include generate-white-icons("FFFFFF", "FFFFFF", 24px);
-  @include generate-red-icons("BF0001", "BF0001", 24px);
-  @include generate-purple-icons("AB61F6", "AB61F6", 24px);
+  @include generate-gray-icons('828282', '828282', 24px);
+  @include generate-white-icons('FFFFFF', 'FFFFFF', 24px);
+  @include generate-red-icons('BF0001', 'BF0001', 24px);
+  @include generate-purple-icons('AB61F6', 'AB61F6', 24px);
 }
 
 label.icon {
@@ -43,7 +44,7 @@ label.icon {
 }
 
 .c3link.c3link {
-  color: $color-green-c3;
+  color: $color-blue-c3;
   cursor: pointer;
 }
 

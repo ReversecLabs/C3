@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Linq;
 
-namespace MWR.C3.WebController.RandomExtentions
+namespace FSecure.C3.WebController.RandomExtentions
 {
     public static class RandomExtentions
     {
@@ -23,6 +24,13 @@ namespace MWR.C3.WebController.RandomExtentions
             var buffer = new byte[sizeof(ulong)];
             self.NextBytes(buffer);
             return BitConverter.ToUInt64(buffer);
+        }
+
+        public static string NextString(this Random self, int length)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[self.Next(s.Length)]).ToArray());
         }
     }
 }

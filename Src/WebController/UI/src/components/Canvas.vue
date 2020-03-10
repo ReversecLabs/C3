@@ -6,13 +6,9 @@
       :class="fullscreenIcon"
       @click="isFullscreen = !isFullscreen"
     ></span>
-    <span
-      class="c3canvas-more-btn icon more"
-    ></span>
+    <span class="c3canvas-more-btn icon more"></span>
     <ul class="c3canvas-menu">
-      <li
-        class="c3canvas-menu-item"
-      >
+      <li class="c3canvas-menu-item">
         <Toggle
           key="toggle-tree-view-button"
           legend="Tree View"
@@ -21,9 +17,7 @@
           :disabled="false"
         />
       </li>
-      <li
-        class="c3canvas-menu-item"
-      >
+      <li class="c3canvas-menu-item">
         <Toggle
           key="toggle-interfaces-button"
           legend="Interfaces"
@@ -32,9 +26,7 @@
           :disabled="false"
         />
       </li>
-      <li
-        class="c3canvas-menu-item"
-      >
+      <li class="c3canvas-menu-item">
         <Toggle
           key="toggle-labels-button"
           legend="Labels"
@@ -43,9 +35,7 @@
           :disabled="false"
         />
       </li>
-      <li
-        class="c3canvas-menu-item"
-      >
+      <li class="c3canvas-menu-item">
         <Toggle
           key="toggle-physics-button"
           legend="Physics"
@@ -54,9 +44,7 @@
           :disabled="false"
         />
       </li>
-      <li
-        class="c3canvas-menu-item"
-      >
+      <li class="c3canvas-menu-item">
         <Toggle
           key="toggle-smooth-edges"
           legend="Smooth Edges"
@@ -65,30 +53,17 @@
           :disabled="false"
         />
       </li>
-      <li
-        class="c3canvas-menu-item"
-        @click="reloadGraph"
-      >
-        Reload Graph
-      </li>
+      <li class="c3canvas-menu-item" @click="reloadGraph">Reload Graph</li>
       <li class="c3canvas-menu-divider"></li>
-      <li
-        class="c3canvas-menu-item"
-        @click="openModal('', 'CREATE_GATEWAY')"
-      >
+      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_GATEWAY')">
         New Gateway
       </li>
-      <li
-        class="c3canvas-menu-item"
-        @click="openModal('', 'CREATE_RELAY')"
-      >
+      <li class="c3canvas-menu-item" @click="openModal('', 'CREATE_RELAY')">
         New Relay
       </li>
     </ul>
     <div class="progress-bar">
-      <div class="progress-bar-status" id="progress-bar-status">
-
-      </div>
+      <div class="progress-bar-status" id="progress-bar-status"></div>
     </div>
   </div>
 </template>
@@ -101,7 +76,13 @@ import { DataSet, DataView, Network, Options } from 'vis';
 
 import { NodeKlass, C3Node, C3Edge, nullNode } from '@/types/c3types';
 import { GetNodeKlassFn, FetchC3DataFn } from '@/store/C3Module';
-import { SetOptionslFn, SetGraphDataFn, GenerateNodesFn, GenerateEdgesFn, SetOptionFn } from '@/store/VisModule';
+import {
+  SetOptionslFn,
+  SetGraphDataFn,
+  GenerateNodesFn,
+  GenerateEdgesFn,
+  SetOptionFn
+} from '@/store/VisModule';
 
 import C3 from '@/c3';
 import Toggle from '@/components/form/Toggle.vue';
@@ -112,11 +93,10 @@ const VisModule = namespace('visModule');
 
 @Component({
   components: {
-    Toggle,
-  },
+    Toggle
+  }
 })
 export default class Canvas extends Mixins(C3, FindThePathToGateway) {
-
   get fullscreenIcon() {
     return this.isFullscreen ? 'zoomin' : 'fullscreen';
   }
@@ -144,7 +124,6 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
   get getSmoothEdges() {
     return this.isSmooth;
   }
-
 
   @VisModule.Action public generateNodes!: GenerateNodesFn;
   @VisModule.Action public generateEdges!: GenerateEdgesFn;
@@ -179,14 +158,18 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
 
   public createVisCanvas(): void {
     this.container = this.$refs.c3canvas;
-    (window as any).networkc3 = new Network(this.container, this.getGrapData, this.graphOtions);
+    (window as any).networkc3 = new Network(
+      this.container,
+      this.getGrapData,
+      this.graphOtions
+    );
 
     (window as any).networkc3.on('click', (params: any) => {
       const nodeid = (window as any).networkc3.getNodeAt(params.pointer.DOM);
       if (this.lastClickNodeId === nodeid) {
-          if (!!nodeid) {
-            this.openModal(nodeid, this.nodeKlass(nodeid));
-          }
+        if (!!nodeid) {
+          this.openModal(nodeid, this.nodeKlass(nodeid));
+        }
       } else {
         this.lastClickNodeId = nodeid;
       }
@@ -205,7 +188,9 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
     });
 
     (window as any).networkc3.on('stabilizationProgress', (params: any) => {
-      const status = (Math.floor(params.iterations / this.getOptions.physics.stabilization.updateInterval));
+      const status = Math.floor(
+        params.iterations / this.getOptions.physics.stabilization.updateInterval
+      );
       const progressBarStatus = document.getElementById('progress-bar-status');
       if (progressBarStatus !== null) {
         progressBarStatus.style.width = status + '%';
@@ -270,9 +255,9 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
         {
           id: nodeId.id,
           shadow: {
-            enabled: false,
-          },
-        },
+            enabled: false
+          }
+        }
       ]);
     });
   }
@@ -280,13 +265,16 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
   public clearPath(): void {
     this.getVisEdges.forEach((edge: any) => {
       const tmpEdge = (window as any).networkc3.body.data.edges.get(edge.id);
-      if (!!tmpEdge.color && Object.keys(tmpEdge.color).length !== 0 || !!tmpEdge.width && tmpEdge.width !== 1) {
+      if (
+        (!!tmpEdge.color && Object.keys(tmpEdge.color).length !== 0) ||
+        (!!tmpEdge.width && tmpEdge.width !== 1)
+      ) {
         (window as any).networkc3.body.data.edges.update([
           {
             id: edge.id,
             color: {},
-            width: 1,
-          },
+            width: 1
+          }
         ]);
       }
     });
@@ -297,9 +285,9 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
       {
         id: nodeId,
         shadow: {
-          enabled: true,
-        },
-      },
+          enabled: true
+        }
+      }
     ]);
 
     const paths = this.getPathsFromGateway(nodeId);
@@ -309,10 +297,10 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
           {
             id: edge.id,
             color: {
-              color: '#AB61F6',
+              color: '#AB61F6'
             },
-            width: 4,
-          },
+            width: 4
+          }
         ]);
       }
     });
@@ -333,7 +321,7 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
   flex-shrink: 1
   margin: 0 auto 0 auto
   padding: 0
-  border: 0.75px solid $color-green-c3
+  border: 0.75px solid $color-blue-c3
   box-sizing: border-box
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5)
   border-radius: 2px
@@ -351,7 +339,7 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
     background: transparent
     .progress-bar-status
       position: relative
-      background-color: $color-green-c3
+      background-color: $color-blue-c3
       width: 0%
       height: 100%
   &-toggle-layout.c3canvas-toggle-layout, &-toggle-interfaces.c3canvas-toggle-interfaces
@@ -419,7 +407,7 @@ export default class Canvas extends Mixins(C3, FindThePathToGateway) {
   max-width: 100vw
   width: calc(100vw - 32px)
   height: calc(100vh - 32px)
-  border: 0.75px solid $color-green-c3
+  border: 0.75px solid $color-blue-c3
   z-index: 9
   .c3canvas-fs-btn
     z-index: 10

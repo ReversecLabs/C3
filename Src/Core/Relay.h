@@ -1,13 +1,16 @@
 #pragma once
 
 #include "Distributor.h"
-#include "Common/MWR/C3/Internals/InterfaceFactory.h"
+#include "Common/FSecure/C3/Internals/InterfaceFactory.h"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// Last base layer class for both Relay types.
-	struct Relay : Distributor, MWR::C3::Relay
+	struct Relay : Distributor, FSecure::C3::Relay
 	{
+		/// Destructor
+		virtual ~Relay() = default;
+
 		/// Called whenever an attached Binder Peripheral wants to send a Command to its Connector Binder.
 		/// @param command full Command with arguments.
 		/// @param sender Interface that is sending the Command.
@@ -21,6 +24,8 @@ namespace MWR::C3::Core
 		virtual void DetachDevice(DeviceId const& iidOfDeviceToDetach);
 
 	protected:
+		using Distributor::On;
+
 		/// A protected constructor. @see Distributor::Distributor.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param interfaceFactory reference to Interface factory.
@@ -41,7 +46,7 @@ namespace MWR::C3::Core
 		/// Attaches provided Device to the Relay.
 		/// @param device provided Device.
 		/// @return same as device argument.
-		virtual std::shared_ptr<DeviceBridge> AttachDevice(std::shared_ptr<MWR::C3::Core::DeviceBridge> device);
+		virtual std::shared_ptr<DeviceBridge> AttachDevice(std::shared_ptr<FSecure::C3::Core::DeviceBridge> device);
 
 		/// Close Relay (command handler)
 		virtual void Close();

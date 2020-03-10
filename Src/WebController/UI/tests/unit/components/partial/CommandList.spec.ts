@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/partial/CommandList.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CommandList is a Vue instance', () => {
@@ -19,10 +19,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: true,
         statusFilter: 'ALL',
-        commandForFilter: 'ALL',
+        commandForFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });
@@ -32,10 +32,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: true,
         statusFilter: 'ALL',
-        commandForFilter: 'ALL',
+        commandForFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const commandsElementsCount = wrapper.vm.commands.length;
@@ -47,10 +47,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: true,
         statusFilter: 'COMPLETE',
-        commandForFilter: 'GATEWAY',
+        commandForFilter: 'GATEWAY'
       },
       store,
-      localVue,
+      localVue
     });
 
     const commandsElementsCount = wrapper.vm.commands.length;
@@ -62,10 +62,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: true,
         statusFilter: 'PENDING',
-        commandForFilter: 'CONNECTOR',
+        commandForFilter: 'CONNECTOR'
       },
       store,
-      localVue,
+      localVue
     });
 
     const commandsElementsCount = wrapper.vm.commands.length;
@@ -77,10 +77,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: true,
         statusFilter: 'ALL',
-        commandForFilter: 'ALL',
+        commandForFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;
@@ -92,10 +92,10 @@ describe('@/components/partial/CommandList.vue', () => {
       propsData: {
         showEmpty: false,
         statusFilter: 'ALL',
-        commandForFilter: 'ALL',
+        commandForFilter: 'ALL'
       },
       store,
-      localVue,
+      localVue
     });
 
     const hasTitle = wrapper.vm.displayEmpty;

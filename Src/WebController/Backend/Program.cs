@@ -12,7 +12,7 @@ using Serilog.Sinks.File;
 using Serilog.Events;
 using Serilog.Context;
 
-namespace MWR.C3.WebController
+namespace FSecure.C3.WebController
 {
     public class Program
     {
@@ -34,6 +34,10 @@ namespace MWR.C3.WebController
             {
                 Log.Information("Starting web host");
                 CreateWebHostBuilder(args).Build().Run();
+            }
+            catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException)
+            {
+                Log.Fatal(@"Failed to load soduim library. Check if you have  Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019 installed: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads");
             }
             catch (Exception ex)
             {

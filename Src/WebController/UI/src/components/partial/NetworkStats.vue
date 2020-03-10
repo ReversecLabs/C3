@@ -18,11 +18,11 @@
     </p>
     <p>
       <span>URL</span>
-       <span>{{ url }}</span>
+      <span>{{ url }}</span>
     </p>
     <p>
       <span>Port</span>
-       <span>{{ port }}</span>
+      <span>{{ port }}</span>
     </p>
   </div>
 </template>

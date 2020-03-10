@@ -8,13 +8,13 @@ const namespaced: boolean = true;
 
 export const state: CapabilityState = {
   capability,
-  interfaceList: [],
+  interfaceList: []
 };
 
 const actions: ActionTree<CapabilityState, RootState> = {
   fetchCapability(context) {
-    return context.state.capability = JSON.parse(JSON.stringify(capability));
-  },
+    return (context.state.capability = JSON.parse(JSON.stringify(capability)));
+  }
 };
 
 export const c3Capability: Module<CapabilityState, RootState> = {
@@ -22,5 +22,5 @@ export const c3Capability: Module<CapabilityState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

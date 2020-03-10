@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace MWR.C3.Comms
+namespace FSecure.C3.Comms
 {
     public class ConnectionTerminated : Exception
     {

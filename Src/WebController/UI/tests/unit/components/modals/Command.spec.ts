@@ -11,16 +11,16 @@ localVue.use(Vuex);
 
 describe('@/components/modals/Command.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('CommandModal is a Vue instance', () => {
     const wrapper = shallowMount(CommandModal, {
       propsData: {
-        targetId: 6,
+        targetId: 6
       },
       store,
-      localVue,
+      localVue
     });
     expect(wrapper.isVueInstance()).to.be.true;
   });

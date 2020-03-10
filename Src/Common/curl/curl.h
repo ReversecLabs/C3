@@ -7,15 +7,15 @@
 #define CURL_STATICLIB
 #ifdef _WIN64
 #      ifdef _DEBUG
-#              pragma comment(lib, "Common/curl/libcurl-vc15-x64-debug-static-ipv6-sspi-winssl.lib")
+#              pragma comment(lib, C3_SOLUTION_DIR "Common/curl/libcurl-vc15-x64-debug-static-ipv6-sspi-winssl.lib")
 #      else
-#              pragma comment(lib, "Common/curl/libcurl-vc15-x64-release-static-ipv6-sspi-winssl.lib")
+#              pragma comment(lib, C3_SOLUTION_DIR "Common/curl/libcurl-vc15-x64-release-static-ipv6-sspi-winssl.lib")
 #      endif
 #else
 #      ifdef _DEBUG
-#              pragma comment(lib, "Common/curl/libcurl-vc15-x86-debug-static-ipv6-sspi-winssl.lib")
+#              pragma comment(lib, C3_SOLUTION_DIR "Common/curl/libcurl-vc15-x86-debug-static-ipv6-sspi-winssl.lib")
 #      else
-#              pragma comment(lib, "Common/curl/libcurl-vc15-x86-release-static-ipv6-sspi-winssl.lib")
+#              pragma comment(lib, C3_SOLUTION_DIR "Common/curl/libcurl-vc15-x86-release-static-ipv6-sspi-winssl.lib")
 #      endif
 #endif
 

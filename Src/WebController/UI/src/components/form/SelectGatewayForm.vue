@@ -25,10 +25,9 @@ const C3Module = namespace('c3Module');
 
 @Component({
   components: {
-    Select,
-  },
+    Select
+  }
 })
-
 export default class SelectGatewayForm extends Mixins(C3) {
   @C3Module.Action public fetchGateway!: FetchC3DataFn;
 
@@ -50,7 +49,7 @@ export default class SelectGatewayForm extends Mixins(C3) {
 
     if (gateways.length > 0 && this.selectedGateway === '') {
       this.activeGateway = gateways[0].agentId;
-      this.fetchGateway({gatewayId: this.selectedGateway});
+      this.fetchGateway({ gatewayId: this.selectedGateway });
     }
     return g;
   }
@@ -60,12 +59,12 @@ export default class SelectGatewayForm extends Mixins(C3) {
     this.changeGateway();
     this.addNotify({
       type: 'info',
-      message: `Gateway [${this.selectedGateway}] selected...`,
+      message: `Gateway [${this.selectedGateway}] selected...`
     });
   }
 
   public changeGateway(): void {
-    this.fetchGateway({gatewayId: this.selectedGateway});
+    this.fetchGateway({ gatewayId: this.selectedGateway });
   }
 }
 </script>

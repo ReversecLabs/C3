@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "FormElement.h"
 
-namespace MWR::C3::Linter
+namespace FSecure::C3::Linter
 {
 	namespace
 	{
@@ -40,6 +40,9 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Destructor
+			virtual ~BooleanFormElement() = default;
+
 			/// Set boolean value from input accepted values interpreted as true are "true", "yes", "y", "1"
 			/// @param input to validate
 			void ValidateAndSet(std::string_view input) override
@@ -59,6 +62,10 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Destructor
+			virtual ~StringFormElement() = default;
+
+
 			/// Validate and set string value from input
 			/// @param input to validate
 			/// @throws std::invalid_argument if validation fails
@@ -76,6 +83,9 @@ namespace MWR::C3::Linter
 			IpFormElement(json& element) : FormElement(element)
 			{
 			}
+
+			/// Destructor
+			virtual ~IpFormElement() = default;
 
 			/// Validate and set IP value from input
 			/// @param input to validate
@@ -112,6 +122,9 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Destructor
+			virtual ~BinaryFormElement() = default;
+
 			/// Validate and set binary value from input (in base64 string)
 			/// @param input to validate
 			/// @throws std::invalid_argument if validation fails
@@ -142,6 +155,9 @@ namespace MWR::C3::Linter
 			{
 			}
 
+			/// Destructor
+			virtual ~NumericFormElement() = default;
+
 			/// Validate and set numeric value from input
 			/// @param input to validate
 			/// @throws std::invalid_argument if validation fails
@@ -160,8 +176,6 @@ namespace MWR::C3::Linter
 	FormElement::FormElement(json& definition) :
 		m_Definition(definition)
 	{
-		if (!m_Definition.contains("name"))
-			throw std::invalid_argument{ "Form element must contain 'name' property." };
 	}
 
 	/// Generate FormElement::Type to_json and from_json fuctions to enable serialization
@@ -190,8 +204,10 @@ namespace MWR::C3::Linter
 	{
 		if (!element.is_object())
 			throw std::invalid_argument { "Form element must be a json object." };
+		if (!element.contains("name"))
+			throw std::invalid_argument{ "Form element must contain 'name' property. \nInvalid element:\n" + element.dump(4) };
 		if (!element.contains("type"))
-			throw std::invalid_argument{ "Form element must contain 'type' property." };
+			throw std::invalid_argument{ "Form element '" + element["name"].get<std::string>() + "' must contain 'type' property." };
 
 		switch (element["type"].get<FormElement::Type>())
 		{

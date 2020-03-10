@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MWR.C3.WebController.Comms;
-using MWR.C3.WebController.HttpExtentions;
-using MWR.C3.WebController.LinqExtentions;
-using MWR.C3.WebController.Models;
+using FSecure.C3.WebController.Comms;
+using FSecure.C3.WebController.HttpExtentions;
+using FSecure.C3.WebController.LinqExtentions;
+using FSecure.C3.WebController.Models;
 
-namespace MWR.C3.WebController.Controllers
+namespace FSecure.C3.WebController.Controllers
 {
     public class CommandControllerHelper
     {

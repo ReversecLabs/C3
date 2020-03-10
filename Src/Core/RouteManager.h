@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Common/MWR/CppTools/SafeSmartPointerContainer.h"
+#include "Common/FSecure/CppTools/SafeSmartPointerContainer.h"
 #include "RouteId.h"
 #include "DeviceBridge.h"
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// A template class responsible for managing C3 connections.
 	struct RouteManager
@@ -20,6 +20,9 @@ namespace MWR::C3::Core
 			RouteId m_RouteId;																							///< ID of the Route.
 			std::weak_ptr<DeviceBridge> m_Channel;																		///< Channel facing Route destination (i.e. the opposite direction to Gateway).
 		};
+
+		/// Destructor
+		virtual ~RouteManager() = default;
 
 		/// Finds Route specified by his ID.
 		/// @param routeId ID of the Route to find.

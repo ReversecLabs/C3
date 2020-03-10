@@ -22,20 +22,26 @@ export interface CapabilityState {
 
 export const state: CapabilityState = {
   capability: {},
-  interfaceList: [],
+  interfaceList: []
 };
 
 // Getters
 export type GetTypeNameForInterfaceFn = (t: number, k: NodeKlass) => string;
 export type GetTypesForInterfaceKlassFn = (k: NodeKlass) => InterfaceItem[];
-export type GetCapabilityForFn = (t: string, k: NodeKlass) => InterfaceItem|undefined;
+export type GetCapabilityForFn = (
+  t: string,
+  k: NodeKlass
+) => InterfaceItem | undefined;
 export type GetCommandGroupForFn = (k: NodeKlass) => any;
-export type GetCommandTargetForFn = (commandName: string, nodeKlass: NodeKlass, currentType?: string|number) => any;
+export type GetCommandTargetForFn = (
+  commandName: string,
+  nodeKlass: NodeKlass,
+  currentType?: string | number
+) => any;
 
 export const getters: GetterTree<CapabilityState, RootState> = {
-  getCommandGroupFor: (capabilityState) => (nodeKlass: NodeKlass): any => {
+  getCommandGroupFor: capabilityState => (nodeKlass: NodeKlass): any => {
     let commands: any = {};
-
 
     switch (nodeKlass) {
       case NodeKlass.Gateway:
@@ -44,22 +50,34 @@ export const getters: GetterTree<CapabilityState, RootState> = {
         }
         break;
       case NodeKlass.Relay:
-        if (capabilityState.capability && capabilityState.capability.relayCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.relayCommands
+        ) {
           commands = capabilityState.capability.relayCommands.commands;
         }
         break;
       case NodeKlass.Channel:
-        if (capabilityState.capability && capabilityState.capability.channelCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.channelCommands
+        ) {
           commands = capabilityState.capability.channelCommands.commands;
         }
         break;
       case NodeKlass.Peripheral:
-        if (capabilityState.capability && capabilityState.capability.peripheralCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.peripheralCommands
+        ) {
           commands = capabilityState.capability.peripheralCommands.commands;
         }
         break;
       case NodeKlass.Connector:
-        if (capabilityState.capability && capabilityState.capability.connectorCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.connectorCommands
+        ) {
           commands = capabilityState.capability.connectorCommands.commands;
         }
         break;
@@ -76,8 +94,11 @@ export const getters: GetterTree<CapabilityState, RootState> = {
     return options;
   },
 
-  getCommandTargetFor: (capabilityState) =>
-    (commandName: string, nodeKlass: NodeKlass, currentType?: number|string): any => {
+  getCommandTargetFor: capabilityState => (
+    commandName: string,
+    nodeKlass: NodeKlass,
+    currentType?: number | string
+  ): any => {
     let commands: any = {};
 
     switch (nodeKlass) {
@@ -87,22 +108,34 @@ export const getters: GetterTree<CapabilityState, RootState> = {
         }
         break;
       case NodeKlass.Relay:
-        if (capabilityState.capability && capabilityState.capability.relayCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.relayCommands
+        ) {
           commands = capabilityState.capability.relayCommands.commands;
         }
         break;
       case NodeKlass.Channel:
-        if (capabilityState.capability && capabilityState.capability.channelCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.channelCommands
+        ) {
           commands = capabilityState.capability.channelCommands.commands;
         }
         break;
       case NodeKlass.Peripheral:
-        if (capabilityState.capability && capabilityState.capability.peripheralCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.peripheralCommands
+        ) {
           commands = capabilityState.capability.peripheralCommands.commands;
         }
         break;
       case NodeKlass.Connector:
-        if (capabilityState.capability && capabilityState.capability.connectorCommands) {
+        if (
+          capabilityState.capability &&
+          capabilityState.capability.connectorCommands
+        ) {
           commands = capabilityState.capability.connectorCommands.commands;
         }
         break;
@@ -118,7 +151,6 @@ export const getters: GetterTree<CapabilityState, RootState> = {
     const options: any = {};
 
     if (commandList && commandList.arguments) {
-
       const form = commandList.arguments.find((commandItem: any) => {
         return commandItem.type === 'form';
       });
@@ -138,8 +170,10 @@ export const getters: GetterTree<CapabilityState, RootState> = {
     return options;
   },
 
-
-  getTypeNameForInterface: (capabilityState) => (t: number, k: NodeKlass): string|undefined => {
+  getTypeNameForInterface: capabilityState => (
+    t: number,
+    k: NodeKlass
+  ): string | undefined => {
     const item = capabilityState.interfaceList.find((i: InterfaceItem) => {
       return '' + i.type === '' + t; // && i.klass === k;
     });
@@ -149,17 +183,22 @@ export const getters: GetterTree<CapabilityState, RootState> = {
     return '';
   },
 
-  getTypesForInterfaceKlass: (capabilityState) => (k: NodeKlass): InterfaceItem[] => {
+  getTypesForInterfaceKlass: capabilityState => (
+    k: NodeKlass
+  ): InterfaceItem[] => {
     return capabilityState.interfaceList.filter((i: InterfaceItem) => {
       return i.klass === k;
     });
   },
 
-  getCapabilityFor: (capabilityState) => (n: string, k: NodeKlass): InterfaceItem|undefined => {
+  getCapabilityFor: capabilityState => (
+    n: string,
+    k: NodeKlass
+  ): InterfaceItem | undefined => {
     return capabilityState.interfaceList.find((i: InterfaceItem) => {
       return i.name === n && i.klass === k;
     });
-  },
+  }
 };
 
 // Mutations
@@ -177,7 +216,7 @@ export const mutations: MutationTree<CapabilityState> = {
           const item: any = {
             type: element.type,
             name: element.name,
-            commands: element.commands,
+            commands: element.commands
           };
 
           switch (i) {
@@ -208,7 +247,7 @@ export const mutations: MutationTree<CapabilityState> = {
     getItem('peripherals');
     getItem('gateway');
     getItem('relay');
-  },
+  }
 };
 
 // Actions
@@ -217,19 +256,18 @@ const actions: ActionTree<CapabilityState, RootState> = {
   fetchCapability(context, d: FetchData): void {
     if (d.gatewayId) {
       const url = `/api/gateway/${d.gatewayId}/capability`;
-      const baseURL =
-        `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
+      const baseURL = `${context.rootGetters['optionsModule/getAPIUrl']}:${context.rootGetters['optionsModule/getAPIPort']}`;
       axios
         .get(url, { baseURL })
-        .then((response) => {
+        .then(response => {
           context.commit('updateCapability', response.data);
           context.commit('populateList', response.data);
         })
-        .catch((error) => {
+        .catch(error => {
           context.dispatch(
             'notifyModule/insertNotify',
-            {type: 'error', message: error.message},
-            {root: true},
+            { type: 'error', message: error.message },
+            { root: true }
           );
           // tslint:disable-next-line:no-console
           console.error(error.message);
@@ -237,13 +275,13 @@ const actions: ActionTree<CapabilityState, RootState> = {
     } else {
       context.dispatch(
         'notifyModule/insertNotify',
-        {type: 'error', message: 'missing: gatewayId'},
-        {root: true},
+        { type: 'error', message: 'missing: gatewayId' },
+        { root: true }
       );
       // tslint:disable-next-line:no-console
       console.error('missing: gatewayId');
     }
-  },
+  }
 };
 
 export const c3Capability: Module<CapabilityState, RootState> = {
@@ -251,5 +289,5 @@ export const c3Capability: Module<CapabilityState, RootState> = {
   state,
   getters,
   mutations,
-  actions,
+  actions
 };

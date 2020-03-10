@@ -3,10 +3,10 @@
 #include "Procedures.h"
 #include "ProceduresG2X.h"
 #include "RouteManager.h"
-#include "Common/MWR/Crypto/Crypto.hpp"
+#include "Common/FSecure/Crypto/Crypto.hpp"
 
 // Forward declarations.
-namespace MWR::C3
+namespace FSecure::C3
 {
 	struct LogMessage;
 	namespace Core
@@ -15,12 +15,15 @@ namespace MWR::C3
 	}
 }
 
-namespace MWR::C3::Core
+namespace FSecure::C3::Core
 {
 	/// Relay's lowest layer - responsible for managing packet transmission.
 	struct Distributor : std::enable_shared_from_this<Distributor>, RouteManager, ProceduresN2N::RequestHandler, ProceduresS2G::RequestHandler
 	{
-		using LoggerCallback = void(*)(LogMessage const&, std::string_view*);
+		using LoggerCallback = Utils::LoggerCallback;
+
+		/// Destructor
+		virtual ~Distributor() = default;
 
 		/// Logs a message. Used by internal Relay mechanisms and attached Interfaces to report errors, warnings, informations and debug messages.
 		/// @param message information to log.
@@ -34,6 +37,10 @@ namespace MWR::C3::Core
 		virtual void OnPacketReceived(ByteView packet, std::shared_ptr<DeviceBridge> sender);
 
 	protected:
+		/// Expose all base classes `On` methods.
+		using ProceduresN2N::RequestHandler::On;
+		using ProceduresS2G::RequestHandler::On;
+
 		/// A protected ctor.
 		/// @param callbackOnLog callback fired whenever a new Log entry is being added.
 		/// @param decryptionKey Relay's private asymmetric key.

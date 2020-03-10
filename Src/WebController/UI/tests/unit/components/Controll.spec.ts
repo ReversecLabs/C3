@@ -11,7 +11,7 @@ localVue.use(Vuex);
 
 describe('@/components/Controll.vue', () => {
   const store = new Vuex.Store({
-    modules,
+    modules
   });
 
   it('Controll is a Vue instance', () => {
