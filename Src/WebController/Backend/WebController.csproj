@@ -6,7 +6,7 @@
 	<AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
     <RootNamespace>FSecure.C3.WebController</RootNamespace>
     <AssemblyName>C3WebController</AssemblyName>
-    <Configurations>Debug;Release;ReleaseWithDebInfo</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,12 +18,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\..\..\Bin\WebController\Release</OutputPath>
 	<IntermediateOutputPath>..\..\..\Tmp\WebController\Release</IntermediateOutputPath>
-    <DefineConstants>TRACE;s</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|AnyCPU'">
-    <OutputPath>..\..\..\Bin\WebController\Release</OutputPath>
-    <IntermediateOutputPath>..\..\..\Tmp\WebController\Release</IntermediateOutputPath>
     <DefineConstants>TRACE;s</DefineConstants>
   </PropertyGroup>
 

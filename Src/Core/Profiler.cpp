@@ -428,9 +428,9 @@ json FSecure::C3::Core::Profiler::Gateway::CreateProfileSnapshot() const
 FSecure::C3::Core::Profiler::Agent::Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo)
 	: Relay(owner, agentId, buildId, lastSeen)
 	, m_EncryptionKey(encryptionKey)
+	, m_HostInfo(std::move(hostInfo))
 	, m_IsBanned(isBanned)
 	, m_IsX64(isX64)
-	, m_HostInfo(std::move(hostInfo))
 {
 }
 
@@ -542,6 +542,8 @@ void FSecure::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommand
 					device->m_Jitter.first = FSecure::Utils::ToMilliseconds(commandReadView.Read<float>());
 					device->m_Jitter.second = FSecure::Utils::ToMilliseconds(commandReadView.Read<float>());
 				};
+				break;
+			default:
 				break;
 			}
 		}
@@ -775,7 +777,7 @@ void FSecure::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jComma
 	{
 		if (auto jConnectorId = jCommandElement.find(jsonEntryToFind); jConnectorId != jCommandElement.end() && !jConnectorId->is_null())
 		{
-			auto id = std::stoull(jConnectorId->get<std::string>(), nullptr, 16); // throws on error.
+			auto id = std::stoull(jConnectorId->template get<std::string>(), nullptr, 16); // throws on error.
 
 			if (isDevice)
 			{
@@ -886,9 +888,9 @@ json FSecure::C3::Core::Profiler::Gateway::GetCapability()
 					}
 
 					for (auto&& relayType : relayTypes)
-						buffer[i][relayType].push_back(json{ {"name", prefix[i] + element["name"].get<std::string>()}, {"arguments", arguments}, {"id", id} });
+						buffer[i][relayType].push_back(json{ {"name", prefix[i] + element["name"].template get<std::string>()}, {"arguments", arguments}, {"id", id} });
 
-					m_CreateCommands.push_back({ id, initialPacket[interfaceType][idToErase]["type"].get<uint32_t>(), isDevice, !!i }); // store command id and hash.
+					m_CreateCommands.push_back({ id, initialPacket[interfaceType][idToErase]["type"].template get<uint32_t>(), isDevice, !!i }); // store command id and hash.
 					--id;
 				}
 
@@ -1030,6 +1032,8 @@ void FSecure::C3::Core::Profiler::Gateway::RunCommand(ByteView commandWithArgume
 		}
 		break;
 	}
+	default:
+		break;
 	}
 }
 
@@ -1328,8 +1332,8 @@ FSecure::C3::Core::Profiler::Device::Device(std::weak_ptr<Profiler> owner, Id id
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Core::Profiler::Route::Route(std::weak_ptr<Profiler> owner, RouteId id, Device::Id outgoingDeviceId, bool isNeighbour)
 	: ProfileElement(owner)
-	, m_Id(id)
 	, m_OutgoingDevice(outgoingDeviceId)
+	, m_Id(id)
 	, m_IsNeighbour(isNeighbour)
 {
 }

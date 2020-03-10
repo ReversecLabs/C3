@@ -9,13 +9,13 @@ namespace ResourceGenerator
     {
         static int Main(string[] args)
         {
-            if (args.Length < 2 || !File.Exists(args[0]) || !Directory.Exists(args[1]))
+            if (args.Length < 2 || !File.Exists(args[0]))
             {
                 System.Console.WriteLine("ResourceGenerator require existing input file and output directory.");
                 return 1;
             }
 
-            var outputDir = Path.Join(args[1], "gen");
+            var outputDir = args[1];
             if (!Directory.Exists(outputDir))
                 Directory.CreateDirectory(outputDir);
 

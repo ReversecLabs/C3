@@ -86,11 +86,13 @@ void FSecure::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std:
 void FSecure::C3::Core::GateRelay::PostCommandToPeripheral(ByteView command, RouteId routeId)
 {
  	// Check if Peripheral is attached to Gateway.
- 	if (routeId.GetAgentId() == GetAgentId())
+	if (routeId.GetAgentId() == GetAgentId())
+	{
  		if (auto peripheral = m_Devices.Find([&](auto const& e) {auto sp = e.lock(); return sp &&  sp->GetDid() == routeId.GetInterfaceId(); }).lock(); peripheral)
  			return peripheral->OnCommandFromConnector(command);
  		else
  			throw std::runtime_error{ "Couldn't find Gateway's recipient Peripheral." };
+	}
 
 	auto route = FindRoute(routeId.GetAgentId());
 	if (!route)
@@ -284,7 +286,7 @@ void FSecure::C3::Core::GateRelay::DetachDevice(DeviceId const& iidOfDeviceToDet
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& query)
+void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 {
 	auto decryptedPacket = query.GetQueryPacket(this->m_AuthenticationKey, this->m_DecryptionKey);
 	auto readView = ByteView{ decryptedPacket };
@@ -308,7 +310,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery&& quer
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery&& query)
+void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 {
 	// whole message.
 	auto decryptedPacket = query.GetQueryPacket(m_AuthenticationKey, m_DecryptionKey);

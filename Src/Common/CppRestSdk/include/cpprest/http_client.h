@@ -30,7 +30,7 @@
 #define CPPRESTSDK_BUILD_TYPE "release/"
 #endif
 
-#pragma comment(lib, "Common/CppRestSdk/lib/" CPPRESTSDK_BUILD_TYPE CPPRESTSDK_ARCH  "cpprest142_2_10.lib")
+#pragma comment(lib, C3_SOLUTION_DIR "Common/CppRestSdk/lib/" CPPRESTSDK_BUILD_TYPE CPPRESTSDK_ARCH  "cpprest142_2_10.lib")
 #undef CPPRESTSDK_ARCH
 #undef CPPRESTSDK_BUILD_TYPE
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ByteVector.h"
+#include "ByteArray.h"
 
 namespace FSecure
 {
@@ -163,21 +164,17 @@ namespace FSecure
 		/// @code auto [a, b, c] = someByteView.Read<int, float, std::string>(); @endcode
 		/// @note Returned types does not have to match exactly with Read template parameters list.
 		/// It is possible to create tags that will be used to retrieve different type.
-		template<typename T, typename ...Ts, typename = decltype(FSecure::ByteConverter<std::remove_const_t<T>>::From(std::declval<ByteView>()))>
+		template<typename T, typename ...Ts, typename = decltype(FSecure::ByteConverter<Utils::RemoveCVR<T>>::From(std::declval<ByteView&>()))>
 		auto Read()
 		{
-			if constexpr (!sizeof...(Ts))
-			{
-				return ByteConverter<std::remove_const_t<T>>::From(*this);
-			}
+			auto current = ByteConverter<Utils::RemoveCVR<T>>::From(*this);
+			if constexpr (sizeof...(Ts) == 0)
+				return current;
+			else if constexpr (sizeof...(Ts) == 1)
+				return std::make_tuple(std::move(current), Read<Ts...>());
 			else
-			{
-				auto current = std::make_tuple(Read<T>());
-				if constexpr (sizeof...(Ts) > 1)
-					return std::tuple_cat(std::move(current), Read<Ts...>());
-				else
-					return std::tuple_cat(std::move(current), std::make_tuple(Read<Ts...>()));
-			}
+				return std::tuple_cat(std::make_tuple(std::move(current)), Read<Ts...>());
+
 		}
 	};
 
@@ -190,19 +187,14 @@ namespace FSecure
 			throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
 
 		auto elementCount = *reinterpret_cast<const uint32_t*>(bv.data());
-		auto byteCount = elementCount * sizeof(T::value_type);
+		auto byteCount = elementCount * sizeof(typename T::value_type);
 		bv.remove_prefix(sizeof(uint32_t));
 
 		T retVal;
 		if constexpr (Utils::IsOneOf<T, ByteVector, std::string, std::wstring>::value)
-		{
-			retVal.resize(elementCount);
-			std::memcpy(retVal.data(), bv.data(), byteCount);
-		}
+			retVal.resize(elementCount), std::memcpy(retVal.data(), bv.data(), byteCount);
 		else
-		{
 			retVal = T{ reinterpret_cast<typename T::value_type const*>(bv.data()), elementCount };
-		}
 
 		bv.remove_prefix(byteCount);
 		return retVal;

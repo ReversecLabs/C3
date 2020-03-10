@@ -19,7 +19,7 @@ namespace FSecure::C3::Interfaces::Peripherals
 		Beacon(ByteView arguments);
 
 		/// Destructor
-		~Beacon();
+		virtual ~Beacon();
 
 		/// Sending callback implementation.
 		/// @param packet to send to the Implant.
@@ -30,8 +30,8 @@ namespace FSecure::C3::Interfaces::Peripherals
 		ByteVector OnReceiveFromPeripheral() override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability description in JSON format.
+		static const char* GetCapability();
 
 		/// Close Peripheral Beacon
 		/// Calls superclass Close and prepares to exit without deadlocking

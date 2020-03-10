@@ -14,7 +14,7 @@
 #define Z_DEBUG ""
 #endif
 
-#pragma comment(lib, "Common/zlib/lib/" Z_PLATFORM "zlib" Z_DEBUG ".lib")
+#pragma comment(lib,  C3_SOLUTION_DIR "Common/zlib/lib/" Z_PLATFORM "zlib" Z_DEBUG ".lib")
 
 namespace FSecure::Compression
 {

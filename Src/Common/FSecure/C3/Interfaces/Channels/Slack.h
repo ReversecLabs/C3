@@ -10,6 +10,9 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @param arguments factory arguments.
 		Slack(ByteView arguments);
 
+		/// Destructor
+		virtual ~Slack() = default;
+
 		/// OnSend callback implementation.
 		/// @param packet data to send to Channel.
 		/// @returns size_t number of bytes successfully written.
@@ -20,8 +23,8 @@ namespace FSecure::C3::Interfaces::Channels
 		ByteVector OnReceiveFromChannel();
 
 		/// Get channel capability.
-		/// @returns ByteView view of channel capability.
-		static ByteView GetCapability();
+		/// @returns Channel capability in JSON format
+		static const char* GetCapability();
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise slack rate limit will heavily impact channel.

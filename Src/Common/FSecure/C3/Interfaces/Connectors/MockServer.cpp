@@ -12,14 +12,17 @@ namespace FSecure::C3::Interfaces::Connectors
 		/// @param arguments factory arguments.
 		MockServer(ByteView);
 
+		/// Destructor
+		virtual ~MockServer() = default;
+
 		/// OnCommandFromBinder callback implementation.
 		/// @param binderId Identifier of Peripheral who sends the Command.
 		/// @param command full Command with arguments.
 		void OnCommandFromBinder(ByteView binderId, ByteView command) override;
 
 		/// Returns json with Commands.
-		/// @return Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability in JSON format
+		static const char* GetCapability();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.
@@ -161,7 +164,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::MockServer::PeripheralC
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteView FSecure::C3::Interfaces::Connectors::MockServer::GetCapability()
+const char* FSecure::C3::Interfaces::Connectors::MockServer::GetCapability()
 {
 	return R"(
 {

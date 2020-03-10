@@ -66,7 +66,7 @@ void FSecure::C3::Interfaces::Channels::Slack::DeleteReplies(std::vector<std::st
 		m_slackObj.DeleteMessage(ts);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteView FSecure::C3::Interfaces::Channels::Slack::GetCapability()
+const char* FSecure::C3::Interfaces::Channels::Slack::GetCapability()
 {
 	return R"_(
 {

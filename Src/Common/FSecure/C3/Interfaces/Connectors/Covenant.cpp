@@ -37,8 +37,8 @@ namespace FSecure::C3::Interfaces::Connectors
 		ByteVector PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64) override;
 
 		/// Return json with commands.
-		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		/// @return Capability description in JSON format.
+		static const char* GetCapability();
 
 	private:
 		/// Represents a single C3 <-> Covenant connection, as well as each Grunt in network.
@@ -400,7 +400,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::OnRunCommand(
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteView FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
+const char* FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
 {
 	return R"(
 	{
@@ -538,7 +538,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::Connection::R
 		case 0:
 			return {};																									//< The connection has been gracefully closed.
 
-		case SOCKET_ERROR:
+		case static_cast<DWORD>(SOCKET_ERROR):
 			throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
 		}
 

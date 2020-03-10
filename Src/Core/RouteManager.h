@@ -21,6 +21,9 @@ namespace FSecure::C3::Core
 			std::weak_ptr<DeviceBridge> m_Channel;																		///< Channel facing Route destination (i.e. the opposite direction to Gateway).
 		};
 
+		/// Destructor
+		virtual ~RouteManager() = default;
+
 		/// Finds Route specified by his ID.
 		/// @param routeId ID of the Route to find.
 		/// @return Route object if existed, otherwise null.

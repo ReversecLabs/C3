@@ -8,12 +8,12 @@ struct NodeRelayService : FSecure::CppCommons::WinTools::AbstractService
 	FSecure::CppCommons::CppTools::XError<FSecure::CppCommons::CppTools::SystemErrorCode> OnServiceRun() override
 	{
 		// Just try and start the NodeRelay.
-		FSecure::C3::Utils::CreateNodeRelayFromImagePatch([](FSecure::C3::LogMessage const&, std::string_view*) {}, FSecure::C3::InterfaceFactory::Instance(), EmbeddedData::Instance()[0], EmbeddedData::Instance()[1], EmbeddedData::Instance()[2], EmbeddedData::Instance().FindMatching(3));
-		return NO_ERROR;
+		FSecure::C3::Utils::CreateNodeRelayFromImagePatch([](FSecure::C3::LogMessage const&, std::string_view) {}, FSecure::C3::InterfaceFactory::Instance(), EmbeddedData::Instance()[0], EmbeddedData::Instance()[1], EmbeddedData::Instance()[2], EmbeddedData::Instance().FindMatching(3));
+		return { NO_ERROR };
 	}
 };
 
-void Log(FSecure::C3::LogMessage const& message, std::string_view* sender)
+void Log(FSecure::C3::LogMessage const& message, std::string_view sender)
 {
 	// Synchronize and show message on screen.
 	static std::mutex mutex;
@@ -24,7 +24,7 @@ void Log(FSecure::C3::LogMessage const& message, std::string_view* sender)
 /// Entry point of the application.
 /// @param argc number of program arguments.
 /// @param argv vector of program arguments.
-int main(DWORD argc, char * argv[])
+int main(int argc, char * argv[])
 {
 	FSecure::WinTools::StructuredExceptionHandling::SehWrapper(
 		[]() {

@@ -63,7 +63,7 @@ namespace FSecure::C3
 			ret.m_StartupJitter = std::pair(Iface::s_MinUpdateDelay, Iface::s_MaxUpdateDelay);
 #ifdef		C3_IS_GATEWAY
 			ret.m_Name = GetInterfaceName<Iface>();
-			ret.m_Capability = EnsureDefaultCapability<Iface>::GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
+			ret.m_Capability = EnsureDefaultCapability<Iface>::template GetCapability<EnsureDefaultCapability<Iface>::HasCustomCapability>(); // Simpler syntax should be available, but I've encountered MSVC bug with SFINAE.
 #endif		//C3_IS_GATEWAY
 
 			return ret;
@@ -105,8 +105,8 @@ namespace FSecure::C3
 			Channel()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				this->m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				this->m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 
 			/// Callback that is periodically called for every Device to update itself.
@@ -197,7 +197,7 @@ namespace FSecure::C3
 		class Connector : public AbstractConnector
 		{
 		};
-#endif C3_IS_GATEWAY
+#endif // C3_IS_GATEWAY
 
 #pragma warning( push )
 #pragma warning( disable : 4307)
@@ -212,8 +212,8 @@ namespace FSecure::C3
 			Peripheral()
 			{
 				static_assert(Iface::s_MinUpdateDelay >= 30ms && Iface::s_MinUpdateDelay <= Iface::s_MaxUpdateDelay, "The frequency is set incorrectly");
-				m_MinUpdateDelay = Iface::s_MinUpdateDelay;
-				m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
+				this->m_MinUpdateDelay = Iface::s_MinUpdateDelay;
+				this->m_MaxUpdateDelay = Iface::s_MaxUpdateDelay;
 			}
 		};
 #pragma warning( pop )

@@ -8,30 +8,27 @@ namespace FSecure
 	/// @warning Never use this class directly. Always use the SCOPE_GUARD macro.
 	struct ScopeGuard
 	{
-		/// Class design.
-		typedef ScopeGuard Type;												///< Can't use automatic LIGHT_CLASS_FILLER because of deleted constructors and operators.
-
 		/// Cleanup function signature.
-		typedef std::function<void()> CleanupFunction_t;
+		using CleanupFunction_t = std::function<void()>;
 
 		/// The only valid to call manual constructor.
 		/// @param function cleanup function to call on scope leave.
-		Type(const CleanupFunction_t& function) : m_CleanupFunction(function) { }
+		ScopeGuard(const CleanupFunction_t& function) : m_CleanupFunction(function) { }
 
 		/// Deleted l-value constructor, to reject l-value references.
-		Type(CleanupFunction_t&) = delete;
+		ScopeGuard(CleanupFunction_t&) = delete;
 
 		/// R-value constructor, to accept r-value references.
-		Type(CleanupFunction_t&& function) : m_CleanupFunction(function) { }
+		ScopeGuard(CleanupFunction_t&& function) : m_CleanupFunction(function) { }
 
 		/// Destructor.
 		~ScopeGuard() { m_CleanupFunction(); }
 
 		/// Operators.
-		const Type& operator=(const Type&) = delete;							///< No copying between ScopeGuards is allowed.
+		const ScopeGuard& operator=(const ScopeGuard&) = delete;							///< No copying between ScopeGuards is allowed.
 
 		/// Conversion operators.
-		Type(const Type&) = delete;												///< Same as above - no copying between ScopeGuard objects.
+		ScopeGuard(const ScopeGuard&) = delete;												///< Same as above - no copying between ScopeGuard objects.
 
 		/// Heap operators are rejected.
 		void *operator new(size_t) = delete;
@@ -49,5 +46,5 @@ namespace FSecure
 
 	/// SCOPE_GUARD macro definition. You should always use this macro instead of direct manipulations on ScopeGuard structure and it's objects.<br>
 	/// Usage: SCOPE_GUARD { expressions; that; will; be; processed; on; scope; leave; }
-#	define SCOPE_GUARD FSecure::ScopeGuard SCOPE_GUARD_CAT(scope_guard_, __COUNTER__) = [&]
+#	define SCOPE_GUARD(cleanupExpression) auto SCOPE_GUARD_CAT(scope_guard_, __COUNTER__) = FSecure::ScopeGuard{[&]{cleanupExpression}}
 }

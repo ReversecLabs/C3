@@ -12,22 +12,23 @@ namespace
 		pSA->nLength = sizeof(SECURITY_ATTRIBUTES);
 		pSA->bInheritHandle = FALSE;
 
-		TCHAR* szSD = TEXT("D:")       // Discretionary ACL
-			TEXT("(D;OICI;GA;;;BG)")     // Deny access to
-										 // built-in guests
-			TEXT("(D;OICI;GA;;;AN)")     // Deny access to
-										 // anonymous logon
-			TEXT("(A;OICI;GRGW;;;AU)")   // Allow
-										 // read/write
-										 // to authenticated
-										 // users
-			TEXT("(A;OICI;GA;;;BA)");    // Allow full control
-										 // to administrators
+		const wchar_t* szSD = OBF(
+			L"D:"       // Discretionary ACL
+			"(D;OICI;GA;;;BG)"		// Deny access to
+									// built-in guests
+			"(D;OICI;GA;;;AN)"		// Deny access to
+									// anonymous logon
+			"(A;OICI;GRGW;;;AU)"	// Allow
+									// read/write
+									// to authenticated
+									// users
+			"(A;OICI;GA;;;BA)");	// Allow full control
+									 // to administrators
 
 		if (NULL == pSA)
 			return FALSE;
 
-		return ConvertStringSecurityDescriptorToSecurityDescriptor(
+		return ConvertStringSecurityDescriptorToSecurityDescriptorW(
 			szSD,
 			SDDL_REVISION_1,
 			&(pSA->lpSecurityDescriptor),
@@ -72,7 +73,7 @@ size_t FSecure::WinTools::WritePipe::Write(ByteView data)
 		throw std::runtime_error{ OBF("Write error, too much data.") };
 
 	ConnectNamedPipe(m_Pipe.get(), nullptr);
-	SCOPE_GUARD{ DisconnectNamedPipe(m_Pipe.get()); };
+	SCOPE_GUARD( DisconnectNamedPipe(m_Pipe.get()); );
 	DWORD written;
 	uint32_t len = static_cast<uint32_t>(data.size());
 	WriteFile(m_Pipe.get(), &len, sizeof(len), nullptr, nullptr);
@@ -99,7 +100,7 @@ FSecure::ByteVector FSecure::WinTools::ReadPipe::Read()
 	if (pipe == INVALID_HANDLE_VALUE)
 		return {};
 
-	SCOPE_GUARD{ CloseHandle(pipe); };
+	SCOPE_GUARD( CloseHandle(pipe); );
 
 	DWORD chunkSize;
 	uint32_t pipeBufferSize = 512u;
@@ -204,7 +205,6 @@ FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read()
 
 	// Read four bytes and find the length of the next chunk of data.
 	DWORD chunkLength = 0, bytesReadCurrent = 0;
-	DWORD bytesAvailable = 0;
 	if (!ReadFile(m_Pipe.get(), &chunkLength, 4, &bytesReadCurrent, nullptr))
 		throw std::runtime_error{ OBF("Couldn't read from Pipe: ") + std::to_string(GetLastError()) + OBF(".") };
 
