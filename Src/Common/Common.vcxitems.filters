@@ -37,7 +37,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Beacon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\AutomaticRegistrator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\BackendCommons.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\HasConstructor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\PrecompiledHeader.hpp" />
