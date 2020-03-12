@@ -17,15 +17,29 @@ size_t FSecure::C3::Interfaces::Channels::Slack::OnSendToChannel(ByteView data)
 	//Begin by creating a message where we can write the data to in a thread, both client and server ignore this message to prevent race conditions
 	std::string updateTs = m_slackObj.WriteMessage(m_outboundDirectionName + OBF(":writing"));
 
-	//Write the full data into the thread. This makes it alot easier to read in onRecieve as slack limits messages to 40k characters.
-	m_slackObj.WriteReply(cppcodec::base64_rfc4648::encode(data.data(), data.size()), updateTs);
+	//this is more than 30 messages, send it as a file (we do this infrequently as file uploads restricted to 20 per minute).
+	//Using file upload for staging (~88 messages) is a huge improvement over sending actual replies.
+	size_t actualPacketSize = 0;
+	if (data.size() > 120'000)
+	{
+		m_slackObj.UploadFile(cppcodec::base64_rfc4648::encode(data.data(), data.size()), updateTs);
+		actualPacketSize = data.size();
+	}
+	else
+	{
+		//Write the full data into the thread. This makes it alot easier to read in onRecieve as slack limits messages to 40k characters.
+		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(40'000);
+		actualPacketSize = std::min(maxPacketSize, data.size());
+		auto sendData = data.SubString(0, actualPacketSize);
+
+		m_slackObj.WriteReply(cppcodec::base64_rfc4648::encode(sendData.data(), sendData.size()), updateTs);
+	}
 
 	//Update the original first message with "C2S||S2C:Done" - these messages will always be read in onRecieve.
-	json message;
-	message[OBF("direction")] = m_outboundDirectionName + OBF(":Done");
+	std::string message = m_outboundDirectionName + OBF(":Done");
 
-	m_slackObj.UpdateMessage(message.dump(), updateTs);
-	return data.size();
+	m_slackObj.UpdateMessage(message, updateTs);
+	return actualPacketSize;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

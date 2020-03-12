@@ -61,11 +61,15 @@ namespace FSecure
 		/// @param timestamp - the timestamp of the message that the reply is for.
 		void WriteReply(std::string const& text, std::string const& timestamp);
 
+		/// Use Slack's file API to upload data as files. This is useful when a payload is large (for example during implant staging).
+		/// This function is called internally whenever a WriteReply is called with a payload of more than 120k characters.
+		/// @param data - the data to be sent.
+		/// @param ts - the timestamp, needed as this method is only used during WriteReply.
+		void UploadFile(std::string const& data, std::string const& ts);
+
 		/// Delete a message from the channel
 		/// @param timestamp - the timestamp of the message to delete.
 		void DeleteMessage(std::string const& timestamp);
-
-
 
 	private:
 
@@ -85,16 +89,10 @@ namespace FSecure
 		web::http::client::http_client_config m_HttpConfig;
 
 		/// Send http request, uses preset token for authentication
-		json SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data);
+		std::string SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data);
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data);
-
-		/// Use Slack's file API to upload data as files. This is useful when a payload is large (for example during implant staging).
-		/// This function is called internally whenever a WriteReply is called with a payload of more than 120k characters.
-		/// @param data - the data to be sent.
-		/// @param ts - the timestamp, needed as this method is only used during WriteReply.
-		void UploadFile(std::string const& data, std::string const& ts);
 
 		/// Use Slack's File API to retrieve files.
 		/// @param url - the url where the file can be retrieved.
