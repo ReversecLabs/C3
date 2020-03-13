@@ -97,7 +97,7 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateGatewayFromConfigu
 		throw std::runtime_error{ OBF("Could not find process image path.") };
 
 	// Read both input files.
-	callbackOnLog({ OBF("Reading input files..."), LogMessage::Severity::Information }, nullptr);
+	callbackOnLog({ OBF("Reading input files..."), LogMessage::Severity::Information }, "");
 
 	auto [apiBridgeIp, apiBrigdePort, buildId, agentId, name] = ReadGatewayConfigurationFile(std::filesystem::path{ executableFilePath }.remove_filename() / configurationFileName);
 	auto [wereKeysReadOrGenerated, signatures, broadcastKey] = ReadFromFileOrGenerateGatewayKeys(std::filesystem::path{ executableFilePath }.remove_filename() / keysFileName);
@@ -107,7 +107,7 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateGatewayFromConfigu
 	if (!wereKeysReadOrGenerated)
 		callbackOnLog({ OBF("Generated new keys/signatures and stored them on disk."), LogMessage::Severity::Information }, "");
 
-	callbackOnLog({ OBF("Starting Gateway..."), LogMessage::Severity::Information }, nullptr);
+	callbackOnLog({ OBF("Starting Gateway..."), LogMessage::Severity::Information }, "");
 	return FSecure::C3::Core::GateRelay::CreateAndRun(callbackOnLog, interfaceFactory, apiBridgeIp, apiBrigdePort, signatures, broadcastKey, buildId, snapshotPath, agentId, name);
 }
 
