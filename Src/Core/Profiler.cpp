@@ -327,7 +327,7 @@ void FSecure::C3::Core::Profiler::RestoreFromSnapshot()
 
 				auto creationCommand = base64::decode<ByteVector>(peripheral["startupCommand"]["ByteForm"].get<std::string>());
 				auto readView = ByteView{ creationCommand };
-				auto connectionId = RouteId{ route->m_RouteId.GetAgentId(),  DeviceId{ peripheral["iId"].get<std::string>() } }.ToByteVector();
+				auto connectionId = ByteVector::Create(RouteId{ route->m_RouteId.GetAgentId(),  DeviceId{ peripheral["iId"].get<std::string>() } });
 				readView.remove_prefix(sizeof(uint16_t)); // remove command id
 				connector->PeripheralCreationCommand(connectionId, readView); // throw away the response.
 				connector->OnCommandFromBinder(connectionId, base64::decode<ByteVector>(peripheral["startupCommand"]["FirstResponse"].get<std::string>()));
@@ -528,7 +528,7 @@ void FSecure::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommand
 							return;
 
 						// Remove connection.
-						connector->CloseConnection(RouteId{ m_Id, *deviceId }.ToByteVector());
+						connector->CloseConnection(ByteVector::Create(RouteId{ m_Id, *deviceId }));
 					}
 				};
 				break;
@@ -610,7 +610,7 @@ void FSecure::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArgument
 					break;
 
 				// Remove connection.
-				connector->CloseConnection(RouteId{ m_Id, element.m_Id }.ToByteVector());
+				connector->CloseConnection(ByteVector::Create(RouteId{ m_Id, element.m_Id }));
 			}
 
 			m_Peripherals.Clear();
@@ -701,7 +701,7 @@ void FSecure::C3::Core::Profiler::Agent::PerformCreateCommand(json const& jComma
 		if (!connector)
 			throw std::runtime_error{ "Connector for requested peripheral is closed" };
 
-		auto updatedArguments = connector->PeripheralCreationCommand(RouteId{ route->m_RouteId.GetAgentId(),  newDeviceId}.ToByteVector(), commandReadView, m_IsX64);
+		auto updatedArguments = connector->PeripheralCreationCommand(ByteVector::Create(RouteId{ route->m_RouteId.GetAgentId(), newDeviceId }), commandReadView, m_IsX64);
 		repacked.Concat(updatedArguments);
 	}
 	else
@@ -812,7 +812,7 @@ void FSecure::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jComma
 								break;
 
 							// Remove connection.
-							connector->CloseConnection(RouteId{ m_Id, device->GetDid() }.ToByteVector());
+							connector->CloseConnection(ByteVector::Create(RouteId{ m_Id, device->GetDid() }));
 
 							break;
 						}
@@ -1068,7 +1068,7 @@ void FSecure::C3::Core::Profiler::Gateway::PerformCreateCommand(json const& jCom
 			if (!connector)
 				throw std::runtime_error{ "Connector for requested peripheral is closed" };
 
-			updatedArguments = connector->PeripheralCreationCommand(RouteId{ gate.GetAgentId(), DeviceId(m_LastDeviceId + 1) }.ToByteVector(), arguments, FSecure::Utils::IsProcess64bit());
+			updatedArguments = connector->PeripheralCreationCommand(ByteVector::Create(RouteId{ gate.GetAgentId(), DeviceId(m_LastDeviceId + 1) }), arguments, FSecure::Utils::IsProcess64bit());
 			arguments = updatedArguments;
 		}
 

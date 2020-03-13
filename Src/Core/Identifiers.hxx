@@ -43,18 +43,6 @@ FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(std::string const& te
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename UnderlyingIntegerType>
-FSecure::C3::Identifier<UnderlyingIntegerType>::Identifier(ByteView byteId)
-{
-	// Sanity check.
-	if (byteId.size() != BinarySize)
-		throw std::runtime_error{ OBF("Invalid byte Identifier size.") };
-
-	// Just make a byte-to-byte copy.
-	memcpy(&m_Id, byteId.data(), sizeof(m_Id));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename UnderlyingIntegerType>
 FSecure::C3::Identifier<UnderlyingIntegerType> FSecure::C3::Identifier<UnderlyingIntegerType>::GenerateRandom()
 {
 	return FSecure::Utils::GenerateRandomValue<UnderlyingIntegerType>();
@@ -75,13 +63,6 @@ std::string FSecure::C3::Identifier<UnderlyingIntegerType>::ToString() const
 
 	// Remove the trailing null.
 	return ret.substr(0, sizeof(UnderlyingIntegerType) * 2);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename UnderlyingIntegerType>
-FSecure::ByteVector FSecure::C3::Identifier<UnderlyingIntegerType>::ToByteVector() const
-{
-	return { reinterpret_cast<const std::uint8_t*>(&m_Id), reinterpret_cast<const std::uint8_t*>(&m_Id) + sizeof(m_Id) };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,4 +104,27 @@ template<typename UnderlyingIntegerType>
 UnderlyingIntegerType FSecure::C3::Identifier<UnderlyingIntegerType>::ToUnderlyingType() const
 {
 	return m_Id;
+}
+
+namespace FSecure
+{
+	/// Specialize ByteConverter for identifiers.
+	template <typename T>
+	struct ByteConverter <C3::Identifier<T>>
+	{
+		static ByteVector To(C3::Identifier<T> const& obj)
+		{
+			return ByteVector::Create(obj.ToUnderlyingType());
+		}
+
+		static size_t Size()
+		{
+			return sizeof(C3::Identifier<T>::UnderlyingIntegerType);
+		}
+
+		static C3::Identifier<T> From(ByteView& bv)
+		{
+			return bv.Read<C3::Identifier<T>::UnderlyingIntegerType>();
+		}
+	};
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ByteView.h"
+#include "ByteConverter/ByteView.h"
 
 namespace FSecure::Compression
 {

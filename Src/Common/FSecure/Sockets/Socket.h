@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AddrInfo.h"
-#include "Common/FSecure/CppTools/ByteVector.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 
 namespace FSecure
 {

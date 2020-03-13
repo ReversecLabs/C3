@@ -49,6 +49,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base64_default_rfc4648.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppRestSdk\include\cpprest\http_client.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
@@ -63,10 +68,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Sdk.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteArray.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteVector.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Hash.h" />

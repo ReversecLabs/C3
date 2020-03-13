@@ -1,6 +1,8 @@
 #pragma once
+
 #include "Utils.h"
 
+#include <limits>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -141,8 +143,8 @@ namespace FSecure
 		friend inline bool operator!=(ByteVector const& lhs, ByteVector const& rhs);
 
 		/// Write content of of provided objects.
-		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
-		/// Include ByteConverter.h to add support for common types like enum, std::vector, std:map, std::pair, std::tuple and others.
+		/// Supports arithmetic types, and basic iterable types.
+		/// Include ByteConverter.h to add support for common types like enum, std::tuple and others.
 		/// Create specialization on ByteConverter for custom types or template types to expand existing serialization functionality.
 		/// @param arg. Object to be stored.
 		/// @param args. Optional other objects to be stored.
@@ -173,19 +175,6 @@ namespace FSecure
 			return *this;
 		}
 
-		// Some versions of msvc can handle fold expression in debug mode, but fails with internal compiler error in release.
-		// For this reason recursive version is used as deafult.
-		//template <typename ...T, typename = std::enable_if_t<((Utils::IsOneOf<T, ByteView, ByteVector>::value && ...))>>
-		//ByteVector& Concat(T const& ...args)
-		//{
-		//	auto oldSize = size();
-		//	auto foldSize = (args.size() + ...);
-		//	resize(oldSize + foldSize);
-		//	auto ptr = data() + oldSize;
-		//	((memcpy(ptr, args.data(), args.size()), (ptr += args.size())), ...);
-		//	return *this;
-		//}
-
 		/// Create new ByteVector with Variadic list of parameters.
 		/// This function cannot be constructor, because it would be ambiguous with super class constructors.
 		/// @param arg. Object to be stored.
@@ -196,7 +185,6 @@ namespace FSecure
 		{
 			return ByteVector{}.Write(arg, args...);
 		}
-
 
 		/// Calculate the size that the argument will take in memory
 		/// @param arg. Argument to be stored.
@@ -221,7 +209,7 @@ namespace FSecure
 		/// @param args. Rest of objects that will be handled with recursion.
 		/// @return itself to allow chaining.
 		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(FSecure::ByteConverter<T>::To(std::declval<T>())), FSecure::ByteVector >, int> = 0>
-		ByteVector& Store(T const& arg, Ts const& ...args)
+		ByteVector & Store(T const& arg, Ts const& ...args)
 		{
 
 			Concat(FSecure::ByteConverter<T>::To(arg));
@@ -230,53 +218,6 @@ namespace FSecure
 
 			return *this;
 		}
-	};
-
-	/// ByteConverter specialization for ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
-	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	struct ByteConverter<T, std::enable_if_t<Utils::IsOneOf<T, ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view>::value>>
-	{
-		static ByteVector To(T const& obj)
-		{
-			auto ret = ByteVector{};
-			auto elementSize = static_cast<uint32_t>(obj.size());
-			ret.resize(Size(obj));
-			memcpy(ret.data(), &elementSize, sizeof(elementSize));
-			memcpy(ret.data() + sizeof(elementSize), obj.data(), elementSize * sizeof(typename T::value_type));
-			return ret;
-		}
-
-		static size_t Size(T const& obj)
-		{
-			return sizeof(uint32_t) + (obj.size() * sizeof(typename T::value_type));
-		}
-
-		// Reading functions are part of ByteView implementation. To deserialize data include ByteView.h
-		static T From(ByteView& bv);
-	};
-
-	/// ByteConverter specialization for arithmetic types.
-	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	struct ByteConverter<T, std::enable_if_t<std::is_arithmetic_v<T>>>
-	{
-		static ByteVector To(T obj)
-		{
-			auto ret = ByteVector{};
-			ret.resize(sizeof(T));
-			*reinterpret_cast<T*>(ret.data()) = obj;
-
-			return ret;
-		}
-
-		constexpr static size_t Size()
-		{
-			return sizeof(T);
-		}
-
-		// Reading functions are part of ByteView implementation. To deserialize data include ByteView.h
-		static T From(ByteView& bv);
 	};
 
 	namespace Literals

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace FSecure
 {
 	/// Owning container with size known at compilation time.

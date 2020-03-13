@@ -15,11 +15,12 @@
 #include "Common/ADVobfuscator/MetaString.h"
 
 #define BYTEVECTOR_ZERO_MEMORY_DESTRUCTION																				//< Increase OpSec by clearing memory when ByteVector is destructed.
-#include "ByteConverter.h"																								//< For ByteView, ByteVector and ByteConverter specializations for common types.
+#include "ByteConverter/ByteConverter.h"																				//< For ByteView, ByteVector and ByteConverter specializations for common types.
+#include "Utils.h"																										//< For common templates and helpers
 
 
 
 // Literals.
 using namespace std::string_literals;																					//< For string literals.
 using namespace std::string_view_literals;																				//< For string_view literals.
-using namespace FSecure::Literals;																							//< For _b and _bv.
+using namespace FSecure::Literals;																						//< For _b and _bv.

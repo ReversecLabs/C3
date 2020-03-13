@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Socket.h"
-#include "Common/FSecure/CppTools/ByteVector.h"
-#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 
 namespace FSecure
 {

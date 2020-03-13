@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 #include "Identifiers.h"
 
 namespace FSecure::C3
@@ -26,10 +26,6 @@ namespace FSecure::C3
 		/// @param textId text containing the identifier.
 		RouteId(std::string_view textId);
 
-		/// Creates a RouteId object from a vector of bytes.
-		/// @param byteId a ByteView containing the identifier.
-		RouteId(ByteView byteId);
-
 		/// Creates a RouteId object with a random ("unique") value.
 		/// @return Identifier object.
 		static RouteId GenerateRandom();
@@ -37,14 +33,6 @@ namespace FSecure::C3
 		/// Converts this ID to a string.
 		/// @return a string that describes this ID object.
 		std::string ToString() const;
-
-		/// Converts this ID to a byte vector.
-		/// @return a byte vector that describes this ID object.
-		ByteVector ToByteVector() const;
-
-		/// Converts this ID to a byte array.
-		/// @return a byte array that describes this ID object.
-		ByteArray<BinarySize> ToByteArray() const;
 
 		/// Logical negation operator. Can be used to check if ID is set.
 		/// @return true if ID is not set.
@@ -94,7 +82,7 @@ namespace FSecure
 	{
 		static ByteVector To(C3::RouteId const& obj)
 		{
-			return obj.ToByteVector();
+			return ByteVector::Create(obj.GetAgentId(), obj.GetInterfaceId());
 		}
 
 		static size_t Size(C3::RouteId const& obj)
@@ -104,9 +92,7 @@ namespace FSecure
 
 		static C3::RouteId From(ByteView& bv)
 		{
-			auto ret = C3::RouteId(bv.SubString(0, C3::RouteId::BinarySize));
-			bv.remove_prefix(C3::RouteId::BinarySize);
-			return ret;
+			return ByteReader{ bv }.Create<C3::RouteId, decltype(C3::RouteId::m_AgentId), decltype(C3::RouteId::m_InterfaceId)>();
 		}
 	};
 

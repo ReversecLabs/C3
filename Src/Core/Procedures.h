@@ -99,7 +99,7 @@ namespace FSecure::C3::Core
 			/// @return buffer containing composed header.
 			ByteVector CompileProtocolHeader() const override
 			{
-				return ByteVector{}.Write(static_cast<ProtocolsUnderlyingType>(Protocols::N2N), m_SendersRid.ToByteArray());
+				return ByteVector{}.Write(static_cast<ProtocolsUnderlyingType>(Protocols::N2N), m_SendersRid);
 			}
 
 		private:
@@ -135,7 +135,7 @@ namespace FSecure::C3::Core
 			static std::unique_ptr<InitializeRouteQuery> Create(RouteId sendersRid, BuildId buildId, Crypto::PublicKey gatewayEncryptionKey, Crypto::PublicKey agentsPublicEncryptionKey, HashT grcHash, int32_t timestamp, ResponseType responseType = ResponseType::None)
 			{
 				auto query = std::make_unique<InitializeRouteQuery>(sendersRid, responseType);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(buildId.ToByteVector().Write(agentsPublicEncryptionKey.ToByteVector(), grcHash, timestamp, HostInfo().ToByteVector()), gatewayEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(ByteVector::Create(buildId, agentsPublicEncryptionKey.ToByteVector(), grcHash, timestamp, HostInfo()), gatewayEncryptionKey);
 				return query;
 			}
 

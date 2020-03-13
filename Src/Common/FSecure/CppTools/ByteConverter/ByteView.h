@@ -156,9 +156,9 @@ namespace FSecure
 		/// Read object and move ByteView to position after parsed data.
 		/// @tparam T. Mandatory type to be retrieved from ByteView.
 		/// @tparam Ts. Optional types to be retrieved in one call.
-		/// @note Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
-		/// Include ByteConverter.h to add support for common types like enum, std::vector, std:map, std::pair, std::tuple and others.
-		/// Create specialization on ByteConverter for custom types or template types to expand existing functionality.
+		/// @note Works with types and templates that have specialized ByteConverter.
+		/// Include ByteConverter.h to add support for arithmetic, iterable, tuple and other standard types.
+		/// Create new specializations for custom types.
 		/// @returns one type if Ts was empty, std::tuple with all types otherwise.
 		/// Simple usage:
 		/// @code auto [a, b, c] = someByteView.Read<int, float, std::string>(); @endcode
@@ -174,41 +174,79 @@ namespace FSecure
 				return std::make_tuple(std::move(current), Read<Ts...>());
 			else
 				return std::tuple_cat(std::make_tuple(std::move(current)), Read<Ts...>());
-
 		}
 	};
 
-	/// ByteConverter::From specialization for arithmetic types.
-	/// This is a basic functionality that should be available with ByteView. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	T ByteConverter<T, std::enable_if_t<Utils::IsOneOf<T, ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view>::value>>::From(ByteView& bv)
+	/// Helper class for Reading data from ByteView.
+	class ByteReader
 	{
-		if (sizeof(uint32_t) > bv.size())
-			throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
+		/// Reference to ByteView with data.
+		/// ByteReader will modify ByteView used for it construction.
+		ByteView& m_byteView;
 
-		auto elementCount = *reinterpret_cast<const uint32_t*>(bv.data());
-		auto byteCount = elementCount * sizeof(typename T::value_type);
-		bv.remove_prefix(sizeof(uint32_t));
+		/// Declaration of base template used for pointer to member type deduction.
+		template<class T>
+		struct SplitMemberPointer;
 
-		T retVal;
-		if constexpr (Utils::IsOneOf<T, ByteVector, std::string, std::wstring>::value)
-			retVal.resize(elementCount), std::memcpy(retVal.data(), bv.data(), byteCount);
-		else
-			retVal = T{ reinterpret_cast<typename T::value_type const*>(bv.data()), elementCount };
+		/// Specialization that will perform type deduction.
+		template<class C, class T>
+		struct SplitMemberPointer<T C::*> {
+			using type = T;
+			using declaringType = C;
+		};
 
-		bv.remove_prefix(byteCount);
-		return retVal;
-	}
+		/// Function used to call constructor of type T with tuple of types matching constructor arguments.
+		template<typename T, typename Tpl, size_t... Is>
+		static T TupleToConstructor(Tpl&& tpl, std::integer_sequence<size_t, Is...>)
+		{
+			return T{ std::get<Is>(std::move(tpl))... };
+		}
 
-	/// ByteConverter::from specialization for ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
-	/// This is a basic functionality that should be available with ByteView. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	T ByteConverter<T, std::enable_if_t<std::is_arithmetic_v<T>>>::From(ByteView& bv)
+	public:
+		/// Create ByteReader.
+		/// @param bv, ByteView with data to read.
+		ByteReader(ByteView& bv)
+			: m_byteView{bv}
+		{}
+
+		/// Read each of arguments from ByteView.
+		/// @param ts, arguments to tie, and read.
+		template <typename ...Ts>
+		void Read(Ts&... ts)
+		{
+			((ts = m_byteView.Read<decltype(ts)>()), ...);
+		}
+
+		/// Create object by reading provided types, and passing them to object constructor.
+		/// @tparam T, type to be constructed.
+		/// @tparam Ts, types to be read from ByteView, and passed as T constructor arguments.
+		/// @note T is not the same as first template parameter of Create(...).
+		template <typename T, typename ...Ts>
+		auto Create() -> decltype(T{ std::declval<Ts>()... })
+		{
+			return TupleToConstructor<T>(m_byteView.Read<Ts...>(), std::make_index_sequence<sizeof...(Ts)>{});
+		}
+
+
+		/// Create object by reading provided types deduced from pointers to members
+		/// @tparam T, first pointer to member. Ensures that at least one object will be read from ByteView
+		/// @tparam Ts, rest of pointers to members.
+		/// @note T is not the same as first template parameter of Create(void).
+		template <typename T, typename ...Ts>
+		auto Create(T, Ts...) -> decltype(SplitMemberPointer<T>::declaringType{ std::declval<SplitMemberPointer<T>::type>(), std::declval<SplitMemberPointer<Ts>::type>()... })
+		{
+			return TupleToConstructor<SplitMemberPointer<T>::declaringType>(m_byteView.Read<SplitMemberPointer<T>::type, SplitMemberPointer<Ts>::type...>(), std::make_index_sequence<1 + sizeof...(Ts)>{});
+		}
+	};
+
+	namespace Utils
 	{
-		T ret;
-		memcpy(&ret, bv.data(), sizeof(T));
-		bv.remove_prefix(sizeof(T));
-		return ret;
+		/// ByteView is a view.
+		template <>
+		struct IsView<ByteView>
+		{
+			constexpr static bool value = true;
+		};
 	}
 
 	namespace Literals

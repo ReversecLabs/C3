@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 
 namespace FSecure::Crypto
 {
