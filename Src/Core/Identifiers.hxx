@@ -119,12 +119,12 @@ namespace FSecure
 
 		static size_t Size()
 		{
-			return sizeof(C3::Identifier<T>::UnderlyingIntegerType);
+			return sizeof(typename C3::Identifier<T>::UnderlyingIntegerType);
 		}
 
 		static C3::Identifier<T> From(ByteView& bv)
 		{
-			return bv.Read<C3::Identifier<T>::UnderlyingIntegerType>();
+			return bv.Read<typename C3::Identifier<T>::UnderlyingIntegerType>();
 		}
 	};
 }

@@ -92,7 +92,7 @@ namespace FSecure
 
 		static C3::RouteId From(ByteView& bv)
 		{
-			return ByteReader{ bv }.Create<C3::RouteId, decltype(C3::RouteId::m_AgentId), decltype(C3::RouteId::m_InterfaceId)>();
+			return ByteReader{ bv }.Create<C3::RouteId, decltype(std::declval<C3::RouteId>().GetAgentId()), decltype(std::declval<C3::RouteId>().GetInterfaceId())>();
 		}
 	};
 

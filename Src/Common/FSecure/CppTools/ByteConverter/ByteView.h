@@ -233,9 +233,9 @@ namespace FSecure
 		/// @tparam Ts, rest of pointers to members.
 		/// @note T is not the same as first template parameter of Create(void).
 		template <typename T, typename ...Ts>
-		auto Create(T, Ts...) -> decltype(SplitMemberPointer<T>::declaringType{ std::declval<SplitMemberPointer<T>::type>(), std::declval<SplitMemberPointer<Ts>::type>()... })
+		auto Create(T, Ts...) -> decltype(typename SplitMemberPointer<T>::declaringType{std::declval<typename SplitMemberPointer<T>::type>(), std::declval<typename SplitMemberPointer<Ts>::type>()... })
 		{
-			return TupleToConstructor<SplitMemberPointer<T>::declaringType>(m_byteView.Read<SplitMemberPointer<T>::type, SplitMemberPointer<Ts>::type...>(), std::make_index_sequence<1 + sizeof...(Ts)>{});
+			return TupleToConstructor<typename SplitMemberPointer<T>::declaringType>(m_byteView.Read<typename SplitMemberPointer<T>::type, typename SplitMemberPointer<Ts>::type...>(), std::make_index_sequence<1 + sizeof...(Ts)>{});
 		}
 	};
 
