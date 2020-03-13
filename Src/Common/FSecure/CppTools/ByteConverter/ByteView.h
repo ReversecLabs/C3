@@ -167,13 +167,22 @@ namespace FSecure
 		template<typename T, typename ...Ts, typename = decltype(FSecure::ByteConverter<Utils::RemoveCVR<T>>::From(std::declval<ByteView&>()))>
 		auto Read()
 		{
-			auto current = ByteConverter<Utils::RemoveCVR<T>>::From(*this);
-			if constexpr (sizeof...(Ts) == 0)
-				return current;
-			else if constexpr (sizeof...(Ts) == 1)
-				return std::make_tuple(std::move(current), Read<Ts...>());
-			else
-				return std::tuple_cat(std::make_tuple(std::move(current)), Read<Ts...>());
+			auto copy = *this;
+			try
+			{
+				auto current = ByteConverter<Utils::RemoveCVR<T>>::From(*this);
+				if constexpr (sizeof...(Ts) == 0)
+					return current;
+				else if constexpr (sizeof...(Ts) == 1)
+					return std::make_tuple(std::move(current), Read<Ts...>());
+				else
+					return std::tuple_cat(std::make_tuple(std::move(current)), Read<Ts...>());
+			}
+			catch (...)
+			{
+				*this = copy;
+				throw;
+			}
 		}
 	};
 
@@ -233,7 +242,7 @@ namespace FSecure
 		/// @tparam Ts, rest of pointers to members.
 		/// @note T is not the same as first template parameter of Create(void).
 		template <typename T, typename ...Ts>
-		auto Create(T, Ts...) -> decltype(typename SplitMemberPointer<T>::declaringType{std::declval<typename SplitMemberPointer<T>::type>(), std::declval<typename SplitMemberPointer<Ts>::type>()... })
+		auto Create(T, Ts...) -> decltype(typename SplitMemberPointer<T>::declaringType{ std::declval<typename SplitMemberPointer<T>::type>(), std::declval<typename SplitMemberPointer<Ts>::type>()... })
 		{
 			return TupleToConstructor<typename SplitMemberPointer<T>::declaringType>(m_byteView.Read<typename SplitMemberPointer<T>::type, typename SplitMemberPointer<Ts>::type...>(), std::make_index_sequence<1 + sizeof...(Ts)>{});
 		}

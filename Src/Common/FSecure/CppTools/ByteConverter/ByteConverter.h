@@ -35,6 +35,9 @@ namespace FSecure
 		/// @return arithmetic type.
 		static T From(ByteView& bv)
 		{
+			if (sizeof(T) > bv.size())
+				throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
+
 			T ret;
 			memcpy(&ret, bv.data(), sizeof(T));
 			bv.remove_prefix(sizeof(T));

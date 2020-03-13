@@ -167,12 +167,20 @@ namespace FSecure
 		ByteVector& Concat(T const& arg, Ts const& ...args)
 		{
 			auto oldSize = size();
-			resize(oldSize + arg.size());
-			memcpy(data() + oldSize, arg.data(), arg.size());
-			if constexpr (sizeof...(Ts) != 0)
-				Concat(args...);
+			try
+			{
+				resize(oldSize + arg.size());
+				memcpy(data() + oldSize, arg.data(), arg.size());
+				if constexpr (sizeof...(Ts) != 0)
+					Concat(args...);
 
-			return *this;
+				return *this;
+			}
+			catch (...)
+			{
+				resize(oldSize);
+				throw;
+			}
 		}
 
 		/// Create new ByteVector with Variadic list of parameters.
@@ -211,7 +219,6 @@ namespace FSecure
 		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(FSecure::ByteConverter<T>::To(std::declval<T>())), FSecure::ByteVector >, int> = 0>
 		ByteVector & Store(T const& arg, Ts const& ...args)
 		{
-
 			Concat(FSecure::ByteConverter<T>::To(arg));
 			if constexpr (sizeof...(Ts) != 0)
 				Store(args...);
