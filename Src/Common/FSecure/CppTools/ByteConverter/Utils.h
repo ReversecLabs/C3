@@ -29,6 +29,13 @@ namespace FSecure::Utils
 		constexpr static bool value = [](bool ret) { return ret; }((std::is_same_v<T, Ts> || ...));
 	};
 
+	/// Template to evaluate all of Ts are equal to T.
+	template <typename T, typename ...Ts>
+	struct IsSame
+	{
+		constexpr static bool value = [](bool ret) { return ret; }((std::is_same_v<T, Ts> && ...));
+	};
+
 	/// Template to strip type out of const, volatile and reference.
 	template <typename T>
 	using RemoveCVR = std::remove_cv_t<std::remove_reference_t<T>>;

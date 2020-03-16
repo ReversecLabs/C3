@@ -36,6 +36,18 @@ namespace FSecure
 		enum { value = (sizeof(test<T>(0)) - sizeof(uint8_t)) };
 	};
 
+	/// Informs if for all provided types ByteConverter is declared.
+	template <typename ...Ts>
+	class IsConverterDeclared
+	{
+		/// Type returned by ByteConverter::To if function was declared.
+		template <typename T>
+		using DecltypeTo = decltype(ByteConverter<T>::To(std::declval<T>()));
+	public:
+
+		constexpr static bool value = Utils::IsSame<ByteVector, DecltypeTo<Ts>...>::value;
+	};
+
 	/// An owning container.
 	class ByteVector : std::vector<std::uint8_t>
 	{
@@ -149,7 +161,7 @@ namespace FSecure
 		/// @param arg. Object to be stored.
 		/// @param args. Optional other objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename T, typename ...Ts>
+		template <typename T, typename ...Ts, typename std::enable_if_t<IsConverterDeclared<T, Ts...>::value, int> = 0>
 		ByteVector& Write(T const& arg, Ts const& ...args)
 		{
 			reserve(size() + Size<T, Ts...>(arg, args...));
@@ -159,21 +171,18 @@ namespace FSecure
 
 		/// Write content of of provided objects.
 		/// Supports ByteView and ByteVector.
-		/// Does not write header with size.
-		/// @param arg. Object to be stored.
-		/// @param args. Optional other objects to be stored.
+		/// Does not write header with size..
+		/// @param args. Objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename T, typename ...Ts, typename = std::enable_if_t<Utils::IsOneOf<T, ByteView, ByteVector>::value>>
-		ByteVector& Concat(T const& arg, Ts const& ...args)
+		template <typename ...Ts, typename = std::enable_if_t<(sizeof...(Ts) > 0) && ((Utils::IsOneOf<Ts, ByteView, ByteVector>::value && ...))>>
+		ByteVector& Concat(Ts const& ...args)
 		{
 			auto oldSize = size();
 			try
 			{
-				resize(oldSize + arg.size());
-				memcpy(data() + oldSize, arg.data(), arg.size());
-				if constexpr (sizeof...(Ts) != 0)
-					Concat(args...);
-
+				resize(oldSize + (args.size() + ...));
+				auto ptr = data() + oldSize;
+				((memcpy(ptr, args.data(), args.size()), (ptr += args.size())), ...);
 				return *this;
 			}
 			catch (...)
@@ -213,17 +222,23 @@ namespace FSecure
 
 	private:
 		/// Store custom type.
-		/// @param arg. Object to be stored. There must exsist FSecure::ByteConverter<T>::To(T const&) method avalible to store custom type.
-		/// @param args. Rest of objects that will be handled with recursion.
+		/// @param args. Objects to be stored.
 		/// @return itself to allow chaining.
-		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(FSecure::ByteConverter<T>::To(std::declval<T>())), FSecure::ByteVector >, int> = 0>
-		ByteVector & Store(T const& arg, Ts const& ...args)
+		template<typename ...Ts, typename std::enable_if_t<IsConverterDeclared<Ts...>::value, int> = 0>
+		ByteVector & Store(Ts const& ...args)
 		{
-			Concat(FSecure::ByteConverter<T>::To(arg));
-			if constexpr (sizeof...(Ts) != 0)
-				Store(args...);
+			auto oldSize = size();
+			try
+			{
+				Concat(FSecure::ByteConverter<Ts>::To(args)...);
+				return *this;
+			}
+			catch (...)
+			{
+				resize(oldSize);
+				throw;
+			}
 
-			return *this;
 		}
 	};
 
