@@ -383,7 +383,8 @@ namespace FSecure::Loader
 #elif defined _M_IX86
 	// TODO cleanup after RtlInsertInvertedFunctionTable -> see ntdll!_RtlRemoveInvertedFunctionTable@4
 #endif
-		VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
+		// Don't free the memory. Freeing this memory will cause access violation when ntdll.dll!RtlProcessFlsData() is called from ExitProcess
+		// VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
 		return 0;
 	}
 }
