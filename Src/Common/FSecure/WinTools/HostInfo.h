@@ -39,7 +39,7 @@ namespace FSecure
 	/// @param host info to write
 	void to_json(json& j, const HostInfo& hi);
 
-	/// overload ByteConverter for OSVERSIONINFOEXA
+	/// overload ByteConverter for OSVERSIONINFOEXA. szCSDVersion and wSuiteMask are omitted.
 	template<>
 	struct ByteConverter<OSVERSIONINFOEXA>
 	{
@@ -49,22 +49,18 @@ namespace FSecure
 		static ByteVector To(OSVERSIONINFOEXA const& obj)
 		{
 			auto ret = ByteVector{};
-			ret.reserve(ByteVector::Size(obj));
-			ret.Write(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId);
-			ret.Concat(ByteVector{ obj.szCSDVersion, obj.szCSDVersion + sizeof(obj.szCSDVersion) });
-			ret.Write(obj.wServicePackMajor, obj.wServicePackMinor, obj.wSuiteMask, obj.wProductType);
+			ret.reserve(Size());
+			ret.Write(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
 			return ret;
 		}
 
 		/// Get size required after serialization.
 		/// @param obj. Object to be serialized.
 		/// @return size_t. Number of bytes used after serialization.
-		static size_t Size(OSVERSIONINFOEXA const& obj)
+		static size_t Size()
 		{
-			auto ret = ByteVector::Size(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId);
-			ret += sizeof(obj.szCSDVersion);
-			ret += ByteVector::Size(obj.wServicePackMajor, obj.wServicePackMinor, obj.wSuiteMask, obj.wProductType);
-			return ret;
+			OSVERSIONINFOEXA* p = nullptr;
+			return ByteVector::Size(p->dwOSVersionInfoSize, p->dwMajorVersion, p->dwMinorVersion, p->dwBuildNumber, p->dwPlatformId, p->wServicePackMajor, p->wServicePackMinor, p->wProductType);
 		}
 
 		/// Deserialize from ByteView.
@@ -72,12 +68,8 @@ namespace FSecure
 		/// @return OSVERSIONINFOEXA.
 		static OSVERSIONINFOEXA From(ByteView& bv)
 		{
-			OSVERSIONINFOEXA obj;
-			ByteReader br{ bv };
-			br.Read(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId);
-			memcpy(obj.szCSDVersion, bv.data(), sizeof(obj.szCSDVersion));
-			bv.remove_prefix(sizeof(obj.szCSDVersion));
-			br.Read(obj.wServicePackMajor, obj.wServicePackMinor, obj.wSuiteMask, obj.wProductType);
+			OSVERSIONINFOEXA obj = {0,};
+			ByteReader{ bv }.Read(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
 			return obj;
 		}
 	};
