@@ -1,9 +1,14 @@
 #include "stdafx.h"
 #include "LoadPe.h"
 
-
 namespace FSecure::Loader
 {
+	static constexpr DWORD cleanupWaitMiliseconds =
+#if defined CEBULOADER_CLEANUP_WAIT
+		CEBULOADER_CLEANUP_WAIT;
+#else
+		10000; // default 10 seconds
+#endif
 
 #pragma warning( push )
 #pragma warning( disable : 4214 ) // nonstandard extension
@@ -373,6 +378,10 @@ namespace FSecure::Loader
 			} while (0);
 		}
 
+		// Wait for async tasks to finish. Tasks might invoke a callback that can fail after call to DllMain with DLL_PROCESS_DETACH
+		Sleep(cleanupWaitMiliseconds);
+		dllEntryPoint((HINSTANCE)baseAddress, DLL_PROCESS_DETACH, NULL);
+
 		// STEP 11 Cleanup
 #if defined _M_X64
 		if (pImageEntryException->Size > 0)
@@ -383,8 +392,8 @@ namespace FSecure::Loader
 #elif defined _M_IX86
 	// TODO cleanup after RtlInsertInvertedFunctionTable -> see ntdll!_RtlRemoveInvertedFunctionTable@4
 #endif
-		// Don't free the memory. Freeing this memory will cause access violation when ntdll.dll!RtlProcessFlsData() is called from ExitProcess
-		// VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
+		// Freeing this memory will cause access violation if any async task invoke a callback to our dll
+		VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
 		return 0;
 	}
 }
