@@ -80,12 +80,12 @@ namespace FSecure
 	template <>
 	struct ByteConverter <C3::RouteId>
 	{
-		static ByteVector To(C3::RouteId const& obj)
+		static void To(C3::RouteId const& obj, ByteVector& bv)
 		{
-			return ByteVector::Create(obj.GetAgentId(), obj.GetInterfaceId());
+			bv.Store(obj.GetAgentId(), obj.GetInterfaceId());
 		}
 
-		static size_t Size(C3::RouteId const& obj)
+		constexpr static size_t Size()
 		{
 			return C3::RouteId::BinarySize;
 		}

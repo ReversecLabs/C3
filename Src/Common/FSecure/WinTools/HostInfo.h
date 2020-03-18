@@ -45,13 +45,10 @@ namespace FSecure
 	{
 		/// Serialize HostInfo type to ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(OSVERSIONINFOEXA const& obj)
+		/// @param bv. ByteVector to be expanded.
+		static void To(OSVERSIONINFOEXA const& obj, ByteVector& bv)
 		{
-			auto ret = ByteVector{};
-			ret.reserve(Size());
-			ret.Write(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
-			return ret;
+			bv.Store(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
 		}
 
 		/// Get size required after serialization.
@@ -80,13 +77,10 @@ namespace FSecure
 	{
 		/// Serialize HostInfo type to ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(HostInfo const& obj)
+		/// @param bv. ByteVector to be expanded.
+		static void To(HostInfo const& obj, ByteVector& bv)
 		{
-			auto ret = ByteVector{};
-			ret.reserve(ByteVector::Size(obj));
-			ret.Write(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
-			return ret;
+			bv.Store(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
 		}
 
 		/// Get size required after serialization.

@@ -13,14 +13,12 @@ namespace FSecure
 	{
 		/// Serialize arithmetic type to ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(T obj)
+		/// @param bv. ByteVector to be expanded.
+		static void To(T obj, ByteVector& bv)
 		{
-			auto ret = ByteVector{};
-			ret.resize(sizeof(T));
-			*reinterpret_cast<T*>(ret.data()) = obj;
-
-			return ret;
+			auto oldSize = bv.size();
+			bv.resize(oldSize + Size());
+			*reinterpret_cast<T*>(bv.data() + oldSize) = obj;
 		}
 
 		/// Get size required after serialization.
@@ -39,8 +37,8 @@ namespace FSecure
 				throw std::out_of_range{ OBF(": Cannot read size from ByteView ") };
 
 			T ret;
-			memcpy(&ret, bv.data(), sizeof(T));
-			bv.remove_prefix(sizeof(T));
+			memcpy(&ret, bv.data(), Size());
+			bv.remove_prefix(Size());
 			return ret;
 		}
 	};
@@ -51,10 +49,10 @@ namespace FSecure
 	{
 		/// Serialize enum type to ByteVector.
 		/// @param enumInstance. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(T enumInstance)
+		/// @param bv. ByteVector to be expanded.
+		static void To(T enumInstance, ByteVector& bv)
 		{
-			return ByteVector::Create(static_cast<std::underlying_type_t<T>>(enumInstance));
+			bv.Store(static_cast<std::underlying_type_t<T>>(enumInstance));
 		}
 
 		/// Get size required after serialization.
@@ -79,20 +77,16 @@ namespace FSecure
 	{
 		/// Serialize iterable type to ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(T const& obj)
+		/// @param bv. ByteVector to be expanded.
+		static void To(T const& obj, ByteVector& bv)
 		{
-			auto ret = ByteVector{};
-			ret.reserve(ByteVector::Size(obj));
 			if (auto numberOfElements = Utils::Container::Size<T>::Calculate(obj); numberOfElements <= std::numeric_limits<uint32_t>::max())
-				ret.Write(static_cast<uint32_t>(numberOfElements));
+				bv.Write(static_cast<uint32_t>(numberOfElements));
 			else
 				throw std::out_of_range{ OBF(": Cannot write size to ByteVector ") };
 
 			for (auto&& e : obj)
-				ret.Write(e);
-
-			return ret;
+				bv.Write(e);
 		}
 
 		/// Get size required after serialization.
@@ -101,7 +95,7 @@ namespace FSecure
 		{
 			using Element = Utils::Container::StoredValue<T>;
 			auto ret = sizeof(uint32_t);
-			if constexpr (ByteSizeFunctionType<Element>::value == ByteSizeFunctionType<Element>::compileTime)
+			if constexpr (ConverterDeduction<Element>::FunctionSize::value == ConverterDeduction<Element>::FunctionSize::compileTime)
 				ret += ByteConverter<Element>::Size() * obj.size(); // avoid extra calls when size of stored type is known at compile time
 			else
 				for (auto const& e : obj)
@@ -143,10 +137,10 @@ namespace FSecure
 	{
 		/// Serialize path type to ByteVector.
 		/// @param pathInstance. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(std::filesystem::path const& pathInstance)
+		/// @param bv. ByteVector to be expanded.
+		static void To(std::filesystem::path const& pathInstance, ByteVector& bv)
 		{
-			return ByteVector::Create(pathInstance.wstring());
+			bv.Store(pathInstance.wstring());
 		}
 
 		/// Get size required after serialization.
@@ -207,13 +201,10 @@ namespace FSecure
 	{
 		/// Serialize tuple type to ByteVector.
 		/// @param tupleInstance. Object to be serialized.
-		/// @return ByteVector. Serialized data.
-		static ByteVector To(T const& tupleInstance)
+		/// @param bv. ByteVector to be expanded.
+		static void To(T const& tupleInstance, ByteVector& bv)
 		{
-			ByteVector ret;
-			ret.reserve(Size(tupleInstance));
-			TupleHandler<T>::Write(ret, tupleInstance);
-			return ret;
+			TupleHandler<T>::Write(bv, tupleInstance);
 		}
 
 		/// Get size required after serialization.

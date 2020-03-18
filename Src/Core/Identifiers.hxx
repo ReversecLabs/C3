@@ -112,12 +112,12 @@ namespace FSecure
 	template <typename T>
 	struct ByteConverter <C3::Identifier<T>>
 	{
-		static ByteVector To(C3::Identifier<T> const& obj)
+		static void To(C3::Identifier<T> const& obj, ByteVector& bv)
 		{
-			return ByteVector::Create(obj.ToUnderlyingType());
+			bv.Store(obj.ToUnderlyingType());
 		}
 
-		static size_t Size()
+		constexpr static size_t Size()
 		{
 			return sizeof(typename C3::Identifier<T>::UnderlyingIntegerType);
 		}
