@@ -90,11 +90,11 @@ std::string FSecure::Slack::CreateChannel(std::string const& channelName)
 }
 
 
-std::vector<json> FSecure::Slack::ReadReplies(std::string const& timestamp)
+std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std::string const& timestamp)
 {
 	std::string url = OBF("https://slack.com/api/channels.replies?channel=") + this->m_Channel + OBF("&thread_ts=") + timestamp;
 	json output = SendJsonRequest(url, NULL);
-	std::vector<json> ret;
+	std::vector<std::pair<std::string, std::string>> ret;
 
 	//This logic is really messy, in reality the checks are over cautious, however there is an edgecase
 	//whereby a message could be created with no replies of the implant that wrote triggers an exception or gets killed.
@@ -109,20 +109,15 @@ std::vector<json> FSecure::Slack::ReadReplies(std::string const& timestamp)
 				std::string ts = m[1][OBF("ts")];
 				std::string fileUrl = m[1][OBF("files")][0][OBF("url_private")].get<std::string>();
 				std::string text = GetFile(fileUrl);
-
-				//recreate a "message" from the data within the file.
-				json j
-				{
-					{ OBF("ts"), std::move(ts)},
-					{ OBF("text"), std::move(text) }
-				};
-				ret.emplace_back(std::move(j));
+				ret.emplace_back(std::move(ts), std::move(text));
 			}
 			else
 			{
 				for (size_t i = 1u; i < m.size(); i++) //skip the first message (it doesn't contain the data we want).
 				{
-					ret.emplace_back(std::move(m[i]));
+					auto ts = m[i][OBF("ts")].get<std::string>();
+					auto text = m[i][OBF("text")].get<std::string>();
+					ret.emplace_back(std::move(ts), std::move(text));
 				}
 
 			}

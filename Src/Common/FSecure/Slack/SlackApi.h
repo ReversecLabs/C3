@@ -39,8 +39,8 @@ namespace FSecure
 
 		/// Read the replies to a message
 		/// @param timestamp - the timestamp of the original message, from which we can gather the replies.
-		/// @return - an array of json objects contaning the replies to the original message.
-		std::vector<json> ReadReplies(std::string const& timestamp);
+		/// @return - an array of pairs containing the reply timestamp and reply text
+		std::vector<std::pair<std::string, std::string>> ReadReplies(std::string const& timestamp);
 
 		/// List all the channels in the workspace the object's token is tied to.
 		/// @return - a map of {channelName -> channelId}

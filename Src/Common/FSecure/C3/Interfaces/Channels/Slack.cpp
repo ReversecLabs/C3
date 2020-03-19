@@ -53,7 +53,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Slack::OnRec
 	for (std::vector<std::string>::reverse_iterator ts = messages.rbegin(); ts != messages.rend(); ++ts)
 	{
 
-		std::vector<json> replies = m_slackObj.ReadReplies(*ts);
+		auto replies = m_slackObj.ReadReplies(*ts);
 		std::vector<std::string> repliesTs;
 
 		std::string message;
@@ -61,8 +61,8 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Slack::OnRec
 		//Get all of the messages from the replies.
 		for (auto&& reply : replies)
 		{
-			message.append(reply[OBF("text")]);
-			repliesTs.push_back(reply[OBF("ts")]); //get all of the timestamps for later deletion
+			message.append(reply.second);
+			repliesTs.emplace_back(std::move(reply.first)); //get all of the timestamps for later deletion
 		}
 
 		//Base64 decode the entire message
