@@ -43,10 +43,11 @@ size_t FSecure::C3::Interfaces::Channels::Slack::OnSendToChannel(ByteView data)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::C3::Interfaces::Channels::Slack::OnReceiveFromChannel()
+std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Slack::OnReceiveFromChannel()
 {
 	auto messages = m_slackObj.GetMessagesByDirection(m_inboundDirectionName + OBF(":Done"));
 
+	std::vector<ByteVector> ret;
 	//Read the messages in reverse order (which is actually from the oldest to newest)
 	//Avoids old messages being left behind.
 	for (std::vector<std::string>::reverse_iterator ts = messages.rbegin(); ts != messages.rend(); ++ts)
@@ -68,9 +69,9 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Slack::OnReceiveFromChann
 		auto relayMsg = cppcodec::base64_rfc4648::decode(message);
 		m_slackObj.DeleteMessage(*ts);	//delete the message
 		DeleteReplies(repliesTs); //delete the replies.
-		return relayMsg;
+		ret.emplace_back(std::move(relayMsg));
 	}
-	return {};
+	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
