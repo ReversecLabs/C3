@@ -62,7 +62,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Slack::OnRec
 		for (auto&& reply : replies)
 		{
 			message.append(reply.second);
-			repliesTs.emplace_back(std::move(reply.first)); //get all of the timestamps for later deletion
+			repliesTs.push_back(std::move(reply.first)); //get all of the timestamps for later deletion
 		}
 
 		//Base64 decode the entire message

