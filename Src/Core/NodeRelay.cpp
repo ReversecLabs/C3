@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "NodeRelay.h"
 #include "DeviceBridge.h"
-#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::shared_ptr<FSecure::C3::Core::NodeRelay> FSecure::C3::Core::NodeRelay::CreateAndRun(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory,

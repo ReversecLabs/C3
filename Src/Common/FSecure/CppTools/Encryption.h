@@ -1,9 +1,6 @@
 #pragma once
 
-#include "ByteView.h"
-#include "ByteVector.h"
-
-//
+#include "ByteConverter/ByteView.h"
 
 namespace FSecure::Encryption
 {

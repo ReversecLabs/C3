@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Distributor.h"
 #include "DeviceBridge.h"
-#include "Common/FSecure/CppTools/ByteView.h"
+#include "Common/FSecure/CppTools/ByteConverter/ByteConverter.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Core::Distributor::Distributor(LoggerCallback callbackOnLog, Crypto::PrivateKey const& decryptionKey, Crypto::SymmetricKey const& broadcastKey)
@@ -68,17 +68,19 @@ void FSecure::C3::Core::Distributor::OnProtocolN2N(ByteView packet0, std::shared
 		if (packet0.size() < 1 + RouteId::BinarySize + 1)
 			throw std::invalid_argument{ OBF("N2N packet too short.") };
 
+		packet0.remove_prefix(1);
+
 		// Parse neighbor identifier and check whether is banned.
-		auto neighborRouteId = RouteId(packet0.SubString(1));
+		auto neighborRouteId = packet0.Read<RouteId>();
 		if (IsAgentBanned(neighborRouteId.GetAgentId()))
 			return Log({ OBF("Received packet from a banned Agent ") + neighborRouteId.ToString() + OBF("."), LogMessage::Severity::Warning });
 
 		// Handle Procedure part.
-		return ProceduresN2N::RequestHandler::ParseRequestAndHandleIt(sender, neighborRouteId, packet0.SubString(1 + RouteId::BinarySize));
+		return ProceduresN2N::RequestHandler::ParseRequestAndHandleIt(sender, neighborRouteId, packet0);
 	}
 	catch (std::exception & exception)
 	{
-		throw std::runtime_error{ OBF_STR("Failed to parse N2N packet. ") +exception.what() };
+		throw std::runtime_error{ OBF_STR("Failed to parse N2N packet. ") + exception.what() };
 	}
 }
 

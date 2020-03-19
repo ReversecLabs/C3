@@ -30,10 +30,6 @@ namespace FSecure::C3
 		/// @notes this specialization exist only to satisfy implicit casts requirements.
 		Identifier(std::string const& textId);
 
-		/// Creates an ID object from a ByteView.
-		/// @param byteId a ByteView containing the identifier.
-		Identifier(ByteView byteId);
-
 		/// Creates an ID object with a random ("unique") value.
 		/// @return Identifier object.
 		static Identifier GenerateRandom();
@@ -41,10 +37,6 @@ namespace FSecure::C3
 		/// Converts this ID to a string.
 		/// @return a string that describes this ID object.
 		std::string ToString() const;
-
-		/// Converts this ID to a byte vector.
-		/// @return a byte vector that describes this ID object.
-		ByteVector ToByteVector() const;
 
 		/// Converts identifier to underlying type.
 		/// @returns UnderlyingIntegerType identifier in arithmetic form.
@@ -85,32 +77,6 @@ namespace FSecure::C3
 	using DeviceId = Identifier<>;																						///< ID used by Relays to address attached Devices.
 	using AgentId = Identifier<std::uint64_t>;																			///< ID of Relay's instance (i.e. instances of a particular Build).
 	using BuildId = Identifier<std::uint32_t>;																			///< ID of Relay's configuration.
-}
-
-namespace FSecure
-{
-	/// Specialize ByteConverter for identifiers.
-	template <typename T>
-	struct ByteConverter <C3::Identifier<T>>
-	{
-		static ByteVector To(C3::Identifier<T> const& obj)
-		{
-			return obj.ToByteVector();
-		}
-
-		static size_t Size(C3::Identifier<T> const& obj)
-		{
-			return C3::Identifier<T>::BinarySize;
-		}
-
-		static C3::Identifier<T> From(ByteView& bv)
-		{
-			auto ret = C3::Identifier<T>(bv.SubString(0, C3::Identifier<T>::BinarySize));
-			bv.remove_prefix(C3::Identifier<T>::BinarySize);
-			return ret;
-		}
-	};
-
 }
 
 // Include template's implementation.

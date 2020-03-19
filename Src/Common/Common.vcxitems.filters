@@ -83,14 +83,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)C3_BUILD_VERSION_HASH_PART.hxx" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteArray.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteVector.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Utils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
   </ItemGroup>
 </Project>

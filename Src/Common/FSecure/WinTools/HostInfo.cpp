@@ -37,7 +37,8 @@ namespace FSecure
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	HostInfo::HostInfo() : m_OsVersionInfo{ sizeof m_OsVersionInfo }
+	HostInfo::HostInfo()
+		: m_OsVersionInfo{ sizeof(m_OsVersionInfo) }
 	{
 		// Reserve buffers for winapi calls.
 		DWORD computerNameBufferLength = MAX_COMPUTERNAME_LENGTH + 1, userNameBufferLength = UNLEN + 1;
@@ -75,29 +76,15 @@ namespace FSecure
 		}
 	}
 
-	HostInfo::HostInfo(ByteView bv)
-		: m_ComputerName(bv.Read<std::string>())
-		, m_UserName(bv.Read<std::string>())
-		, m_Domain(bv.Read<std::string>())
-		, m_OsVersionInfo
-		{ [&]
-			{
-				decltype(m_OsVersionInfo) osv{sizeof osv};
-				std::tie
-				(
-					osv.dwMajorVersion,
-					osv.dwMinorVersion,
-					osv.dwBuildNumber,
-					osv.wServicePackMajor,
-					osv.wServicePackMinor,
-					osv.wProductType
-				) = bv.Read<DWORD, DWORD, DWORD, WORD, WORD, BYTE>();
-				return osv;
-			}()
-		}
-		, m_ProcessId(bv.Read<decltype(m_ProcessId)>())
-		, m_IsElevated(bv.Read<bool>())
+	HostInfo::HostInfo(std::string computerName, std::string userName, std::string domain, OSVERSIONINFOEXA osVersionInfo, DWORD processId, bool isElevated)
+		: m_ComputerName{ std::move(computerName) }
+		, m_UserName{ std::move(userName) }
+		, m_Domain{ std::move(domain) }
+		, m_OsVersionInfo{ std::move(osVersionInfo) }
+		, m_ProcessId(processId)
+		, m_IsElevated(isElevated)
 	{
+
 	}
 
 	HostInfo::HostInfo(const json& json)
@@ -113,25 +100,6 @@ namespace FSecure
 		json.at("OsProductType").get_to(m_OsVersionInfo.wProductType);
 		json.at("ProcessId").get_to(m_ProcessId);
 		json.at("IsElevated").get_to(m_IsElevated);
-	}
-
-	ByteVector HostInfo::ToByteVector() const
-	{
-		return ByteVector{}
-			.Write
-			(
-				m_ComputerName,
-				m_UserName,
-				m_Domain,
-				m_OsVersionInfo.dwMajorVersion,
-				m_OsVersionInfo.dwMinorVersion,
-				m_OsVersionInfo.dwBuildNumber,
-				m_OsVersionInfo.wServicePackMajor,
-				m_OsVersionInfo.wServicePackMinor,
-				m_OsVersionInfo.wProductType,
-				m_ProcessId,
-				m_IsElevated
-			);
 	}
 
 	std::ostream& operator<<(std::ostream& os, HostInfo const& hi)
