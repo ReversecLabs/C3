@@ -20,7 +20,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		ByteVector OnReceiveFromChannel();
+		std::vector<ByteVector> OnReceiveFromChannel();
 
 		/// Get channel capability.
 		/// @returns Channel capability in JSON format
