@@ -131,7 +131,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std
 std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string const& direction)
 {
 	std::vector<std::string> ret;
-	json messages, resp;
+	json resp;
 	std::string cursor;
 
 	//Slack suggest only requesting the 200 most recent messages.
@@ -147,9 +147,9 @@ std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string con
 			url.append(OBF("&cursor=") + cursor);
 
 		//Actually send the http request and grab the messages
-		resp = SendJsonRequest(url, NULL);
+		auto resp = SendJsonRequest(url, NULL);
 
-		messages = resp[OBF("messages")];
+		auto& messages = resp[OBF("messages")];
 
 		//if there are more than 200 messages, we don't want to miss any, so update the cursor.
 		if(resp[OBF("has_more")] == OBF("true"))
@@ -158,14 +158,11 @@ std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string con
 		//now grab the 200 messages data.
 		for (auto &m : messages)
 		{
-			std::string data = m[OBF("text")];
+			std::string_view data = m[OBF("text")].get<std::string_view>();
 
 			//make sure it's a message we care about
-			if (data.find(direction) != std::string::npos)
-			{
-				ret.push_back(m[OBF("ts")].get<std::string>()); // - experimental
-			}
-
+			if (data == direction)
+				ret.emplace_back(m[OBF("ts")].get<std::string>());
 		}
 	} while (resp[OBF("has_more")] == OBF("true"));
 
