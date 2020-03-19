@@ -45,7 +45,7 @@ std::string FSecure::Slack::WriteMessage(std::string const& text)
 std::map<std::string, std::string> FSecure::Slack::ListChannels()
 {
 	std::map<std::string, std::string> channelMap;
-	std::string url = OBF("https://slack.com/api/channels.list?exclude_members=true&exclude_archived=true");
+	std::string url = OBF("https://slack.com/api/conversations.list?exclude_archived=true");
 
 	json response = SendJsonRequest(url, NULL);
 
@@ -67,7 +67,7 @@ std::map<std::string, std::string> FSecure::Slack::ListChannels()
 std::string FSecure::Slack::CreateChannel(std::string const& channelName)
 {
 	json j;
-	std::string url = OBF("https://slack.com/api/channels.create");
+	std::string url = OBF("https://slack.com/api/conversations.create");
 	j[OBF("name")] = channelName;
 
 	json response = SendJsonRequest(url, j);
@@ -92,7 +92,7 @@ std::string FSecure::Slack::CreateChannel(std::string const& channelName)
 
 std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std::string const& timestamp)
 {
-	std::string url = OBF("https://slack.com/api/channels.replies?channel=") + this->m_Channel + OBF("&thread_ts=") + timestamp;
+	std::string url = OBF("https://slack.com/api/conversations.replies?channel=") + this->m_Channel + OBF("&ts=") + timestamp;
 	json output = SendJsonRequest(url, NULL);
 
 	//This logic is really messy, in reality the checks are over cautious, however there is an edgecase
