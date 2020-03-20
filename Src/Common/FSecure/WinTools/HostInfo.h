@@ -19,7 +19,7 @@ namespace FSecure
 		bool m_IsElevated;														///< Is process run with elevated rights
 
 		/// Gather info about host.
-		HostInfo();
+		static HostInfo Gather();
 
 		/// Aggregate constructor.
 		HostInfo(std::string computerName, std::string userName, std::string domain, RTL_OSVERSIONINFOEXW osVersionInfo, DWORD processId, bool isElevated);

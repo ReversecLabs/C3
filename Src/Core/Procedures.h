@@ -135,7 +135,7 @@ namespace FSecure::C3::Core
 			static std::unique_ptr<InitializeRouteQuery> Create(RouteId sendersRid, BuildId buildId, Crypto::PublicKey gatewayEncryptionKey, Crypto::PublicKey agentsPublicEncryptionKey, HashT grcHash, int32_t timestamp, ResponseType responseType = ResponseType::None)
 			{
 				auto query = std::make_unique<InitializeRouteQuery>(sendersRid, responseType);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(ByteVector::Create(buildId, agentsPublicEncryptionKey.ToByteVector(), grcHash, timestamp, HostInfo()), gatewayEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(ByteVector::Create(buildId, agentsPublicEncryptionKey.ToByteVector(), grcHash, timestamp, HostInfo::Gather()), gatewayEncryptionKey);
 				return query;
 			}
 
