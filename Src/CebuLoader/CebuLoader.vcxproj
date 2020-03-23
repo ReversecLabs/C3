@@ -734,9 +734,6 @@
     <ClInclude Include="WindowsVersion.h" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="..\Common\FSecure\WinTools\OsVersion.manifest" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="CebuLoader.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

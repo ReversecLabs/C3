@@ -605,9 +605,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="..\Common\FSecure\WinTools\OsVersion.manifest" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
