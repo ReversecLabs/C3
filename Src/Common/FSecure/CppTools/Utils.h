@@ -22,17 +22,6 @@ namespace FSecure::Utils
 #		endif
 	}
 
-	/// Template to evaluate if T is one of Ts types.
-	template <typename T, typename ...Ts>
-	struct IsOneOf
-	{
-		constexpr static bool value = [](bool ret) { return ret; }((std::is_same_v<T, Ts> || ...));
-	};
-
-	/// Template to strip type out of const, volatile and reference.
-	template <typename T>
-	using RemoveCVR = std::remove_cv_t<std::remove_reference_t<T>>;
-
 	/// Changes value to default if it is out of provided range.
 	/// @param value to be clamped.
 	/// @param minValue lowest accepted value.
@@ -60,7 +49,7 @@ namespace FSecure::Utils
 
 	/// Generate random string.
 	/// @param size of returned string.
-	template <typename T = std::string, std::enable_if_t<IsOneOf<T, std::string, std::wstring>::value, int> = 0>
+	template <typename T = std::string, std::enable_if_t<std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>, int> = 0>
 	T GenerateRandomString(size_t size)
 	{
 		constexpr std::string_view charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -78,7 +67,7 @@ namespace FSecure::Utils
 
 	/// Generate random data.
 	/// @param size of returned string.
-	template <typename T = std::vector<uint8_t>, std::enable_if_t<IsOneOf<T, std::vector<uint8_t>, std::string>::value, int> = 0>
+	template <typename T = std::vector<uint8_t>, std::enable_if_t<std::is_same_v<T, std::string> || std::is_same_v<T, std::vector<uint8_t>>, int> = 0>
 	T GenerateRandomData(size_t size)
 	{
 		static std::random_device rd;
@@ -245,20 +234,5 @@ namespace FSecure::Utils
 			retValue[i] = splited[i];
 
 		return retValue;
-	}
-
-	/// Idiom for detecting tuple types.
-	template <typename T>
-	constexpr bool IsTuple = false;
-	template<typename ...T>
-	constexpr bool IsTuple<std::tuple<T...>> = true;
-
-	/// Prevents compiler from optimizing out call.
-	/// @param ptr pointer to memory to be cleared.
-	/// @param n number of bytes to overwrite.
-	inline void* SecureMemzero(void* ptr, size_t n)
-	{
-		if (ptr) for (auto p = reinterpret_cast<volatile char*>(ptr); n--; *p++ = 0);
-		return ptr;
 	}
 }

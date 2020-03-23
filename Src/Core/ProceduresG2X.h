@@ -52,7 +52,7 @@ namespace FSecure::C3::Core::ProceduresG2X
 		ByteVector ComposeQueryPacket() const override
 		{
 			assert(m_GatewayPrivateSignature);
-			return CompileProtocolHeader().Concat(Crypto::SignMessage(m_ReceiverRid.ToByteVector().Concat(GetQueryHeader()).Concat(m_QueryPacketBody), *m_GatewayPrivateSignature));
+			return CompileProtocolHeader().Concat(Crypto::SignMessage(ByteVector::Create(m_ReceiverRid).Concat(GetQueryHeader(), m_QueryPacketBody), *m_GatewayPrivateSignature));
 		}
 
 	protected:
@@ -199,7 +199,7 @@ namespace FSecure::C3::Core::ProceduresG2X
 		static std::unique_ptr<RunCommandOnDeviceQuery> Create(RouteId receiverRid, Crypto::PrivateSignature const& gatewayPrivateSignature, Crypto::PublicKey const& agentPublicKey, Crypto::PrivateKey const& gatewayPrivateKey, DeviceId deviceToRunOn, ByteView commandWithArguments, ResponseType responseType = ResponseType::None)
 		{
 			auto query = std::make_unique<RunCommandOnDeviceQuery>(Propagation::Agent, receiverRid, gatewayPrivateSignature, responseType);
-			query->EncrpytQueryWithBody(deviceToRunOn.ToByteVector().Concat(commandWithArguments), agentPublicKey, gatewayPrivateKey);
+			query->EncrpytQueryWithBody(ByteVector::Create(deviceToRunOn).Concat(commandWithArguments), agentPublicKey, gatewayPrivateKey);
 			return query;
 		}
 
@@ -223,7 +223,7 @@ namespace FSecure::C3::Core::ProceduresG2X
 		static std::unique_ptr<DeliverToBinder> Create(RouteId receiverRid, Crypto::PrivateSignature const& gatewayPrivateSignature, Crypto::PublicKey const& agentPublicKey, Crypto::PrivateKey const& gatewayPrivateKey, DeviceId deliverTo, ByteView commandWithArguments, ResponseType responseType = ResponseType::None)
 		{
 			auto query = std::make_unique<DeliverToBinder>(Propagation::Agent, receiverRid, gatewayPrivateSignature, responseType);
-			query->EncrpytQueryWithBody(deliverTo.ToByteVector().Concat(commandWithArguments), agentPublicKey, gatewayPrivateKey);
+			query->EncrpytQueryWithBody(ByteVector::Create(deliverTo).Concat(commandWithArguments), agentPublicKey, gatewayPrivateKey);
 			return query;
 		}
 

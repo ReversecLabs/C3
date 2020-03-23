@@ -114,7 +114,7 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateGatewayFromConfigu
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateNodeRelayFromImagePatch(LoggerCallback callbackOnLog, InterfaceFactory& interfaceFactory, ByteView buildId, ByteView gatewaySignature, ByteView broadcastKey, std::vector<ByteVector> const& gatewayInitialPackets)
 {
-	return Core::NodeRelay::CreateAndRun(callbackOnLog, interfaceFactory, gatewaySignature, broadcastKey, gatewayInitialPackets, buildId);
+	return Core::NodeRelay::CreateAndRun(callbackOnLog, interfaceFactory, gatewaySignature, broadcastKey, gatewayInitialPackets, buildId.Read<BuildId>());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

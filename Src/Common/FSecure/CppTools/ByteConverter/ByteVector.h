@@ -1,6 +1,8 @@
 #pragma once
+
 #include "Utils.h"
 
+#include <limits>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -16,22 +18,41 @@ namespace FSecure
 	template <typename T, typename = void>
 	struct ByteConverter {};
 
-	/// Check if FSecure namespace has function to get size of type T when it is stored to ByteVector.
-	/// This class performs test that looks for implementation of Size function in ByteConverter<T>.
-	/// Depending on test result 'value' is set to one of:
-	/// absent - No implementation is available for Size function. Size can only be determined after serialization.
-	/// compileTime - Size is determined by type, not object instance. Size() is constexpr function.
-	/// runTime - Size depends on object instance. Size(T const&) can be used before serialization
+	/// Class detecting specifics of ByteConverter specialization for given type.
 	template <typename T>
-	class ByteSizeFunctionType
+	struct ConverterDeduction
 	{
-		template <typename C> static uint32_t test(decltype(FSecure::ByteConverter<C>::Size(std::declval<C>())));
-		template <typename C> static uint16_t test(decltype(FSecure::ByteConverter<C>::Size()));
-		template <typename C> static uint8_t test(...);
+		class FunctionSize
+		{
+			template <typename C> static uint32_t test(decltype(ByteConverter<C>::Size(std::declval<C>())));
+			template <typename C> static uint16_t test(decltype(ByteConverter<C>::Size()));
+			template <typename C> static uint8_t test(...);
 
-	public:
-		enum { absent = 0, compileTime = (sizeof(uint16_t) - sizeof(uint8_t)), runTime = (sizeof(uint32_t) - sizeof(uint8_t)) };
-		enum { value = (sizeof(test<T>(0)) - sizeof(uint8_t)) };
+		public:
+			enum { absent = 1, compileTime = 2, runTime = 4 };
+			enum { value = sizeof(test<T>(0)) };
+		};
+
+		class FunctionTo
+		{
+			template <typename C> static uint32_t test(decltype(ByteConverter<C>::To(std::declval<C>(), std::declval<ByteVector&>()))*);
+			template <typename C> static uint16_t test(decltype(ByteConverter<C>::To(std::declval<C>()))*);
+			template <typename C> static uint8_t test(...);
+
+		public:
+			enum { absent = 1, createsContainer = 2, expandsContainer = 4 };
+			enum { value = sizeof(test<T>(0)) };
+		};
+
+		static_assert(!((FunctionTo::value == FunctionTo::expandsContainer) && (FunctionSize::value == FunctionSize::absent)),
+			"ByteConverter::Size must be defined, if function ByteConverter::To expands already allocated container.");
+	};
+
+	/// Checks if ByteConverter is defined for all types.
+	template <typename ...Ts>
+	struct WriteCondition
+	{
+		static constexpr bool value = ((ConverterDeduction<Ts>::FunctionTo::value != ConverterDeduction<Ts>::FunctionTo::absent) && ...);
 	};
 
 	/// An owning container.
@@ -141,13 +162,13 @@ namespace FSecure
 		friend inline bool operator!=(ByteVector const& lhs, ByteVector const& rhs);
 
 		/// Write content of of provided objects.
-		/// Suports arithmetic types, std::string, std::wstring, std::string_view, std::wstring_view, ByteVector and ByteView.
-		/// Include ByteConverter.h to add support for common types like enum, std::vector, std:map, std::pair, std::tuple and others.
+		/// Supports arithmetic types, and basic iterable types.
+		/// Include ByteConverter.h to add support for common types like enum, std::tuple and others.
 		/// Create specialization on ByteConverter for custom types or template types to expand existing serialization functionality.
 		/// @param arg. Object to be stored.
 		/// @param args. Optional other objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename T, typename ...Ts>
+		template <typename T, typename ...Ts, typename std::enable_if_t<WriteCondition<T, Ts...>::value, int> = 0>
 		ByteVector& Write(T const& arg, Ts const& ...args)
 		{
 			reserve(size() + Size<T, Ts...>(arg, args...));
@@ -157,46 +178,37 @@ namespace FSecure
 
 		/// Write content of of provided objects.
 		/// Supports ByteView and ByteVector.
-		/// Does not write header with size.
-		/// @param arg. Object to be stored.
-		/// @param args. Optional other objects to be stored.
+		/// Does not write header with size..
+		/// @param args. Objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename T, typename ...Ts, typename = std::enable_if_t<Utils::IsOneOf<T, ByteView, ByteVector>::value>>
-		ByteVector& Concat(T const& arg, Ts const& ...args)
+		template <typename ...Ts, typename = std::enable_if_t<(sizeof...(Ts) > 0) && ((Utils::IsOneOf<Ts, ByteView, ByteVector>::value && ...))>>
+		ByteVector& Concat(Ts const& ...args)
 		{
 			auto oldSize = size();
-			resize(oldSize + arg.size());
-			memcpy(data() + oldSize, arg.data(), arg.size());
-			if constexpr (sizeof...(Ts) != 0)
-				Concat(args...);
-
-			return *this;
+			try
+			{
+				resize(oldSize + (args.size() + ...));
+				auto ptr = data() + oldSize;
+				((memcpy(ptr, args.data(), args.size()), (ptr += args.size())), ...);
+				return *this;
+			}
+			catch (...)
+			{
+				resize(oldSize);
+				throw;
+			}
 		}
-
-		// Some versions of msvc can handle fold expression in debug mode, but fails with internal compiler error in release.
-		// For this reason recursive version is used as deafult.
-		//template <typename ...T, typename = std::enable_if_t<((Utils::IsOneOf<T, ByteView, ByteVector>::value && ...))>>
-		//ByteVector& Concat(T const& ...args)
-		//{
-		//	auto oldSize = size();
-		//	auto foldSize = (args.size() + ...);
-		//	resize(oldSize + foldSize);
-		//	auto ptr = data() + oldSize;
-		//	((memcpy(ptr, args.data(), args.size()), (ptr += args.size())), ...);
-		//	return *this;
-		//}
 
 		/// Create new ByteVector with Variadic list of parameters.
 		/// This function cannot be constructor, because it would be ambiguous with super class constructors.
 		/// @param arg. Object to be stored.
 		/// @param args. Optional other objects to be stored.
 		/// @see ByteVector::Write for more informations.
-		template <typename T, typename ...Ts>
+		template <typename T, typename ...Ts, typename std::enable_if_t<WriteCondition<T, Ts...>::value, int> = 0>
 		static ByteVector Create(T const& arg, Ts const& ...args)
 		{
 			return ByteVector{}.Write(arg, args...);
 		}
-
 
 		/// Calculate the size that the argument will take in memory
 		/// @param arg. Argument to be stored.
@@ -207,76 +219,45 @@ namespace FSecure
 		{
 			if constexpr (sizeof...(Ts) != 0)
 				return Size(arg) + Size(args...);
-			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::compileTime)
-				return FSecure::ByteConverter<T>::Size();
-			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::runTime)
-				return FSecure::ByteConverter<T>::Size(arg);
-			else if constexpr (ByteSizeFunctionType<T>::value == ByteSizeFunctionType<T>::absent)
-				return FSecure::ByteConverter<T>::To(arg).size();
+			else if constexpr (ConverterDeduction<T>::FunctionSize::value == ConverterDeduction<T>::FunctionSize::compileTime)
+				return ByteConverter<T>::Size();
+			else if constexpr (ConverterDeduction<T>::FunctionSize::value == ConverterDeduction<T>::FunctionSize::runTime)
+				return ByteConverter<T>::Size(arg);
+			else if constexpr (ConverterDeduction<T>::FunctionSize::value == ConverterDeduction<T>::FunctionSize::absent)
+				return ByteConverter<T>::To(arg).size();
 		}
 
 	private:
 		/// Store custom type.
-		/// @param arg. Object to be stored. There must exsist FSecure::ByteConverter<T>::To(T const&) method avalible to store custom type.
+		/// @param arg. Object to be stored. There must exsist FSecure::ByteConverter<T>::To method avalible to store custom type.
 		/// @param args. Rest of objects that will be handled with recursion.
 		/// @return itself to allow chaining.
-		template<typename T, typename ...Ts, typename std::enable_if_t<std::is_same_v<decltype(FSecure::ByteConverter<T>::To(std::declval<T>())), FSecure::ByteVector >, int> = 0>
+		template<typename T, typename ...Ts, typename std::enable_if_t<WriteCondition<T, Ts...>::value, int> = 0>
 		ByteVector& Store(T const& arg, Ts const& ...args)
 		{
+			auto oldSize = size();
+			try
+			{
+				if constexpr (ConverterDeduction<T>::FunctionTo::value == ConverterDeduction<T>::FunctionTo::createsContainer)
+					Concat(ByteConverter<T>::To(arg));
+				else
+					ByteConverter<T>::To(arg, *this);
 
-			Concat(FSecure::ByteConverter<T>::To(arg));
-			if constexpr (sizeof...(Ts) != 0)
-				Store(args...);
+				if constexpr (sizeof...(Ts) != 0)
+					Store(args...);
 
-			return *this;
-		}
-	};
-
-	/// ByteConverter specialization for ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view.
-	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	struct ByteConverter<T, std::enable_if_t<Utils::IsOneOf<T, ByteVector, ByteView, std::string, std::string_view, std::wstring, std::wstring_view>::value>>
-	{
-		static ByteVector To(T const& obj)
-		{
-			auto ret = ByteVector{};
-			auto elementSize = static_cast<uint32_t>(obj.size());
-			ret.resize(Size(obj));
-			memcpy(ret.data(), &elementSize, sizeof(elementSize));
-			memcpy(ret.data() + sizeof(elementSize), obj.data(), elementSize * sizeof(typename T::value_type));
-			return ret;
+				return *this;
+			}
+			catch (...)
+			{
+				resize(oldSize);
+				throw;
+			}
 		}
 
-		static size_t Size(T const& obj)
-		{
-			return sizeof(uint32_t) + (obj.size() * sizeof(typename T::value_type));
-		}
-
-		// Reading functions are part of ByteView implementation. To deserialize data include ByteView.h
-		static T From(ByteView& bv);
-	};
-
-	/// ByteConverter specialization for arithmetic types.
-	/// This is a basic functionality that should be available with ByteVector. This specialization will not be moved to ByteConverter.h.
-	template <typename T>
-	struct ByteConverter<T, std::enable_if_t<std::is_arithmetic_v<T>>>
-	{
-		static ByteVector To(T obj)
-		{
-			auto ret = ByteVector{};
-			ret.resize(sizeof(T));
-			*reinterpret_cast<T*>(ret.data()) = obj;
-
-			return ret;
-		}
-
-		constexpr static size_t Size()
-		{
-			return sizeof(T);
-		}
-
-		// Reading functions are part of ByteView implementation. To deserialize data include ByteView.h
-		static T From(ByteView& bv);
+		/// Declaration of friendship.
+		template <typename , typename>
+		friend struct ByteConverter;
 	};
 
 	namespace Literals
@@ -284,7 +265,7 @@ namespace FSecure
 		/// Create ByteVector with syntax ""_bvec
 		inline ByteVector operator "" _b(const char* data, size_t size)
 		{
-			FSecure::ByteVector ret;
+			ByteVector ret;
 			ret.resize(size);
 			std::memcpy(ret.data(), data, size);
 			return ret;
@@ -293,7 +274,7 @@ namespace FSecure
 		/// Create ByteVector with syntax L""_bvec
 		inline ByteVector operator "" _b(const wchar_t* data, size_t size)
 		{
-			FSecure::ByteVector ret;
+			ByteVector ret;
 			ret.resize(size * sizeof(wchar_t));
 			std::memcpy(ret.data(), data, size * sizeof(wchar_t));
 			return ret;
@@ -303,7 +284,7 @@ namespace FSecure
 	/// Checks if the contents of lhs and rhs are equal.
 	/// @param lhs. Left hand side of operator.
 	/// @param rhs. Right hand side of operator.
-	inline bool operator==(FSecure::ByteVector const& lhs, FSecure::ByteVector const& rhs)
+	inline bool operator==(ByteVector const& lhs, ByteVector const& rhs)
 	{
 		if (lhs.size() != rhs.size())
 			return false;
@@ -314,7 +295,7 @@ namespace FSecure
 	/// Checks if the contents of lhs and rhs are equal.
 	/// @param lhs. Left hand side of operator.
 	/// @param rhs. Right hand side of operator.
-	inline bool operator!=(FSecure::ByteVector const& lhs, FSecure::ByteVector const& rhs)
+	inline bool operator!=(ByteVector const& lhs, ByteVector const& rhs)
 	{
 		return !(lhs == rhs);
 	}

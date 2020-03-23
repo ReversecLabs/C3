@@ -46,12 +46,13 @@ void FSecure::C3::Core::GateRelay::OnProtocolS2G(ByteView packet0, std::shared_p
 {
 	try
 	{
-		auto decrypted = FSecure::Crypto::DecryptFromAnonymous(packet0.SubString(1), m_AuthenticationKey, m_DecryptionKey);
+		packet0.remove_prefix(1);
+		auto decrypted = FSecure::Crypto::DecryptFromAnonymous(packet0, m_AuthenticationKey, m_DecryptionKey);
 		auto [procedure, rid, timestamp] = ByteView{ decrypted }.Read<ProceduresUnderlyingType, RouteId, int32_t>();
 		if (!m_Profiler->Get().m_Gateway.ConnectionExist(rid.GetAgentId()))
 			throw std::runtime_error{ "S2G packet received from not connected source." };
 
-		ProceduresS2G::RequestHandler::ParseRequestAndHandleIt(sender, procedure, rid, timestamp, packet0.SubString(1));
+		ProceduresS2G::RequestHandler::ParseRequestAndHandleIt(sender, procedure, rid, timestamp, packet0);
 	}
 	catch (std::exception& exception)
 	{
@@ -79,7 +80,7 @@ void FSecure::C3::Core::GateRelay::PostCommandToConnector(ByteView command, std:
 	if (!connector)
 		throw std::runtime_error{ "Connector not found" };
 
-	connector->OnCommandFromBinder(RouteId{ GetAgentId(), senderPeripheral->GetDid() }.ToByteVector(), command);
+	connector->OnCommandFromBinder(ByteVector::Create(RouteId{ GetAgentId(), senderPeripheral->GetDid() }), command);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,7 +296,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
 	auto lastSeen = readView.Read<int32_t>();
-	HostInfo hostInfo(readView.Read<ByteView>());
+	auto hostInfo = readView.Read<HostInfo>();
 
 	auto receivedFrom = query.GetSenderChannel().lock();
 	if (!receivedFrom)
@@ -327,7 +328,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
 	auto lastSeen = readView.Read<int32_t>();
-	HostInfo hostInfo(readView.Read<ByteView>());
+	auto hostInfo= readView.Read<HostInfo>();
 
 	auto receivedFrom = query.GetSenderChannel().lock();
 	if (!receivedFrom)
@@ -363,7 +364,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::DeliverToBinder query)
 	if (!connector)
 		throw std::runtime_error{ "Connector not found" };
 
-	auto binder = RouteId{ senderRid.GetAgentId(), deviceId }.ToByteVector();
+	auto binder = ByteVector::Create(RouteId{ senderRid.GetAgentId(), deviceId });
 	connector->OnCommandFromBinder(binder, readView);
 
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(senderRid.GetAgentId(), timestamp);
