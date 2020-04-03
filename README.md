@@ -2,6 +2,10 @@
 
 ![C3](Res/C3.png)
 
+![Build C3 (MSVC)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
+
+![Build C3 (Clang)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(Clang)/badge.svg)
+
 C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly develop and utilise esoteric command and control channels (C2). It's a framework that extends other red team tooling, such as the commercial Cobalt Strike (CS) product via [ExternalC2](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), which is supported at release. It allows the Red Team to concern themselves only with the C2 they want to implement; relying on the robustness of C3 and the CS tooling to take care of the rest. This efficiency and reliability enable Red Teams to operate safely in critical client environments (by assuring a professional level of stability and security); whilst allowing for safe experimentation and rapid deployment of customised Tactics, Techniques and Procedures (TTPs). Thus, empowering Red Teams to emulate and simulate an adaptive real-world attacker.
 
 ## Usage
