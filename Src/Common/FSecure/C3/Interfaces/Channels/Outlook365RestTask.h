@@ -56,7 +56,7 @@ namespace FSecure::C3::Interfaces::Channels
 		web::http::client::http_client_config m_HttpConfig;
 
 		/// Password for user with o365 subscription.
-		std::string m_Password;
+		web::details::win32_encryption m_Password;
 
 		/// Used to delay every channel instance in case of server rate limit.
 		/// Set using information from 429 Too Many Requests header.

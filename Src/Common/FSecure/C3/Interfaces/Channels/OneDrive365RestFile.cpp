@@ -21,8 +21,10 @@ FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(Byte
 		m_HttpConfig.set_proxy(winProxy == OBF(L"auto") ? web::web_proxy::use_auto_discovery : web::web_proxy(winProxy));
 
 	// Retrieve auth data.
-	std::string username, clientKey, clientSecret;
-	std::tie(username, m_Password, clientKey, clientSecret) = arguments.Read<std::string, std::string, std::string, std::string>();
+	std::string username, password, clientKey, clientSecret;
+	std::tie(username, password, clientKey, clientSecret) = arguments.Read<std::string, std::string, std::string, std::string>();
+	m_Password = to_utf16string(password);
+	FSecure::Utils::SecureMemzero(password.data(), password.size());
 
 	web::http::oauth2::experimental::oauth2_config oauth2Config(
 		to_utf16string(std::move(clientKey)),
@@ -263,7 +265,7 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 		requestBody += OBF("&username=");
 		requestBody += to_utf8string(oa2->user_agent());
 		requestBody += OBF("&password=");
-		requestBody += m_Password;
+		requestBody += to_utf8string(*m_Password.decrypt());
 		requestBody += OBF("&client_id=");
 		requestBody += to_utf8string(oa2->client_key());
 		if (!oa2->client_secret().empty())
@@ -273,6 +275,7 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 		}
 
 		request.set_body(requestBody);
+		FSecure::Utils::SecureMemzero(requestBody.data(), requestBody.size());
 		pplx::task<void> task = client.request(request).then([&](web::http::http_response response)
 		{
 			if (response.status_code() != web::http::status_codes::OK)
