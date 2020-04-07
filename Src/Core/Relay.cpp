@@ -65,6 +65,7 @@ std::shared_ptr<FSecure::C3::Core::DeviceBridge> FSecure::C3::Core::Relay::Creat
 void FSecure::C3::Core::Relay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 {
 	// Find specified Device.
+
 	m_Devices.Remove([&iidOfDeviceToDetach](std::weak_ptr<DeviceBridge> const& c)
 		{
 			if (auto ri = c.lock(); ri && ri->GetDid() == iidOfDeviceToDetach)
@@ -75,6 +76,8 @@ void FSecure::C3::Core::Relay::DetachDevice(DeviceId const& iidOfDeviceToDetach)
 
 			return false;
 		});
+
+	RemoveChannelRoutes(iidOfDeviceToDetach);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
