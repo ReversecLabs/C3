@@ -54,6 +54,15 @@ namespace FSecure::C3::Core
 					throw std::invalid_argument{ OBF("Attempt of removing Element that doesn't exist.") };
 			}
 
+			/// Removes all elements matching the predicate
+			/// @param predicate function that returns true for requested Element.
+			template<typename Predicate>
+			void RemoveIf(Predicate predicate)
+			{
+				m_Elements.erase(std::remove_if(begin(m_Elements), end(m_Elements), predicate), end(m_Elements));
+			}
+
+
 			/// Tries to remove Element from container.
 			/// @param id ID of the Element to remove.
 			bool TryRemove(typename Element::Id id)
