@@ -102,7 +102,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std
 		return {};
 
 	json const& messages = output[OBF("messages")];
-	if (!messages[0].contains(OBF("replies")))
+	if (!messages[0].contains(OBF("reply_count")) || !messages[0][OBF("reply_count")].get<int>())
 		return {};
 
 	std::vector<std::pair<std::string, std::string>> ret;
