@@ -93,5 +93,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
   </ItemGroup>
 </Project>

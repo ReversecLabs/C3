@@ -54,6 +54,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />

