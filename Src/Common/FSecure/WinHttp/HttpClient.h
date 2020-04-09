@@ -20,10 +20,6 @@ namespace FSecure::WinHttp
 
 		HttpResponse Request(HttpRequest const& request, std::wstring const& contentType = {}, std::vector<uint8_t> const& data = {})
 		{
-			bool proxy_info_required = false;
-
-			const auto& method = request.m_Method;
-
 			auto coalesce = [](auto&& opt1, auto&& defaultValue) { return !opt1.empty() ? opt1 : defaultValue; };
 			auto const& path = coalesce(request.m_Path, m_Uri.GetPathWithQuery());
 			auto req = m_Connection.OpenRequest(GetMethodString(request.m_Method), path);
