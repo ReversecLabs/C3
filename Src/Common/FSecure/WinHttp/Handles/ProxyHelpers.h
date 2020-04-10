@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Config.h"
+#include "../Config.h"
 #include "../../WinTools/WindowsVersion.h"
 #include <windows.h>
 #include <winhttp.h>
@@ -22,6 +22,9 @@ namespace FSecure::WinHttp::Detail
 		}
 	};
 
+	// from cpprestsdk
+	// Small RAII helper to ensure that the fields of this struct are always
+	// properly freed.
 	struct IeProxyConfig : WINHTTP_CURRENT_USER_IE_PROXY_CONFIG
 	{
 		IeProxyConfig() { memset(this, 0, sizeof(WINHTTP_CURRENT_USER_IE_PROXY_CONFIG)); }
@@ -34,6 +37,8 @@ namespace FSecure::WinHttp::Detail
 		}
 	};
 
+	// from cpprestsdk
+	/// @returns default proxy constant depending on windows version
 	static DWORD WinHttpDefaultProxyConstant() noexcept
 	{
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA

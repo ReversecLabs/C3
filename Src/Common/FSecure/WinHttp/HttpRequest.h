@@ -2,14 +2,21 @@
 
 #include "Constants.h"
 
+#include <vector>
 #include <map>
 
 namespace FSecure::WinHttp
 {
+	/// Helper to prepare HTTP requests with HttpClient
 	class HttpRequest
 	{
 	public:
-		HttpRequest(Method method = Method::GET, std::wstring path = L"", std::wstring contentType = L"", std::vector<uint8_t> data = {})
+		/// Create a HttpRequest
+		/// @param method - optional (defaults to GET) HTTP method
+		/// @param path - path(optionally with query) to HTTP resource
+		/// @param contentType - HTTP body content type
+		/// @param data - HTTP request body
+		HttpRequest(Method method = Method::GET, std::wstring path = L"", std::wstring contentType = L"", std::vector<uint8_t> data = {}) noexcept
 			: m_Method(method)
 			, m_Path(std::move(path))
 			, m_ContentType(std::move(contentType))
@@ -17,23 +24,35 @@ namespace FSecure::WinHttp
 		{
 		}
 
-		void SetData(ContentType contentType, std::vector<uint8_t> data)
+		/// Set content type and body
+		/// @param content type
+		/// @param request body data
+		void SetData(ContentType contentType, std::vector<uint8_t> data) noexcept
 		{
 			SetData(GetContentType(contentType), data);
 		}
 
-		void SetData(std::wstring contentType, std::vector<uint8_t> data)
+		/// Set content type and body
+		/// @param content type
+		/// @param request body data
+		void SetData(std::wstring contentType, std::vector<uint8_t> data) noexcept
 		{
 			m_ContentType = std::move(contentType);
 			m_Data = std::move(data);
 		}
 
-		void SetHeader(Header header, std::wstring headerContent)
+		/// Set request header value
+		/// @param header name
+		/// @param header content
+		void SetHeader(Header header, std::wstring headerContent) noexcept
 		{
 			SetHeader(GetHeaderName(header), headerContent);
 		}
 
-		void SetHeader(std::wstring headerName, std::wstring headerContent)
+		/// Set request header value
+		/// @param header name
+		/// @param header content
+		void SetHeader(std::wstring headerName, std::wstring headerContent) noexcept
 		{
 			m_Headers[headerName] = headerContent;
 		}

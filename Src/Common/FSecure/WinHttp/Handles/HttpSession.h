@@ -10,9 +10,15 @@
 
 namespace FSecure::WinHttp
 {
+	/// RAII wrapper for session handle
 	class HttpSession
 	{
 	public:
+
+		/// Create a session handle
+		/// Effectively calls WinHttpOpen
+		/// @param proxy settings
+		/// @throws std::runtime error if handle can't be aquired
 		HttpSession(WebProxy const& proxy = {})
 		{
 			// This object have lifetime greater than proxy_name and proxy_bypass
@@ -102,17 +108,34 @@ namespace FSecure::WinHttp
 			m_SessionHandle = MakeHttpHandle(WinHttpOpen(nullptr, access_type, proxy_name, proxy_bypass, 0), OBF("Session"));
 		}
 
+
+		/// Create a connection handle on default HTTPS/HTTP port
+		/// Effectively calls WinHttpConnect
+		/// @param hostName - hostname to create connection to
+		/// @param useHttps - true if connection should use HTTPS, false for plain HTTP
+		/// @returns HttpConnection handle
+		/// @throws std::runtime error if handle can't be aquired
 		HttpConnection Connect(std::wstring const& hostName, bool useHttps = true)
 		{
 			return HttpConnection(m_SessionHandle.get(), hostName, useHttps);
 		}
 
+		/// Create a connection handle on custom port
+		/// Effectively calls WinHttpConnect
+		/// @param hostName - hostname to create connection to
+		/// @param port - port to connect to
+		/// @param useHttps - true if connection should use HTTPS, false for plain HTTP
+		/// @returns HttpConnection handle
+		/// @throws std::runtime error if handle can't be aquired
 		HttpConnection Connect(std::wstring const& hostName, uint16_t port, bool useHttps)
 		{
 			return HttpConnection(m_SessionHandle.get(), hostName, port, useHttps);
 		}
 
-		std::optional<Detail::ProxyInfo> GetProxyForUrl(Uri const& uri)
+		/// Try to resolve proxy using Proxy Auto Config (PAC) for given URL
+		/// @param uri - URL to get proxy for
+		/// @returns ProxyInfo if PAC is used, empty otherwise
+		std::optional<Detail::ProxyInfo> GetProxyForUrl(Uri const& uri) noexcept
 		{
 			if (!m_ProxyAutoConfig)
 				return {};

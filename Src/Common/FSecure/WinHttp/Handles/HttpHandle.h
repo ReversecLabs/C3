@@ -8,20 +8,21 @@
 #include <string>
 #include <stdexcept>
 
-#ifndef OBF
-#	define OBF(x) x
-#endif
-
 namespace FSecure::WinHttp::Detail
 {
+	/// Deleter for handler acquired from WinHttp
 	struct InternetHandleDeleter
 	{
-		void operator()(HINTERNET hinet)
+		/// Invoke WinHttpCloseHandle
+		/// @param handle to close
+		void operator()(HINTERNET handle)
 		{
-			WinHttpCloseHandle(hinet);
+			WinHttpCloseHandle(handle);
 		}
 	};
 
+	/// Throws a runtime error with error code from GetLastError
+	/// @param msg - error message
 	[[noreturn]] inline void ThrowLastError(std::string const& msg)
 	{
 		throw std::runtime_error{ msg + " Error code: " + std::to_string(GetLastError()) };
@@ -30,12 +31,17 @@ namespace FSecure::WinHttp::Detail
 
 namespace FSecure::WinHttp
 {
+	/// RAII wrapper for HINTERNET handles
 	using HttpHandle = std::unique_ptr<std::remove_pointer_t<HINTERNET>, Detail::InternetHandleDeleter>;
 
-	inline HttpHandle MakeHttpHandle(HINTERNET hinternet, std::string const& err)
+	/// Wrap existing HINTERNET handle into owning HttpHandle
+	/// @param hinternet handle to wrap
+	/// @param handleType - type of handle to wrap, used for error message
+	/// @returns HttpHandle that takes ownership of hinternet handle
+	inline HttpHandle MakeHttpHandle(HINTERNET hinternet, std::string const& handleType)
 	{
 		if (!hinternet)
-			Detail::ThrowLastError("Failed to open " + err + " handle");
+			Detail::ThrowLastError("Failed to open " + handleType + " handle.");
 
 		return HttpHandle{ hinternet };
 	}

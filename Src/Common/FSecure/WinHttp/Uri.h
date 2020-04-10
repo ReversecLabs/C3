@@ -15,6 +15,7 @@ namespace FSecure::WinHttp::Detail
 		return ::isalnum((char)c) || c == '-' || c == '.' || c == '_' || c == '~';
 	}
 
+	// copy from cpprestsdk with modified template params
 	template<class T, class F>
 	static std::string encode_impl(T const& raw, F should_encode)
 	{
@@ -43,11 +44,16 @@ namespace FSecure::WinHttp::Detail
 
 namespace FSecure::WinHttp
 {
+	/// URI utilities
 	class Uri
 	{
 	public:
+		/// create a empty URI
 		Uri() = default;
 
+		/// Parse URI from string
+		/// @param uri - URI string
+		/// @throws std::runtime_error if URI cannot be parsed from stirng
 		Uri(const wchar_t* uri)
 		{
 			if (!Uri::IsValid(uri))
@@ -73,37 +79,47 @@ namespace FSecure::WinHttp
 			m_PathWithQuery = std::wstring{ std::wstring_view{urlComp.lpszUrlPath, urlComp.dwUrlPathLength} };
 		}
 
+		/// Parse URI from string
+		/// @param uri - URI string
+		/// @throws std::runtime_error if URI cannot be parsed from stirng
 		Uri(std::wstring const& uri) : Uri(uri.c_str())
 		{
 		}
 
+		/// Check if string is a valid URI
+		/// @return true if string is a valid URI
 		static bool IsValid(const wchar_t* uri)
 		{
 			return PathIsURLW(uri);
 		}
 
+		/// Encode binary data to URI format
+		/// @param raw data to encode
+		/// @returns encoded data
 		static std::string EncodeData(ByteView raw)
 		{
 			return Detail::encode_impl(raw, [](int ch) -> bool { return !Detail::is_unreserved(ch); });
 		}
 
+		/// @returns true if URI specifies https
 		bool UseHttps() const { return m_UseHttps; }
 
-		std::wstring const& GetFullUri() const { return m_FullUri; }
-		std::wstring const& GetHostName() const { return m_HostName; }
-		uint16_t GetPort() const { return m_Port; }
-		bool IsPortDefault() const { return (m_UseHttps && m_Port == INTERNET_DEFAULT_HTTPS_PORT) || (!m_UseHttps && m_Port == INTERNET_DEFAULT_HTTP_PORT); }
+		/// @returns full URI string
+		std::wstring const& GetFullUri() const noexcept { return m_FullUri; }
+
+		/// @returns host name specified in URI
+		std::wstring const& GetHostName() const noexcept { return m_HostName; }
+
+		/// @returns port number specified in URI
+		uint16_t GetPort() const noexcept { return m_Port; }
+
+		/// @returns true if port number is default to respective protocol
+		bool IsPortDefault() const noexcept { return (m_UseHttps && m_Port == INTERNET_DEFAULT_HTTPS_PORT) || (!m_UseHttps && m_Port == INTERNET_DEFAULT_HTTP_PORT); }
+
+		/// @returns path with query specified in URI
 		std::wstring const& GetPathWithQuery() const { return m_PathWithQuery; }
 
 	private:
-		Uri(bool useHttps, std::wstring hostName, uint16_t port, std::wstring pathWithQuery)
-			: m_UseHttps{useHttps}
-			, m_Port{port}
-			, m_HostName{std::move(hostName)}
-			, m_PathWithQuery{std::move(pathWithQuery)}
-		{
-		}
-
 		bool m_UseHttps = false;
 		uint16_t m_Port = 0;
 		std::wstring m_FullUri;

@@ -2,6 +2,7 @@
 
 #include "../Config.h"
 #include "HttpHandle.h"
+#include "../Constants.h"
 #include "../../CppTools/ByteConverter/ByteVector.h"
 
 namespace FSecure::WinHttp
@@ -9,11 +10,16 @@ namespace FSecure::WinHttp
 	class HttpResponse
 	{
 	public:
+		/// Create response handle
+		/// @param requestHadle - a request coresponding to this response
 		HttpResponse(HttpHandle requestHandle)
 			: m_RequestHandle{ std::move(requestHandle) }
 		{
 		}
 
+		/// Get HTTP status code
+		/// @returns response HTTP status code
+		/// @throws std::runtime_error if status code cannot be retreived
 		uint32_t GetStatusCode() const
 		{
 			if (!m_StatusCode)
@@ -22,6 +28,19 @@ namespace FSecure::WinHttp
 			return m_StatusCode;
 		}
 
+		/// Get HTTP header value
+		/// @param header - one of known HTTP headers to retrieve
+		/// @returns HTTP header value
+		/// @throws std::runtime_error if header value cannot be retreived
+		std::wstring GetHeader(Header header)
+		{
+			return GetHeader(GetHeaderName(header));
+		}
+
+		/// Get HTTP header value
+		/// @param headerName - name of HTTP header to retrieve
+		/// @returns HTTP header value
+		/// @throws std::runtime_error if header value cannot be retreived
 		std::wstring GetHeader(std::wstring const& headerName) const
 		{
 			DWORD dwSize = 0;
@@ -39,6 +58,9 @@ namespace FSecure::WinHttp
 			return header;
 		}
 
+		/// Get all HTTP headers
+		/// @returns All HTTP headers
+		/// @throws std::runtime_error if headers cannot be retreived
 		std::wstring GetHeaders() const
 		{
 			if (!m_Headers.length())
@@ -47,6 +69,9 @@ namespace FSecure::WinHttp
 			return m_Headers;
 		}
 
+		/// Get HTTP response body
+		/// @returns HTTP response body
+		/// @throws std::runtime_error if response body cannot be retreived
 		ByteVector GetData() const
 		{
 			if (!m_Data.size())
@@ -56,6 +81,8 @@ namespace FSecure::WinHttp
 		}
 
 	private:
+		/// Read status code from HTTP response
+		/// @throws std::runtime_error if status code cannot be retreived
 		void ReadStatusCode() const
 		{
 			DWORD dwSize = sizeof(m_StatusCode);
@@ -63,6 +90,8 @@ namespace FSecure::WinHttp
 				Detail::ThrowLastError(OBF("Read Status"));
 		}
 
+		/// Receive repoonse HTTP headers
+		/// @throws std::runtime_error if headers cannot be retreived
 		void ReceiveHeaders() const
 		{
 			// Retrieve size of headers
@@ -76,6 +105,8 @@ namespace FSecure::WinHttp
 				Detail::ThrowLastError(OBF("Retrieve headers"));
 		}
 
+		/// Receive response HTTP body
+		/// @throws std::runtime_error if response body cannot be retreived
 		void ReceiveData() const
 		{
 			DWORD dwSize;

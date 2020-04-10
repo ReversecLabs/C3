@@ -13,7 +13,6 @@ using namespace FSecure::WinHttp;
 
 namespace
 {
-	// FIXME replace with string conversions
 	std::wstring ToWideString(std::string const& str)
 	{
 		return Convert<Utf16>(str);
