@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Sockets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.hxx" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\SafeSmartPointerContainer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\Indexes.h" />
