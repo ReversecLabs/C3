@@ -59,6 +59,9 @@ namespace FSecure::C3::Interfaces::Channels
 		/// The password for the user
 		std::string password;
 
+		HANDLE impersonationToken;
+
+		bool useSSPI = false;
 		SQLRETURN Connect(SQLHANDLE* hConn, SQLHANDLE* hEvt);
 	};
 }
