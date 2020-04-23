@@ -45,23 +45,23 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string m_outboundDirectionName;
 	private:
 		/// The server name to handle communication
-		std::string servername;
+		std::string m_servername;
 
 		/// The database name to handle communication
-		std::string databasename;
+		std::string m_databasename;
 
 		/// The table name to store all messages
-		std::string tablename;
+		std::string m_tablename;
 
 		/// The user to authenticate to the database
-		std::string username;
+		std::string m_username;
 
 		/// The password for the user
-		std::string password;
+		std::string m_password;
 
-		HANDLE impersonationToken;
+		HANDLE m_impersonationToken;
 
-		bool useSSPI = false;
+		bool m_useSSPI = false;
 		SQLRETURN Connect(SQLHANDLE* hConn, SQLHANDLE* hEvt);
 	};
 }

