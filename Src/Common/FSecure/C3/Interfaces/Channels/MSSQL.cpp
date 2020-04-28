@@ -32,6 +32,8 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &m_impersonationToken))
 			throw std::runtime_error("[x] error duplicating token");
+
+		CloseHandle(hToken);
 	}
 	
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
@@ -39,6 +41,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
+	//Initial SQL Query is to identify if m_tablename exists
 	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
 	SQLRETURN retCode = SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS);
 	
@@ -47,7 +50,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 		throw std::runtime_error(OBF("[x] Unable to get DB schema"));
 	}
 
-	//if there are no rows then the table doesn't exist
+	//if there are no rows then the table doesn't exist - so create it
 	if (SQLFetch(hStmt) != SQL_SUCCESS)
 	{
 														
@@ -57,12 +60,15 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
 		retCode = SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS);
+
+		//couldn't create the table so don't continue
 		if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO)
 		{
 			throw std::runtime_error(OBF("[x] Unable to create table"));
 		}
 	}
 	
+	//cleanup
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 	SQLDisconnect(hConn);
 	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
@@ -129,16 +135,13 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 
 	std::vector<ByteVector> messages;
-
-	SQLCHAR ret[DATA_LEN];
-	SQLLEN len;
-	
-	
 	std::vector<json> data;
-	
 	
 	while (SQLFetch(hStmt) == SQL_SUCCESS) 
 	{
+		SQLCHAR ret[DATA_LEN];
+		SQLLEN len;
+
 		std::string output;
 		std::string id;
 
@@ -172,6 +175,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 
 	for (auto &msg : data)
 	{
+		//build a string '1','2','3',....,'N'
 		idList += OBF("'") + msg[OBF("id")].get<std::string>();
 		idList += OBF("',");
 
@@ -188,9 +192,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
-		//Remove the trailing ","
+		//Remove the trailing "," from the idList
 		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
-
+		
+		//Delete all of the rows we have just read
 		SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 	}
 	
