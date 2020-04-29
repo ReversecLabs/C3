@@ -63,20 +63,19 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 		request.set_body(to_string_t(jsonBody.dump()));
 		request.headers().set_content_type(OBF(L"application/json"));
 
-		pplx::task<void> task = client.request(request).then([&](web::http::http_response response)
-		{
-			if (response.status_code() == web::http::status_codes::Created)
-				return;
+		web::http::http_response response = client.request(request).get();
 
+		if (response.status_code() != web::http::status_codes::Created)
+		{
 			if (response.status_code() == web::http::status_codes::TooManyRequests) // break and set sleep time.
 			{
-				s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ stoul(response.headers().find(OBF(L"Retry-After"))->second) };
+				s_TimePoint = std::chrono::steady_clock::now() + FSecure::Utils::GenerateRandomValue(10s, 20s);
 				throw std::runtime_error{ OBF("Too many requests") };
 			}
-			if(response.status_code() == web::http::status_codes::Unauthorized)
+			if (response.status_code() == web::http::status_codes::Unauthorized)
 			{
-			        RefreshAccessToken();
-			        throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
+				RefreshAccessToken();
+				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
 
 			}
 			if (response.status_code() == web::http::status_codes::BadRequest)
@@ -86,9 +85,8 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 			}
 
 			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(response.status_code()) };
-		});
-
-		task.wait();
+		}
+	
 		return data.size();
 	}
 	catch (std::exception& exception)
@@ -99,12 +97,12 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnReceiveFromChannel()
+std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnReceiveFromChannel()
 {
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
 		std::this_thread::sleep_until(s_TimePoint.load() + FSecure::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
-	ByteVector packet;
+	std::vector<ByteVector> packets;
 	try
 	{
 		// Construct request to get tasks.
@@ -118,21 +116,20 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnRec
 		web::http::client::http_client client(to_string_t(URLwithInboundDirection), m_HttpConfig);
 		web::http::http_request request(web::http::methods::GET);
 
-		pplx::task<void> task = client.request(request).then([&](web::http::http_response response)
-		{
-			if (response.status_code() == web::http::status_codes::OK) // ==200
-				return response.extract_string();
+		web::http::http_response response = client.request(request).get();
 
+		if (response.status_code() != web::http::status_codes::OK) // ==200
+		{
 			if (response.status_code() == web::http::status_codes::TooManyRequests) // break and set sleep time.
 			{
 				s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ stoul(response.headers().find(OBF(L"Retry-After"))->second) };
 				throw std::runtime_error{ OBF("Too many requests") };
 			}
 
-			if(response.status_code() == web::http::status_codes::Unauthorized)
+			if (response.status_code() == web::http::status_codes::Unauthorized)
 			{
-			        RefreshAccessToken();
-			        throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
+				RefreshAccessToken();
+				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
 
 			}
 
@@ -143,65 +140,63 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnRec
 			}
 
 			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(response.status_code()) };
-		})
-			.then([&](pplx::task<std::wstring> taskData)
-		{
-			// Gracefully handle situation where there's an empty JSON value (e.g., a failed request)
-			if (taskData.get().empty())
-				return;
+		}
 
-			// Convert response (as string_t to utf8) and parse.
-			json taskDataAsJSON;
+		std::string responseString = response.extract_utf8string().get();
+
+		// Gracefully handle situation where there's an empty JSON value (e.g., a failed request)
+		if (responseString.empty())
+			return {};
+
+		// Convert response (as string_t to utf8) and parse.
+		json taskDataAsJSON;
+		try
+		{
+			taskDataAsJSON = json::parse(responseString);
+		}
+		catch (json::parse_error& err)
+		{
+			Log({ OBF("Failed to parse the list of received tasks."), LogMessage::Severity::Error });
+			return {};
+		}
+
+		for (auto& element : taskDataAsJSON.at(OBF("value")))
+		{
+			// Obtain subject and task ID.
+			std::string subject = element.at(OBF("Subject")).get<std::string>();
+			std::string id = element.at(OBF("Id")).get<std::string>();
+
+			// Verify that the full subject and ID were obtained.  If not, ignore.
+			if (subject.empty() || id.empty())
+				continue;
+
+			// Check the direction component is at the start of subject.
+			if (subject.find(m_InboundDirectionName))
+				continue;
+
 			try
 			{
-				taskDataAsJSON = json::parse(to_utf8string(taskData.get()));
+				// Send the (decoded) message's body.
+				ByteVector packet = cppcodec::base64_rfc4648::decode(element.at(OBF("Body")).at(OBF("Content")).get<std::string>());
+				packets.emplace_back(packet);
+				SCOPE_GUARD(RemoveTask(id); );
 			}
-			catch (json::parse_error)
+			catch (const cppcodec::parse_error& exception)
 			{
-				Log({ OBF("Failed to parse the list of received tasks."), LogMessage::Severity::Error });
-				return;
+				Log({ OBF("Error decoding task #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
 			}
-
-			for (auto& element : taskDataAsJSON.at(OBF("value")))
+			catch (std::exception& exception)
 			{
-				// Obtain subject and task ID.
-				std::string subject = element.at(OBF("Subject")).get<std::string>();
-				std::string id = element.at(OBF("Id")).get<std::string>();
-
-				// Verify that the full subject and ID were obtained.  If not, ignore.
-				if (subject.empty() || id.empty())
-					continue;
-
-				// Check the direction component is at the start of subject.
-				if (subject.find(m_InboundDirectionName))
-					continue;
-
-				try
-				{
-					// Send the (decoded) message's body.
-					packet = cppcodec::base64_rfc4648::decode(element.at(OBF("Body")).at(OBF("Content")).get<std::string>());
-					SCOPE_GUARD( RemoveTask(id); );
-					return;
-				}
-				catch (const cppcodec::parse_error& exception)
-				{
-					Log({ OBF("Error decoding task #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
-				}
-				catch (std::exception& exception)
-				{
-					Log({ OBF("Caught a std::exception when processing task #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
-				}
+				Log({ OBF("Caught a std::exception when processing task #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
 			}
-		});
-
-		task.wait();
+		}
 	}
 	catch (std::exception& exception)
 	{
 		Log({ OBF_SEC("Caught a std::exception when running OnReceive(): ") + exception.what(), LogMessage::Severity::Warning });
 	}
 
-	return packet;
+	return packets;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,23 +206,21 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::Remov
 	{
 		// Construct request. One minor limitation of this is that it will remove 1000 tasks only (the maximum of "top"). This could be paged.
 		auto client = web::http::client::http_client{ OBF(L"https://outlook.office.com/api/v2.0/me/tasks?$top=1000"), m_HttpConfig };
-		pplx::task<void> task = client.request({ web::http::methods::GET }).then([this](web::http::http_response response)
-			{
-				if (response.status_code() != web::http::status_codes::OK)
-				{
-					Log({ OBF("RemoveAllFiles() Error.  Files could not be deleted. Confirm access and refresh tokens are correct."), LogMessage::Severity::Error });
-					return;
-				}
 
-				// Parse response (list of tasks)
-				auto taskDataAsJSON = nlohmann::json::parse(to_utf8string(response.extract_string().get()));
+		web::http::http_response response = client.request({ web::http::methods::GET }).get();
 
-				// For each task (under the "value" key), extract the ID, and send a request to delete the task.
-				for (auto& element : taskDataAsJSON.at(OBF("value")))
-					RemoveTask(element.at(OBF("id")).get<std::string>());
-			});
+		if (response.status_code() != web::http::status_codes::OK)
+		{
+			Log({ OBF("RemoveAllFiles() Error.  Files could not be deleted. Confirm access and refresh tokens are correct."), LogMessage::Severity::Error });
+			return {};
+		}
 
-		task.wait();
+		// Parse response (list of tasks)
+		auto taskDataAsJSON = nlohmann::json::parse(to_utf8string(response.extract_utf8string().get()));
+
+		// For each task (under the "value" key), extract the ID, and send a request to delete the task.
+		for (auto& element : taskDataAsJSON.at(OBF("value")))
+			RemoveTask(element.at(OBF("id")).get<std::string>());
 	}
 	catch (std::exception& exception)
 	{
@@ -243,13 +236,10 @@ void FSecure::C3::Interfaces::Channels::Outlook365RestTask::RemoveTask(std::stri
 	// There is a minor logic flaw in this part of the code, as it assumes the access token is still valid, which may not be the case.
 	auto URLwithID = OBF("https://outlook.office.com/api/v2.0/me/tasks('") + id + OBF("')");
 	auto client = web::http::client::http_client{ to_string_t(URLwithID), m_HttpConfig };
-	auto task = client.request({ web::http::methods::DEL }).then([&](web::http::http_response response)
-		{
-			if (response.status_code() > 205)
-				Log({ OBF("RemoveTask() Error. Task could not be deleted. HTTP response:") + std::to_string(response.status_code()), LogMessage::Severity::Error });
-		});
+	web::http::http_response response = client.request({ web::http::methods::DEL }).get();
 
-	task.wait();
+	if (response.status_code() > 205)
+		Log({ OBF("RemoveTask() Error. Task could not be deleted. HTTP response:") + std::to_string(response.status_code()), LogMessage::Severity::Error });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,22 +269,21 @@ void FSecure::C3::Interfaces::Channels::Outlook365RestTask::RefreshAccessToken()
 
 		request.set_body(requestBody);
 		FSecure::Utils::SecureMemzero(requestBody.data(), requestBody.size());
-		pplx::task<void> task = client.request(request).then([&](web::http::http_response response)
-			{
-				if (response.status_code() != web::http::status_codes::OK)
-					throw std::runtime_error{ OBF("Refresh access token request - non-200 status code was received: ") + std::to_string(response.status_code()) };
 
-				// If successful, parse the useful information from the response.
-				auto taskDataAsJSON = nlohmann::json::parse(to_utf8string(response.extract_string().get()));
+		web::http::http_response response = client.request(request).get();
 
-				auto tokenCopy = oa2->token();
-				tokenCopy.set_access_token(to_string_t(taskDataAsJSON.at(OBF("access_token")).get<std::string>()));
-				tokenCopy.set_expires_in(taskDataAsJSON.at(OBF("expires_in")).get<std::int64_t>());
-				oa2->set_token(tokenCopy);
-			});
-		task.wait();
+		if (response.status_code() != web::http::status_codes::OK)
+			throw std::runtime_error{ OBF("Refresh access token request - non-200 status code was received: ") + std::to_string(response.status_code()) };
+
+		// If successful, parse the useful information from the response.
+		auto taskDataAsJSON = nlohmann::json::parse(to_utf8string(response.extract_utf8string().get()));
+
+		auto tokenCopy = oa2->token();
+		tokenCopy.set_access_token(to_string_t(taskDataAsJSON.at(OBF("access_token")).get<std::string>()));
+		tokenCopy.set_expires_in(taskDataAsJSON.at(OBF("expires_in")).get<std::int64_t>());
+		oa2->set_token(tokenCopy);
 	}
-	catch (std::exception & exception)
+	catch (std::exception& exception)
 	{
 		throw std::runtime_error{ OBF_STR("Cannot refresh token: ") + exception.what() };
 	}
@@ -375,3 +364,4 @@ FSecure::ByteView FSecure::C3::Interfaces::Channels::Outlook365RestTask::GetCapa
 }
 )_";
 }
+
