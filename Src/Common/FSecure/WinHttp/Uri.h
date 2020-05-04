@@ -69,6 +69,7 @@ namespace FSecure::WinHttp
 			urlComp.dwUrlPathLength = (DWORD)-1;
 			urlComp.dwUserNameLength = (DWORD)-1;
 			urlComp.dwPasswordLength = (DWORD)-1;
+			urlComp..dwExtraInfoLength = (DWORD)-1;
 
 			if (!WinHttpCrackUrl(uri, 0, 0, &urlComp))
 				Detail::ThrowLastError(OBF("Error in WinHttpCrackUrl."));
@@ -76,7 +77,8 @@ namespace FSecure::WinHttp
 			m_UseHttps = (urlComp.nScheme == INTERNET_SCHEME_HTTPS);
 			m_Port = urlComp.nPort;
 			m_HostName = std::wstring{ std::wstring_view{urlComp.lpszHostName, urlComp.dwHostNameLength} };
-			m_PathWithQuery = std::wstring{ std::wstring_view{urlComp.lpszUrlPath, urlComp.dwUrlPathLength} };
+			std::wstring pathAndQuery = urlComp.lpszUrlPath;
+			m_PathWithQuery = std::wstring{ std::wstring_view{ pathAndQuery.c_str(), pathAndQuery.length()} };
 		}
 
 		/// Parse URI from string
