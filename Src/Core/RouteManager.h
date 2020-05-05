@@ -15,10 +15,11 @@ namespace FSecure::C3::Core
 			/// A public ctor.
 			/// @param routeId ID of the route.
 			/// @param iface Channel's DeviceBridge pointer.
-			Route(RouteId routeId, std::weak_ptr<DeviceBridge> iface);
+			Route(RouteId routeId, std::shared_ptr<DeviceBridge> const& iface);
 
 			RouteId m_RouteId;																							///< ID of the Route.
 			std::weak_ptr<DeviceBridge> m_Channel;																		///< Channel facing Route destination (i.e. the opposite direction to Gateway).
+			const DeviceId m_OutgoingDeviceId;
 		};
 
 		/// Destructor
@@ -50,6 +51,10 @@ namespace FSecure::C3::Core
 		/// @param routeId ID of the Route to remove.
 		/// @throw std::invalid_argument on an attempt of removal of a non-existent Route.
 		void RemoveRoute(RouteId const& routeId);
+
+		/// Removes routes using a specified device
+		/// @param outgoingDeviced - DeviceId of a outgoing channel for routes
+		void RemoveChannelRoutes(DeviceId outgoingDeviceId);
 
 		/// Removes all Routes from the Route table.
 		void RemoveAllRoutes();

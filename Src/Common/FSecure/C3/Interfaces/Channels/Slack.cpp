@@ -22,7 +22,7 @@ size_t FSecure::C3::Interfaces::Channels::Slack::OnSendToChannel(ByteView data)
 	size_t actualPacketSize = 0;
 	if (data.size() > 120'000)
 	{
-		m_slackObj.UploadFile(cppcodec::base64_rfc4648::encode(data.data(), data.size()), updateTs);
+		m_slackObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(data.data(), data.size()), updateTs);
 		actualPacketSize = data.size();
 	}
 	else

@@ -3,6 +3,7 @@
 // Standard library includes.
 #include <chrono>																										//< C++ standard time library.
 #include <map>
+#include <optional>
 
 // Literals.
 using namespace std::chrono_literals;
