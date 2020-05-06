@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Config.h"
-#include "../../WinTools/WindowsVersion.h"
 #include <windows.h>
 #include <winhttp.h>
 
