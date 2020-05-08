@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Common/CppRestSdk/include/cpprest/http_client.h"																//< For CppRestSdk.
+#include "Common/FSecure/WinHttp/WebProxy.h"
+#include "Common/FSecure/WinHttp/Constants.h"				//< For CppRestSdk.
 
 namespace FSecure::C3::Interfaces::Channels
 {
@@ -32,7 +33,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise O365 rate limit will heavily impact channel.
-		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 3500ms, s_MaxUpdateDelay = 6500ms;
+		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 1000ms, s_MaxUpdateDelay = 1000ms;
 
 	protected:
 
@@ -53,13 +54,14 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
 
 		/// Stores HTTP configuration (proxy, OAuth, etc).
-		web::http::client::http_client_config m_HttpConfig;
-
-		/// Password for user with o365 subscription.
-		web::details::win32_encryption m_Password;
-
+		WinHttp::WebProxy m_ProxyConfig;
+		std::string m_username;
+		std::string m_Password;
+		std::string m_clientKey;
+		std::string m_token;
 		/// Used to delay every channel instance in case of server rate limit.
 		/// Set using information from 429 Too Many Requests header.
 		static std::atomic<std::chrono::steady_clock::time_point> s_TimePoint;
 	};
 }
+
