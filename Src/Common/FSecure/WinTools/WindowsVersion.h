@@ -24,7 +24,7 @@ namespace FSecure
 {
 	namespace Detail
 	{
-		BOOL GetVersionExW(LPOSVERSIONINFOEXW lpVersionInformation)
+		inline BOOL GetVersionExW(LPOSVERSIONINFOEXW lpVersionInformation)
 		{
 			using fnRtlGetVersion = NTSTATUS(NTAPI*)(PRTL_OSVERSIONINFOEXW lpVersionInformation);
 			auto RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(OBF(L"ntdll.dll")), OBF("RtlGetVersion"));
