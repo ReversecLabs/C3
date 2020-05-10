@@ -26,12 +26,12 @@ size_t FSecure::C3::Interfaces::Channels::Dropbox::OnSendToChannel(ByteView data
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnReceiveFromChannel()
 {
-	// Fetch inbound messages as a map of ids and ISO timestamps
+	// Fetch inbound messages as a map of ids and epoch timestamps
 	std::map<std::string, std::string> messages = m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName);
 	std::vector<std::string> repliesTs;
 
-	// We can't fetch directly with an ISO client_modified value, so we're pulling out the date 
-	// strings to iterate over and using that as a key to fetch the file by id.
+	// We can't fetch directly with a generated timestamp value, so we're pulling these out 
+	// to iterate over and using that as a key to fetch the file by id.
 	for (std::map<std::string, std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
 		repliesTs.push_back(it->first);
 	}

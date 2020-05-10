@@ -45,7 +45,7 @@ namespace FSecure
 
 		/// Get all of the files representing messages by a direction. This is a C3 specific method, used by a server relay to get client messages and vice versa.
 		/// @param direction - the direction to search for (eg. "S2C").
-		/// @return - a map of modified time and file id, where id allows replies to be read later
+		/// @return - a map of timestamp and file id, where id allows replies to be read later
 		std::map<std::string, std::string> GetMessagesByDirection(std::string const& direction);
 
 		/// Download file by its path.
