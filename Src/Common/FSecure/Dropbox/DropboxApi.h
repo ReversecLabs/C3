@@ -23,7 +23,7 @@ namespace FSecure
 		/// Write a message as the contents of a file and upload to Dropbox.
 		/// @param filename - the name of the file to upload
 		/// @param data - the text of the message
-		void WriteMessageToFile(std::string const& filename, ByteView data);
+		void WriteMessageToFile(std::string const& direction, ByteView data);
 
 		/// Set the channel (i.e. Dropbox folder) that this object uses for communications
 		/// @param channelName - the channel name Id (not name), for example CGPMGFGSH.

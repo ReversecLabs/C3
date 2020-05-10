@@ -14,12 +14,9 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::Dropbox::OnSendToChannel(ByteView data)
 {
-	//Create a filename thats prefixed with message direction and more granular timestamp for querying later
-	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
-	std::string filename = m_outboundDirectionName + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts; // +OBF(".txt");
 
 	// There is a cap on uploads of files >150mb at which point different APIs are required, left unimplemented for now.
-	m_dropboxObj.WriteMessageToFile(filename, data);
+	m_dropboxObj.WriteMessageToFile(m_outboundDirectionName, data);
 	return data.size();
 }
 
@@ -49,7 +46,6 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnR
 	}
 	return ret;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
