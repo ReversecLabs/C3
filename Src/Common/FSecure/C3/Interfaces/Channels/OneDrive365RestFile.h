@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Common/FSecure/WinHttp/HttpClient.h"
 #include "Common/FSecure/WinHttp/WebProxy.h"
-#include "Common/FSecure/WinHttp/Constants.h"				//< For CppRestSdk.
+#include "Common/FSecure/WinHttp/Constants.h"
 namespace FSecure::C3::Interfaces::Channels
 {
 	/// Implementation of the OneDrive 365 REST file Channel.
@@ -48,11 +49,15 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @throws std::exception if token cannot be refreshed.
 		void RefreshAccessToken();
 
+		/// Check if request was successful.
+		/// @throws std::exception describing incorrect response if occurred.
+		void EvaluateResponse(WinHttp::HttpResponse const& resp);
+
 		/// In/Out names on the server.
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
 
 		/// Username, password, client key and token for authentication.
-		std::string m_username, m_password, m_clientKey, m_token;
+		std::string m_Username, m_Password, m_ClientKey, m_Token;
 
 		/// Store any relevant proxy info
 		WinHttp::WebProxy m_ProxyConfig;

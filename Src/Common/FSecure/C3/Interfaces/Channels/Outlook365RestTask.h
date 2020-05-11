@@ -53,12 +53,11 @@ namespace FSecure::C3::Interfaces::Channels
 		/// In/Out names on the server.
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
 
+		std::string m_Username, m_Password, m_ClientKey, m_Token;
+
 		/// Stores HTTP configuration (proxy, OAuth, etc).
 		WinHttp::WebProxy m_ProxyConfig;
-		std::string m_username;
-		std::string m_Password;
-		std::string m_clientKey;
-		std::string m_token;
+
 		/// Used to delay every channel instance in case of server rate limit.
 		/// Set using information from 429 Too Many Requests header.
 		static std::atomic<std::chrono::steady_clock::time_point> s_TimePoint;

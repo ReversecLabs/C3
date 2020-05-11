@@ -19,9 +19,9 @@ std::atomic<std::chrono::steady_clock::time_point> FSecure::C3::Interfaces::Chan
 FSecure::C3::Interfaces::Channels::Outlook365RestTask::Outlook365RestTask(ByteView arguments)
 	: m_InboundDirectionName{ arguments.Read<std::string>() }
 	, m_OutboundDirectionName{ arguments.Read<std::string>() }
-	, m_username{ arguments.Read<std::string>() }
+	, m_Username{ arguments.Read<std::string>() }
 	, m_Password{ arguments.Read<std::string>() }
-	, m_clientKey{ arguments.Read<std::string>() }
+	, m_ClientKey{ arguments.Read<std::string>() }
 {
 	// Obtain proxy information and store it in the HTTP configuration.
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
@@ -42,7 +42,7 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 		HttpClient webClient(OBF(L"https://outlook.office.com/api/v2.0/me/tasks"), m_ProxyConfig);
 
 		HttpRequest request; // default request is GET
-		std::string auth = "Bearer " + m_token;
+		std::string auth = "Bearer " + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 		request.m_Method = Method::POST;
 
@@ -111,7 +111,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365Re
 		HttpClient webClient(Convert<Utf16>(URLwithInboundDirection), m_ProxyConfig);
 
 		HttpRequest request; // default request is GET
-		std::string auth = "Bearer " + m_token;
+		std::string auth = "Bearer " + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 		auto resp = webClient.Request(request);
 
@@ -150,7 +150,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365Re
 		{
 			taskDataAsJSON = json::parse(responseData);
 		}
-		catch (json::parse_error& err)
+		catch (json::parse_error&)
 		{
 			Log({ OBF("Failed to parse the list of received tasks."), LogMessage::Severity::Error });
 			return {};
@@ -205,7 +205,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::Remov
 		HttpClient webClient(OBF(L"https://outlook.office.com/api/v2.0/me/tasks?$top=1000"), m_ProxyConfig);
 
 		HttpRequest request; // default request is GET
-		std::string auth = "Bearer " + m_token;
+		std::string auth = "Bearer " + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 		auto resp = webClient.Request(request);
 
@@ -240,7 +240,7 @@ void FSecure::C3::Interfaces::Channels::Outlook365RestTask::RemoveTask(std::stri
 	HttpClient webClient(Convert<Utf16>(URLwithID), m_ProxyConfig);
 
 	HttpRequest request; // default request is GET
-	std::string auth = "Bearer " + m_token;
+	std::string auth = "Bearer " + m_Token;
 	request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 	request.m_Method = Method::DEL;
 	auto resp = webClient.Request(request);
@@ -268,11 +268,11 @@ void FSecure::C3::Interfaces::Channels::Outlook365RestTask::RefreshAccessToken()
 		requestBody += OBF("grant_type=password");
 		requestBody += OBF("&scope=https://outlook.office365.com/.default");
 		requestBody += OBF("&username=");
-		requestBody += m_username;
+		requestBody += m_Username;
 		requestBody += OBF("&password=");
 		requestBody += m_Password;
 		requestBody += OBF("&client_id=");
-		requestBody += m_clientKey;
+		requestBody += m_ClientKey;
 
 		request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
 		FSecure::Utils::SecureMemzero(requestBody.data(), requestBody.size());
@@ -283,7 +283,7 @@ void FSecure::C3::Interfaces::Channels::Outlook365RestTask::RefreshAccessToken()
 		else
 			throw std::runtime_error{ OBF("Refresh access token request - non-200 status code was received: ") + std::to_string(resp.GetStatusCode()) };
 
-		m_token = data["access_token"].get<std::string>();
+		m_Token = data["access_token"].get<std::string>();
 	}
 	catch (std::exception& exception)
 	{

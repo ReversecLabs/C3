@@ -19,9 +19,9 @@ std::atomic<std::chrono::steady_clock::time_point> FSecure::C3::Interfaces::Chan
 FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(ByteView arguments)
 	: m_InboundDirectionName{ arguments.Read<std::string>()}
 	, m_OutboundDirectionName{ arguments.Read<std::string>()}
-	, m_username{ arguments.Read<std::string>()}
-	, m_password{ arguments.Read<std::string>()}
-	, m_clientKey{ arguments.Read<std::string>()}
+	, m_Username{ arguments.Read<std::string>()}
+	, m_Password{ arguments.Read<std::string>()}
+	, m_ClientKey{ arguments.Read<std::string>()}
 {
 	// Obtain proxy information and store it in the HTTP configuration.
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
@@ -43,52 +43,27 @@ size_t FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(B
 		HttpClient webClient(Convert<Utf16>(URLwithFilename), m_ProxyConfig);
 
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_token;
+		std::string auth = OBF("Bearer ") + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 		request.m_Method = Method::PUT;
-		std::string dataBody = cppcodec::base64_rfc4648::encode(&data.front(), data.size());
 
-		auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
-		auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now);
-		std::chrono::duration<long, std::micro> int_usec = int_ms;
-
-
+		auto chunkSize = std::min<size_t>(data.size(), 3 * (1024 * 1024 - 64)); // Max 4 MB can be sent. base64 will expand data by 4/3. 256 bytes are reserved for json schema.
 		json fileData;
-		fileData[OBF("timestamp")] = now.count();
-
-		fileData[OBF("data")] = dataBody;
+		fileData[OBF("epoch_time")] = FSecure::Utils::TimeSinceEpoch();
+		fileData[OBF("high_res_time")] = GetTickCount64();
+		fileData[OBF("data")] = cppcodec::base64_rfc4648::encode(&data.front(), chunkSize);
 		std::string body = fileData.dump();
 
 		request.SetData(OBF(L"text/plain"), { body.begin(), body.end() });
 
 		auto resp = webClient.Request(request);
-		if (resp.GetStatusCode() != StatusCode::OK && resp.GetStatusCode() != StatusCode::Created)
-		{
-			if (resp.GetStatusCode() == StatusCode::TooManyRequests) // break and set sleep time.
-			{
-				s_TimePoint = std::chrono::steady_clock::now() + FSecure::Utils::GenerateRandomValue(10s, 20s);
-				throw std::runtime_error{ OBF("Too many requests") };
-			}
-			if (resp.GetStatusCode() == StatusCode::Unauthorized)
-			{
-				RefreshAccessToken();
-				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
+		EvaluateResponse(resp);
 
-			}
-			if (resp.GetStatusCode() == StatusCode::BadRequest)
-			{
-				RefreshAccessToken();
-				throw std::runtime_error{ OBF("Bad Request") };
-			}
-
-			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(resp.GetStatusCode()) };
-		}
-
-		return data.size();
+		return chunkSize;
 	}
 	catch (std::exception& exception)
 	{
-		Log({ OBF_SEC("Caught a std::exception when running OnSend(): ") + exception.what(), LogMessage::Severity::Warning });
+		Log({ OBF_SEC("Caught a std::exception when running OnSend(): ") + exception.what(), LogMessage::Severity::Error });
 		return 0u;
 	}
 }
@@ -109,33 +84,11 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 		// This directory listing fetches up to 1000 files.
 		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children?top=1000"), m_ProxyConfig);
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_token;
+		std::string auth = OBF("Bearer ") + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 
 		auto resp = webClient.Request(request);
-
-		if (resp.GetStatusCode() != StatusCode::OK)
-		{
-			if (resp.GetStatusCode() == StatusCode::TooManyRequests)
-			{
-				s_TimePoint = std::chrono::steady_clock::now() + FSecure::Utils::GenerateRandomValue(10s, 20s);
-				throw std::runtime_error{ OBF("Too many requests") };
-			}
-
-			if (resp.GetStatusCode() == StatusCode::Unauthorized)
-			{
-				RefreshAccessToken();
-				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
-			}
-
-			if (resp.GetStatusCode() == StatusCode::BadRequest)
-			{
-				RefreshAccessToken();
-				throw std::runtime_error{ OBF("Bad Request") };
-			}
-
-			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(resp.GetStatusCode()) };
-		}
+		EvaluateResponse(resp);
 
 		json taskDataAsJSON;
 		try
@@ -178,7 +131,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 			if (fileResp.GetStatusCode() == StatusCode::OK)
 			{
 				auto data = fileResp.GetData();
-				fileAsString = std::string{ data.begin(), data.end() }; //We discussed bv.Read<std::string>() but it wouldn't work here?
+				fileAsString = std::string{ data.begin(), data.end() };
 			}
 			else
 			{
@@ -192,7 +145,9 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 		}
 
 		//now sort and re-iterate over them.
-		std::sort(elements.begin(), elements.end(), [](auto const& a, auto const& b) -> bool { return a[OBF("timestamp")] < b[OBF("timestamp")]; });
+		std::sort(elements.begin(), elements.end(),
+			[](auto const& a, auto const& b) { return a[OBF("epoch_time")] < b[OBF("epoch_time")] || a[OBF("high_res_time")] < b[OBF("high_res_time")]; }
+		);
 
 		for(auto &element : elements)
 		{
@@ -231,7 +186,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::Remo
 	{
 		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children"), m_ProxyConfig);
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_token;
+		std::string auth = OBF("Bearer ") + m_Token;
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 
 		auto resp = webClient.Request(request);
@@ -273,12 +228,11 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 		requestBody += OBF("grant_type=password");
 		requestBody += OBF("&scope=files.readwrite.all");
 		requestBody += OBF("&username=");
-		requestBody += m_username;
+		requestBody += m_Username;
 		requestBody += OBF("&password=");
-		requestBody += m_password;
-		//requestBody += to_utf8string(*m_Password.decrypt());
+		requestBody += m_Password;
 		requestBody += OBF("&client_id=");
-		requestBody += m_clientKey;
+		requestBody += m_ClientKey;
 
 
 
@@ -291,7 +245,7 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 		else
 			throw std::runtime_error{ OBF("Refresh access token request - non-200 status code was received: ") + std::to_string(resp.GetStatusCode()) };
 
-		m_token = data[OBF("access_token")].get<std::string>();
+		m_Token = data[OBF("access_token")].get<std::string>();
 	}
 	catch (std::exception& exception)
 	{
@@ -307,7 +261,7 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RemoveFile(std::str
 	HttpClient webClient(url, m_ProxyConfig);
 	HttpRequest request;
 
-	std::string auth = OBF("Bearer ") + m_token;
+	std::string auth = OBF("Bearer ") + m_Token;
 	request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 	request.m_Method = Method::DEL;
 	auto resp = webClient.Request(request);
@@ -330,6 +284,36 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnRu
 		return AbstractChannel::OnRunCommand(commandCopy);
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::EvaluateResponse(WinHttp::HttpResponse const& resp)
+{
+	if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created)
+		return;
+
+	if (resp.GetStatusCode() == StatusCode::TooManyRequests) // break and set sleep time.
+	{
+		s_TimePoint = std::chrono::steady_clock::now() + FSecure::Utils::GenerateRandomValue(10s, 20s);
+		throw std::runtime_error{ OBF("Too many requests") };
+	}
+
+	if (resp.GetStatusCode() == StatusCode::Unauthorized)
+	{
+		RefreshAccessToken();
+		throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
+	}
+
+	if (resp.GetStatusCode() == StatusCode::BadRequest)
+	{
+		RefreshAccessToken();
+		throw std::runtime_error{ OBF("Bad Request") };
+	}
+
+	throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(resp.GetStatusCode()) };
+
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
