@@ -509,6 +509,7 @@ void FSecure::C3::Core::Profiler::Agent::ParseAndRunCommand(json const& jCommand
 					if (deviceIsChannel)
 					{
 						m_Channels.TryRemove(*deviceId);
+						m_Routes.RemoveIf([deviceId](Profiler::Route const& route) { return route.m_OutgoingDevice == deviceId; });
 					}
 					else
 					{
@@ -802,18 +803,20 @@ void FSecure::C3::Core::Profiler::Gateway::ParseAndRunCommand(json const& jComma
 						}
 						case FSecure::C3::Command::Close:
 						{
-							auto profilerElement = m_Peripherals.Find(device->GetDid());
-							if (!profilerElement)
-								break;
+							if (auto profilerElement = m_Peripherals.Find(device->GetDid()))
+							{
+								auto connectorHash = m_Owner.lock()->GetBinderTo(profilerElement->m_TypeHash);
+								auto connector = m_Gateway.lock()->m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
+								if (!connector)
+									break;
 
-							auto connectorHash = m_Owner.lock()->GetBinderTo(profilerElement->m_TypeHash);
-							auto connector = m_Gateway.lock()->m_Connectors.Find([&](auto const& e) { return e->GetNameHash() == connectorHash; });
-							if (!connector)
-								break;
-
-							// Remove connection.
-							connector->CloseConnection(ByteVector::Create(RouteId{ m_Id, device->GetDid() }));
-
+								// Remove connection.
+								connector->CloseConnection(ByteVector::Create(RouteId{ m_Id, device->GetDid() }));
+							}
+							else if (auto profilerElemnt = m_Channels.Find(device->GetDid()))
+							{
+								m_Routes.RemoveIf([did = device->GetDid()](Profiler::Route const& route) { return route.m_OutgoingDevice == did; });
+							}
 							break;
 						}
 						default:
@@ -1200,7 +1203,7 @@ void FSecure::C3::Core::Profiler::Gateway::UpdateRouteTimestamps(AgentId agentId
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Core::Profiler::Agent* FSecure::C3::Core::Profiler::Gateway::FindGatewaySideAgent(Agent* agent)
 {
-	auto channels = agent->m_Channels.GetUnderlyingContainer();
+	auto& channels = agent->m_Channels.GetUnderlyingContainer();
 	auto grcIt = std::find_if(channels.begin(), channels.end(), [](auto& e) {return e.m_IsReturnChannel; });
 	if (grcIt == channels.end())
 		throw std::runtime_error{ "GRC not found" };

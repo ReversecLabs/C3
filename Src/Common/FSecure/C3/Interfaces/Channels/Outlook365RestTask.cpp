@@ -86,7 +86,7 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 
 			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(response.status_code()) };
 		}
-	
+
 		return data.size();
 	}
 	catch (std::exception& exception)
@@ -154,7 +154,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365Re
 		{
 			taskDataAsJSON = json::parse(responseString);
 		}
-		catch (json::parse_error& err)
+		catch (json::parse_error&)
 		{
 			Log({ OBF("Failed to parse the list of received tasks."), LogMessage::Severity::Error });
 			return {};

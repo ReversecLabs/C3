@@ -1,0 +1,32 @@
+name: Build C3 (MSVC)
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build C3 (MSVC)
+    strategy:
+      matrix:
+        platfom: [x86, x64]
+        configuration: [Debug, ReleaseWithDebInfo, Release]
+    runs-on: windows-latest
+    
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Dotnet restore
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" Src/C3.sln "/t:restore"
+
+    - name: Build MSVC
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" Src/C3.sln "/p:Platform=${{ matrix.platfom }}" "/p:Configuration="${{ matrix.configuration }}"
+        

@@ -95,6 +95,15 @@ namespace FSecure
 				throw std::invalid_argument{ OBF("Attempted to remove a non-existent Element.") };
 		}
 
+		/// Removes all elements matching the predicate
+		/// @param predicate function that returns true for requested Element.
+		template<typename Predicate>
+		void RemoveIf(Predicate predicate)
+		{
+			std::scoped_lock<std::mutex> lock(m_AccessMutex);
+			m_Container.erase(std::remove_if(begin(m_Container), end(m_Container), predicate), end(m_Container));
+		}
+
 		/// Same as Remove, but returns the element removed from the container.
 		/// @param comparator function that returns true for requested Element.
 		/// @return Copy of the element that was requested to be removed.

@@ -2,12 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Beacon.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.cpp" />
@@ -28,6 +24,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -69,7 +69,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\UniqueHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\XError.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Sockets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.h" />
@@ -86,7 +85,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)C3_BUILD_VERSION_HASH_PART.hxx" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Utils.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.h" />
@@ -97,5 +95,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\WindowsVersion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Constants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpRequest.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Uri.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\WebProxy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.h" />
   </ItemGroup>
 </Project>

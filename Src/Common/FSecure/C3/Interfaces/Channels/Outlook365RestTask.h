@@ -18,8 +18,8 @@ namespace FSecure::C3::Interfaces::Channels
 		size_t OnSendToChannel(ByteView blob);
 
 		/// Reads a single C3 packet from Channel.
-		/// @return packet retrieved from Channel.
-		ByteVector OnReceiveFromChannel();
+		/// @return packets retrieved from Channel.
+		std::vector<FSecure::ByteVector> OnReceiveFromChannel();
 
 		/// Processes internal (C3 API) Command.
 		/// @param command a buffer containing whole command and it's parameters.

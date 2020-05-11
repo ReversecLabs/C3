@@ -58,6 +58,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Constants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpClient.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpRequest.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Uri.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\WebProxy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\WindowsVersion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
