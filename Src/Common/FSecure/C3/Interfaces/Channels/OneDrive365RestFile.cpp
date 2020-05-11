@@ -17,11 +17,11 @@ std::atomic<std::chrono::steady_clock::time_point> FSecure::C3::Interfaces::Chan
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(ByteView arguments)
-	: m_InboundDirectionName{ arguments.Read<std::string>()}
-	, m_OutboundDirectionName{ arguments.Read<std::string>()}
-	, m_Username{ arguments.Read<std::string>()}
-	, m_Password{ arguments.Read<std::string>()}
-	, m_ClientKey{ arguments.Read<std::string>()}
+	: m_InboundDirectionName{ arguments.Read<std::string>() }
+	, m_OutboundDirectionName{ arguments.Read<std::string>() }
+	, m_Username{ arguments.Read<SecureString>() }
+	, m_Password{ arguments.Read<SecureString>() }
+	, m_ClientKey{ arguments.Read<SecureString>() }
 {
 	// Obtain proxy information and store it in the HTTP configuration.
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
@@ -43,7 +43,7 @@ size_t FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(B
 		HttpClient webClient(Convert<Utf16>(URLwithFilename), m_ProxyConfig);
 
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_Token;
+		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 		request.m_Method = Method::PUT;
 
@@ -84,7 +84,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 		// This directory listing fetches up to 1000 files.
 		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children?top=1000"), m_ProxyConfig);
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_Token;
+		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 
 		auto resp = webClient.Request(request);
@@ -186,7 +186,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::Remo
 	{
 		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children"), m_ProxyConfig);
 		HttpRequest request;
-		std::string auth = OBF("Bearer ") + m_Token;
+		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
 		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 
 		auto resp = webClient.Request(request);
@@ -224,20 +224,17 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 		request.SetHeader(Header::ContentType, OBF(L"application/x-www-form-urlencoded; charset=utf-16"));
 		json data;
 
-		auto requestBody = ""s;
+		auto requestBody = SecureString{};
 		requestBody += OBF("grant_type=password");
 		requestBody += OBF("&scope=files.readwrite.all");
 		requestBody += OBF("&username=");
-		requestBody += m_Username;
+		requestBody += m_Username.Decrypt();
 		requestBody += OBF("&password=");
-		requestBody += m_Password;
+		requestBody += m_Password.Decrypt();
 		requestBody += OBF("&client_id=");
-		requestBody += m_ClientKey;
-
-
+		requestBody += m_ClientKey.Decrypt();
 
 		request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
-		FSecure::Utils::SecureMemzero(requestBody.data(), requestBody.size());
 		auto resp = webClient.Request(request);
 
 		if (resp.GetStatusCode() == StatusCode::OK)
@@ -261,7 +258,7 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RemoveFile(std::str
 	HttpClient webClient(url, m_ProxyConfig);
 	HttpRequest request;
 
-	std::string auth = OBF("Bearer ") + m_Token;
+	auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
 	request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
 	request.m_Method = Method::DEL;
 	auto resp = webClient.Request(request);

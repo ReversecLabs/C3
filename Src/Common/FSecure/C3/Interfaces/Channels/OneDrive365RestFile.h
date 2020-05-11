@@ -3,6 +3,8 @@
 #include "Common/FSecure/WinHttp/HttpClient.h"
 #include "Common/FSecure/WinHttp/WebProxy.h"
 #include "Common/FSecure/WinHttp/Constants.h"
+#include "Common/FSecure/Crypto/String.h"
+
 namespace FSecure::C3::Interfaces::Channels
 {
 	/// Implementation of the OneDrive 365 REST file Channel.
@@ -57,7 +59,7 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
 
 		/// Username, password, client key and token for authentication.
-		std::string m_Username, m_Password, m_ClientKey, m_Token;
+		Crypto::String m_Username, m_Password, m_ClientKey, m_Token;
 
 		/// Store any relevant proxy info
 		WinHttp::WebProxy m_ProxyConfig;
