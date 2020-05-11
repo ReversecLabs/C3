@@ -11,13 +11,116 @@
 #define MSG_COLUMN 3
 #define MAX_MSG_BYTES 700000000
 
+namespace FSecure::Sql
+{
+	inline namespace Handle
+	{
+		namespace Detail
+		{
+			struct SqlHandleDeleter
+			{
+				SqlHandleDeleter(SQLSMALLINT type) : m_Type{ type }
+				{
+				}
+
+				void operator()(SQLHANDLE handle) noexcept
+				{
+					SQLFreeHandle(m_Type, handle);
+				}
+
+			private:
+				SQLSMALLINT m_Type;
+			};
+
+			using SqlHandle = std::unique_ptr<std::remove_pointer_t<SQLHANDLE>, SqlHandleDeleter>;
+			SqlHandle MakeSqlHandle(SQLSMALLINT type, SQLHANDLE parent = SQL_NULL_HANDLE)
+			{
+				SQLHANDLE tmp;
+				if (SQLAllocHandle(type, parent, &tmp) == SQL_ERROR)
+				{
+					auto GetTypeString = [](SQLSMALLINT type)
+					{
+						switch (type)
+						{
+						case SQL_HANDLE_ENV: return OBF("ENV");
+						case SQL_HANDLE_SENV: return OBF("SENV");
+						case SQL_HANDLE_STMT: return OBF("STMT");
+						case SQL_HANDLE_DBC: return OBF("DBC");
+						case SQL_HANDLE_DESC: return OBF("DESC");
+						default: return "";
+						}
+					};
+					throw std::runtime_error(OBF_STR("SQLAllocHandle for failed. handle type = ") + GetTypeString(type));
+				}
+				return SqlHandle(tmp, { type });
+			}
+		}
+
+		class Connection
+		{
+		public:
+			Connection(SQLHANDLE env, std::string const& servername, std::string const& databasename, std::string const& username, std::string const& password, bool useSSPI, HANDLE impersonationToken) : m_Connection{ Detail::MakeSqlHandle(SQL_HANDLE_DBC, env)}
+			{
+				std::string connString;
+				if (useSSPI)
+				{
+					if (!username.empty())
+					{
+						//Sending and recieving could be different threads, have to inject the token per-thread
+						if (!SetThreadToken(NULL, impersonationToken))
+							throw std::runtime_error("[x] error setting token");
+					}
+
+					connString = OBF("DRIVER={SQL Server};SERVER=") + servername + OBF(", 1433;") + OBF("DATABASE=") + databasename + OBF(";Integrated Security=SSPI;");
+				}
+				else
+				{
+					connString = OBF("DRIVER={SQL Server};SERVER=") + servername + OBF(", 1433;") + OBF("DATABASE=") + databasename + OBF(";UID=") + username + OBF(";PWD=") + password;
+				}
+
+				SQLCHAR ret[DATA_LEN];
+				SQLSMALLINT retSize = 0;
+				SQLRETURN retCode = SQLDriverConnectA(m_Connection.get(), NULL, (SQLCHAR*)connString.c_str(), connString.size(), ret, DATA_LEN, &retSize, SQL_DRIVER_NOPROMPT);
+				if (retCode == SQL_ERROR)
+					throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
+			}
+
+			~Connection()
+			{
+				SQLDisconnect(m_Connection.get());
+			}
+
+			/* [[deprecated]] */ SQLHANDLE Get() { return m_Connection.get(); }
+
+		private:
+			Detail::SqlHandle m_Connection;
+		};
+
+		class Enviroment
+		{
+		public:
+			Enviroment() : m_Env{Detail::MakeSqlHandle(SQL_HANDLE_ENV)}
+			{
+				if (SQLSetEnvAttr(m_Env.get(), SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0) != SQL_SUCCESS)
+					throw std::runtime_error(OBF("[x] Error setting enviroment"));
+			}
+
+			Connection Connect(std::string const& m_servername, std::string const& m_databasename, std::string const& m_username, std::string const& m_password, bool m_useSSPI, HANDLE m_impersonationToken)
+			{
+				return Connection(m_Env.get(), m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+			}
+
+		private:
+			Detail::SqlHandle m_Env;
+		};
+	}
+}
+
 FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	ByteReader{ arguments }.Read(m_servername, m_databasename, m_tablename, m_useSSPI, m_username, m_password);
-
-	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
+	ByteReader{ arguments }.Read(m_servername, m_databasename, m_tablename, m_username, m_password, m_useSSPI);
 
 	//create a new impersonation token and inject it into the current thread.
 	if (m_useSSPI && !this->m_username.empty())
@@ -36,10 +139,11 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 		CloseHandle(hToken);
 	}
 
-	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
+	Sql::Enviroment env;
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
 
-	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	SQLHANDLE hStmt = NULL;
+	SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 	//Initial SQL Query is to identify if m_tablename exists
 	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
@@ -53,11 +157,10 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	//if there are no rows then the table doesn't exist - so create it
 	if (SQLFetch(hStmt) != SQL_SUCCESS)
 	{
-
 		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
 
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+		SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 		retCode = SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS);
 
@@ -70,22 +173,16 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 	//cleanup
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-	SQLDisconnect(hConn);
-	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
-	SQLFreeHandle(SQL_HANDLE_ENV, hEvt);
-
 }
 
 size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteView packet)
 {
 	//connect to the database
-	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
+	Sql::Enviroment env;
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	SQLHANDLE  hStmt = NULL;
 
-	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
-
-
-	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 	int bytesWritten = 0;
 	std::string b64packet = "";
@@ -113,23 +210,18 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	if (SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS) != SQL_SUCCESS)
 		throw std::runtime_error(OBF("[x] Could not insert data\n"));
 
-
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-	SQLDisconnect(hConn);
-	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
-	SQLFreeHandle(SQL_HANDLE_ENV, hEvt);
 	return bytesWritten;
 }
 
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnReceiveFromChannel()
 {
 	//connect to the database
-	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
-	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
+	Sql::Enviroment env;
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	SQLHANDLE  hStmt = NULL;
 
-
-	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
@@ -190,7 +282,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	{
 		//delete the row in the DB - must realloc the stmt handle
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+		SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 		//Remove the trailing "," from the idList
 		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
@@ -200,51 +292,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	}
 
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-	SQLDisconnect(hConn);
-	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
-	SQLFreeHandle(SQL_HANDLE_ENV, hEvt);
 	return messages;
-}
-
-SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQLHANDLE* hEvt)
-{
-	SQLCHAR ret[DATA_LEN];
-	SQLHANDLE lhConn = NULL, lhStmt = NULL, lhEvt = NULL;
-	std::string connString;
-
-	if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &lhEvt) != SQL_SUCCESS)
-		throw std::runtime_error(OBF("[x] Error allocating handle"));
-	if (SQLSetEnvAttr(lhEvt, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0) != SQL_SUCCESS)
-		throw std::runtime_error(OBF("[x] Error allocating handle"));
-	if (SQLAllocHandle(SQL_HANDLE_DBC, lhEvt, &lhConn) != SQL_SUCCESS)
-		throw std::runtime_error(OBF("[x] Error allocating handle"));
-
-	if (this->m_useSSPI)
-	{
-		if (!this->m_username.empty())
-		{
-			//Sending and recieving could be different threads, have to inject the token per-thread
-			if (!SetThreadToken(NULL, this->m_impersonationToken))
-				throw std::runtime_error("[x] error setting token");
-		}
-
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->m_servername + OBF(", 1433;") + OBF("DATABASE=") + this->m_databasename + OBF(";Integrated Security=SSPI;");
-	}
-	else
-		connString = OBF("DRIVER={SQL Server};SERVER=") + this->m_servername + OBF(", 1433;") + OBF("DATABASE=") + this->m_databasename + OBF(";UID=") + this->m_username + OBF(";PWD=") + this->m_password;
-
-
-
-	SQLRETURN retCode = SQLDriverConnectA(lhConn, NULL, (SQLCHAR*)connString.c_str(), SQL_NTS, ret, DATA_LEN, NULL, SQL_DRIVER_NOPROMPT);
-
-	//Pointer dereferencing is done here to make the code easier to read
-	*hConn = lhConn;
-	*hEvt = lhEvt;
-
-	SQLFreeHandle(SQL_HANDLE_ENV, lhEvt);
-	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
-	return retCode;
-
 }
 
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteView command)
@@ -263,25 +311,22 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteV
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 {
 	//connect to the database
-	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
-	if (Connect(&hConn, &hEvt) == SQL_ERROR)
-		throw std::exception(OBF("[x] Unable to connect to MSSQL database"));
+	Sql::Enviroment env;
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	SQLHANDLE  hStmt = NULL;
 
-
-	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 	std::string stmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
+	SQLAllocHandle(SQL_HANDLE_STMT, conn.Get(), &hStmt);
 
 	//reset the ID to 0
 	stmt = "DBCC CHECKIDENT('dbo." + this->m_tablename + "', RESEED, 0)";
 	SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 	return {};
-
-
 }
 
 const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
@@ -353,6 +398,4 @@ const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 	]
 }
 )_";
-
 }
-

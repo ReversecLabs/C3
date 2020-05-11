@@ -62,6 +62,5 @@ namespace FSecure::C3::Interfaces::Channels
 		HANDLE m_impersonationToken;
 
 		bool m_useSSPI = false;
-		SQLRETURN Connect(SQLHANDLE* hConn, SQLHANDLE* hEvt);
 	};
 }
