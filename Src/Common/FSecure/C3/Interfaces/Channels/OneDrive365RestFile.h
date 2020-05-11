@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common/FSecure/WinHttp/HttpClient.h"
+#include "Common/FSecure/WinHttp/HttpRequest.h"
 #include "Common/FSecure/WinHttp/WebProxy.h"
 #include "Common/FSecure/WinHttp/Constants.h"
 #include "Common/FSecure/Crypto/String.h"
@@ -53,7 +54,11 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Check if request was successful.
 		/// @throws std::exception describing incorrect response if occurred.
-		void EvaluateResponse(WinHttp::HttpResponse const& resp);
+		void EvaluateResponse(WinHttp::HttpResponse const& resp, bool tryRefreshingToken = true);
+
+		/// Create request using internally stored token.
+		/// @param method, request type.
+		WinHttp::HttpRequest CreateAuthRequest(WinHttp::Method method = WinHttp::Method::GET);
 
 		/// In/Out names on the server.
 		std::string m_InboundDirectionName, m_OutboundDirectionName;

