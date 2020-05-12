@@ -150,8 +150,9 @@ std::vector<uint8_t> FSecure::AsanaApi::GetAttachmentById(std::string const& att
 	std::string downloadUrl = response[OBF("data")][OBF("download_url")];
 	// Then download the content of the attachment
 	std::string::size_type i = downloadUrl.find(OBF("#_=_")); // Got to remove the '#_=_' of the download string (cpprestsdk can't handle this)
-	if (i != std::string::npos)
+	if (i != std::string::npos) {
 		downloadUrl.erase(i, 4);
+	}
 	ByteVector content = SendHttpRequest(downloadUrl, ContentType::Text, {}, Method::GET, false); // Content type will be ignored, since data is empty
 	return std::vector<uint8_t>(std::make_move_iterator(content.begin()), std::make_move_iterator(content.end()));
 }
@@ -170,16 +171,17 @@ FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, 
 			request.SetData(contentType, data);
 		}
 
-		if (setAuthorizationHeader) // Only set Authorization header when needed (S3 doesn't like this header)
+		if (setAuthorizationHeader) { // Only set Authorization header when needed (S3 doesn't like this header)
 			request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
+		}
 
 		auto resp = webClient.Request(request);
 
-		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created)
+		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created) {
 			return resp.GetData();
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
+		} else if (resp.GetStatusCode() == StatusCode::TooManyRequests) {
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		else {
+		} else {
 			throw std::exception(OBF("[x] Non 200/201/429 HTTP Response\n"));
 		}
 	}
