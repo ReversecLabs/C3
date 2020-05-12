@@ -34,7 +34,7 @@ namespace FSecure::StringConversions
 	{
 		/// Detect character type stored by container.
 		template <typename T>
-		using CharT = std::remove_reference_t<decltype(std::declval<T>()[0])>;
+		using CharT = std::remove_const_t<std::remove_reference_t<decltype(std::declval<T>()[0])>>;
 
 		/// Detect view type corresponding to container.
 		template <typename T>

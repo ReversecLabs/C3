@@ -1,20 +1,14 @@
 #pragma once
 
-#include "Common/FSecure/WinHttp/HttpClient.h"
-#include "Common/FSecure/WinHttp/HttpRequest.h"
-#include "Common/FSecure/WinHttp/WebProxy.h"
-#include "Common/FSecure/WinHttp/Constants.h"
-#include "Common/FSecure/Crypto/String.h"
+#include "Office365.h"
 
 namespace FSecure::C3::Interfaces::Channels
 {
-	/// Implementation of the OneDrive 365 REST file Channel.
-	class OneDrive365RestFile : public Channel<OneDrive365RestFile>
+	class OneDrive365RestFile : public Channel<OneDrive365RestFile>, public Office365<OneDrive365RestFile>
 	{
 	public:
-		/// Public constructor.
-		/// @param arguments factory arguments.
-		OneDrive365RestFile(ByteView arguments);
+		/// Use Office365 constructor.
+		using Office365<OneDrive365RestFile>::Office365;
 
 		/// OnSend callback implementation.
 		/// @param blob data to send to Channel.
@@ -30,48 +24,17 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @return command result.
 		ByteVector OnRunCommand(ByteView command) override;
 
-		/// Get channel capability.
-		/// @returns ByteView view of channel capability.
-		static ByteView GetCapability();
-
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise O365 rate limit will heavily impact channel.
 		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 1000ms, s_MaxUpdateDelay = 1000ms;
 
-	protected:
-		/// Removes all file from server.
-		/// @param ByteView unused.
-		/// @returns ByteVector empty vector.
-		ByteVector RemoveAllFiles(ByteView);
+		/// Endpoint used to add file to OneDrive
+		static Crypto::String RootEndpoint;
 
-		/// Remove one file from server.
-		/// @param id of task.
-		void RemoveFile(std::string const& id);
-
-		/// Requests a new access token using the refresh token
-		/// @throws std::exception if token cannot be refreshed.
-		void RefreshAccessToken();
-
-		/// Check if request was successful.
-		/// @throws std::exception describing incorrect response if occurred.
-		void EvaluateResponse(WinHttp::HttpResponse const& resp, bool tryRefreshingToken = true);
-
-		/// Create request using internally stored token.
-		/// @param method, request type.
-		WinHttp::HttpRequest CreateAuthRequest(WinHttp::Method method = WinHttp::Method::GET);
-
-		/// In/Out names on the server.
-		std::string m_InboundDirectionName, m_OutboundDirectionName;
-
-		/// Username, password, client key and token for authentication.
-		Crypto::String m_Username, m_Password, m_ClientKey, m_Token;
-
-		/// Store any relevant proxy info
-		WinHttp::WebProxy m_ProxyConfig;
-
-
-		/// Used to delay every channel instance in case of server rate limit.
-		/// Set using information from 429 Too Many Requests header.
-		static std::atomic<std::chrono::steady_clock::time_point> s_TimePoint;
+		/// Endpoints used by Office365 methods.
+		static Crypto::String ItemEndpont;
+		static Crypto::String ListEndpoint;
+		static Crypto::String TokenEndpoit;
+		static Crypto::String Scope;
 	};
 }
