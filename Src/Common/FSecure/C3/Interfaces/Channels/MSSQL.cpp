@@ -27,15 +27,17 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 		if (!LogonUserA(user.c_str(), domain.c_str(), this->m_password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
 			throw std::runtime_error("[x] error creating Token");
+		auto userToken = WinTools::UniqueHandle(hToken);
 
-		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &m_impersonationToken))
+		HANDLE impersonationToken;
+		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &impersonationToken))
 			throw std::runtime_error("[x] error duplicating token");
 
-		CloseHandle(hToken);
+		m_impersonationToken = WinTools::UniqueHandle(impersonationToken);
 	}
 
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
 
 	//Initial SQL Query is to identify if m_tablename exists
 	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
@@ -55,7 +57,7 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 {
 	//connect to the database
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
 
 	size_t bytesWritten = 0;
 	std::string b64packet = "";
@@ -84,7 +86,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 {
 	//connect to the database
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
 
 	const auto stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
 	auto hStmt = conn.MakeStatement(stmt);
@@ -141,7 +143,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteV
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 {
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
+	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
 
 	{
 		const auto deleteStmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";

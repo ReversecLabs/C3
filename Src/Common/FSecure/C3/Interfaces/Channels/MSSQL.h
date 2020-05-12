@@ -1,8 +1,6 @@
 #pragma once
 
-#include <sqlext.h>
-#include <sqltypes.h>
-#include <sql.h>
+#include "Common/FSecure/WinTools/UniqueHandle.h"
 
 namespace FSecure::C3::Interfaces::Channels
 {
@@ -37,13 +35,13 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Explicit values used as the defaults for Channel's UpdateDelayJitter. Values can be changed later, at runtime.
 		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 1000ms, s_MaxUpdateDelay = 1000ms;
-	protected:
+
+	private:
 		/// The inbound direction name of data
 		std::string m_inboundDirectionName;
 
 		/// The outbound direction name, the opposite of m_inboundDirectionName
 		std::string m_outboundDirectionName;
-	private:
 		/// The server name to handle communication
 		std::string m_servername;
 
@@ -59,7 +57,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// The password for the user
 		std::string m_password;
 
-		HANDLE m_impersonationToken;
+		WinTools::UniqueHandle m_impersonationToken;
 
 		bool m_useSSPI = false;
 	};
