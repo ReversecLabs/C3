@@ -9,7 +9,7 @@ namespace FSecure::C3::Interfaces::Channels
 	/// Implementation of a File Channel.
 	struct MSSQL : public Channel<MSSQL>
 	{
-	
+
 		/// Public constructor.
 		/// @param arguments factory arguments.
 		MSSQL(ByteView arguments);

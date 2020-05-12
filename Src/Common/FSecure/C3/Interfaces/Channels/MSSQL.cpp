@@ -16,7 +16,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
 	ByteReader{ arguments }.Read(m_servername, m_databasename, m_tablename, m_useSSPI, m_username, m_password);
-	
+
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
 
 	//create a new impersonation token and inject it into the current thread.
@@ -35,7 +35,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 		CloseHandle(hToken);
 	}
-	
+
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
 		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 
@@ -44,7 +44,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	//Initial SQL Query is to identify if m_tablename exists
 	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
 	SQLRETURN retCode = SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS);
-	
+
 	if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO)
 	{
 		throw std::runtime_error(OBF("[x] Unable to get DB schema"));
@@ -53,9 +53,9 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	//if there are no rows then the table doesn't exist - so create it
 	if (SQLFetch(hStmt) != SQL_SUCCESS)
 	{
-														
+
 		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
-		
+
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
 
@@ -67,7 +67,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 			throw std::runtime_error(OBF("[x] Unable to create table"));
 		}
 	}
-	
+
 	//cleanup
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 	SQLDisconnect(hConn);
@@ -80,40 +80,40 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 {
 	//connect to the database
 	SQLHANDLE hConn = NULL, hStmt = NULL, hEvt = NULL;
-	
+
 	if (Connect(&hConn, &hEvt) == SQL_ERROR)
 		throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 
 
 	SQLAllocHandle(SQL_HANDLE_STMT, hConn, &hStmt);
-	
+
 	int bytesWritten = 0;
 	std::string b64packet = "";
 	std::string strpacket = "";
 	int actualPacketSize = 0;
-	
+
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
-	if (packet.size() > MAX_MSG_BYTES) 
+	if (packet.size() > MAX_MSG_BYTES)
 	{
-		
+
 		actualPacketSize = std::min((size_t)MAX_MSG_BYTES, packet.size());
 		strpacket = packet.SubString(0, actualPacketSize);
 
 		b64packet = cppcodec::base64_rfc4648::encode(strpacket.data(), strpacket.size());
 		bytesWritten = strpacket.size();
 	}
-	else 
+	else
 	{
 		b64packet = cppcodec::base64_rfc4648::encode(packet.data(), packet.size());
 		bytesWritten = packet.size();
 	}
 
 	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
-	
+
 	if (SQLExecDirectA(hStmt, (SQLCHAR*)stmtString.c_str(), SQL_NTS) != SQL_SUCCESS)
 		throw std::runtime_error(OBF("[x] Could not insert data\n"));
 
-	
+
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 	SQLDisconnect(hConn);
 	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
@@ -136,8 +136,8 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 
 	std::vector<ByteVector> messages;
 	std::vector<json> data;
-	
-	while (SQLFetch(hStmt) == SQL_SUCCESS) 
+
+	while (SQLFetch(hStmt) == SQL_SUCCESS)
 	{
 		SQLCHAR ret[DATA_LEN];
 		SQLLEN len;
@@ -150,10 +150,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		id = (char*)ret;
 		json j;
 		j[OBF("id")] = id;
-	
+
 		//Get the MSG column
 		SQLGetData(hStmt, MSG_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
-		
+
 		output += (char*)ret;
 
 		if (len > DATA_LEN)
@@ -169,7 +169,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		j[OBF("msg")] = output.c_str();
 		data.push_back(j);
 	}
-	
+
 	std::string idList = "";
 	stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (");
 
@@ -181,7 +181,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 
 		//add the message to the messages vector
 		auto m = cppcodec::base64_rfc4648::decode(msg[OBF("msg")].get<std::string>());
-		
+
 		messages.push_back(std::move(m));
 	}
 
@@ -194,11 +194,11 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 
 		//Remove the trailing "," from the idList
 		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
-		
+
 		//Delete all of the rows we have just read
 		SQLExecDirectA(hStmt, (SQLCHAR*)stmt.c_str(), SQL_NTS);
 	}
-	
+
 	SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 	SQLDisconnect(hConn);
 	SQLFreeHandle(SQL_HANDLE_DBC, hConn);
@@ -227,7 +227,7 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 			if (!SetThreadToken(NULL, this->m_impersonationToken))
 				throw std::runtime_error("[x] error setting token");
 		}
-			
+
 		connString = OBF("DRIVER={SQL Server};SERVER=") + this->m_servername + OBF(", 1433;") + OBF("DATABASE=") + this->m_databasename + OBF(";Integrated Security=SSPI;");
 	}
 	else
@@ -236,7 +236,7 @@ SQLRETURN FSecure::C3::Interfaces::Channels::MSSQL::Connect(SQLHANDLE* hConn, SQ
 
 
 	SQLRETURN retCode = SQLDriverConnectA(lhConn, NULL, (SQLCHAR*)connString.c_str(), SQL_NTS, ret, DATA_LEN, NULL, SQL_DRIVER_NOPROMPT);
-	
+
 	//Pointer dereferencing is done here to make the code easier to read
 	*hConn = lhConn;
 	*hEvt = lhEvt;
@@ -353,6 +353,6 @@ const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 	]
 }
 )_";
- 
+
 }
 
