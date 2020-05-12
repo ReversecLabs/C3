@@ -5,12 +5,6 @@
 #include <sql.h>
 #include "Common/FSecure/Crypto/Base64.h"
 
-#define DATA_LEN 4096
-#define ID_COLUMN 1
-#define MSGID_COLUMN 2
-#define MSG_COLUMN 3
-#define MAX_MSG_BYTES 700000000
-
 namespace FSecure::Sql
 {
 	inline namespace Handle
@@ -19,7 +13,7 @@ namespace FSecure::Sql
 		{
 			struct SqlHandleDeleter
 			{
-				SqlHandleDeleter(SQLSMALLINT type) : m_Type{ type } noexcept
+				SqlHandleDeleter(SQLSMALLINT type) noexcept : m_Type{ type }
 				{
 				}
 
@@ -51,7 +45,7 @@ namespace FSecure::Sql
 						default: return "";
 						}
 					};
-					throw std::runtime_error(OBF_STR("SQLAllocHandle for failed. handle type = ") + GetTypeString(type));
+					throw std::runtime_error(OBF_STR("SQLAllocHandle for failed. handle type: ") + GetTypeString(type));
 				}
 				return SqlHandle(tmp, { type });
 			}
@@ -81,16 +75,17 @@ namespace FSecure::Sql
 			std::string GetString(SQLSMALLINT columnNumber)
 			{
 				std::string out;
+				constexpr auto bufferSize = 4096;
 				SQLLEN dataLen = 0;
 				do
 				{
-					SQLCHAR buf[DATA_LEN];
+					SQLCHAR buf[bufferSize];
 					auto oldSize = out.size();
-					auto status = SQLGetData(m_Stmt.get(), columnNumber, SQL_CHAR, buf, DATA_LEN, &dataLen);
+					auto status = SQLGetData(m_Stmt.get(), columnNumber, SQL_CHAR, buf, bufferSize, &dataLen);
 					if (status == SQL_ERROR)
 						throw std::runtime_error{ OBF("Failed to read data. coulmn number") + std::to_string(columnNumber) };
 					out += reinterpret_cast<char*>(buf);
-				} while (dataLen > DATA_LEN || dataLen == SQL_NO_TOTAL);
+				} while (dataLen > bufferSize || dataLen == SQL_NO_TOTAL);
 				return out;
 			}
 
@@ -121,11 +116,10 @@ namespace FSecure::Sql
 					connString = OBF("DRIVER={SQL Server};SERVER=") + servername + OBF(", 1433;") + OBF("DATABASE=") + databasename + OBF(";UID=") + username + OBF(";PWD=") + password;
 				}
 
-				SQLCHAR ret[DATA_LEN];
-				SQLSMALLINT retSize = 0;
 				if (connString.size() > std::numeric_limits<SQLSMALLINT>::max())
 					throw std::runtime_error{ OBF("Connection string too long") };
-				SQLRETURN retCode = SQLDriverConnectA(m_Connection.get(), NULL, (SQLCHAR*)connString.c_str(), static_cast<SQLSMALLINT>(connString.size()), ret, DATA_LEN, &retSize, SQL_DRIVER_NOPROMPT);
+
+				SQLRETURN retCode = SQLDriverConnectA(m_Connection.get(), NULL, (SQLCHAR*)connString.c_str(), static_cast<SQLSMALLINT>(connString.size()), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
 				if (retCode == SQL_ERROR)
 					throw std::runtime_error(OBF("[x] Unable to connect to MSSQL database"));
 			}
@@ -162,6 +156,14 @@ namespace FSecure::Sql
 			Detail::SqlHandle m_Env;
 		};
 	}
+}
+
+namespace
+{
+	constexpr static auto ID_COLUMN = 1;
+	constexpr static auto MSGID_COLUMN = 2;
+	constexpr static auto MSG_COLUMN = 3;
+	constexpr static auto MAX_MSG_BYTES = 700000000;
 }
 
 FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
@@ -212,16 +214,11 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 
 	size_t bytesWritten = 0;
 	std::string b64packet = "";
-	std::string strpacket = "";
-	size_t actualPacketSize = 0;
 
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
 	if (packet.size() > MAX_MSG_BYTES)
 	{
-
-		actualPacketSize = std::min((size_t)MAX_MSG_BYTES, packet.size());
-		strpacket = packet.SubString(0, actualPacketSize);
-
+		auto strpacket = packet.SubString(0, MAX_MSG_BYTES);
 		b64packet = cppcodec::base64_rfc4648::encode(strpacket.data(), strpacket.size());
 		bytesWritten = strpacket.size();
 	}
@@ -244,7 +241,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
 
-	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
+	const auto stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
 	auto hStmt = conn.MakeStatement(stmt);
 	hStmt.Execute();
 
@@ -263,13 +260,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		messages.push_back(std::move(packet));
 	}
 
+	//build a string '1','2','3',....,'N'
 	std::string idList = "";
 	for (auto &id : ids)
-	{
-		//build a string '1','2','3',....,'N'
-		idList += OBF("'") + id;
-		idList += OBF("',");
-	}
+		idList += OBF("'") + id + OBF("',");
 
 	//no need to send an empty delete command
 	if (ids.size() > 0)
@@ -277,7 +271,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		//Remove the trailing "," from the idList
 		idList.pop_back();
 
-		stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (") + idList + OBF(");");;
+		const auto stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (") + idList + OBF(");");;
 		auto deleteStmt = conn.MakeStatement(stmt);
 		//Delete all of the rows we have just read
 		deleteStmt.Execute();
@@ -301,81 +295,82 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteV
 
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 {
-	//connect to the database
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
 
-	std::string stmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
-	auto hStmt = conn.MakeStatement(stmt);
-	hStmt.Execute();
+	{
+		const auto deleteStmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
+		auto hStmt = conn.MakeStatement(deleteStmt);
+		hStmt.Execute();
+	}
 
-	//reset the ID to 0
-	stmt = "DBCC CHECKIDENT('dbo." + this->m_tablename + "', RESEED, 0)";
-	auto resetStmt = conn.MakeStatement(stmt);
-	resetStmt.Execute();
+	{
+		//reset the ID to 0
+		const auto resetStmt = OBF("DBCC CHECKIDENT('dbo.") + this->m_tablename + OBF("', RESEED, 0)");
+		auto hStmt = conn.MakeStatement(resetStmt);
+		hStmt.Execute();
+	}
 	return {};
 }
 
 const char* FSecure::C3::Interfaces::Channels::MSSQL::GetCapability()
 {
 	return R"_(
-            {
-                "create": {
-		            "arguments":
-		            [
-			            [
-				            {
-					            "type": "string",
-					            "name": "Input ID",
-					            "min": 4,
-					            "randomize": true,
-					            "description": "Used to distinguish packets for the channel"
-				            },
-				            {
-					            "type": "string",
-					            "name": "Output ID",
-					            "min": 4,
-					            "randomize": true,
-					            "description": "Used to distinguish packets from the channel"
-				            }
-			            ],
-			            {
-				            "type": "string",
-				            "name": "Server Name",
-				            "description": "The Host of the target database"
-			            },
-			            {
-				            "type": "string",
-				            "name": "Database Name",
-				            "description": "The name of the database to write to"
-			            },
-			            {
-				            "type": "string",
-				            "name": "Table Name",
-				            "description": "The name of the table to write to"
-			            },
-						{
-				            "type": "string",
-				            "name": "Username",
-				            "description": "The username used to authenticate to the database. If using a domain user put in the format DOMAIN\\Username",
-							"min": 0
-			            },
-			            {
-				            "type": "string",
-				            "name": "Password",
-				            "description": "The password used to authenticate to the database",
-							"min": 0
-			            },
-						{
-							"type": "boolean",
-							"name": "Use Integrated Security (SSPI) - use for domain joined accounts",
-							"description": "Set this to true and provide a domain\\username and password to perform token impersonation OR Set this to true and provide no credentials and the current process token will be used with SSPI",
-							"defaultValue": false
-						}
-		            ]
-                },
-               "commands":
-	[
+{
+	"create": {
+		"arguments": [
+			[
+				{
+					"type": "string",
+					"name": "Input ID",
+					"min": 4,
+					"randomize": true,
+					"description": "Used to distinguish packets for the channel"
+				},
+				{
+					"type": "string",
+					"name": "Output ID",
+					"min": 4,
+					"randomize": true,
+					"description": "Used to distinguish packets from the channel"
+				}
+			],
+			{
+				"type": "string",
+				"name": "Server Name",
+				"description": "The Host of the target database"
+			},
+			{
+				"type": "string",
+				"name": "Database Name",
+				"description": "The name of the database to write to"
+			},
+			{
+				"type": "string",
+				"name": "Table Name",
+				"description": "The name of the table to write to"
+			},
+			{
+				"type": "string",
+				"name": "Username",
+				"description": "The username used to authenticate to the database. If using a domain user put in the format DOMAIN\\Username",
+				"min": 0
+			},
+			{
+				"type": "string",
+				"name": "Password",
+				"description": "The password used to authenticate to the database",
+				"min": 0
+			},
+			{
+				"type": "boolean",
+				"name": "Use Integrated Security (SSPI) - use for domain joined accounts",
+				"description": "Set this to true and provide a domain\\username and password to perform token impersonation OR Set this to true and provide no credentials and the current process token will be used with SSPI",
+				"defaultValue": false
+			}
+		]
+	},
+	"commands": [
 		{
 			"name": "Clear DB Table",
 			"id": 0,
