@@ -79,7 +79,7 @@ namespace FSecure
 		FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, WinHttp::ContentType contentType, std::vector<uint8_t> const& data, WinHttp::Method method, bool setAuthorizationHeader = true);
 
 		/// Send http request, uses preset token for authentication
-		FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, std::wstring contentType, std::vector<uint8_t> const& data, WinHttp::Method method, bool setAuthorizationHeader = true);
+		FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, std::wstring const& contentType, std::vector<uint8_t> const& data, WinHttp::Method method, bool setAuthorizationHeader = true);
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data, WinHttp::Method method);

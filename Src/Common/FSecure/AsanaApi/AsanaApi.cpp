@@ -156,7 +156,7 @@ FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, 
 	return SendHttpRequest(host, GetContentType(contentType), data, method, setAuthorizationHeader);
 }
 
-FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, std::wstring contentType, std::vector<uint8_t> const& data, FSecure::WinHttp::Method method, bool setAuthorizationHeader) {
+FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, std::wstring const& contentType, std::vector<uint8_t> const& data, FSecure::WinHttp::Method method, bool setAuthorizationHeader) {
 	while (true) {
 		HttpClient webClient(ToWideString(host), m_ProxyConfig);
 		HttpRequest request;
