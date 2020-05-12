@@ -59,11 +59,18 @@ namespace FSecure::Sql
 		class Statement
 		{
 		public:
-			Statement(SQLHANDLE connection) : m_Stmt{Detail::MakeSqlHandle(SQL_HANDLE_STMT, connection)}
+			Statement(SQLHANDLE connection, std::string statement) : m_Stmt{Detail::MakeSqlHandle(SQL_HANDLE_STMT, connection)}, m_StmtString{std::move(statement)}
 			{
+				if (m_StmtString.size() > std::numeric_limits<SQLINTEGER>::max())
+					throw std::runtime_error{ OBF("Statement too long") };
 			}
 
-			void SetStatement(std::string stmt) { m_StmtString = std::move(stmt); }
+			void Execute()
+			{
+				SQLRETURN retCode = SQLExecDirectA(m_Stmt.get(), (SQLCHAR*)m_StmtString.c_str(), static_cast<SQLINTEGER>(m_StmtString.size()));
+				if (retCode == SQL_ERROR)
+					throw std::runtime_error{ OBF("Failed to execute statement: ") + m_StmtString.substr(0, 80)};
+			}
 
 			/* [[deprecated]] */ SQLHANDLE Get() { return m_Stmt.get();  }
 
@@ -108,9 +115,9 @@ namespace FSecure::Sql
 				SQLDisconnect(m_Connection.get());
 			}
 
-			Statement MakeStatement()
+			Statement MakeStatement(std::string statement)
 			{
-				return Statement(m_Connection.get());
+				return Statement(m_Connection.get(), std::move(statement));
 			}
 
 		private:
@@ -162,31 +169,18 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
-	auto hStmt = conn.MakeStatement();
 
 	//Initial SQL Query is to identify if m_tablename exists
 	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
-	SQLRETURN retCode = SQLExecDirectA(hStmt.Get(), (SQLCHAR*)stmtString.c_str(), SQL_NTS);
-
-	if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO)
-	{
-		throw std::runtime_error(OBF("[x] Unable to get DB schema"));
-	}
+	auto hStmt = conn.MakeStatement(stmtString);
+	hStmt.Execute();
 
 	//if there are no rows then the table doesn't exist - so create it
 	if (SQLFetch(hStmt.Get()) != SQL_SUCCESS)
 	{
 		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
-
-		auto createStatement = conn.MakeStatement();
-
-		retCode = SQLExecDirectA(createStatement.Get(), (SQLCHAR*)stmtString.c_str(), SQL_NTS);
-
-		//couldn't create the table so don't continue
-		if (retCode != SQL_SUCCESS && retCode != SQL_SUCCESS_WITH_INFO)
-		{
-			throw std::runtime_error(OBF("[x] Unable to create table"));
-		}
+		auto createStatement = conn.MakeStatement(stmtString);
+		createStatement.Execute();
 	}
 }
 
@@ -195,12 +189,11 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	//connect to the database
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
-	auto hStmt = conn.MakeStatement();
 
-	int bytesWritten = 0;
+	size_t bytesWritten = 0;
 	std::string b64packet = "";
 	std::string strpacket = "";
-	int actualPacketSize = 0;
+	size_t actualPacketSize = 0;
 
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
 	if (packet.size() > MAX_MSG_BYTES)
@@ -219,9 +212,8 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	}
 
 	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
-
-	if (SQLExecDirectA(hStmt.Get(), (SQLCHAR*)stmtString.c_str(), SQL_NTS) != SQL_SUCCESS)
-		throw std::runtime_error(OBF("[x] Could not insert data\n"));
+	auto hStmt = conn.MakeStatement(stmtString);
+	hStmt.Execute();
 
 	return bytesWritten;
 }
@@ -231,10 +223,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	//connect to the database
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
-	auto hStmt = conn.MakeStatement();
 
 	std::string stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
-	SQLExecDirectA(hStmt.Get(), (SQLCHAR*)stmt.c_str(), SQL_NTS);
+	auto hStmt = conn.MakeStatement(stmt);
+	hStmt.Execute();
 
 	std::vector<ByteVector> messages;
 	std::vector<json> data;
@@ -290,14 +282,12 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	//no need to send an empty delete command
 	if (messages.size() > 0)
 	{
-		//delete the row in the DB
-		auto deleteStmt = conn.MakeStatement();
-
 		//Remove the trailing "," from the idList
 		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
 
+		auto deleteStmt = conn.MakeStatement(stmt);
 		//Delete all of the rows we have just read
-		SQLExecDirectA(deleteStmt.Get(), (SQLCHAR*)stmt.c_str(), SQL_NTS);
+		deleteStmt.Execute();
 	}
 
 	return messages;
@@ -321,15 +311,15 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 	//connect to the database
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken);
-	auto hStmt = conn.MakeStatement();
 
 	std::string stmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
-	SQLExecDirectA(hStmt.Get(), (SQLCHAR*)stmt.c_str(), SQL_NTS);
+	auto hStmt = conn.MakeStatement(stmt);
+	hStmt.Execute();
 
-	auto resetStmt = conn.MakeStatement();
 	//reset the ID to 0
 	stmt = "DBCC CHECKIDENT('dbo." + this->m_tablename + "', RESEED, 0)";
-	SQLExecDirectA(resetStmt.Get(), (SQLCHAR*)stmt.c_str(), SQL_NTS);
+	auto resetStmt = conn.MakeStatement(stmt);
+	resetStmt.Execute();
 	return {};
 }
 
