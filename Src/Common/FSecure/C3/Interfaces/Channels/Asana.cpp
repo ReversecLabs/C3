@@ -25,8 +25,8 @@ size_t FSecure::C3::Interfaces::Channels::Asana::OnSendToChannel(ByteView data)
 		// Data size is larger than treshold, proceeding by putting data in the task's attachment
 		std::string attachmentName = OBF("Screenshot.jpg"); // inconspicuous attachment name
 		// Make sure we're not sending more than 100MB in attachment (this check is probably overly cautious)
-		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(104'857'600);
-		size_t actualPacketSize = std::min(maxPacketSize, data.size());
+		size_t maxMessageSize = 104'857'600 - m_attachmentPrefix.size();
+		size_t actualPacketSize = std::min(maxMessageSize, data.size());
 		ByteVector sendData = data.SubString(0, actualPacketSize);
 		// Prepend the prefix to the payload
 		sendData.insert(sendData.begin(), m_attachmentPrefix.begin(), m_attachmentPrefix.end());
