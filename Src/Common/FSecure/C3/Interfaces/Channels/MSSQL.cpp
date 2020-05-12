@@ -19,7 +19,7 @@ namespace FSecure::Sql
 		{
 			struct SqlHandleDeleter
 			{
-				SqlHandleDeleter(SQLSMALLINT type) : m_Type{ type }
+				SqlHandleDeleter(SQLSMALLINT type) : m_Type{ type } noexcept
 				{
 				}
 
@@ -33,6 +33,7 @@ namespace FSecure::Sql
 			};
 
 			using SqlHandle = std::unique_ptr<std::remove_pointer_t<SQLHANDLE>, SqlHandleDeleter>;
+
 			SqlHandle MakeSqlHandle(SQLSMALLINT type, SQLHANDLE parent = SQL_NULL_HANDLE)
 			{
 				SQLHANDLE tmp;
@@ -72,7 +73,26 @@ namespace FSecure::Sql
 					throw std::runtime_error{ OBF("Failed to execute statement: ") + m_StmtString.substr(0, 80)};
 			}
 
-			/* [[deprecated]] */ SQLHANDLE Get() { return m_Stmt.get();  }
+			SQLRETURN Fetch()
+			{
+				return SQLFetch(m_Stmt.get());
+			}
+
+			std::string GetString(SQLSMALLINT columnNumber)
+			{
+				std::string out;
+				SQLLEN dataLen = 0;
+				do
+				{
+					SQLCHAR buf[DATA_LEN];
+					auto oldSize = out.size();
+					auto status = SQLGetData(m_Stmt.get(), columnNumber, SQL_CHAR, buf, DATA_LEN, &dataLen);
+					if (status == SQL_ERROR)
+						throw std::runtime_error{ OBF("Failed to read data. coulmn number") + std::to_string(columnNumber) };
+					out += reinterpret_cast<char*>(buf);
+				} while (dataLen > DATA_LEN || dataLen == SQL_NO_TOTAL);
+				return out;
+			}
 
 		private:
 			Detail::SqlHandle m_Stmt;
@@ -176,7 +196,7 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 	hStmt.Execute();
 
 	//if there are no rows then the table doesn't exist - so create it
-	if (SQLFetch(hStmt.Get()) != SQL_SUCCESS)
+	if (hStmt.Fetch() != SQL_SUCCESS)
 	{
 		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
 		auto createStatement = conn.MakeStatement(stmtString);
@@ -228,63 +248,36 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 	auto hStmt = conn.MakeStatement(stmt);
 	hStmt.Execute();
 
+	std::vector<std::string> ids;
 	std::vector<ByteVector> messages;
-	std::vector<json> data;
 
-	while (SQLFetch(hStmt.Get()) == SQL_SUCCESS)
+	while (hStmt.Fetch() == SQL_SUCCESS)
 	{
-		SQLCHAR ret[DATA_LEN];
-		SQLLEN len;
-
-		std::string output;
-		std::string id;
-
 		//get the ID
-		SQLGetData(hStmt.Get(), ID_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
-		id = (char*)ret;
-		json j;
-		j[OBF("id")] = id;
+		auto id = hStmt.GetString(ID_COLUMN);
+		ids.push_back(id);
 
 		//Get the MSG column
-		SQLGetData(hStmt.Get(), MSG_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
-
-		output += (char*)ret;
-
-		if (len > DATA_LEN)
-		{
-			//loop until there is no data left
-			while (len > DATA_LEN)
-			{
-				SQLGetData(hStmt.Get(), MSG_COLUMN, SQL_CHAR, ret, DATA_LEN, &len);
-				output += (char*)ret;
-			}
-
-		}
-		j[OBF("msg")] = output.c_str();
-		data.push_back(j);
+		auto output = hStmt.GetString(MSG_COLUMN);
+		auto packet = cppcodec::base64_rfc4648::decode(output);
+		messages.push_back(std::move(packet));
 	}
 
 	std::string idList = "";
-	stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (");
-
-	for (auto &msg : data)
+	for (auto &id : ids)
 	{
 		//build a string '1','2','3',....,'N'
-		idList += OBF("'") + msg[OBF("id")].get<std::string>();
+		idList += OBF("'") + id;
 		idList += OBF("',");
-
-		//add the message to the messages vector
-		auto m = cppcodec::base64_rfc4648::decode(msg[OBF("msg")].get<std::string>());
-
-		messages.push_back(std::move(m));
 	}
 
 	//no need to send an empty delete command
-	if (messages.size() > 0)
+	if (ids.size() > 0)
 	{
 		//Remove the trailing "," from the idList
-		stmt += idList.substr(0, idList.size() - 1) + OBF(");");
+		idList.pop_back();
 
+		stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (") + idList + OBF(");");;
 		auto deleteStmt = conn.MakeStatement(stmt);
 		//Delete all of the rows we have just read
 		deleteStmt.Execute();
