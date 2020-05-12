@@ -113,12 +113,7 @@ std::string FSecure::AsanaApi::CreateSectionIdByName(std::string const& sectionN
 std::string FSecure::AsanaApi::AddAttachmentToTask(std::string const& taskId, std::vector<uint8_t> const& attachmentBody, std::string const& attachmentFileName, std::string const& attachmentMimeType) {
 	std::string url = OBF("https://app.asana.com/api/1.0/tasks/") + taskId + OBF("/attachments");
 	// Generating body
-	const std::string boundary_prefix(OBF("------WebKitFormBoundary")); // Mimicking WebKit
-	const std::string alphabet(OBF("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-	std::string boundary = boundary_prefix;
-	for (int i = 0; i < 16; i++) { // Generate random boundary string
-		boundary.push_back(alphabet[rand() % alphabet.size()]);
-	}
+	std::string boundary = OBF("------WebKitFormBoundary") + Utils::GenerateRandomString(16); // Mimicking WebKit, generate random boundary string
 	// Building the multipart body (prefix + attachment + suffix)
 	std::vector<uint8_t> body;
 	std::string bodyPrefix = OBF("\r\n");
