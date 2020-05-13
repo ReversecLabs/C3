@@ -25,6 +25,13 @@ namespace FSecure
 		/// @param data - the text of the message
 		void WriteMessageToFile(std::string const& direction, ByteView data);
 
+		/// Upload a file in its entirety to Dropbox.
+		/// @param path - path to file for upload
+		void UploadFile(std::string const& path);
+
+		/// Delete channel folder and all files within
+		void DeleteAllFiles();
+
 		/// Set the channel (i.e. Dropbox folder) that this object uses for communications
 		/// @param channelName - the channel name Id (not name), for example CGPMGFGSH.
 		void SetChannel(std::string const& channelName);
@@ -53,7 +60,6 @@ namespace FSecure
 		/// @return - string of file content
 		FSecure::ByteVector ReadFile(std::string const& filename);
 
-
 		/// Delete a file
 		/// @param filename - the full path of the file on Dropbox.
 		void DeleteFile(std::string const& filename);
@@ -70,7 +76,9 @@ namespace FSecure
 		WinHttp::WebProxy m_ProxyConfig;
 
 		/// Send http request, uses preset token for authentication
-		FSecure::ByteVector SendHttpRequest(std::string const& host, std::string const& header="", std::optional<WinHttp::ContentType> contentType={}, std::string const& data="");
+		FSecure::ByteVector SendHttpRequest(std::string const& host, std::string const& header = "", std::optional<WinHttp::ContentType> contentType = {}, ByteView data = {});
+
+		FSecure::ByteVector SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data);
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data);

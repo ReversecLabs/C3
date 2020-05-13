@@ -47,6 +47,35 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnR
 	return ret;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FSecure::ByteVector FSecure::C3::Interfaces::Channels::Dropbox::OnRunCommand(ByteView command)
+{
+	auto commandCopy = command; //each read moves ByteView. CommandCopy is needed  for default.
+	switch (command.Read<uint16_t>())
+	{
+	case 0:
+		UploadFile(command);
+		return {};
+	case 1:
+		DeleteAllFiles();
+		return {};
+	default:
+		return AbstractChannel::OnRunCommand(commandCopy);
+	}
+}
+
+void FSecure::C3::Interfaces::Channels::Dropbox::UploadFile(ByteView args)
+{
+	m_dropboxObj.UploadFile(args.Read<std::string>());
+}
+
+
+void FSecure::C3::Interfaces::Channels::Dropbox::DeleteAllFiles()
+{
+	m_dropboxObj.DeleteAllFiles();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 {
@@ -87,7 +116,28 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 			}
 		]
 	},
-	"commands": []
+	"commands": 
+	[
+		{
+			"name": "Upload File from Relay",
+			"id": 0,
+			"description": "Upload file from host running Relay directly to Dropbox (150mb max.)",
+			"arguments": 
+			[
+				{
+                    "type" : "string",
+					"name": "Remote Filepath",
+					"description" : "Path to upload."
+				}
+			]
+		},
+		{
+			"name": "Remove All Files",
+			"id": 1,
+			"description": "Delete channel folder and all files within it.",
+			"arguments": []
+		}
+	]
 }
 )_";
 }

