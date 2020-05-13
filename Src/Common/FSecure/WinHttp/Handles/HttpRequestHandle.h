@@ -91,6 +91,19 @@ namespace FSecure::WinHttp
 				Detail::ThrowLastError(OBF("SendRequest failed"));
 		}
 
+		/// Sets timeouts involved with HTTP transactions.
+		/// Effectively calls WinHttpSetTimeouts
+		/// Providing zero as timeout means no timeout (infinite).
+		/// @param resolveTimeout - timeout for name resolution
+		/// @param connectTimeout - timeout for server connection requests
+		/// @param sendTimeout - timeout for sending requests
+		/// @param receiveTimeout - timeout to receive a response to a request
+		void SetTimeout(std::chrono::milliseconds resolveTimeout, std::chrono::milliseconds connectTimeout, std::chrono::milliseconds sendTimeout, std::chrono::milliseconds receiveTimeout)
+		{
+			if (!WinHttpSetTimeouts(m_RequestHandle.get(), static_cast<int>(resolveTimeout.count()), static_cast<int>(connectTimeout.count()), static_cast<int>(sendTimeout.count()), static_cast<int>(receiveTimeout.count())))
+				Detail::ThrowLastError(OBF("SetTimeout failed"));
+		}
+
 		/// Receive request response
 		/// Transfers ownership of handle to returned HttpResponse
 		/// Effectively calls WinHttpReceiveResponse
