@@ -82,7 +82,10 @@ void FSecure::Dropbox::UploadFile(std::string const& path)
 	j[OBF("strict_conflict")] = true;
 
 	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload");
-	
+
+
+
+	//std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload_session/start");
 	SendHttpRequest(url, j.dump(), ContentType::ApplicationOctetstream, packet);
 }
 
@@ -226,6 +229,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		HttpClient webClient(ToWideString(host), m_ProxyConfig);
 		HttpRequest request; // default request is GET
 		request.m_Method = Method::POST;
+		request.SetTimeout({}, 60s, 0ms, 0ms);
 
 		if (contentType && !data.empty())
 		{
@@ -255,6 +259,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		HttpClient webClient(ToWideString(host), m_ProxyConfig);
 		HttpRequest request; // default request is GET
 		request.m_Method = Method::POST;
+		request.SetTimeout({}, 60s, 0ms, 0ms);
 
 		if (contentType && !data.empty())
 		{
