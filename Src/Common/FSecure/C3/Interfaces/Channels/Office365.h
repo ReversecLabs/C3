@@ -36,26 +36,24 @@ namespace FSecure::C3::Interfaces::Channels
 		static ByteView GetCapability();
 
 	protected:
-		/// Remove one file from server.
+		/// Remove one item from server.
 		/// @param id of task.
-		void RemoveFile(std::string const& id)
+		void RemoveItem(std::string const& id)
 		{
-			auto webClient = HttpClient{ Convert<Utf16>(Derived::ItemEndpont.Decrypt()  + SecureString{id}), m_ProxyConfig };
+			auto webClient = HttpClient{ Convert<Utf16>(Derived::ItemEndpoint.Decrypt()  + SecureString{id}), m_ProxyConfig };
 			auto request = CreateAuthRequest(Method::DEL);
 			auto resp = webClient.Request(request);
 
 			if (resp.GetStatusCode() > 205)
-				throw std::runtime_error{ OBF("RemoveFile() Error. Task ") + id + OBF(" could not be deleted. HTTP response:") + std::to_string(resp.GetStatusCode()) };
+				throw std::runtime_error{ OBF("RemoveItem() Error. Task ") + id + OBF(" could not be deleted. HTTP response:") + std::to_string(resp.GetStatusCode()) };
 		}
 
-		/// Removes all file from server.
-		/// @param ByteView unused.
-		/// @returns ByteVector empty vector.
-		void RemoveAllFiles()
+		/// Removes all items from server.
+		void RemoveAllItems()
 		{
 			auto fileList = ListData();
 			for (auto& element : fileList.at(OBF("value")))
-				RemoveFile(element.at(OBF("id")).get<std::string>());
+				RemoveItem(element.at(OBF("id")).get<std::string>());
 		}
 
 		/// Requests a new access token using the refresh token
@@ -65,11 +63,9 @@ namespace FSecure::C3::Interfaces::Channels
 			try
 			{
 				//Token endpoint
-				auto webClient = HttpClient{ Convert<Utf16>(Derived::TokenEndpoit.Decrypt()), m_ProxyConfig };
+				auto webClient = HttpClient{ Convert<Utf16>(Derived::TokenEndpoint.Decrypt()), m_ProxyConfig };
 
 				auto request = HttpRequest{ Method::POST };
-				request.SetHeader(Header::ContentType, OBF(L"application/x-www-form-urlencoded; charset=utf-16"));
-
 				auto requestBody = SecureString{};
 				requestBody += OBF("grant_type=password");
 				requestBody += OBF("&scope=");

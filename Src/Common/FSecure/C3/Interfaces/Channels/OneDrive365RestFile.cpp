@@ -10,14 +10,15 @@
 
 // Namespaces.
 using json = nlohmann::json;
+using base64 = cppcodec::base64_rfc4648;
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::RootEndpoint = OBF("https://graph.microsoft.com/v1.0/me/drive/root:/");
-FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::ItemEndpont = OBF("https://graph.microsoft.com/v1.0/me/drive/items/");
+FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::ItemEndpoint = OBF("https://graph.microsoft.com/v1.0/me/drive/items/");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::ListEndpoint = OBF("https://graph.microsoft.com/v1.0/me/drive/root/children");
-FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::TokenEndpoit = OBF("https://login.windows.net/organizations/oauth2/v2.0/token");
+FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::TokenEndpoint = OBF("https://login.windows.net/organizations/oauth2/v2.0/token");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::Scope = OBF("files.readwrite.all");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,11 +33,11 @@ size_t FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(B
 		auto webClient = HttpClient{ Convert<Utf16>(URLwithFilename), m_ProxyConfig };
 		auto request = CreateAuthRequest(Method::PUT);
 
-		auto chunkSize = std::min<size_t>(data.size(), 3 * (1024 * 1024 - 64)); // Send max 4 MB. base64 will expand data by 4/3. 256 bytes are reserved for json schema.
+		auto chunkSize = std::min<size_t>(data.size(), base64::decoded_max_size(4 * 1024 * 1024 - 256)); // Send max 4 MB. 256 bytes are reserved for json schema.
 		auto fileData = json{};
 		fileData[OBF("epoch_time")] = FSecure::Utils::TimeSinceEpoch();
 		fileData[OBF("high_res_time")] = GetTickCount64();
-		fileData[OBF("data")] = cppcodec::base64_rfc4648::encode(&data.front(), chunkSize);
+		fileData[OBF("data")] = base64::encode(&data.front(), chunkSize);
 
 		auto body = fileData.dump();
 		request.SetData(ContentType::TextPlain, { body.begin(), body.end() });
@@ -84,8 +85,8 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 		for(auto &element : elements)
 		{
 			auto id = element.at(OBF("id")).get<std::string>();
-			packets.push_back(cppcodec::base64_rfc4648::decode(element.at(OBF("data")).get<std::string>()));
-			RemoveFile(id);
+			packets.push_back(base64::decode(element.at(OBF("data")).get<std::string>()));
+			RemoveItem(id);
 		}
 	}
 	catch (std::exception& exception)
@@ -105,7 +106,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnRu
 	case 0:
 		try
 		{
-			RemoveAllFiles();
+			RemoveAllItems();
 		}
 		catch (std::exception const& e)
 		{

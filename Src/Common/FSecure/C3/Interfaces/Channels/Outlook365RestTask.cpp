@@ -10,13 +10,14 @@
 
 // Namespaces
 using json = nlohmann::json;
+using base64 = cppcodec::base64_rfc4648;
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::ItemEndpont = OBF("https://outlook.office.com/api/v2.0/me/tasks/");
+FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::ItemEndpoint = OBF("https://outlook.office.com/api/v2.0/me/tasks/");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::ListEndpoint = OBF("https://outlook.office.com/api/v2.0/me/tasks");
-FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::TokenEndpoit = OBF("https://login.windows.net/organizations/oauth2/v2.0/token/");
+FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::TokenEndpoint = OBF("https://login.windows.net/organizations/oauth2/v2.0/token/");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::Outlook365RestTask::Scope = OBF("https://outlook.office365.com/.default");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,13 +28,13 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 	try
 	{
 		// Construct the HTTP request
-		auto webClient = HttpClient{ Convert<Utf16>(ItemEndpont.Decrypt()), m_ProxyConfig };
+		auto webClient = HttpClient{ Convert<Utf16>(ItemEndpoint.Decrypt()), m_ProxyConfig };
 		auto request = CreateAuthRequest(Method::POST);
 
-		auto chunkSize = std::min<size_t>(data.size(), 3 * 1024 * 1024); // Send max 4 MB. base64 will expand data by 4/3.
+		auto chunkSize = std::min<size_t>(data.size(), base64::decoded_max_size(4 * 1024 * 1024) ); // Send max 4 MB.
 		auto fileData = json();
 		fileData[OBF("Subject")] = m_OutboundDirectionName;
-		fileData[OBF("Body")][OBF("Content")] = cppcodec::base64_rfc4648::encode(&data.front(), chunkSize);
+		fileData[OBF("Body")][OBF("Content")] = base64::encode(&data.front(), chunkSize);
 		fileData[OBF("Body")][OBF("ContentType")] = OBF("Text");
 
 		auto body = fileData.dump();
@@ -60,10 +61,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365Re
 		auto fileList = ListData(OBF("?top=1000&filter=startswith(Subject,'") + m_InboundDirectionName + OBF("')&orderby=CreatedDateTime"));
 
 		for (auto& element : fileList.at(OBF("value")))
-			packets.emplace_back(cppcodec::base64_rfc4648::decode(element.at(OBF("Body")).at(OBF("Content")).get<std::string>()));
+			packets.emplace_back(base64::decode(element.at(OBF("Body")).at(OBF("Content")).get<std::string>()));
 
 		for (auto& element : fileList.at(OBF("value")))
-			RemoveFile(element.at(OBF("Id")));
+			RemoveItem(element.at(OBF("Id")));
 	}
 	catch (std::exception& exception)
 	{
@@ -82,7 +83,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnRun
 	case 0:
 		try
 		{
-			RemoveAllFiles();
+			RemoveAllItems();
 		}
 		catch (std::exception const& e)
 		{

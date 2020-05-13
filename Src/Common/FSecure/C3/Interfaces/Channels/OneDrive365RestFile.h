@@ -32,9 +32,9 @@ namespace FSecure::C3::Interfaces::Channels
 		static Crypto::String RootEndpoint;
 
 		/// Endpoints used by Office365 methods.
-		static Crypto::String ItemEndpont;
+		static Crypto::String ItemEndpoint;
 		static Crypto::String ListEndpoint;
-		static Crypto::String TokenEndpoit;
+		static Crypto::String TokenEndpoint;
 		static Crypto::String Scope;
 	};
 }

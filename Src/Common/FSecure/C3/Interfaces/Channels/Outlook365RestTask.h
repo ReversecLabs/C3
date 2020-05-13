@@ -30,9 +30,9 @@ namespace FSecure::C3::Interfaces::Channels
 		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 1000ms, s_MaxUpdateDelay = 1000ms;
 
 		/// Endpoints used by Office365 methods.
-		static Crypto::String ItemEndpont;
+		static Crypto::String ItemEndpoint;
 		static Crypto::String ListEndpoint;
-		static Crypto::String TokenEndpoit;
+		static Crypto::String TokenEndpoint;
 		static Crypto::String Scope;
 	};
 }
