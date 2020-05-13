@@ -33,7 +33,7 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 		auto chunkSize = std::min<size_t>(data.size(), 3 * 1024 * 1024); // Send max 4 MB. base64 will expand data by 4/3.
 		auto fileData = json();
 		fileData[OBF("Subject")] = m_OutboundDirectionName;
-		fileData[OBF("Body")][OBF("Content")] = cppcodec::base64_rfc4648::encode(&data.front(), data.size());
+		fileData[OBF("Body")][OBF("Content")] = cppcodec::base64_rfc4648::encode(&data.front(), chunkSize);
 		fileData[OBF("Body")][OBF("ContentType")] = OBF("Text");
 
 		auto body = fileData.dump();
