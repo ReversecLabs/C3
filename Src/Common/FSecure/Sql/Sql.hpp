@@ -34,11 +34,11 @@ namespace FSecure::Sql
 					{
 						switch (type)
 						{
-						case SQL_HANDLE_ENV: return OBF("ENV");
-						case SQL_HANDLE_STMT: return OBF("STMT");
-						case SQL_HANDLE_DBC: return OBF("DBC");
-						case SQL_HANDLE_DESC: return OBF("DESC");
-						default: return "";
+						case SQL_HANDLE_ENV: return OBF_STR("ENV");
+						case SQL_HANDLE_STMT: return OBF_STR("STMT");
+						case SQL_HANDLE_DBC: return OBF_STR("DBC");
+						case SQL_HANDLE_DESC: return OBF_STR("DESC");
+						default: return ""s;
 						}
 					};
 					throw std::runtime_error(OBF_STR("SQLAllocHandle for failed. handle type: ") + GetTypeString(type));
