@@ -83,11 +83,10 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 		);
 
 		for(auto &element : elements)
-		{
-			auto id = element.at(OBF("id")).get<std::string>();
-			packets.push_back(base64::decode(element.at(OBF("data")).get<std::string>()));
-			RemoveItem(id);
-		}
+			packets.push_back(base64::decode<ByteVector, std::string>(element.at(OBF("data"))));
+
+		for (auto& element : elements)
+			RemoveItem(element.at(OBF("id")));
 	}
 	catch (std::exception& exception)
 	{

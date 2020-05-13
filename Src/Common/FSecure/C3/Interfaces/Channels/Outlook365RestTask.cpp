@@ -61,7 +61,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Outlook365Re
 		auto fileList = ListData(OBF("?top=1000&filter=startswith(Subject,'") + m_InboundDirectionName + OBF("')&orderby=CreatedDateTime"));
 
 		for (auto& element : fileList.at(OBF("value")))
-			packets.emplace_back(base64::decode(element.at(OBF("Body")).at(OBF("Content")).get<std::string>()));
+			packets.push_back(base64::decode<ByteVector, std::string>(element.at(OBF("Body")).at(OBF("Content"))));
 
 		for (auto& element : fileList.at(OBF("value")))
 			RemoveItem(element.at(OBF("Id")));
