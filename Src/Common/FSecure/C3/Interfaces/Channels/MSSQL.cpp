@@ -59,27 +59,15 @@ size_t FSecure::C3::Interfaces::Channels::MSSQL::OnSendToChannel(FSecure::ByteVi
 	Sql::Enviroment env;
 	auto conn = env.Connect(m_servername, m_databasename, m_username, m_password, m_useSSPI, m_impersonationToken.get());
 
-	size_t bytesWritten = 0;
-	std::string b64packet = "";
-
 	//Rounded down: Max size of bytes that can be put into a MSSQL database before base64 encoding
-	if (packet.size() > MAX_MSG_BYTES)
-	{
-		auto strpacket = packet.SubString(0, MAX_MSG_BYTES);
-		b64packet = cppcodec::base64_rfc4648::encode(strpacket.data(), strpacket.size());
-		bytesWritten = strpacket.size();
-	}
-	else
-	{
-		b64packet = cppcodec::base64_rfc4648::encode(packet.data(), packet.size());
-		bytesWritten = packet.size();
-	}
+	packet = packet.SubString(0, MAX_MSG_BYTES);
 
-	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + b64packet + OBF("');");
+	std::string stmtString = OBF("INSERT into dbo.") + this->m_tablename + OBF(" (MSGID, MSG) VALUES ('") + this->m_outboundDirectionName + "', '" + cppcodec::base64_rfc4648::encode(packet) + OBF("');");
 	auto hStmt = conn.MakeStatement(stmtString);
 	hStmt.Execute();
 
-	return bytesWritten;
+	// packet was trimmed if it was too large
+	return packet.size();
 }
 
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::MSSQL::OnReceiveFromChannel()
