@@ -71,6 +71,13 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
     this.updateTextarea();
   }
 
+  public created() {
+    if (this.value !== this.dataText && this.dataText === '') {
+      this.dataText = this.value;
+    }
+    this.updateTextarea();
+  }
+
   public lostFocus(): void {
     this.focused = false;
     this.updateTextarea();
