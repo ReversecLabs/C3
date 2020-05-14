@@ -97,7 +97,7 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
 
     reader.onload = () => {
       base64 = reader.result as string;
-      if (!base64) {
+      if (typeof base64 === 'string') {
         base64 = (base64 as string).replace(/^data:(.*;base64,)?/, '');
       }
       this.dataText = base64;
