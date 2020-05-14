@@ -76,7 +76,6 @@ namespace FSecure::Sql
 				do
 				{
 					SQLCHAR buf[bufferSize];
-					auto oldSize = out.size();
 					auto status = SQLGetData(m_Stmt.get(), columnNumber, SQL_CHAR, buf, bufferSize, &dataLen);
 					if (status == SQL_ERROR)
 						throw std::runtime_error{ OBF("Failed to read data. coulmn number") + std::to_string(columnNumber) };
