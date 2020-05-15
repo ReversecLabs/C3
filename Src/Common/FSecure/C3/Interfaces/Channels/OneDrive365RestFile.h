@@ -7,8 +7,9 @@ namespace FSecure::C3::Interfaces::Channels
 	class OneDrive365RestFile : public Channel<OneDrive365RestFile>, public Office365<OneDrive365RestFile>
 	{
 	public:
-		/// Use Office365 constructor.
-		using Office365<OneDrive365RestFile>::Office365;
+		/// Public constructor.
+		/// @param arguments factory arguments.
+		OneDrive365RestFile(ByteView arguments);
 
 		/// OnSend callback implementation.
 		/// @param blob data to send to Channel.

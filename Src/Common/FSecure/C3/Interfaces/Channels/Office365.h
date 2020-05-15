@@ -33,7 +33,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Get channel capability.
 		/// @returns ByteView view of channel capability.
-		static ByteView GetCapability();
+		static const char* GetCapability();
 
 	protected:
 		/// Remove one item from server.
@@ -53,7 +53,7 @@ namespace FSecure::C3::Interfaces::Channels
 		{
 			auto fileList = ListData();
 			for (auto& element : fileList.at(OBF("value")))
-				RemoveItem(element.at(OBF("id")).get<std::string>());
+				RemoveItem(element.at(OBF("id")));
 		}
 
 		/// Requests a new access token using the refresh token
@@ -171,7 +171,7 @@ std::atomic<std::chrono::steady_clock::time_point> FSecure::C3::Interfaces::Chan
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename Derived>
-FSecure::ByteView FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability()
+const char* FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability()
 {
 	return R"_(
 {

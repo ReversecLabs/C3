@@ -12,6 +12,7 @@ namespace FSecure::Crypto
 	public:
 		String() = default;
 		String(std::string_view sv);
+		String(const char* str); // for clang
 		String& operator=(std::string_view sv);
 		SecureString Decrypt();
 

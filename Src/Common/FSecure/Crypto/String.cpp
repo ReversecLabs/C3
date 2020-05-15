@@ -8,6 +8,12 @@ FSecure::Crypto::String::String(std::string_view sv)
 
 }
 
+FSecure::Crypto::String::String(const char* str)
+    : String(std::string_view{ str })
+{
+
+}
+
 FSecure::SecureString FSecure::Crypto::String::Decrypt()
 {
     auto tmp = m_Data.empty() ? ByteVector{} : DecryptFromAnonymous(m_Data, m_Key);

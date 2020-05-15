@@ -8,8 +8,9 @@ namespace FSecure::C3::Interfaces::Channels
 	class Outlook365RestTask : public Channel<Outlook365RestTask>, public Office365<Outlook365RestTask>
 	{
 	public:
-		/// Use Office365 constructor.
-		using Office365<Outlook365RestTask>::Office365;
+		/// Public constructor.
+		/// @param arguments factory arguments.
+		Outlook365RestTask(ByteView arguments);
 
 		/// OnSend callback implementation.
 		/// @param blob data to send to Channel.
