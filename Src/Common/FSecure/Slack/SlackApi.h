@@ -89,6 +89,9 @@ namespace FSecure
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data);
 
+		/// Send http GET request, uses preset token for authentication, expect response of application/json type
+		json GetJsonResponse(std::string const& url);
+
 		/// Use Slack's File API to retrieve files.
 		/// @param url - the url where the file can be retrieved.
 		/// @return - the data within the file.

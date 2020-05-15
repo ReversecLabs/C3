@@ -61,7 +61,7 @@ std::map<std::string, std::string> FSecure::Slack::ListChannels()
 	std::map<std::string, std::string> channelMap;
 	std::string url = OBF("https://slack.com/api/conversations.list?exclude_archived=true");
 
-	json response = SendJsonRequest(url, NULL);
+	json response = GetJsonResponse(url);
 
 	for (auto &channel : response[OBF("channels")])
 	{
@@ -107,7 +107,7 @@ std::string FSecure::Slack::CreateChannel(std::string const& channelName)
 std::vector<std::pair<std::string, std::string>> FSecure::Slack::ReadReplies(std::string const& timestamp)
 {
 	std::string url = OBF("https://slack.com/api/conversations.replies?channel=") + this->m_Channel + OBF("&ts=") + timestamp;
-	json output = SendJsonRequest(url, NULL);
+	json output = GetJsonResponse(url);
 
 	//This logic is really messy, in reality the checks are over cautious, however there is an edgecase
 	//whereby a message could be created with no replies of the implant that wrote triggers an exception or gets killed.
@@ -159,7 +159,7 @@ std::vector<std::string>  FSecure::Slack::GetMessagesByDirection(std::string con
 			url.append(OBF("&cursor=") + cursor);
 
 		//Actually send the http request and grab the messages
-		auto resp = SendJsonRequest(url, NULL);
+		auto resp = GetJsonResponse(url);
 
 		auto& messages = resp[OBF("messages")];
 
@@ -245,6 +245,11 @@ FSecure::ByteVector FSecure::Slack::SendHttpRequest(std::string const& host, std
 json FSecure::Slack::SendJsonRequest(std::string const& url, json const& data)
 {
 	return json::parse(SendHttpRequest(url, ContentType::ApplicationJson, data.dump()));
+}
+
+json FSecure::Slack::GetJsonResponse(std::string const& url)
+{
+	return json::parse(SendHttpRequest(url));
 }
 
 void FSecure::Slack::UploadFile(ByteView data, std::string const& ts)
