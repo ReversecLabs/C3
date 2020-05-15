@@ -32,6 +32,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -113,5 +115,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Office365.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.h" />
   </ItemGroup>
 </Project>
