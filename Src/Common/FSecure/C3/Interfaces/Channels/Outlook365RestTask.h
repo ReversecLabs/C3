@@ -27,7 +27,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise O365 rate limit will heavily impact channel.
-		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 1000ms, s_MaxUpdateDelay = 1000ms;
+		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 3500ms, s_MaxUpdateDelay = 6500ms;
 
 		/// Endpoints used by Office365 methods.
 		static Crypto::String ItemEndpoint;
