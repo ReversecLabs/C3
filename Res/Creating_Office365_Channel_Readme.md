@@ -4,10 +4,9 @@
 
 Prior to using Office 365 Management APIs within C3, the steps below must be taken.
 1. Register an app in Microsoft Azure.
-2. Generate secret key for the app.
-3. Give the app the correct api permissions.
-4. Add the app to allowed applications for desired user with Office365.
-5. Pass authentication data to C3 channel.
+2. Give the app the correct api permissions.
+3. Add the app to allowed applications for desired user with Office365.
+4. Pass authentication data to C3 channel.
 
 #### Register app in Microsoft Azure
 Outlook365RestTask and OneDrive365RestFile uses Office 365 Management API to send and receive data.
@@ -24,10 +23,6 @@ Click "New registration". You should be presented with the following screen:
 Add name for your application.
 As supported account types choose "Accounts in any organizational directory and personal Microsoft accounts".
 
-#### Generate secret key for the app
-Under 'Certificates & secrets' generate new secret. Copy the secret as it will be hidden later.
-
-<img src="./images/office365/AzureSecret.jpg"/>
 
 #### Give the app the correct api permissions
 
@@ -66,6 +61,10 @@ https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id
 With application data, and tartget username/password C3 can use Office 365 Management API.
 
 <img src="./images/office365/CreatingChannel.jpg"/>
+
+#### Add a Licence
+
+As of May 2020 a business licence is required for the tenant user to have a mailbox. Without this the channel will not work. Login to admin.microsoft.com, purchase a "Microsoft 365 Business Standard" licence and assign it to the user who's credentials are to be used with the C3 channel.
 
 ## Rate Limit
 
