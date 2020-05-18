@@ -90,4 +90,50 @@ namespace FSecure::C3::Linter
 		return m_Device;
 	}
 
+	void MockDeviceBridge::Send(ByteView blob)
+	{
+		auto oryginalSize = static_cast<uint32_t>(blob.size());
+		auto messageId = m_QoS.GetOutgouingPacketId();
+		auto chunkId = uint32_t{ 0 };
+		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
+		{
+			auto data = ByteVector{}.Write(messageId, chunkId, oryginalSize).Concat(blob);
+			auto sent = GetDevice()->OnSendToChannelInternal(data);
+
+			if (sent >= QualityOfService::s_MinFrameSize || sent == data.size())
+			{
+				chunkId++;
+				noProgressCounter = 0;
+				blob.remove_prefix(sent - QualityOfService::s_HeaderSize);
+			}
+
+			if (blob.empty())
+				return;
+		}
+
+		throw std::runtime_error("Cannot send data");
+	}
+
+	std::vector<FSecure::ByteVector> MockDeviceBridge::Receive(size_t minExpectedSize)
+	{
+		auto packets = std::vector<ByteVector>{};
+		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
+		{
+			std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
+			for (auto&& chunk : std::static_pointer_cast<C3::AbstractChannel>(GetDevice())->OnReceiveFromChannelInternal())
+			{
+				m_QoS.PushReceivedChunk(chunk);
+				noProgressCounter = 0;
+			}
+
+			auto packet = ByteVector{};
+			while (packet = m_QoS.GetNextPacket(), !packet.empty())
+				packets.emplace_back(std::move(packet));
+
+			if (packets.size() >= minExpectedSize)
+				return packets;
+		}
+
+		throw std::runtime_error("Cannot receive data");
+	}
 }

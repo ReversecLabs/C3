@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/QualityOfService.h"
+
 namespace FSecure::C3::Linter
 {
 	/// Device bridge used to mock its functionality
@@ -66,9 +68,22 @@ namespace FSecure::C3::Linter
 		/// @returns Bridged device
 		std::shared_ptr<FSecure::C3::Device> GetDevice() const;
 
+		/// Send data to through channel.
+		/// @param blob - data to send.
+		/// @throws std::runtime_error if unable to send data.
+		void Send(ByteView blob);
+
+		/// Receive data from channel.
+		/// @param minExpectedSize - min number of packets function should return.
+		/// @throws std::runtime_error if unable to return vector of required number of full packets.
+		std::vector<ByteVector> Receive(size_t minExpectedSize = 1);
+
 	private:
 		/// Bridged device
 		std::shared_ptr<Device> m_Device;
+
+		/// Handle chunking.
+		QualityOfService m_QoS;
 	};
 }
 
