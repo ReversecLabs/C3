@@ -26,11 +26,7 @@ FSecure::Dropbox::Dropbox(std::string const& token, std::string const& channelNa
 		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
 
 	this->m_Token = token;
-
-	std::string lowerChannelName = channelName;
-	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });
-
-	SetChannel(CreateChannel(lowerChannelName));
+	SetChannel(CreateChannel(Convert<Lowercase>(channelName)));
 }
 
 void FSecure::Dropbox::SetChannel(std::string const& channelName)
