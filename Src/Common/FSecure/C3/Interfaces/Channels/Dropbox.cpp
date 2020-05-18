@@ -15,7 +15,8 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 size_t FSecure::C3::Interfaces::Channels::Dropbox::OnSendToChannel(ByteView data)
 {
 
-	// There is a cap on uploads of files >150mb at which point different APIs are required, left unimplemented for now.
+	// There is a cap on uploads of files >150mb at which point different APIs are required.
+       data = data.SubString(0, 150 * 1024 * 1024);
 	m_dropboxObj.WriteMessageToFile(m_outboundDirectionName, data);
 	return data.size();
 }
