@@ -99,11 +99,7 @@ std::map<std::string, std::string> FSecure::Dropbox::ListChannels()
 	{
 		std::string item_type = channel[OBF(".tag")];
 		if (item_type == OBF("folder"))
-		{
-			std::string cName = channel[OBF("name")].get<std::string>();
-			std::string cId = channel[OBF("id")].get<std::string>();
-			channelMap.insert({ cName, cId });
-		}
+			channelMap.emplace(channel[OBF("name")], channel[OBF("id")]);
 	}
 
 	return channelMap;
@@ -129,9 +125,7 @@ std::string FSecure::Dropbox::CreateChannel(std::string const& channelName)
 		json response = SendJsonRequest(url, j);
 
 		if (!response[OBF("metadata")].contains(OBF("name")))
-		{
 			throw std::runtime_error(OBF("Throwing exception: unable to create channel\n"));
-		}
 		else
 			return channelName;
 	}
@@ -182,9 +176,7 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 			std::string ts = file_name.substr(file_name.length() - 10); // 10 = epoch time length
 
 			if (item_type == OBF("file"))
-			{
 				messages.insert({ ts, file_id });
-			}
 		}
 	} while (response[OBF("has_more")] == OBF("true"));
 
@@ -221,9 +213,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		request.SetTimeout({}, 60s, 0ms, 0ms);
 
 		if (contentType && !data.empty())
-		{
 			request.SetData(*contentType, { data.begin(), data.end() });
-		}
 
 		if(!header.empty())
 			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
@@ -251,9 +241,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		request.SetTimeout({}, 60s, 0ms, 0ms);
 
 		if (contentType && !data.empty())
-		{
 			request.SetData(*contentType, { data.begin(), data.end() });
-		}
 
 		if (!header.empty())
 			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
