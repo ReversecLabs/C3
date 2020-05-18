@@ -254,7 +254,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 
 FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data)
 {
-	while (true)
+	return SendHttpRequest(host, header, contentType, ByteView{ data });
 	{
 		HttpClient webClient(ToWideString(host), m_ProxyConfig);
 		HttpRequest request; // default request is GET
