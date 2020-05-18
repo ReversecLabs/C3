@@ -235,4 +235,18 @@ namespace FSecure::Utils
 
 		return retValue;
 	}
+
+	/// Throw runtime_error if any of forbidden character is present in the string.
+	inline void DisallowChars(std::string_view word, std::string_view forbiddenChars)
+	{
+		if (auto pos = word.find_first_of(forbiddenChars); pos != std::string::npos)
+			throw std::runtime_error{ OBF_STR("Forbidden character found: ") + word[pos] };
+	}
+
+	/// Throw runtime_error if any of forbidden character is present in any of the string.
+	inline void DisallowChars(std::vector<std::string_view> words, std::string_view forbiddenChars)
+	{
+		for (auto word : words)
+			DisallowChars(word, forbiddenChars);
+	}
 }

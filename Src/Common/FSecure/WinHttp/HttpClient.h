@@ -35,6 +35,8 @@ namespace FSecure::WinHttp
 			auto const& path = coalesce(request.m_Path, m_Uri.GetPathWithQuery());
 			auto req = m_Connection.OpenRequest(GetMethodString(request.m_Method), path);
 
+			req.SetTimeout(request.m_ResolveTimeout, request.m_ConnectTimeout, request.m_SendTimeout, request.m_ReceiveTimeout);
+
 			for (auto& [name, content] : request.m_Headers)
 				req.SetHeader(name, content);
 

@@ -177,6 +177,28 @@ namespace FSecure::C3::Linter
 				throw std::exception("Data sent and received mismatch");
 			std::cout << "OK" << std::endl;
 		}
+
+		auto numberOfTests = 10;
+		auto packetSize = 64;
+		std::cout << "Testing channel order with " << numberOfTests << " packets of " << packetSize << " bytes of data ... " << std::flush;
+		std::vector<ByteVector> sent, received;
+
+		for (auto i = 0; i < numberOfTests; ++i)
+		{
+			sent.push_back(FSecure::Utils::GenerateRandomData(packetSize));
+			channel->GetDevice()->OnSendToChannelInternal(sent[i]);
+		}
+
+		for (auto i = 0; i < numberOfTests && received.size() < sent.size(); ++i)
+		{
+			auto receivedPackets = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
+			received.insert(received.end(), receivedPackets.begin(), receivedPackets.end());
+			std::this_thread::sleep_for(channel->GetDevice()->GetUpdateDelay());
+		}
+
+		if (sent != received)
+			throw std::exception("Data sent and received mismatch");
+		std::cout << "OK" << std::endl;
 	}
 
 	void ChannelLinter::TestCommand(std::shared_ptr<MockDeviceBridge> const& channel)

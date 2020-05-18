@@ -71,6 +71,13 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
     this.updateTextarea();
   }
 
+  public created() {
+    if (this.value !== this.dataText && this.dataText === '') {
+      this.dataText = this.value;
+    }
+    this.updateTextarea();
+  }
+
   public lostFocus(): void {
     this.focused = false;
     this.updateTextarea();
@@ -97,7 +104,7 @@ export default class Textarea extends Mixins(C3, C3FormElement) {
 
     reader.onload = () => {
       base64 = reader.result as string;
-      if (!base64) {
+      if (typeof base64 === 'string') {
         base64 = (base64 as string).replace(/^data:(.*;base64,)?/, '');
       }
       this.dataText = base64;
