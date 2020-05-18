@@ -110,11 +110,7 @@ std::string FSecure::Dropbox::CreateChannel(std::string const& channelName)
 {
 	std::map<std::string, std::string> channels = this->ListChannels();
 
-	if (channels.find(channelName) != channels.end())
-	{
-		return channelName; 
-	}
-	else
+	if (!(channels.find(channelName) != channels.end()))
 	{
 		std::string url = OBF("https://api.dropboxapi.com/2/files/create_folder_v2");
 
@@ -126,9 +122,8 @@ std::string FSecure::Dropbox::CreateChannel(std::string const& channelName)
 
 		if (!response[OBF("metadata")].contains(OBF("name")))
 			throw std::runtime_error(OBF("Throwing exception: unable to create channel\n"));
-		else
-			return channelName;
 	}
+	return channelName;
 }
 
 std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std::string const& direction)
