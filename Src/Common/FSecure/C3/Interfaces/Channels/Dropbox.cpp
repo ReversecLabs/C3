@@ -24,7 +24,14 @@ size_t FSecure::C3::Interfaces::Channels::Dropbox::OnSendToChannel(ByteView data
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnReceiveFromChannel()
 {
-	// Fetch inbound messages as a map of ids and epoch timestamps
+	std::vector<ByteVector> ret;
+	for (auto& [ts, id] : m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName))
+	{
+		ret.push_back(m_dropboxObj.ReadFile(id));
+		m_dropboxObj.DeleteFile(id);
+	}
+
+	return ret;
 	std::map<std::string, std::string> messages = m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName);
 	std::vector<std::string> repliesTs;
 
