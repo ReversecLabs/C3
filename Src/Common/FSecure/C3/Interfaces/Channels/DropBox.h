@@ -17,7 +17,7 @@ namespace FSecure::C3::Interfaces::Channels
 
         /// Reads a single C3 packet from Channel. Periodically called by attached Relay. Implementation should read the data (or return an empty buffer if there's nothing in the Channel waiting to read) and leave as soon as possible.
         /// @return ByteVector that contains a single packet retrieved from Channel.
-        std::vector<FSecure::ByteVector> OnReceiveFromChannel();
+        FSecure::ByteVector OnReceiveFromChannel();
 
 
         /// Describes Channels creation parameters and custom Commands.
