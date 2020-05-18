@@ -205,7 +205,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		HttpClient webClient(ToWideString(host), m_ProxyConfig);
 		HttpRequest request; // default request is GET
 		request.m_Method = Method::POST;
-		request.SetTimeout({}, 60s, 0ms, 0ms);
+		request.SetTimeout({}, {}, 0ms, 0ms);
 
 		if (contentType && !data.empty())
 			request.SetData(*contentType, { data.begin(), data.end() });
