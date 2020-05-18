@@ -21,9 +21,10 @@ namespace FSecure
 		Dropbox() = default;
 
 		/// Write a message as the contents of a file and upload to Dropbox.
-		/// @param filename - the name of the file to upload
+		/// @param direction - the name of the file to upload
 		/// @param data - the text of the message
-		void WriteMessageToFile(std::string const& direction, ByteView data);
+		/// @param filename - optional custom filename for uploaded file
+		void WriteMessageToFile(std::string const& direction = "", ByteView data = {}, std::string const& providedFilename = "");
 
 		/// Upload a file in its entirety to Dropbox.
 		/// @param path - path to file for upload

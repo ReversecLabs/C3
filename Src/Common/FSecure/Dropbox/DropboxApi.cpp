@@ -39,14 +39,21 @@ void FSecure::Dropbox::SetToken(std::string const& token)
 	this->m_Token = token;
 }
 
-void FSecure::Dropbox::WriteMessageToFile(std::string const& direction, ByteView data)
+void FSecure::Dropbox::WriteMessageToFile(std::string const& direction, ByteView data, std::string const& providedFilename)
 {
 	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload");
 
-	///Create a filename thats prefixed with message direction and suffixed 
-	// with more granular timestamp for querying later
-	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
-	std::string filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
+	std::string filename;
+
+	if (providedFilename.empty())
+	{
+		///Create a filename thats prefixed with message direction and suffixed 
+		// with more granular timestamp for querying later
+		std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+		filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
+	}
+	else
+		filename = providedFilename;
 
 	json j;
 	j[OBF("path")] = OBF("/") + this->m_Channel + OBF("/") + filename;
@@ -70,19 +77,7 @@ void FSecure::Dropbox::UploadFile(std::string const& path)
 	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
 
-	json j;
-	j[OBF("path")] = OBF("/") + this->m_Channel + OBF("/") + filename;
-	j[OBF("mode")] = OBF("add");
-	j[OBF("autorename")] = false;
-	j[OBF("mute")] = true;
-	j[OBF("strict_conflict")] = true;
-
-	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload");
-
-
-
-	//std::string url = OBF_STR("https://content.dropboxapi.com/2/files/upload_session/start");
-	SendHttpRequest(url, j.dump(), ContentType::ApplicationOctetstream, packet);
+	WriteMessageToFile("", packet, filename);
 }
 
 void FSecure::Dropbox::DeleteAllFiles()
@@ -90,8 +85,6 @@ void FSecure::Dropbox::DeleteAllFiles()
 	std::string folderPath = OBF("/") + this->m_Channel;
 	DeleteFile(folderPath);
 }
-
-
 
 std::map<std::string, std::string> FSecure::Dropbox::ListChannels()
 {

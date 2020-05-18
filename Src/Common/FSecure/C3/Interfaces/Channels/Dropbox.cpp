@@ -14,9 +14,8 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::Dropbox::OnSendToChannel(ByteView data)
 {
-
 	// There is a cap on uploads of files >150mb at which point different APIs are required.
-       data = data.SubString(0, 150 * 1024 * 1024);
+    data = data.SubString(0, 150 * 1024 * 1024);
 	m_dropboxObj.WriteMessageToFile(m_outboundDirectionName, data);
 	return data.size();
 }
@@ -32,27 +31,28 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnR
 	}
 
 	return ret;
-	std::map<std::string, std::string> messages = m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName);
-	std::vector<std::string> repliesTs;
 
-	// We can't fetch directly with a generated timestamp value, so we're pulling these out 
-	// to iterate over and using that as a key to fetch the file by id.
-	for (std::map<std::string, std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-		repliesTs.push_back(it->first);
-	}
+	//std::map<std::string, std::string> messages = m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName);
+	//std::vector<std::string> repliesTs;
 
-	std::vector<ByteVector> ret;
+	//// We can't fetch directly with a generated timestamp value, so we're pulling these out 
+	//// to iterate over and using that as a key to fetch the file by id.
+	//for (std::map<std::string, std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+	//	repliesTs.push_back(it->first);
+	//}
 
-	//Read the files in order and delete when data is retrieved.
-	for (std::vector<std::string>::iterator ts = repliesTs.begin(); ts != repliesTs.end(); ++ts)
-	{
-		std::string messagePath = messages[*ts];
-		auto fileContent = m_dropboxObj.ReadFile(messagePath);
+	//std::vector<ByteVector> ret;
 
-		m_dropboxObj.DeleteFile(messagePath);
-		ret.emplace_back(std::move(fileContent));
-	}
-	return ret;
+	////Read the files in order and delete when data is retrieved.
+	//for (std::vector<std::string>::iterator ts = repliesTs.begin(); ts != repliesTs.end(); ++ts)
+	//{
+	//	std::string messagePath = messages[*ts];
+	//	auto fileContent = m_dropboxObj.ReadFile(messagePath);
+
+	//	m_dropboxObj.DeleteFile(messagePath);
+	//	ret.emplace_back(std::move(fileContent));
+	//}
+	//return ret;
 }
 
 
