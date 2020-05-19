@@ -20,7 +20,7 @@
           legend="TargetSuffix"
           class="form-element"
           :selected="selectedTargetSuffix"
-          :options="{ dll: 'dll', exe: 'exe', shellcode: 'shellcode'}"
+          :options="{ dll: 'dll', exe: 'exe', shellcode: 'shellcode' }"
           :border="true"
           @change="changeTargetSuffix($event, targetSuffix)"
         />
@@ -34,7 +34,10 @@
         />
       </div>
       <div class="c3modal-form">
-        <DonutForm v-if="donutSelected" @change="changeDonutForm($event, formData)" />
+        <DonutForm
+          v-if="donutSelected"
+          @change="changeDonutForm($event, formData)"
+        />
       </div>
       <div class="c3modal-form">
         <h1>Add Command</h1>
@@ -48,12 +51,16 @@
         />
       </div>
       <dir class="flex-row c3modal-actions">
-        <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">Cancel</button>
+        <button class="c3btn c3btn--grey" v-on:click.self="closeThisModal()">
+          Cancel
+        </button>
         <button
           class="c3btn c3btn"
           v-on:click="createNewRelay()"
           :disabled="formIsValid"
-        >Create and Download Relay</button>
+        >
+          Create and Download Relay
+        </button>
       </dir>
     </div>
   </div>
@@ -210,11 +217,10 @@ export default class CreateRelayModal extends Mixins(C3) {
 
   public changeTargetSuffix(t: string): void {
     this.targetSuffix = t;
-    if (this.targetSuffix === 'shellcode') {
-      this.donutSelected = true;
-    } else {
-      this.donutSelected = false;
-    }
+    this.donutSelected =
+      this.targetSuffix === 'shellcode'
+        ? (this.donutSelected = true)
+        : (this.donutSelected = false);
   }
 
   public changeArchitecture(a: string): void {

@@ -1,8 +1,8 @@
-import { modalModule } from '@/store/ModalModule';
-import { paginateModule } from '@/store/PaginateModule';
-import { visModule } from '@/store/VisModule';
+import { modalModule } from './../../../src/store/ModalModule';
+import { paginateModule } from './../../../src/store/PaginateModule';
+import { visModule } from './../../../src/store/VisModule';
 import { c3Module } from './c3module';
-import { notifyModule } from '@/store/NotifyModule';
+import { notifyModule } from './../../../src/store/NotifyModule';
 import { c3Capability } from './c3capability';
 import { c3CommandModule } from './c3command';
 

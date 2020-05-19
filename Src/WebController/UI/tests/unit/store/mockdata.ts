@@ -1,4 +1,4 @@
-import { C3Node, NodeKlass } from '@/types/c3types';
+import { C3Node, NodeKlass } from './../../../src/types/c3types';
 
 export const gateways = ['a1d0'];
 
