@@ -24,7 +24,7 @@ FSecure::ByteVector FSecure::C3::QualityOfService::GetNextPacket()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
 {
-	if (chunkWithHeader.size() < QualityOfService::s_HeaderSize) // Data is to short to even be chunk of packet.
+	if (chunkWithHeader.size() <= QualityOfService::s_HeaderSize) // Data is to short to even be chunk of packet.
 		return; // skip this chunk. there is nothing that can be done with it. If sender knows it pushed chunk to short it will retransmit it.
 
 	auto [mId, cId, expectedSize] = chunkWithHeader.Read<uint32_t, uint32_t, uint32_t>();
@@ -39,6 +39,11 @@ void FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_
 		m_ReciveQueue.emplace(packetId, Packet{ chunkId, expectedSize, ByteVector{ chunk } });
 	else
 		it->second.PushNextChunk(chunkId, expectedSize, ByteVector{ chunk });
+}
+
+FSecure::C3::PacketSplitter FSecure::C3::QualityOfService::GetPacketSplitter(ByteView data)
+{
+	return { data, GetOutgouingPacketId() };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,4 +100,31 @@ bool FSecure::C3::QualityOfService::Packet::IsReady()
 		throw std::runtime_error{ OBF("QoS error. Packet size is longer than expected, wrong chunks must been set.") };
 
 	return m_Size == m_ExpectedSize;
+}
+
+FSecure::C3::PacketSplitter::PacketSplitter(ByteView data, uint32_t id)
+	: m_Data{ data }, m_OryginalDataSize{ static_cast<uint32_t>(data.size()) }, m_PacketId{ id }, m_ChunkId{ 0 }
+{
+
+}
+
+bool FSecure::C3::PacketSplitter::Update(size_t sent)
+{
+	auto dataSent = sent - QualityOfService::s_HeaderSize;
+	if (sent < QualityOfService::s_MinFrameSize && dataSent != m_Data.size() )
+		return false;
+
+	++m_ChunkId;
+	m_Data.remove_prefix(dataSent);
+	return true;
+}
+
+FSecure::ByteVector FSecure::C3::PacketSplitter::NextChunk() const
+{
+	return ByteVector::Create(m_PacketId, m_ChunkId, m_OryginalDataSize).Concat(m_Data);
+}
+
+bool FSecure::C3::PacketSplitter::HasMore() const
+{
+	return !m_Data.empty();
 }

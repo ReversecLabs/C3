@@ -92,22 +92,14 @@ namespace FSecure::C3::Linter
 
 	void MockDeviceBridge::Send(ByteView blob)
 	{
-		auto oryginalSize = static_cast<uint32_t>(blob.size());
-		auto messageId = m_QoS.GetOutgouingPacketId();
-		auto chunkId = uint32_t{ 0 };
+		auto packetSplitter = m_QoS.GetPacketSplitter(blob);
 		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
 		{
-			auto data = ByteVector{}.Write(messageId, chunkId, oryginalSize).Concat(blob);
-			auto sent = GetDevice()->OnSendToChannelInternal(data);
-
-			if (sent >= QualityOfService::s_MinFrameSize || sent == data.size())
-			{
-				chunkId++;
+			auto sent = GetDevice()->OnSendToChannelInternal(packetSplitter.NextChunk());
+			if (packetSplitter.Update(sent))
 				noProgressCounter = 0;
-				blob.remove_prefix(sent - QualityOfService::s_HeaderSize);
-			}
 
-			if (blob.empty())
+			if (!packetSplitter.HasMore())
 				return;
 		}
 
