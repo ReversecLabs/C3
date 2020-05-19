@@ -1,5 +1,6 @@
 import { Module, GetterTree, MutationTree, ActionTree } from 'vuex';
-import { DataSet, Node, Edge, Options } from 'vis';
+import { Node, Edge, Options } from 'vis-network';
+import { DataSet } from 'vis-data/peer/esm/vis-data';
 
 import { RootState } from '@/types/store/RootState';
 import { C3Edge, NodeKlass, C3Node } from '@/types/c3types';

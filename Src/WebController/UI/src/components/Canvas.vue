@@ -72,7 +72,9 @@
 import { namespace } from 'vuex-class';
 import { VisOptions } from '@/options';
 import { Component, Watch, Mixins } from 'vue-property-decorator';
-import { DataSet, DataView, Network, Options } from 'vis';
+import { DataView, Options } from 'vis-network';
+import { DataSet } from 'vis-data/peer/esm/vis-data';
+import { Network } from 'vis-network/peer/esm/vis-network';
 
 import { NodeKlass, C3Node, C3Edge, nullNode } from '@/types/c3types';
 import { GetNodeKlassFn, FetchC3DataFn } from '@/store/C3Module';
