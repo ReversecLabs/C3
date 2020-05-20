@@ -6,22 +6,6 @@
 
 namespace FSecure::C3
 {
-	class PacketSplitter
-	{
-	public:
-		PacketSplitter(ByteView data, uint32_t id);
-		bool Update(size_t sent);
-		ByteVector NextChunk() const;
-		bool HasMore() const;
-
-	private:
-		ByteView m_Data;
-		uint32_t m_OryginalDataSize;
-		uint32_t m_PacketId;
-		uint32_t m_ChunkId;
-	};
-
-
 	/// A structure that handles Quality of Service of C3 protocols.
 	class QualityOfService
 	{
@@ -78,6 +62,21 @@ namespace FSecure::C3
 		static constexpr size_t s_HeaderSize = s_MaxPacketSize + s_PacketIdSize + s_ChunkIdSize;
 		static constexpr size_t s_MinFrameSize = 64U;
 		static constexpr size_t s_MinBodySize = s_MinFrameSize - s_HeaderSize;
+
+		class PacketSplitter
+		{
+		public:
+			PacketSplitter(ByteView data, uint32_t id);
+			bool Update(size_t sent);
+			ByteVector NextChunk() const;
+			bool HasMore() const;
+
+		private:
+			ByteView m_Data;
+			uint32_t m_OryginalDataSize;
+			uint32_t m_PacketId;
+			uint32_t m_ChunkId;
+		};
 
 		/// Get next packet.
 		/// @returns ByteVector whole packet when it's ready or empty buffer otherwise.
