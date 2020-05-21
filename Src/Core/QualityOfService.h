@@ -32,13 +32,16 @@ namespace FSecure::C3
 			/// Informs that packet can be merged from chunks.
 			bool IsReady();
 
+			void SetExpectedSize(uint32_t size);
+
 		private:
 			/// Map of chunks
 			std::map<uint32_t, ByteVector> m_Chunks;
 
-			/// Expected size of packet.
-			const uint32_t m_ExpectedSize;
+			/// Size provided by chunk nr. 0. packet must be not empty, 0 means packet nr. 0 was not yet received.
+			uint32_t m_ExpectedSize = 0;
 
+			/// Sum of all chunk sizes.
 			uint32_t m_Size = 0;
 		};
 
@@ -73,7 +76,6 @@ namespace FSecure::C3
 
 		private:
 			ByteView m_Data;
-			uint32_t m_OryginalDataSize;
 			uint32_t m_PacketId;
 			uint32_t m_ChunkId;
 		};

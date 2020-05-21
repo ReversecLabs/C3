@@ -34,40 +34,34 @@ void FSecure::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk)
 {
+	if (chunk.size() < QualityOfService::s_MinBodySize && chunk.size() != expectedSize)
+		return;
+
 	auto it = m_ReciveQueue.find(packetId);
 	if (it == m_ReciveQueue.end())
-		m_ReciveQueue.emplace(packetId, Packet{ chunkId, expectedSize, ByteVector{ chunk } });
+		it = m_ReciveQueue.emplace(packetId, Packet{ chunkId, expectedSize, ByteVector{ chunk } }).first;
 	else
 		it->second.PushNextChunk(chunkId, expectedSize, ByteVector{ chunk });
+
+	if (chunkId == 0)
+		it->second.SetExpectedSize(expectedSize);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::QualityOfService::Packet::Packet(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
-	: m_ExpectedSize(expectedSize)
 {
-
-	if (chunk.size() >= QualityOfService::s_MinBodySize || chunk.size() == expectedSize)
-	{
-		m_Size += static_cast<uint32_t>(chunk.size());
-		m_Chunks.emplace(chunkId, std::move(chunk));
-	}
+	m_Size += static_cast<uint32_t>(chunk.size());
+	m_Chunks.emplace(chunkId, std::move(chunk));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::QualityOfService::Packet::PushNextChunk(uint32_t chunkId, uint32_t expectedSize, ByteVector chunk)
 {
-	if (expectedSize != m_ExpectedSize)
-		throw std::runtime_error{ OBF("QoS error. Received chunk of packet has wrong expected size") };
-
-	auto it = m_Chunks.find(chunkId);
-	if (it != m_Chunks.end())
+	if (auto it = m_Chunks.find(chunkId); it != m_Chunks.end())
 		throw std::runtime_error{ OBF("QoS error. Received chunk of packet was already set") };
 
-	if (chunk.size() >= QualityOfService::s_MinBodySize || m_Size + chunk.size() == m_ExpectedSize)
-	{
-		m_Size += static_cast<uint32_t>(chunk.size());
-		m_Chunks.emplace(chunkId, std::move(chunk));
-	}
+	m_Size += static_cast<uint32_t>(chunk.size());
+	m_Chunks.emplace(chunkId, std::move(chunk));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,10 +85,19 @@ FSecure::ByteVector FSecure::C3::QualityOfService::Packet::Read()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool FSecure::C3::QualityOfService::Packet::IsReady()
 {
-	if (m_Size > m_ExpectedSize)
+	if (m_ExpectedSize == 0) // packet nr 0 was not set.
+		return false;
+
+	if (m_Size > m_ExpectedSize) // sanity check
 		throw std::runtime_error{ OBF("QoS error. Packet size is longer than expected, wrong chunks must been set.") };
 
 	return m_Size == m_ExpectedSize;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FSecure::C3::QualityOfService::Packet::SetExpectedSize(uint32_t size)
+{
+	m_ExpectedSize = size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +108,7 @@ FSecure::C3::QualityOfService::PacketSplitter FSecure::C3::QualityOfService::Get
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::QualityOfService::PacketSplitter::PacketSplitter(ByteView data, uint32_t id)
-	: m_Data{ data }, m_OryginalDataSize{ static_cast<uint32_t>(data.size()) }, m_PacketId{ id }, m_ChunkId{ 0 }
+	: m_Data{ data }, m_PacketId{ id }, m_ChunkId{ 0 }
 {
 
 }
@@ -125,7 +128,7 @@ bool FSecure::C3::QualityOfService::PacketSplitter::Update(size_t sent)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::QualityOfService::PacketSplitter::NextChunk() const
 {
-	return ByteVector::Create(m_PacketId, m_ChunkId, m_OryginalDataSize).Concat(m_Data);
+	return ByteVector::Create(m_PacketId, m_ChunkId, static_cast<uint32_t>(m_Data.size())).Concat(m_Data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
