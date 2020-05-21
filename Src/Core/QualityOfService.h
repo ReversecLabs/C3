@@ -32,6 +32,7 @@ namespace FSecure::C3
 			/// Informs that packet can be merged from chunks.
 			bool IsReady();
 
+			/// m_ExpectedSize setter.
 			void SetExpectedSize(uint32_t size);
 
 		private:
@@ -66,17 +67,36 @@ namespace FSecure::C3
 		static constexpr size_t s_MinFrameSize = 64U;
 		static constexpr size_t s_MinBodySize = s_MinFrameSize - s_HeaderSize;
 
+		/// Class responsible for delivering data with correct chunk headers for sending.
+		/// This class does not own copy of data to be sent.
+		/// Original blob must be valid as long as PacketSplitter is used.
 		class PacketSplitter
 		{
 		public:
+			/// Constructor.
+			/// @param data - blob of data to be sent.
+			/// @param id - packet number.
 			PacketSplitter(ByteView data, uint32_t id);
+
+			/// Update PacketSplitter state after sending part of data.
+			/// @param sent - number of bytes that was successfully sent.
+			/// @returns true if sent data was enough to be accepted as correct chunk.
 			bool Update(size_t sent);
+
+			/// Get chunk ready to be sent.
+			/// @returns chunk of data with correct QOS header.
+			/// Content of returned data will be same as long as Update was not called, or called but returned false.
 			ByteVector NextChunk() const;
+
+			/// Informs if there is still part of packet awaiting for sending.
 			bool HasMore() const;
 
 		private:
+			/// View of data to be send.
 			ByteView m_Data;
+			/// Current packed id.
 			uint32_t m_PacketId;
+			/// Current packet chunk id.
 			uint32_t m_ChunkId;
 		};
 
@@ -95,6 +115,7 @@ namespace FSecure::C3
 		/// @param chunk chunk of packet.
 		void PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk);
 
+		/// Get Packet Splitter for data to be sent through channel.
 		PacketSplitter GetPacketSplitter(ByteView data);
 	};
 }
