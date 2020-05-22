@@ -114,8 +114,9 @@ namespace FSecure::C3::Linter
 			std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
 			for (auto&& chunk : std::static_pointer_cast<C3::AbstractChannel>(GetDevice())->OnReceiveFromChannelInternal())
 			{
-				noProgressCounter = 0;
-				m_QoS.PushReceivedChunk(chunk);
+				if (m_QoS.PushReceivedChunk(chunk))
+					noProgressCounter = 0;
+
 				if (auto packet = m_QoS.GetNextPacket(); !packet.empty()) // this form will ensure that packets are returned in same order they are available.
 					packets.emplace_back(std::move(packet));
 			}

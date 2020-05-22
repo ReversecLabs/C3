@@ -22,20 +22,20 @@ FSecure::ByteVector FSecure::C3::QualityOfService::GetNextPacket()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
+bool FSecure::C3::QualityOfService::PushReceivedChunk(ByteView chunkWithHeader)
 {
 	if (chunkWithHeader.size() <= QualityOfService::s_HeaderSize) // Data is to short to even be chunk of packet.
-		return; // skip this chunk. there is nothing that can be done with it. If sender knows it pushed chunk to short it will retransmit it.
+		return false; // skip this chunk. there is nothing that can be done with it. If sender knows it pushed chunk to short it will retransmit it.
 
 	auto [mId, cId, expectedSize] = chunkWithHeader.Read<uint32_t, uint32_t, uint32_t>();
-	PushReceivedChunk(mId, cId, expectedSize, chunkWithHeader);
+	return PushReceivedChunk(mId, cId, expectedSize, chunkWithHeader);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk)
+bool FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk)
 {
 	if (chunk.size() < QualityOfService::s_MinBodySize && chunk.size() != expectedSize)
-		return;
+		return false;
 
 	auto it = m_ReciveQueue.find(packetId);
 	if (it == m_ReciveQueue.end())
@@ -45,6 +45,8 @@ void FSecure::C3::QualityOfService::PushReceivedChunk(uint32_t packetId, uint32_
 
 	if (chunkId == 0)
 		it->second.SetExpectedSize(expectedSize);
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -106,14 +106,16 @@ namespace FSecure::C3
 
 		/// Push chunk to QoS storage to handle merging and ordering.
 		/// @param chunkWithHeader received packet. Device will add QoS header before sending any chunk.
-		void PushReceivedChunk(ByteView chunkWithHeader);
+		/// @return true if chunk was accepted.
+		bool PushReceivedChunk(ByteView chunkWithHeader);
 
 		/// Push chunk to QoS storage to handle merging and ordering.
 		/// @param packetId id of the packet.
 		/// @param chunkId id of the chunk.
 		/// @param expectedSize expected size of whole packet.
 		/// @param chunk chunk of packet.
-		void PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk);
+		/// @return true if chunk was accepted.
+		bool PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk);
 
 		/// Get Packet Splitter for data to be sent through channel.
 		PacketSplitter GetPacketSplitter(ByteView data);
