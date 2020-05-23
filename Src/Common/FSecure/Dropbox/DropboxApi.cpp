@@ -226,29 +226,6 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data)
 {
 	return SendHttpRequest(host, header, contentType, ByteView{ data });
-	{
-		HttpClient webClient(ToWideString(host), m_ProxyConfig);
-		HttpRequest request; // default request is GET
-		request.m_Method = Method::POST;
-		request.SetTimeout({}, 60s, 0ms, 0ms);
-
-		if (contentType && !data.empty())
-			request.SetData(*contentType, { data.begin(), data.end() });
-
-		if (!header.empty())
-			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
-
-		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
-
-		auto resp = webClient.Request(request);
-
-		if (resp.GetStatusCode() == StatusCode::OK)
-			return resp.GetData();
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
-			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		else
-			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
-	}
 }
 
 json FSecure::Dropbox::SendJsonRequest(std::string const& url, json const& data)
