@@ -105,12 +105,11 @@ std::map<std::string, std::string> FSecure::Dropbox::ListChannels()
 	return channelMap;
 }
 
-
 std::string FSecure::Dropbox::CreateChannel(std::string const& channelName)
 {
 	std::map<std::string, std::string> channels = this->ListChannels();
 
-	if (!(channels.find(channelName) != channels.end()))
+	if (channels.find(channelName) == channels.end())
 	{
 		std::string url = OBF("https://api.dropboxapi.com/2/files/create_folder_v2");
 
@@ -178,7 +177,6 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 	return messages;
 }
 
-
 FSecure::ByteVector FSecure::Dropbox::ReadFile(std::string const& filename)
 {
 	std::string url = OBF_STR("https://content.dropboxapi.com/2/files/download");
@@ -187,7 +185,6 @@ FSecure::ByteVector FSecure::Dropbox::ReadFile(std::string const& filename)
 
 	return SendHttpRequest(url, j.dump());
 }
-
 
 void FSecure::Dropbox::DeleteFile(std::string const& filename)
 {
@@ -258,4 +255,3 @@ json FSecure::Dropbox::SendJsonRequest(std::string const& url, json const& data)
 {
 	return json::parse(SendHttpRequest(url, "", ContentType::ApplicationJson, data.dump()));
 }
-
