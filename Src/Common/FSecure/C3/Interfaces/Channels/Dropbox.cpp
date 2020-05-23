@@ -31,28 +31,6 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Dropbox::OnR
 	}
 
 	return ret;
-
-	//std::map<std::string, std::string> messages = m_dropboxObj.GetMessagesByDirection(m_inboundDirectionName);
-	//std::vector<std::string> repliesTs;
-
-	//// We can't fetch directly with a generated timestamp value, so we're pulling these out 
-	//// to iterate over and using that as a key to fetch the file by id.
-	//for (std::map<std::string, std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-	//	repliesTs.push_back(it->first);
-	//}
-
-	//std::vector<ByteVector> ret;
-
-	////Read the files in order and delete when data is retrieved.
-	//for (std::vector<std::string>::iterator ts = repliesTs.begin(); ts != repliesTs.end(); ++ts)
-	//{
-	//	std::string messagePath = messages[*ts];
-	//	auto fileContent = m_dropboxObj.ReadFile(messagePath);
-
-	//	m_dropboxObj.DeleteFile(messagePath);
-	//	ret.emplace_back(std::move(fileContent));
-	//}
-	//return ret;
 }
 
 
