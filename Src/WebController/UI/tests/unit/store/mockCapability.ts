@@ -521,13 +521,13 @@ export const capability = {
             ],
             {
               description:
-                "This token is what channel needs to interact with Slack's API",
+                'This token is what channel needs to interact with Slacks API',
               min: 1,
               name: 'Slack token',
               type: 'string'
             },
             {
-              description: "Name of Slack's channel used by api",
+              description: 'Name of Slacks channel used by api',
               min: 4,
               name: 'Channel name',
               randomize: true,
@@ -1153,13 +1153,13 @@ export const capability = {
             ],
             {
               description:
-                "This token is what channel needs to interact with Slack's API",
+                'This token is what channel needs to interact with Slacks API',
               min: 1,
               name: 'Slack token',
               type: 'string'
             },
             {
-              description: "Name of Slack's channel used by api",
+              description: 'Name of Slacks channel used by api',
               min: 4,
               name: 'Channel name',
               randomize: true,
@@ -1180,13 +1180,13 @@ export const capability = {
             },
             {
               description:
-                "This token is what channel needs to interact with Slack's API",
+                'This token is what channel needs to interact with Slacks API',
               min: 1,
               name: 'Slack token',
               type: 'string'
             },
             {
-              description: "Name of Slack's channel used by api",
+              description: 'Name of Slacks channel used by api',
               min: 4,
               name: 'Channel name',
               randomize: true,
@@ -1697,13 +1697,13 @@ export const capability = {
             ],
             {
               description:
-                "This token is what channel needs to interact with Slack's API",
+                'This token is what channel needs to interact with Slacks API',
               min: 1,
               name: 'Slack token',
               type: 'string'
             },
             {
-              description: "Name of Slack's channel used by api",
+              description: 'Name of Slacks channel used by api',
               min: 4,
               name: 'Channel name',
               randomize: true,
@@ -1724,13 +1724,13 @@ export const capability = {
             },
             {
               description:
-                "This token is what channel needs to interact with Slack's API",
+                'This token is what channel needs to interact with Slacks API',
               min: 1,
               name: 'Slack token',
               type: 'string'
             },
             {
-              description: "Name of Slack's channel used by api",
+              description: 'Name of Slacks channel used by api',
               min: 4,
               name: 'Channel name',
               randomize: true,

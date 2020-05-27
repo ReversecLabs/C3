@@ -106,5 +106,10 @@ export default class OptionsModal extends Mixins(C3) {
       this.setBasePort(this.c3Port);
     }
   }
+
+  public created() {
+    this.c3Url = this.getUrl;
+    this.c3Port = parseInt(this.getPort, 10);
+  }
 }
 </script>

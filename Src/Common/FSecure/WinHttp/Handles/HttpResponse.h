@@ -32,7 +32,7 @@ namespace FSecure::WinHttp
 		/// @param header - one of known HTTP headers to retrieve
 		/// @returns HTTP header value
 		/// @throws std::runtime_error if header value cannot be retreived
-		std::wstring GetHeader(Header header)
+		std::wstring GetHeader(Header header) const
 		{
 			return GetHeader(GetHeaderName(header));
 		}

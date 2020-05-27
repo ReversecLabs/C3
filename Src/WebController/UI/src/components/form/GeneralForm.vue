@@ -46,8 +46,10 @@ import { namespace } from 'vuex-class';
 import { Component, Prop, Watch, Mixins } from 'vue-property-decorator';
 
 import { NodeKlass, C3Node, C3FieldDefault } from '@/types/c3types';
-import { GetCapabilityForFn } from '@/store/C3Capability';
-import { GetTypeNameForInterfaceFn } from '@/store/C3Capability';
+import {
+  GetCapabilityForFn,
+  GetTypeNameForInterfaceFn
+} from '@/store/C3Capability';
 
 import C3 from '@/c3';
 import Input from '@/components/form/Input.vue';
@@ -308,7 +310,7 @@ export default class GeneralForm extends Mixins(C3) {
       } else {
         this.addNotify({
           type: 'info',
-          message: "Command not set up correctly, Form can't be generated."
+          message: `Command not set up correctly, Form can't be generated.`
         });
       }
     }

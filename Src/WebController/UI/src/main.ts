@@ -4,7 +4,6 @@ import store from './store';
 import VeeValidate from 'vee-validate';
 
 import './scss/main.scss';
-import 'vis/dist/vis.css';
 
 Vue.config.productionTip = false;
 
