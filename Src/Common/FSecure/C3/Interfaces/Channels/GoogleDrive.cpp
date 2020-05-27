@@ -14,8 +14,8 @@ FSecure::C3::Interfaces::Channels::GoogleDrive::GoogleDrive(ByteView arguments)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::GoogleDrive::OnSendToChannel(ByteView data)
 {
-	// There is a cap on uploads of files >150mb at which point different APIs are required.
-	data = data.SubString(0, 150 * 1024 * 1024);
+	// There is a cap on uploads of files >5mb at which point different APIs are required.
+	data = data.SubString(0, 5 * 1024 * 1024);
 	m_googledriveObj.WriteMessageToFile(m_outboundDirectionName, data);
 	return data.size();
 }
