@@ -1,8 +1,7 @@
-import { C3State } from '@/types/c3types';
-import { mutations } from '@/store/C3Module';
-import { RootState } from '@/types/store/RootState';
+import { C3State } from './../../../src/types/c3types';
+import { mutations, getters } from './../../../src/store/C3Module';
+import { RootState } from './../../../src/types/store/RootState';
 import { Module, ActionTree } from 'vuex';
-import { getters } from '@/store/C3Module';
 import { gateways } from './mockGateways';
 import { gateway } from './mockGateway';
 import { nodes } from './mockNodes';

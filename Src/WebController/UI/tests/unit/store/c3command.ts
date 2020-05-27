@@ -1,7 +1,10 @@
-import { RootState } from '@/types/store/RootState';
+import { RootState } from './../../../src/types/store/RootState';
 import { Module, ActionTree } from 'vuex';
-import { C3CommandState } from '@/store/C3Command';
-import { getters, mutations } from '@/store/C3Command';
+import {
+  C3CommandState,
+  getters,
+  mutations
+} from './../../../src/store/C3Command';
 import { commands } from './mockCommandLogs';
 
 const namespaced: boolean = true;
