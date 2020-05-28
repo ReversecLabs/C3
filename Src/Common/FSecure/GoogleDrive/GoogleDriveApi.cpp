@@ -198,15 +198,15 @@ void FSecure::GoogleDrive::DeleteFile(std::string const& id)
 	SendHttpRequest(Method::DEL, url);
 }
 
-FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, ByteView data, bool setAuthorizationHeader)
-{
-	return SendHttpRequest(method, host, GetContentType(*contentType), { data.begin(), data.end() }, setAuthorizationHeader);
-}
+//FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, ByteView data, bool setAuthorizationHeader)
+//{
+//	return SendHttpRequest(method, host, GetContentType(*contentType), { data.begin(), data.end() }, setAuthorizationHeader);
+//}
 
-FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader)
-{
-	return SendHttpRequest(method, host, contentType, ByteView{ data }, setAuthorizationHeader);
-}
+//FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader)
+//{
+//	return SendHttpRequest(method, host, contentType, ByteView{ data }, setAuthorizationHeader);
+//}
 
 FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader)
 {
@@ -249,5 +249,6 @@ FSecure::WinHttp::HttpRequest FSecure::GoogleDrive::CreateHttpRequest(FSecure::W
 
 json FSecure::GoogleDrive::SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data)
 {
-	return json::parse(SendHttpRequest(method, url, ContentType::ApplicationJson, data.dump()));
+	std::string jsonDump = data.dump();
+	return json::parse(SendHttpRequest(method, url, GetContentType(ContentType::ApplicationJson), { jsonDump.begin(), jsonDump.end() }));
 }

@@ -85,16 +85,11 @@ namespace FSecure
 		/// Hold proxy settings
 		WinHttp::WebProxy m_ProxyConfig;
 
-		/// Send http request, uses preset token for authentication
-		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType = {}, ByteView data = {}, bool setAuthorizationHeader = true);
+		/// Create and send http request, uses preset token for authentication
+		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType = {}, std::vector<uint8_t> data = {}, bool setAuthorizationHeader = true);
 
-		/// Overloads with std::string data value 
-		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader = true);
-
-		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader = true);
-
-		FSecure::WinHttp::HttpRequest CreateHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader);
-
+		/// Create initial request
+		FSecure::WinHttp::HttpRequest CreateHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType = {}, std::vector<uint8_t> data = {}, bool setAuthorizationHeader = true);
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data);
