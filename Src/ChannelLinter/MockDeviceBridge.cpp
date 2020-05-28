@@ -90,4 +90,41 @@ namespace FSecure::C3::Linter
 		return m_Device;
 	}
 
+	void MockDeviceBridge::Send(ByteView blob)
+	{
+		auto packetSplitter = m_QoS.GetPacketSplitter(blob);
+		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
+		{
+			auto sent = GetDevice()->OnSendToChannelInternal(packetSplitter.NextChunk());
+			if (packetSplitter.Update(sent))
+				noProgressCounter = 0;
+
+			if (!packetSplitter.HasMore())
+				return;
+		}
+
+		throw std::runtime_error("Cannot send data");
+	}
+
+	std::vector<FSecure::ByteVector> MockDeviceBridge::Receive(size_t minExpectedSize)
+	{
+		auto packets = std::vector<ByteVector>{};
+		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
+		{
+			std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
+			for (auto&& chunk : std::static_pointer_cast<C3::AbstractChannel>(GetDevice())->OnReceiveFromChannelInternal())
+			{
+				if (m_QoS.PushReceivedChunk(chunk))
+					noProgressCounter = 0;
+
+				if (auto packet = m_QoS.GetNextPacket(); !packet.empty()) // this form will ensure that packets are returned in same order they are available.
+					packets.emplace_back(std::move(packet));
+			}
+
+			if (packets.size() >= minExpectedSize)
+				return packets;
+		}
+
+		throw std::runtime_error("Cannot receive data");
+	}
 }

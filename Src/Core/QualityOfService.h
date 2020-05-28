@@ -32,18 +32,28 @@ namespace FSecure::C3
 			/// Informs that packet can be merged from chunks.
 			bool IsReady();
 
+			/// m_ExpectedSize setter.
+			void SetExpectedSize(uint32_t size);
+
 		private:
 			/// Map of chunks
 			std::map<uint32_t, ByteVector> m_Chunks;
 
-			/// Expected size of packet.
-			const uint32_t m_ExpectedSize;
+			/// Size provided by chunk nr. 0. packet must be not empty, 0 means packet nr. 0 was not yet received.
+			uint32_t m_ExpectedSize = 0;
 
+			/// Sum of all chunk sizes.
 			uint32_t m_Size = 0;
 		};
 
 		/// Used to mark order to outgoing packets.
 		uint32_t m_OutgouingPacketId = 0u;
+
+		/// Map of received packets. Packets could be not complete, or there could be packet missing.
+		std::map<uint32_t, Packet> m_ReciveQueue;
+
+		/// Returns next ids for packets.
+		uint32_t GetOutgouingPacketId();
 
 		/// Used to find order in incoming packets. GetNextPacket will hold ready packets if there was gap in numbering.
 		// removed, manual route table management means that channels should not wait for missing packets. It will be introduced at the edges of network
@@ -57,8 +67,38 @@ namespace FSecure::C3
 		static constexpr size_t s_MinFrameSize = 64U;
 		static constexpr size_t s_MinBodySize = s_MinFrameSize - s_HeaderSize;
 
-		/// Map of received packets. Packets could be not complete, or there could be packet missing.
-		std::map<uint32_t, Packet> m_ReciveQueue;
+		/// Class responsible for delivering data with correct chunk headers for sending.
+		/// This class does not own copy of data to be sent.
+		/// Original blob must be valid as long as PacketSplitter is used.
+		class PacketSplitter
+		{
+		public:
+			/// Constructor.
+			/// @param data - blob of data to be sent.
+			/// @param id - packet number.
+			PacketSplitter(ByteView data, uint32_t id);
+
+			/// Update PacketSplitter state after sending part of data.
+			/// @param sent - number of bytes that was successfully sent.
+			/// @returns true if sent data was enough to be accepted as correct chunk.
+			bool Update(size_t sent);
+
+			/// Get chunk ready to be sent.
+			/// @returns chunk of data with correct QOS header.
+			/// Content of returned data will be same as long as Update was not called, or called but returned false.
+			ByteVector NextChunk() const;
+
+			/// Informs if there is still part of packet awaiting for sending.
+			bool HasMore() const;
+
+		private:
+			/// View of data to be send.
+			ByteView m_Data;
+			/// Current packed id.
+			uint32_t m_PacketId;
+			/// Current packet chunk id.
+			uint32_t m_ChunkId;
+		};
 
 		/// Get next packet.
 		/// @returns ByteVector whole packet when it's ready or empty buffer otherwise.
@@ -66,17 +106,19 @@ namespace FSecure::C3
 
 		/// Push chunk to QoS storage to handle merging and ordering.
 		/// @param chunkWithHeader received packet. Device will add QoS header before sending any chunk.
-		void PushReceivedChunk(ByteView chunkWithHeader);
+		/// @return true if chunk was accepted.
+		bool PushReceivedChunk(ByteView chunkWithHeader);
 
 		/// Push chunk to QoS storage to handle merging and ordering.
 		/// @param packetId id of the packet.
 		/// @param chunkId id of the chunk.
 		/// @param expectedSize expected size of whole packet.
 		/// @param chunk chunk of packet.
-		void PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk);
+		/// @return true if chunk was accepted.
+		bool PushReceivedChunk(uint32_t packetId, uint32_t chunkId, uint32_t expectedSize, ByteView chunk);
 
-		/// Returns next ids for packets.
-		uint32_t GetOutgouingPacketId();
+		/// Get Packet Splitter for data to be sent through channel.
+		PacketSplitter GetPacketSplitter(ByteView data);
 	};
 }
 

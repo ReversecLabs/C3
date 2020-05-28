@@ -70,21 +70,9 @@ void FSecure::C3::Core::DeviceBridge::OnPassNetworkPacket(ByteView packet)
 		return;
 	}
 
-	auto oryginalSize = static_cast<uint32_t>(packet.size());
-	auto messageId = m_QoS.GetOutgouingPacketId();
-	uint32_t chunkId = 0u;
-	while (!packet.empty())
-	{
-		auto data = ByteVector{}.Write(messageId, chunkId, oryginalSize).Concat(packet);
-		auto sent = GetDevice()->OnSendToChannelInternal(data);
-
-		if (sent >= QualityOfService::s_MinFrameSize || sent == data.size()) // if this condition were not channel must resend data.
-		{
-			chunkId++;
-			packet.remove_prefix(sent - QualityOfService::s_HeaderSize);
-		}
-	}
-
+	auto packetSplitter = m_QoS.GetPacketSplitter(packet);
+	while (packetSplitter.HasMore())
+		packetSplitter.Update(GetDevice()->OnSendToChannelInternal(packetSplitter.NextChunk()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
