@@ -53,10 +53,10 @@ void FSecure::GoogleDrive::RefreshAccessToken()
 	
 	auto resp = webClient.Request(CreateHttpRequest(Method::POST, url, GetContentType(ContentType::ApplicationXWwwFormUrlencoded), body, false));
 
-	if (resp.GetStatusCode() == StatusCode::OK)
-		SetToken(json::parse(resp.GetData())[OBF("access_token")]);
-	else
-		throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));	
+	if (resp.GetStatusCode() != StatusCode::OK)
+		throw std::runtime_error(OBF("[x] Failed to retrieve access token.\n"));	
+	
+	SetToken(json::parse(resp.GetData())[OBF("access_token")]);
 }
 
 void FSecure::GoogleDrive::SetToken(std::string const& token)
@@ -216,7 +216,7 @@ FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Meth
 		else if (resp.GetStatusCode() == StatusCode::Unauthorized)
 			RefreshAccessToken();
 		else
-			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
+			throw std::runtime_error(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
 }
 
