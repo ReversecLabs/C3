@@ -24,7 +24,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.cpp" />
@@ -88,7 +90,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Sockets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.hxx" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\SafeSmartPointerContainer.h" />
