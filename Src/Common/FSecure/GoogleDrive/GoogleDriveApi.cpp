@@ -198,16 +198,6 @@ void FSecure::GoogleDrive::DeleteFile(std::string const& id)
 	SendHttpRequest(Method::DEL, url);
 }
 
-//FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, ByteView data, bool setAuthorizationHeader)
-//{
-//	return SendHttpRequest(method, host, GetContentType(*contentType), { data.begin(), data.end() }, setAuthorizationHeader);
-//}
-
-//FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader)
-//{
-//	return SendHttpRequest(method, host, contentType, ByteView{ data }, setAuthorizationHeader);
-//}
-
 FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader)
 {
 	HttpClient webClient(ToWideString(host), m_ProxyConfig);
