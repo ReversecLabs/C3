@@ -102,28 +102,7 @@ void FSecure::GoogleDrive::WriteMessageToFile(std::string const& direction, Byte
 
 	std::string contentType = OBF("multipart/form-data; boundary=") + boundary;
 
-	while (true)
-	{
-		HttpClient webClient(ToWideString(url), m_ProxyConfig);
-		HttpRequest request(Method::POST);
-
-		request.SetData(ToWideString(contentType), body);
-
-		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
-
-		auto resp = webClient.Request(request);
-
-		if (resp.GetStatusCode() == StatusCode::OK)
-			break;
-		else if (resp.GetStatusCode() == StatusCode::NoContent)
-			break;
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
-			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		else if (resp.GetStatusCode() == StatusCode::Unauthorized)
-			RefreshAccessToken();
-		else
-			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
-	}
+	SendHttpRequest(Method::POST, url, ToWideString(contentType), body);
 }
 
 void FSecure::GoogleDrive::UploadFile(std::string const& path)
@@ -216,14 +195,24 @@ void FSecure::GoogleDrive::DeleteFile(std::string const& id)
 
 FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, ByteView data, bool setAuthorizationHeader)
 {
+	return SendHttpRequest(method, host, GetContentType(*contentType), { data.begin(), data.end() }, setAuthorizationHeader);
+}
+
+FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader)
+{
+	return SendHttpRequest(method, host, contentType, ByteView{ data }, setAuthorizationHeader);
+}
+
+FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader)
+{
 	HttpClient webClient(ToWideString(host), m_ProxyConfig);
 	HttpRequest request; // default request is GET
 	request.m_Method = method;
 	request.SetTimeout({}, {}, 0ms, 0ms);
 
-	if (contentType && !data.empty())
+	if (!contentType.empty() && !data.empty())
 	{
-		request.SetData(*contentType, { data.begin(), data.end() });
+		request.SetData(contentType, data);
 	}
 
 	if (setAuthorizationHeader)
@@ -232,7 +221,7 @@ FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Meth
 	while (true)
 	{
 		auto resp = webClient.Request(request);
-		
+
 		if (resp.GetStatusCode() == StatusCode::OK)
 			return resp.GetData();
 		else if (resp.GetStatusCode() == StatusCode::NoContent)
@@ -244,11 +233,6 @@ FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Meth
 		else
 			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
-}
-
-FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader)
-{
-	return SendHttpRequest(method, host, contentType, ByteView{ data }, setAuthorizationHeader);
 }
 
 json FSecure::GoogleDrive::SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data)
