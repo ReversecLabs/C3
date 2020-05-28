@@ -42,16 +42,21 @@ void FSecure::GoogleDrive::SetChannel(std::string const& channelId)
 void FSecure::GoogleDrive::RefreshAccessToken()
 {
 	std::string url = OBF_STR("https://oauth2.googleapis.com/token");
+	HttpClient webClient(ToWideString(url), m_ProxyConfig);
 	
 	std::string toSend = OBF("client_id=") + this->m_clientId;
 	toSend += OBF("&client_secret=") + this->m_clientSecret;
 	toSend += OBF("&refresh_token=") + this->m_refreshToken;
 	toSend += OBF("&grant_type=refresh_token");
 	toSend += OBF("&access_type=offline");
+	std::vector<uint8_t> body = { toSend.begin(), toSend.end() };
 	
-	auto resp = json::parse(SendHttpRequest(Method::POST, url, ContentType::ApplicationXWwwFormUrlencoded, toSend, false));
+	auto resp = webClient.Request(CreateHttpRequest(Method::POST, url, GetContentType(ContentType::ApplicationXWwwFormUrlencoded), body, false));
 
-	SetToken(resp[OBF("access_token")]);
+	if (resp.GetStatusCode() == StatusCode::OK)
+		SetToken(json::parse(resp.GetData())[OBF("access_token")]);
+	else
+		throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));	
 }
 
 void FSecure::GoogleDrive::SetToken(std::string const& token)
@@ -206,18 +211,8 @@ FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Meth
 FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader)
 {
 	HttpClient webClient(ToWideString(host), m_ProxyConfig);
-	HttpRequest request; // default request is GET
-	request.m_Method = method;
-	request.SetTimeout({}, {}, 0ms, 0ms);
-
-	if (!contentType.empty() && !data.empty())
-	{
-		request.SetData(contentType, data);
-	}
-
-	if (setAuthorizationHeader)
-		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
-
+	HttpRequest request = CreateHttpRequest(method, host, contentType, data, setAuthorizationHeader);
+	
 	while (true)
 	{
 		auto resp = webClient.Request(request);
@@ -233,6 +228,23 @@ FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Meth
 		else
 			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
+}
+
+FSecure::WinHttp::HttpRequest FSecure::GoogleDrive::CreateHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader)
+{
+	HttpRequest request; // default request is GET
+	request.m_Method = method;
+	request.SetTimeout({}, {}, 0ms, 0ms);
+
+	if (!contentType.empty() && !data.empty())
+	{
+		request.SetData(contentType, data);
+	}
+
+	if (setAuthorizationHeader)
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
+	
+	return request;
 }
 
 json FSecure::GoogleDrive::SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data)

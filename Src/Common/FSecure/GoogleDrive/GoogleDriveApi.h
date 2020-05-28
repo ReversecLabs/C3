@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common/json/json.hpp"
+#include "Common/FSecure/WinHttp/HttpClient.h"
 #include "Common/FSecure/WinHttp/WebProxy.h"
 #include "Common/FSecure/WinHttp/Constants.h"
 
@@ -91,6 +92,9 @@ namespace FSecure
 		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, std::string const& data, bool setAuthorizationHeader = true);
 
 		FSecure::ByteVector SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader = true);
+
+		FSecure::WinHttp::HttpRequest CreateHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::wstring const& contentType, std::vector<uint8_t> data, bool setAuthorizationHeader);
+
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data);
