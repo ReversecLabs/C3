@@ -216,21 +216,21 @@ void FSecure::GoogleDrive::DeleteFile(std::string const& id)
 
 FSecure::ByteVector FSecure::GoogleDrive::SendHttpRequest(FSecure::WinHttp::Method method, std::string const& host, std::optional<WinHttp::ContentType> contentType, ByteView data, bool setAuthorizationHeader)
 {
+	HttpClient webClient(ToWideString(host), m_ProxyConfig);
+	HttpRequest request; // default request is GET
+	request.m_Method = method;
+	request.SetTimeout({}, {}, 0ms, 0ms);
+
+	if (contentType && !data.empty())
+	{
+		request.SetData(*contentType, { data.begin(), data.end() });
+	}
+
+	if (setAuthorizationHeader)
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
+
 	while (true)
 	{
-		HttpClient webClient(ToWideString(host), m_ProxyConfig);
-		HttpRequest request; // default request is GET
-		request.m_Method = method;
-		request.SetTimeout({}, {}, 0ms, 0ms);
-
-		if (contentType && !data.empty())
-		{
-			request.SetData(*contentType, { data.begin(), data.end() });
-		}
-
-		if (setAuthorizationHeader)
-			request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
-
 		auto resp = webClient.Request(request);
 		
 		if (resp.GetStatusCode() == StatusCode::OK)
