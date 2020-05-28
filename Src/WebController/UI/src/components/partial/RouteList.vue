@@ -153,11 +153,9 @@ export default class RouteList extends Mixins(C3, Partial) {
 
     if (!!this.parentKlass && this.parentKlass === NodeKlass.Relay) {
       const relay = this.getRelay(this.parentId);
-      if (!!relay) {
-        apiURL = apiURL + `${relay.parentId}/relay/${this.parentId}/command`;
-      } else {
-        apiURL = apiURL + `${this.parentId}/command`;
-      }
+      apiURL = !!relay
+        ? apiURL + `${relay.parentId}/relay/${this.parentId}/command`
+        : apiURL + `${this.parentId}/command`;
     }
 
     axios({

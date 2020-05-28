@@ -1,5 +1,6 @@
 import { Module, GetterTree, MutationTree, ActionTree } from 'vuex';
-import { DataSet, Node, Edge, Options } from 'vis';
+import { Node, Edge, Options } from 'vis-network';
+import { DataSet } from 'vis-data/peer/esm/vis-data';
 
 import { RootState } from '@/types/store/RootState';
 import { C3Edge, NodeKlass, C3Node } from '@/types/c3types';
@@ -114,11 +115,8 @@ const mutations: MutationTree<VisState> = {
 
   setTreeView(visState, b: boolean): void {
     visState.options.layout.hierarchical.enabled = b;
-    if (b === true) {
-      visState.options.physics.stabilization.onlyDynamicEdges = true;
-    } else {
-      visState.options.physics.stabilization.onlyDynamicEdges = false;
-    }
+    visState.options.physics.stabilization.onlyDynamicEdges =
+      b === true ? true : false;
   },
 
   setPhysics(visState, b: boolean): void {
@@ -168,11 +166,7 @@ const actions: ActionTree<VisState, RootState> = {
       // If relay last seen begore gateway last start than we think gateway maybe down
       if (target.klass === NodeKlass.Relay) {
         if (!!target.timestamp) {
-          if (target.timestamp < gatewayStartTime) {
-            active = false;
-          } else {
-            active = true;
-          }
+          active = target.timestamp < gatewayStartTime ? false : true;
         }
 
         // if gateway down the hole network down

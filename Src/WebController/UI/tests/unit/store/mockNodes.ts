@@ -1,6 +1,6 @@
 // tslint:disable max-line-length
 
-import { C3Node, NodeKlass } from '@/types/c3types';
+import { C3Node, NodeKlass } from './../../../src/types/c3types';
 
 export const nodes: C3Node[] = [
   {

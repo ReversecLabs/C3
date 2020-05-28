@@ -70,11 +70,10 @@ export default class InterfaceList extends Mixins(C3, Partial) {
 
   get c3Interfaces() {
     let interfaces = [];
-    if (this.interfaceTypeFilter === 'ALL') {
-      interfaces = this.getInterfaces();
-    } else {
-      interfaces = this.getInterfaces([this.interfaceTypeFilter as NodeKlass]);
-    }
+    interfaces =
+      this.interfaceTypeFilter === 'ALL'
+        ? this.getInterfaces()
+        : this.getInterfaces([this.interfaceTypeFilter as NodeKlass]);
 
     if (this.returnChannelFilter === 'YES') {
       interfaces = interfaces.filter((c3Node: C3Node) => {
