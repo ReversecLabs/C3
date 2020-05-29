@@ -219,16 +219,11 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		else
-			throw std::exception(OBF("[x] Non 200/429 HTTP Response\n"));
+			throw std::runtime_error(OBF("[x] Non 200/429 HTTP Response\n"));
 	}
-}
-
-FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data)
-{
-	return SendHttpRequest(host, header, contentType, ByteView{ data });
 }
 
 json FSecure::Dropbox::SendJsonRequest(std::string const& url, json const& data)
 {
-	return json::parse(SendHttpRequest(url, "", ContentType::ApplicationJson, data.dump()));
+	return json::parse(SendHttpRequest(url, "", ContentType::ApplicationJson, ByteView{ data.dump() }));
 }
