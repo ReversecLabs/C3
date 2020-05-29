@@ -79,8 +79,6 @@ namespace FSecure
 		/// Send http request, uses preset token for authentication
 		FSecure::ByteVector SendHttpRequest(std::string const& host, std::string const& header = "", std::optional<WinHttp::ContentType> contentType = {}, ByteView data = {});
 
-		FSecure::ByteVector SendHttpRequest(std::string const& host, std::string const& header, std::optional<WinHttp::ContentType> contentType, std::string const& data);
-
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data);
 
