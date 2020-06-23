@@ -150,54 +150,30 @@ namespace FSecure::C3::Linter
 			std::cout << "Testing channel with " << packetLen << " bytes of data ... " << std::flush;
 			auto data = ByteVector(FSecure::Utils::GenerateRandomData(packetLen));
 
-			// call send and receive interleaved
-			size_t sentTotal = 0;
-			ByteVector received;
-			ByteView sendView{ data };
-			while (sentTotal != packetLen && received.size() != packetLen)
-			{
-				if (sentTotal != packetLen)
-				{
-					auto sent = channel->GetDevice()->OnSendToChannelInternal(sendView);
-					sendView.remove_prefix(sent);
-					sentTotal += sent;
-				}
-
-				std::this_thread::sleep_for(channel->GetDevice()->GetUpdateDelay());
-
-				if (received.size() != packetLen)
-				{
-					auto receivedPackets = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
-					for (auto&& packet : receivedPackets)
-						received.Concat(packet);
-				}
-			}
-
-			if (data != received)
+			channel->Send(data);
+			if (data != complementary->Receive()[0])
 				throw std::exception("Data sent and received mismatch");
+
 			std::cout << "OK" << std::endl;
 		}
 
 		auto numberOfTests = 10;
 		auto packetSize = 64;
 		std::cout << "Testing channel order with " << numberOfTests << " packets of " << packetSize << " bytes of data ... " << std::flush;
-		std::vector<ByteVector> sent, received;
+		std::vector<ByteVector> sent;
 
 		for (auto i = 0; i < numberOfTests; ++i)
 		{
 			sent.push_back(FSecure::Utils::GenerateRandomData(packetSize));
-			channel->GetDevice()->OnSendToChannelInternal(sent[i]);
+			channel->Send(sent[i]);
 		}
 
-		for (auto i = 0; i < numberOfTests && received.size() < sent.size(); ++i)
-		{
-			auto receivedPackets = std::static_pointer_cast<C3::AbstractChannel>(complementary->GetDevice())->OnReceiveFromChannelInternal();
-			received.insert(received.end(), receivedPackets.begin(), receivedPackets.end());
-			std::this_thread::sleep_for(channel->GetDevice()->GetUpdateDelay());
-		}
+		auto received = complementary->Receive(sent.size());
+		received.resize(sent.size());
 
 		if (sent != received)
 			throw std::exception("Data sent and received mismatch");
+
 		std::cout << "OK" << std::endl;
 	}
 
