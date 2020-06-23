@@ -17,7 +17,7 @@ namespace FSecure::Loader::UnexportedWinApi
 			if (IsWindows10RS3OrGreater())
 			{
 				auto offset = 0x43;
-				if (IsWindows10RS6OrGreater())
+				if (IsWindows1019H1OrGreater())
 					offset = 0x46;
 				else if (IsWindows10RS4OrGreater())
 					offset = 0x44;
@@ -47,7 +47,9 @@ namespace FSecure::Loader::UnexportedWinApi
 					pattern = "\x8b\xc1\x8d\x4d\xac\x51";
 
 				auto offset = 0x18;
-				if (IsWindows10RS6OrGreater())
+				if (IsWindows1020H1OrGreater())
+					offset = 0x2C;
+				else if (IsWindows1019H1OrGreater())
 					offset = 0x2E;
 				else if (IsWindows10RS5OrGreater())
 					offset = 0x2C;
@@ -123,13 +125,13 @@ namespace FSecure::Loader::UnexportedWinApi
 		};
 
 #if defined _M_X64
-		typedef DWORD(* LdrpHandleTlsData_t)(LDR_DATA_TABLE_ENTRY*);
+		using LdrpHandleTlsData_t = DWORD(*)(LDR_DATA_TABLE_ENTRY*);
 #elif defined _M_IX86
-		typedef DWORD(__thiscall* LdrpHandleTlsDataWin8Point1OrGreater)(LDR_DATA_TABLE_ENTRY*);
-		typedef DWORD(__stdcall* LdprHandleTlsDataWin7OrGreater)(LDR_DATA_TABLE_ENTRY*);
-		typedef void(__fastcall* RtlInsertInvertedFunctionTableWin8Point1OrGreater)(void* baseAddr, DWORD sizeOfImage);
-		typedef void(__stdcall* RtlInsertInvertedFunctionTableWin8OrGreater)(void* baseAddr, DWORD sizeOfImage);
-		typedef void(__stdcall* RtlInsertInvertedFunctionTableWin7OrGreater)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
+		using LdrpHandleTlsDataWin8Point1OrGreater = DWORD(__thiscall*)(LDR_DATA_TABLE_ENTRY*);
+		using LdprHandleTlsDataWin7OrGreater = DWORD(__stdcall*)(LDR_DATA_TABLE_ENTRY*);
+		using RtlInsertInvertedFunctionTableWin8Point1OrGreater = void(__fastcall*)(void* baseAddr, DWORD sizeOfImage);
+		using RtlInsertInvertedFunctionTableWin8OrGreater = void(__stdcall*)(void* baseAddr, DWORD sizeOfImage);
+		using RtlInsertInvertedFunctionTableWin7OrGreater = void(__stdcall*)(void* ldrpInvertedFunctionTable, void* baseAddr, DWORD sizeOfImage);
 #else
 #error Unsupported architecture
 #endif

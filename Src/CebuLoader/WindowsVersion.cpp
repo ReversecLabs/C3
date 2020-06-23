@@ -29,8 +29,12 @@ namespace FSecure::Loader
 				switch (fullver)
 				{
 				case Win32WinNtWIN10:
-					if (g_WinVer.native.dwBuildNumber >= Build_RS6)
-						g_WinVer.ver = Win10_RS6;
+					if (g_WinVer.native.dwBuildNumber >= Build_20H1)
+						g_WinVer.ver = Win10_20H1;
+					else if (g_WinVer.native.dwBuildNumber >= Build_19H2)
+						g_WinVer.ver = Win10_19H2;
+					else if (g_WinVer.native.dwBuildNumber >= Build_19H1)
+						g_WinVer.ver = Win10_19H1;
 					else if (g_WinVer.native.dwBuildNumber >= Build_RS5)
 						g_WinVer.ver = Win10_RS5;
 					else if (g_WinVer.native.dwBuildNumber >= Build_RS4)

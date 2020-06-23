@@ -9,18 +9,18 @@ namespace FSecure::Loader
 {
 	enum Win32WinNt
 	{
-		Win32WinNtNT4           = 0x0400,
-		Win32WinNtWIN2K         = 0x0500,
-		Win32WinNtWINXP         = 0x0501,
-		Win32WinNtWS03          = 0x0502,
-		Win32WinNtWIN6          = 0x0600,
-		Win32WinNtVISTA         = 0x0600,
-		Win32WinNtWS08          = 0x0600,
-		Win32WinNtLONGHORN      = 0x0600,
-		Win32WinNtWIN7          = 0x0601,
-		Win32WinNtWIN8          = 0x0602,
-		Win32WinNtWINBLUE       = 0x0603,
-		Win32WinNtWIN10         = 0x0A00,
+		Win32WinNtNT4 = 0x0400,
+		Win32WinNtWIN2K = 0x0500,
+		Win32WinNtWINXP = 0x0501,
+		Win32WinNtWS03 = 0x0502,
+		Win32WinNtWIN6 = 0x0600,
+		Win32WinNtVISTA = 0x0600,
+		Win32WinNtWS08 = 0x0600,
+		Win32WinNtLONGHORN = 0x0600,
+		Win32WinNtWIN7 = 0x0601,
+		Win32WinNtWIN8 = 0x0602,
+		Win32WinNtWINBLUE = 0x0603,
+		Win32WinNtWIN10 = 0x0A00,
 	};
 
 	enum BuildThreshold
@@ -31,7 +31,9 @@ namespace FSecure::Loader
 		Build_RS3 = 16299,
 		Build_RS4 = 17134,
 		Build_RS5 = 17763,
-		Build_RS6 = 18362,
+		Build_19H1 = 18362,
+		Build_19H2 = 18363,
+		Build_20H1 = 19041,
 		Build_RS_MAX = 99999,
 	};
 
@@ -49,6 +51,9 @@ namespace FSecure::Loader
 		Win10_RS4,      // Windows 10 Spring Creators update
 		Win10_RS5,      // Windows 10 October 2018 update
 		Win10_RS6,      // Windows 10 May 2019 update
+		Win10_19H1,     // Windows 10 May 2019 update
+		Win10_19H2,     // Windows 10 November 2019 update
+		Win10_20H1,     // Windows 10 April 2020 update
 	};
 
 	struct WinVersion
@@ -62,7 +67,7 @@ namespace FSecure::Loader
 
 	inline uint32_t GetRevision()
 	{
-		HKEY hKey = NULL;
+		HKEY hKey = nullptr;
 
 		if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_QUERY_VALUE, &hKey) == 0)
 		{
@@ -76,7 +81,7 @@ namespace FSecure::Loader
 				size_t first = buildStr.find(L'.');
 				size_t second = buildStr.find(L'.', first + 1);
 
-				if (second > first&& first != buildStr.npos)
+				if (second > first && first != buildStr.npos)
 				{
 					RegCloseKey(hKey);
 					return std::wcstol(buildStr.substr(first + 1, second - first - 1).c_str(), nullptr, 10);
@@ -176,9 +181,19 @@ namespace FSecure::Loader
 		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS5);
 	}
 
-	inline bool IsWindows10RS6OrGreater()
+	inline bool IsWindows1019H1OrGreater()
 	{
-		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_RS6);
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_19H1);
+	}
+
+	inline bool IsWindows1019H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_19H2);
+	}
+
+	inline bool IsWindows1020H1OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_20H1);
 	}
 
 	inline bool IsWindowsServer()
