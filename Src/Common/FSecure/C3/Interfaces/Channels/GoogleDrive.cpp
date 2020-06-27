@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::GoogleDrive::GoogleDrive(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [ClientId, ClientSecret, RefreshToken, channelName] = arguments.Read<std::string, std::string, std::string, std::string>();
-	m_googledriveObj = FSecure::GoogleDrive{ ClientId, ClientSecret, RefreshToken, channelName };
+	auto [userAgent, ClientId, ClientSecret, RefreshToken, channelName] = arguments.Read<std::string, std::string, std::string, std::string, std::string>();
+	m_googledriveObj = FSecure::GoogleDrive{ userAgent, ClientId, ClientSecret, RefreshToken, channelName };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +89,13 @@ const char* FSecure::C3::Interfaces::Channels::GoogleDrive::GetCapability()
 			],
 			{
 				"type": "string",
+				"name": "User-Agent Header",
+				"min": 1,
+				"defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+				"description": "The User-Agent header to set"
+			},
+			{
+				"type": "string",
 				"name": "Client ID",
 				"min": 1,
 				"description": "Client ID for GoogleDrive's API"
@@ -139,3 +146,4 @@ const char* FSecure::C3::Interfaces::Channels::GoogleDrive::GetCapability()
 }
 )_";
 }
+

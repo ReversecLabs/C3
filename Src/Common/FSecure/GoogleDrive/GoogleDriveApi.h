@@ -18,7 +18,7 @@ namespace FSecure
 		/// @param client_secret - Client secret
 		/// @param refresh_token - the Outh refresh token for producing new access tokens
 		/// @param proxyString - the proxy to use
-		GoogleDrive(std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName);
+		GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName);
 
 		/// Default constructor.
 		GoogleDrive() = default;
@@ -94,6 +94,10 @@ namespace FSecure
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(FSecure::WinHttp::Method method, std::string const& url, json const& data);
 
+		/// The user agent header value.
+		std::string m_UserAgent;
+
 	};
 
 }
+
