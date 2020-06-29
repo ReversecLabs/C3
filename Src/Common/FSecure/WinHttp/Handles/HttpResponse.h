@@ -75,7 +75,7 @@ namespace FSecure::WinHttp
 		template <typename T = ByteView>
 		std::enable_if_t<!std::is_reference_v<T>, T> GetData() const&
 		{
-			return ByteView{ GetDataInternal() };
+			return GetDataInternal();
 		}
 
 		/// Get HTTP response body
@@ -84,7 +84,7 @@ namespace FSecure::WinHttp
 		template <typename T = ByteVector>
 		std::enable_if_t<!std::is_reference_v<T>, T> GetData() const&&
 		{
-			return ByteView{ GetDataInternal() };
+			return  GetDataInternal();
 		}
 
 		/// Get HTTP response body
@@ -101,7 +101,7 @@ namespace FSecure::WinHttp
 		/// Get HTTP response body.
 		/// @returns HTTP response body
 		/// @throws std::runtime_error if response body cannot be retreived
-		ByteVector const& GetDataInternal() const
+		ByteView GetDataInternal() const
 		{
 			if (!m_Data.size())
 				ReceiveData();
