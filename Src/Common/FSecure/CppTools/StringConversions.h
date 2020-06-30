@@ -109,7 +109,7 @@ namespace FSecure::StringConversions
 			static auto Convert(std::string_view str)
 			{
 				auto state = std::mbstate_t{};
-				auto ptr = &str[0], end = &str[0] + str.size();
+				auto ptr = str.data(), end = str.data() + str.size();
 				char16_t out;
 				std::wstring ret;
 				while (ptr != end)
@@ -248,7 +248,7 @@ namespace FSecure::StringConversions
 	template<typename Tag, typename ...RestTags, typename ArgT>
 	auto Convert(ArgT const& str)
 	{
-		auto ret = Detail::ConvertStruct<Tag>::Convert(Detail::ViewT<ArgT>{ &str[0], std::size(str) });
+		auto ret = Detail::ConvertStruct<Tag>::Convert(Detail::ViewT<ArgT>{str});
 		if constexpr (sizeof...(RestTags) == 0)
 			return ret;
 		else

@@ -11,7 +11,7 @@ namespace FSecure::WinHttp
 	{
 	public:
 		/// Create response handle
-		/// @param requestHadle - a request coresponding to this response
+		/// @param requestHadle - a request corresponding to this response
 		HttpResponse(HttpHandle requestHandle)
 			: m_RequestHandle{ std::move(requestHandle) }
 		{
@@ -72,15 +72,42 @@ namespace FSecure::WinHttp
 		/// Get HTTP response body
 		/// @returns HTTP response body
 		/// @throws std::runtime_error if response body cannot be retreived
-		ByteVector GetData() const
+		template <typename T = ByteView>
+		std::enable_if_t<!std::is_reference_v<T>, T> GetData() const&
+		{
+			return GetDataInternal();
+		}
+
+		/// Get HTTP response body
+		/// @returns HTTP response body
+		/// @throws std::runtime_error if response body cannot be retreived
+		template <typename T = ByteVector>
+		std::enable_if_t<!std::is_reference_v<T>, T> GetData() const&&
+		{
+			return  GetDataInternal();
+		}
+
+		/// Get HTTP response body
+		/// @param c callable object used to obtain data.
+		/// @returns HTTP response body
+		/// @throws std::runtime_error if response body cannot be retreived
+		template <typename Callable>
+		auto GetData(Callable c) const
+		{
+			return c(GetDataInternal());
+		}
+
+	private:
+		/// Get HTTP response body.
+		/// @returns HTTP response body
+		/// @throws std::runtime_error if response body cannot be retreived
+		ByteView GetDataInternal() const
 		{
 			if (!m_Data.size())
 				ReceiveData();
 
 			return m_Data;
 		}
-
-	private:
 		/// Read status code from HTTP response
 		/// @throws std::runtime_error if status code cannot be retreived
 		void ReadStatusCode() const
