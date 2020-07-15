@@ -41,7 +41,7 @@ namespace FSecure
 		/// @param token - the textual api token.
 		void SetToken(std::string const& token);
 
-		/// Will list the created folders in Dropbox and if already preset return the channel name. If not already created, 
+		/// Will list the created folders in Dropbox and if already preset return the channel name. If not already created,
 		/// creates a new folder on Dropbox.
 		/// @param channelName - the actual name of the folder to create, such as "files".
 		/// @return - the channel name of the new or already existing channel.

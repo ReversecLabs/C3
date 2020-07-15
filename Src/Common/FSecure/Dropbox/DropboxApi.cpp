@@ -48,7 +48,7 @@ void FSecure::Dropbox::WriteMessageToFile(std::string const& direction, ByteView
 
 	if (providedFilename.empty())
 	{
-		///Create a filename thats prefixed with message direction and suffixed 
+		///Create a filename thats prefixed with message direction and suffixed
 		// with more granular timestamp for querying later
 		std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
 		filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
@@ -73,7 +73,6 @@ void FSecure::Dropbox::UploadFile(std::string const& path)
 
 	ByteVector packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
 	readFile.close();
-		
 	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
 	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
@@ -132,14 +131,13 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 	json response;
 	std::string cursor;
 
-	// If our search results roll over to another page (unlikely) we use a different endpoint 
+	// If our search results roll over to another page (unlikely) we use a different endpoint
 	// to retrieve the extra file details
 	do
 	{
 		if (cursor.empty())
 		{
 			std::string url = OBF("https://api.dropboxapi.com/2/files/search_v2");
-			
 			json search_options;
 			search_options[OBF("path")] = OBF("/") + this->m_Channel;
 			search_options[OBF("filename_only")] = true;
@@ -152,7 +150,6 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 		else
 		{
 			std::string url = OBF("https://api.dropboxapi.com/2/files/search/continue_v2");
-			
 			json j;
 			j[OBF("cursor")] = cursor;
 

@@ -109,13 +109,13 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 			}
 		]
 	},
-	"commands": 
+	"commands":
 	[
 		{
 			"name": "Upload File from Relay",
 			"id": 0,
 			"description": "Upload file from host running Relay directly to Dropbox (150mb max.)",
-			"arguments": 
+			"arguments":
 			[
 				{
                     "type" : "string",
@@ -134,4 +134,3 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 }
 )_";
 }
-
