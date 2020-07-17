@@ -6,6 +6,7 @@
 #include <functional>
 #include <array>
 #include <vector>
+#include <tuple>
 
 #ifndef OBF
 #	define OBF(x) x
@@ -227,6 +228,96 @@ namespace FSecure::Utils
 		public:
 			enum { other = 0, directMemoryAccess = (sizeof(uint16_t) - sizeof(uint8_t)), queuedAccess = (sizeof(uint32_t) - sizeof(uint8_t)) };
 			enum { value = (sizeof(test<T>(0)) - sizeof(uint8_t)) };
+		};
+	}
+
+	/// Namespace for internal implementation
+	namespace Detail
+	{
+		/// @brief Default implementation of class checking if it is worth to take reference or copy by value
+		/// Represents false.
+		template<typename T, typename Enable>
+		struct WorthAddingConstRefImpl : std::false_type
+		{};
+
+		/// @brief Specialization of class checking if it is worth to take reference or copy by value.
+		/// Represents true.
+		template<typename T>
+		struct WorthAddingConstRefImpl<T,
+			std::enable_if_t<
+				!std::is_rvalue_reference_v<T> && (!std::is_trivial_v<std::remove_reference_t<T>> || (sizeof(T) > sizeof(long long)))
+				>
+		> : std::true_type{};
+
+		/// @brief Default implementation of class declaring simpler type to use based on T type.
+		/// Represents copy by value.
+		template<typename T, typename Enable>
+		struct AddConstRefToNonTrivialImpl
+		{
+			using type = std::remove_reference_t<T>;
+		};
+
+		/// @brief Specialization of class declaring simpler type to use based on T type.
+		/// Represents copy by reference.
+		template<typename T>
+		struct  AddConstRefToNonTrivialImpl<T, std::enable_if_t<WorthAddingConstRefImpl<T, void>::value>>
+		{
+			using type = std::remove_reference_t<T> const&;
+		};
+	}
+
+	/// @brief Class checking if it is worth to take reference or copy by value.
+	template<typename T>
+	struct WorthAddingConstRef : Detail::WorthAddingConstRefImpl<T, void> {};
+
+	/// @brief Simplified WorthAddingConstRef<T>::value.
+	template<typename T>
+	static constexpr auto WorthAddingConstRefV = WorthAddingConstRef<T>::value;
+
+	/// @brief Class declaring simpler type to use based on T type.
+	template<typename T>
+	struct  AddConstRefToNonTrivial : Detail::AddConstRefToNonTrivialImpl<T, void> {};
+
+	/// @brief Simplified AddConstRefToNonTrivial<T>::type.
+	template<typename T>
+	using AddConstRefToNonTrivialT = typename AddConstRefToNonTrivial<T>::type;
+
+	/// @brief Helper allowing transformation of provided arguments to tuple of values/references that are used for serialization.
+	/// @param ...args arguments to be stored in tuple
+	/// @return tuple with references to non trivial types, and values of simple ones.
+	template<typename ...Args>
+	auto MakeConversionTuple(Args&& ...args)
+	{
+		return std::tuple<AddConstRefToNonTrivialT<Args&&>...>(std::forward<Args>(args)...);
+	}
+
+	/// Construction with parentheses and with braces is not interchangeable.
+	/// std::make_from_tuple must use constructor and is unable to create trivial type.
+	/// Types implemented in this namespace, alongside with std::apply, allows us choose method used for construction.
+	/// For more information look at:
+	/// https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/aQQzL0JoXLg
+	namespace Construction
+	{
+		/// @brief Type used for construction with braces.
+		template <typename T>
+		struct Braces
+		{
+			template <typename ... As>
+			constexpr auto operator () (As&& ... as) const
+			{
+				return T{ std::forward<As>(as)... };
+			}
+		};
+
+		/// @brief Type used for construction with parentheses.
+		template <typename T>
+		struct Parentheses
+		{
+			template <typename ... As>
+			constexpr auto operator () (As&& ... as) const
+			{
+				return T(std::forward<As>(as)...);
+			}
 		};
 	}
 }
