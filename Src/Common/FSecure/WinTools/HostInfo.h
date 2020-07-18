@@ -40,7 +40,7 @@ namespace FSecure
 	{
 		/// Serialization of RTL_OSVERSIONINFOEXW type to/from ByteVector.
 		/// @param obj. Object to be serialized.
-		static auto TupleTransform(RTL_OSVERSIONINFOEXW const& obj)
+		static auto Convert(RTL_OSVERSIONINFOEXW const& obj)
 		{
 			return Utils::MakeConversionTuple(
 				obj.dwOSVersionInfoSize,
@@ -81,7 +81,7 @@ namespace FSecure
 	{
 		/// Serialization of HostInfo type to/from ByteVector.
 		/// @param obj. Object to be serialized.
-		static auto TupleTransform(HostInfo const& obj)
+		static auto Convert(HostInfo const& obj)
 		{
 			return Utils::MakeConversionTuple(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
 		}

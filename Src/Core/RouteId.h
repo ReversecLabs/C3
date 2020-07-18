@@ -80,7 +80,7 @@ namespace FSecure
 	template <>
 	struct ByteConverter<C3::RouteId> : TupleConverter<C3::RouteId>
 	{
-		static auto TupleTransform(C3::RouteId const& obj)
+		static auto Convert(C3::RouteId const& obj)
 		{
 			return Utils::MakeConversionTuple(obj.GetAgentId(), obj.GetInterfaceId());
 		}
