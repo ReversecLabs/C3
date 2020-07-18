@@ -320,4 +320,20 @@ namespace FSecure::Utils
 			}
 		};
 	}
+
+	/// @brief Constexpr helper to perform logic on tuple types. Evaluation result is assigned to value member.
+	/// @tparam T Class with function to be applied. Must define template<typename...> constexpr auto Apply(). Tuple types will be passed by parameter pack.
+	/// @tparam Tpl Tuple with types on which logic will be applied.
+	template <typename T, typename Tpl>
+	struct Apply
+	{
+	private:
+		template <size_t ...Is>
+		constexpr static auto ApplyImpl(std::index_sequence<Is...>)
+		{
+			return T::template Apply<std::tuple_element_t<Is, Tpl>...>();
+		}
+	public:
+		constexpr static auto value = ApplyImpl(std::make_index_sequence<std::tuple_size<Tpl>::value>{});
+	};
 }
