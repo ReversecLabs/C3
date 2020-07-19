@@ -293,6 +293,13 @@ namespace FSecure
 	struct TupleConverter
 	{
 	private:
+		/// @brief Type returned by ByteConverter<C>::Convert.
+		/// ByteConverter<C> specialization may not yet be defined.
+		/// This type must be deduced late in instantiation procedure.
+		/// @tparam C Type for serialization.
+		template <typename C>
+		using ConvertType = decltype(ByteConverter<C>::Convert(std::declval<C>()));
+
 		/// @brief Helper class compatible with Utils::Apply. Checks if size after serialization, of all tuple types, can be determined at compile time.
 		struct IsSizeConstexpr
 		{
@@ -313,13 +320,23 @@ namespace FSecure
 			}
 		};
 
-	public:
-		/// @brief Type returned by ByteConverter<C>::Convert.
-		/// @note This type will be deduced late in instantiation procedure.
-		/// @tparam C Type To be serialized.
+		/// @brief This class is designed for lazy evaluation of ConvertType<T> for IsSizeConstexpr template.
+		/// If used for SFINAE, ConvertType will break compilation, at not defined Convert function.
+		/// MSVC is evaluating default template parameter when, and only if, it is used. This behavior results in successful compilation
+		/// Strict compilers like clang or gcc would evaluate ConvertType before correct ByteConverter specialization is provided.
+		/// With this template, instantiation point is delayed, until Convert method is reachable in function lookup.
+		/// @tparam C Type for serialization.
 		template <typename C>
-		using ConvertType = decltype(ByteConverter<C>::Convert(std::declval<C>()));
+		class IsSizeConstexprLazy
+		{
+			template <typename S> static uint16_t test(std::enable_if_t<Utils::Apply<IsSizeConstexpr, ConvertType<S>>::value, int>);
+			template <typename S> static uint8_t test(...);
 
+		public:
+			static constexpr bool value = sizeof(test<C>(0)) == sizeof(uint16_t);
+		};
+
+	public:
 		/// @brief Use it to convert raw data into tuple.
 		/// Allows splitting deserialization into two phases.
 		/// 1. Retrieve data as tuple. ByteView internal pointer will be correctly moved in the process.
@@ -353,41 +370,23 @@ namespace FSecure
 			return std::apply(Utils::Construction::Braces<T>{}, Convert(bv));
 		}
 
-		// MSVC is using late deduction of default template parameter type, and only if they are used.
-		// This allows definition of constexpr version of Size function using SFINAE.
-		// There are proposals to implement same delay in clang, but it is not available yet, or possibly will never be.
-#if defined (__clang__)
-		/// @brief Default implementation of Size method.
-		/// @param obj Object for serialization.
-		/// @return size_t. Number of bytes used after serialization.
-		static size_t Size([[maybe_unused]] T const& obj)
-		{
-			if constexpr (Utils::Apply<IsSizeConstexpr, ConvertType<T>>::value)
-			{
-				return Utils::Apply<GetConstexprSize, ConvertType<T>>::value;
-			}
-			else
-			{
-				return ByteVector::Size(ByteConverter<T>::Convert(obj));
-			}
-		}
-#else
 		/// @brief Default implementation of Size method with compile time evaluation.
+		/// @note All template parameters are used only to determine if function should be defined.
 		/// @return size_t. Number of bytes used after serialization.
-		template <typename C = ConvertType<T>, std::enable_if_t<Utils::Apply<IsSizeConstexpr, C>::value, int> = 0>
+		template <typename C = T, std::enable_if_t<IsSizeConstexprLazy<C>::value, int> = 0>
 		static constexpr size_t Size()
 		{
-			return Utils::Apply<GetConstexprSize, C>::value;
+			return Utils::Apply<GetConstexprSize, ConvertType<T>>::value;
 		}
 
 		/// @brief Default implementation of Size method.
 		/// @param obj Object for serialization.
+		/// @note All template parameters are used only to determine if function should be defined.
 		/// @return size_t. Number of bytes used after serialization.
-		template <typename C = ConvertType<T>, std::enable_if_t<!Utils::Apply<IsSizeConstexpr, C>::value, int> = 0>
+		template <typename C = T, std::enable_if_t<!IsSizeConstexprLazy<C>::value, int> = 0>
 		static size_t Size(T const& obj)
 		{
 			return ByteVector::Size(ByteConverter<T>::Convert(obj));
 		}
-#endif
 	};
 }
