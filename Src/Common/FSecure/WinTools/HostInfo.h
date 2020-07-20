@@ -36,42 +36,23 @@ namespace FSecure
 
 	/// overload ByteConverter for RTL_OSVERSIONINFOEXW. szCSDVersion and wSuiteMask are omitted.
 	template<>
-	struct ByteConverter<RTL_OSVERSIONINFOEXW> : TupleConverter<RTL_OSVERSIONINFOEXW>
+	struct ByteConverter<RTL_OSVERSIONINFOEXW> : PointerTupleConverter<RTL_OSVERSIONINFOEXW>
 	{
 		/// Serialization of RTL_OSVERSIONINFOEXW type to/from ByteVector.
 		/// @param obj. Object to be serialized.
-		static auto Convert(RTL_OSVERSIONINFOEXW const& obj)
+		static auto MemberPointers()
 		{
-			return Utils::MakeConversionTuple(
-				obj.dwOSVersionInfoSize,
-				obj.dwMajorVersion,
-				obj.dwMinorVersion,
-				obj.dwBuildNumber,
-				obj.dwPlatformId,
-				obj.wServicePackMajor,
-				obj.wServicePackMinor,
-				obj.wProductType
+			using T = RTL_OSVERSIONINFOEXW;
+			return std::make_tuple(
+				&T::dwOSVersionInfoSize,
+				&T::dwMajorVersion,
+				&T::dwMinorVersion,
+				&T::dwBuildNumber,
+				&T::dwPlatformId,
+				&T::wServicePackMajor,
+				&T::wServicePackMinor,
+				&T::wProductType
 			);
-		}
-
-		/// Deserialize from ByteView.
-		/// Special version of From must be provided, because some of not important members are omitted at serialization.
-		/// @param bv. Buffer with serialized data.
-		/// @return RTL_OSVERSIONINFOEXW.
-		static RTL_OSVERSIONINFOEXW From(ByteView& bv)
-		{
-			RTL_OSVERSIONINFOEXW obj = {0,};
-			ByteReader{ bv }.Read(
-				obj.dwOSVersionInfoSize,
-				obj.dwMajorVersion,
-				obj.dwMinorVersion,
-				obj.dwBuildNumber,
-				obj.dwPlatformId,
-				obj.wServicePackMajor,
-				obj.wServicePackMinor,
-				obj.wProductType
-			);
-			return obj;
 		}
 	};
 

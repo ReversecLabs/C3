@@ -389,4 +389,68 @@ namespace FSecure
 			return ByteVector::Size(ByteConverter<T>::Convert(obj));
 		}
 	};
+
+	/// @brief Class providing simple way of generating ByteConverter listing only necessary members once.
+	/// ByteConverter can use this functionality by inheriting from PointerTupleConverter and providing
+	/// public static std::tuple<T::*...> MemberPointers() method.
+	/// Use std::make_tuple to create return value out of member list.
+	/// ByteVector can declare its own versions of To/From/Size methods if it needs dedicated logic to serialize type.
+	/// @tparam T Type for serialization.
+	template <typename T>
+	struct PointerTupleConverter : TupleConverter<T>
+	{
+	private:
+		/// @brief Class applying pointers to members to object.
+		/// Compatible with std::apply.
+		/// Creates TupleConverter<T>::ConvertType object.
+		class ReferenceMembers
+		{
+			T const& m_Obj;
+		public:
+			ReferenceMembers(T const& obj) : m_Obj{ obj } {}
+
+			template <typename ... Ts>
+			auto operator () (Ts T::*...ts) const
+			{
+				return Utils::MakeConversionTuple(m_Obj.*ts ...);
+			}
+		};
+
+		/// @brief Function assigning object members with tuple of values using tuple member pointers.
+		/// @tparam PtrTpl Tuple of pointers to members type.
+		/// @tparam ValueTpl Tuple of values type.
+		/// @tparam Is Index sequence used to match tuples one to one.
+		/// @param obj Object to be assigned.
+		/// @param ptrTpl Tuple of pointers to members.
+		/// @param valueTpl Tuple of values.
+		template <typename PtrTpl, typename ValueTpl, size_t ...Is>
+		static void AssignToMembers(T& obj, PtrTpl const& ptrTpl, ValueTpl valueTpl, std::index_sequence<Is...>)
+		{
+			((obj.*(std::get<Is>(ptrTpl)) = std::move(std::get<Is>(valueTpl))), ...);
+		}
+
+	public:
+		/// @brief Default implementation of Convert method used by TupleConverter for serialization.
+		/// Function uses ByteConverter<T>::MemberPointers() to reference T object members.
+		/// @param obj object to be serialized.
+		/// @return TupleConverter<T>::ConvertType values to be serialized.
+		static auto Convert(T const& obj)
+		{
+			auto ptrTpl = ByteConverter<T>::MemberPointers();
+			return std::apply(ReferenceMembers{ obj }, ptrTpl);
+		}
+
+		/// @brief Shadowed TupleConverter<T>::From initalizing only selected members, skipped ones will be default initialized.
+		/// @note T must have default constructor.
+		/// @param bv. Buffer with serialized data.
+		/// @return constructed type.
+		static T From(ByteView& bv)
+		{
+			auto ret = T{};
+			auto ptrTpl = ByteConverter<T>::MemberPointers();
+			auto valueTpl = TupleConverter<T>::Convert(bv);
+			AssignToMembers(ret, ptrTpl, std::move(valueTpl), std::make_index_sequence<std::tuple_size<decltype(ptrTpl)>::value>{});
+			return ret;
+		}
+	};
 }
