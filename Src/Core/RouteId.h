@@ -78,21 +78,11 @@ namespace FSecure
 {
 	/// Specialize ByteConverter for RouteId.
 	template <>
-	struct ByteConverter <C3::RouteId>
+	struct ByteConverter<C3::RouteId> : TupleConverter<C3::RouteId>
 	{
-		static void To(C3::RouteId const& obj, ByteVector& bv)
+		static auto Convert(C3::RouteId const& obj)
 		{
-			bv.Store(obj.GetAgentId(), obj.GetInterfaceId());
-		}
-
-		constexpr static size_t Size()
-		{
-			return C3::RouteId::BinarySize;
-		}
-
-		static C3::RouteId From(ByteView& bv)
-		{
-			return ByteReader{ bv }.Create<C3::RouteId, decltype(std::declval<C3::RouteId>().GetAgentId()), decltype(std::declval<C3::RouteId>().GetInterfaceId())>();
+			return Utils::MakeConversionTuple(obj.GetAgentId(), obj.GetInterfaceId());
 		}
 	};
 

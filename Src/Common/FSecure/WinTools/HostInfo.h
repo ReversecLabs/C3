@@ -36,63 +36,35 @@ namespace FSecure
 
 	/// overload ByteConverter for RTL_OSVERSIONINFOEXW. szCSDVersion and wSuiteMask are omitted.
 	template<>
-	struct ByteConverter<RTL_OSVERSIONINFOEXW>
+	struct ByteConverter<RTL_OSVERSIONINFOEXW> : PointerTupleConverter<RTL_OSVERSIONINFOEXW>
 	{
-		/// Serialize HostInfo type to ByteVector.
+		/// Serialization of RTL_OSVERSIONINFOEXW type to/from ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @param bv. ByteVector to be expanded.
-		static void To(RTL_OSVERSIONINFOEXW const& obj, ByteVector& bv)
+		static auto MemberPointers()
 		{
-			bv.Store(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
-		}
-
-		/// Get size required after serialization.
-		/// @param obj. Object to be serialized.
-		/// @return size_t. Number of bytes used after serialization.
-		static size_t Size()
-		{
-			RTL_OSVERSIONINFOEXW* p = nullptr;
-			return ByteVector::Size(p->dwOSVersionInfoSize, p->dwMajorVersion, p->dwMinorVersion, p->dwBuildNumber, p->dwPlatformId, p->wServicePackMajor, p->wServicePackMinor, p->wProductType);
-		}
-
-		/// Deserialize from ByteView.
-		/// @param bv. Buffer with serialized data.
-		/// @return RTL_OSVERSIONINFOEXW.
-		static RTL_OSVERSIONINFOEXW From(ByteView& bv)
-		{
-			RTL_OSVERSIONINFOEXW obj = {0,};
-			ByteReader{ bv }.Read(obj.dwOSVersionInfoSize, obj.dwMajorVersion, obj.dwMinorVersion, obj.dwBuildNumber, obj.dwPlatformId, obj.wServicePackMajor, obj.wServicePackMinor, obj.wProductType);
-			return obj;
+			using T = RTL_OSVERSIONINFOEXW;
+			return std::make_tuple(
+				&T::dwOSVersionInfoSize,
+				&T::dwMajorVersion,
+				&T::dwMinorVersion,
+				&T::dwBuildNumber,
+				&T::dwPlatformId,
+				&T::wServicePackMajor,
+				&T::wServicePackMinor,
+				&T::wProductType
+			);
 		}
 	};
 
 	/// overload ByteConverter for HostInfo
 	template<>
-	struct ByteConverter<HostInfo>
+	struct ByteConverter<HostInfo> : TupleConverter<HostInfo>
 	{
-		/// Serialize HostInfo type to ByteVector.
+		/// Serialization of HostInfo type to/from ByteVector.
 		/// @param obj. Object to be serialized.
-		/// @param bv. ByteVector to be expanded.
-		static void To(HostInfo const& obj, ByteVector& bv)
+		static auto Convert(HostInfo const& obj)
 		{
-			bv.Store(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
-		}
-
-		/// Get size required after serialization.
-		/// @param obj. Object to be serialized.
-		/// @return size_t. Number of bytes used after serialization.
-		static size_t Size(HostInfo const& obj)
-		{
-			return ByteVector::Size(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
-		}
-
-		/// Deserialize from ByteView.
-		/// @param bv. Buffer with serialized data.
-		/// @return arithmetic type.
-		static HostInfo From(ByteView& bv)
-		{
-			using T = HostInfo;
-			return ByteReader{ bv }.Create(&T::m_ComputerName, &T::m_UserName, &T::m_Domain, &T::m_OsVersionInfo, &T::m_ProcessId, &T::m_IsElevated);
+			return Utils::MakeConversionTuple(obj.m_ComputerName, obj.m_UserName, obj.m_Domain, obj.m_OsVersionInfo, obj.m_ProcessId, obj.m_IsElevated);
 		}
 	};
 }

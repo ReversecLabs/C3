@@ -193,24 +193,6 @@ namespace FSecure
 		/// ByteReader will modify ByteView used for it construction.
 		ByteView& m_byteView;
 
-		/// Declaration of base template used for pointer to member type deduction.
-		template<class T>
-		struct SplitMemberPointer;
-
-		/// Specialization that will perform type deduction.
-		template<class C, class T>
-		struct SplitMemberPointer<T C::*> {
-			using type = T;
-			using declaringType = C;
-		};
-
-		/// Function used to call constructor of type T with tuple of types matching constructor arguments.
-		template<typename T, typename Tpl, size_t... Is>
-		static T TupleToConstructor(Tpl&& tpl, std::integer_sequence<size_t, Is...>)
-		{
-			return T{ std::get<Is>(std::move(tpl))... };
-		}
-
 	public:
 		/// Create ByteReader.
 		/// @param bv, ByteView with data to read.
@@ -224,27 +206,6 @@ namespace FSecure
 		void Read(Ts&... ts)
 		{
 			((ts = m_byteView.Read<decltype(ts)>()), ...);
-		}
-
-		/// Create object by reading provided types, and passing them to object constructor.
-		/// @tparam T, type to be constructed.
-		/// @tparam Ts, types to be read from ByteView, and passed as T constructor arguments.
-		/// @note T is not the same as first template parameter of Create(...).
-		template <typename T, typename ...Ts>
-		auto Create() -> decltype(T{ std::declval<Ts>()... })
-		{
-			return TupleToConstructor<T>(m_byteView.Read<Ts...>(), std::make_index_sequence<sizeof...(Ts)>{});
-		}
-
-
-		/// Create object by reading provided types deduced from pointers to members
-		/// @tparam T, first pointer to member. Ensures that at least one object will be read from ByteView
-		/// @tparam Ts, rest of pointers to members.
-		/// @note T is not the same as first template parameter of Create(void).
-		template <typename T, typename ...Ts>
-		auto Create(T, Ts...) -> decltype(typename SplitMemberPointer<T>::declaringType{ std::declval<typename SplitMemberPointer<T>::type>(), std::declval<typename SplitMemberPointer<Ts>::type>()... })
-		{
-			return TupleToConstructor<typename SplitMemberPointer<T>::declaringType>(m_byteView.Read<typename SplitMemberPointer<T>::type, typename SplitMemberPointer<Ts>::type...>(), std::make_index_sequence<1 + sizeof...(Ts)>{});
 		}
 	};
 

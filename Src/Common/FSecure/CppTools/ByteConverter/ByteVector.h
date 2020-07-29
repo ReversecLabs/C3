@@ -55,6 +55,13 @@ namespace FSecure
 		static constexpr bool value = ((ConverterDeduction<Ts>::FunctionTo::value != ConverterDeduction<Ts>::FunctionTo::absent) && ...);
 	};
 
+	/// Check if type can be concatenated
+	template <typename ...Ts>
+	struct ConcatCondition
+	{
+		static constexpr bool value = (sizeof...(Ts) > 0) && ((Utils::IsOneOf<Ts, ByteView, ByteVector>::value && ...));
+	};
+
 	/// An owning container.
 	class ByteVector : std::vector<std::uint8_t>
 	{
@@ -181,7 +188,7 @@ namespace FSecure
 		/// Does not write header with size..
 		/// @param args. Objects to be stored.
 		/// @return itself to allow chaining.
-		template <typename ...Ts, typename = std::enable_if_t<(sizeof...(Ts) > 0) && ((Utils::IsOneOf<Ts, ByteView, ByteVector>::value && ...))>>
+		template <typename ...Ts, typename std::enable_if_t<ConcatCondition<Ts...>::value, int> = 0>
 		ByteVector& Concat(Ts const& ...args)
 		{
 			auto oldSize = size();
@@ -207,7 +214,7 @@ namespace FSecure
 		template <typename T, typename ...Ts, typename std::enable_if_t<WriteCondition<T, Ts...>::value, int> = 0>
 		static ByteVector Create(T const& arg, Ts const& ...args)
 		{
-			return ByteVector{}.Write(arg, args...);
+			return std::move(ByteVector{}.Write(arg, args...));
 		}
 
 		/// Calculate the size that the argument will take in memory
@@ -215,9 +222,9 @@ namespace FSecure
 		/// @param args. Rest of types that will be handled with recursion.
 		/// @return size_t number of bytes needed.
 		template<typename T, typename ...Ts>
-		static size_t Size(T const& arg, Ts const& ...args)
+		static size_t Size([[maybe_unused]] T const& arg, Ts const& ...args)
 		{
-			if constexpr (sizeof...(Ts) != 0)
+			if constexpr (sizeof...(args) != 0)
 				return Size(arg) + Size(args...);
 			else if constexpr (ConverterDeduction<T>::FunctionSize::value == ConverterDeduction<T>::FunctionSize::compileTime)
 				return ByteConverter<T>::Size();
@@ -258,6 +265,10 @@ namespace FSecure
 		/// Declaration of friendship.
 		template <typename , typename>
 		friend struct ByteConverter;
+
+		/// Declaration of friendship.
+		template <typename>
+		friend struct TupleConverter;
 	};
 
 	namespace Literals

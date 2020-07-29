@@ -233,7 +233,7 @@ namespace FSecure
 			/// Function responsible for recursively packing data to ByteVector.
 			/// @param self. Reference to ByteVector object using TupleHandler.
 			/// @param t. reference to tuple.
-			static void Write(ByteVector& self, T const& t)
+			static void Write([[maybe_unused]] ByteVector& self, [[maybe_unused]] T const& t)
 			{
 				if constexpr (N != 0)
 				{
@@ -245,7 +245,7 @@ namespace FSecure
 			/// Function responsible for recursively calculating buffer size needed for call with tuple argument.
 			/// @param t. reference to tuple.
 			/// @return size_t number of bytes needed.
-			static size_t Size(T const& t)
+			static size_t Size([[maybe_unused]] T const& t)
 			{
 				if constexpr (N != 0)
 					return ByteVector::Size(std::get<std::tuple_size_v<T> - N>(t)) + TupleHandler<T, N - 1>::Size(t);
@@ -256,11 +256,11 @@ namespace FSecure
 			/// C++ allows cast from pair to tuple of two, but not other way around.
 			/// This is oversight, because pair is much older concept than tuple, and no proposition was made to expand old type.
 			/// This function ensures, that TupleHandler always returns requested type, so no cast is necessary.
-			static T ReadExplicit(ByteView& self)
+			static auto ReadExplicit(ByteView& self)
 			{
 				auto tmp = Read(self);
 				if constexpr (Utils::IsPair<T>)
-					return { std::get<0>(tmp), std::get<1>(tmp) };
+					return std::pair{ std::get<0>(tmp), std::get<1>(tmp) };
 				else
 					return tmp;
 			}
@@ -271,7 +271,7 @@ namespace FSecure
 			{
 				if constexpr (N != 0)
 				{
-					auto current = std::make_tuple(self.Read<std::tuple_element_t<std::tuple_size_v<T> - N, T>>());
+					auto current = std::make_tuple(self.Read<Utils::RemoveCVR<std::tuple_element_t<std::tuple_size_v<T> - N, T>>>());
 					auto rest = TupleHandler<T, N - 1>::Read(self);
 					return std::tuple_cat(current, rest);
 				}
@@ -281,5 +281,176 @@ namespace FSecure
 				}
 			}
 		};
+	};
+
+	/// @brief Class providing simple way of generating ByteConverter of custom types by treating them as tuple.
+	/// ByteConverter can use this functionality by inheriting from TupleConverter and providing
+	/// public static std::tuple<...> Convert(T const&) method.
+	/// Use Utils::MakeConversionTuple to create efficient tuple of value or references to members.
+	/// ByteVector can declare its own versions of To/From/Size methods if it needs dedicated logic to serialize type.
+	/// @tparam T Type for serialization.
+	template <typename T>
+	struct TupleConverter
+	{
+	private:
+		/// @brief Type returned by ByteConverter<C>::Convert.
+		/// ByteConverter<C> specialization may not yet be defined.
+		/// This type must be deduced late in instantiation procedure.
+		/// @tparam C Type for serialization.
+		template <typename C>
+		using ConvertType = decltype(ByteConverter<C>::Convert(std::declval<C>()));
+
+		/// @brief Helper class compatible with Utils::Apply. Checks if size after serialization, of all tuple types, can be determined at compile time.
+		struct IsSizeConstexpr
+		{
+			template <typename ...Ts>
+			static constexpr auto Apply()
+			{
+				return ((ConverterDeduction<Ts>::FunctionSize::value == ConverterDeduction<Ts>::FunctionSize::compileTime) && ...);
+			}
+		};
+
+		/// @brief Helper class compatible with Utils::Apply. Determines size after serialization, of all tuple types.
+		struct GetConstexprSize
+		{
+			template <typename ...Ts>
+			static constexpr auto Apply()
+			{
+				return ((ByteConverter<Ts>::Size() + ...));
+			}
+		};
+
+		/// @brief This class is designed for lazy evaluation of ConvertType<T> for IsSizeConstexpr template.
+		/// If used for SFINAE, ConvertType will break compilation, at not defined Convert function.
+		/// MSVC is evaluating default template parameter when, and only if, it is used. This behavior results in successful compilation
+		/// Strict compilers like clang or gcc would evaluate ConvertType before correct ByteConverter specialization is provided.
+		/// With this template, instantiation point is delayed, until Convert method is reachable in function lookup.
+		/// @tparam C Type for serialization.
+		template <typename C>
+		class IsSizeConstexprLazy
+		{
+			template <typename S> static uint16_t test(std::enable_if_t<Utils::Apply<IsSizeConstexpr, ConvertType<S>>::value, int>);
+			template <typename S> static uint8_t test(...);
+
+		public:
+			static constexpr bool value = sizeof(test<C>(0)) == sizeof(uint16_t);
+		};
+
+	public:
+		/// @brief Use it to convert raw data into tuple.
+		/// Allows splitting deserialization into two phases.
+		/// 1. Retrieve data as tuple. ByteView internal pointer will be correctly moved in the process.
+		/// 2. Create dedicated logic of transforming tuple into desired type.
+		/// @param bv. Buffer with serialized data.
+		/// @return tuple of retrieved data for type construction.
+		static auto Convert(ByteView& bv)
+		{
+			return bv.Read<ConvertType<T>>();
+		}
+
+		// From this point forward will be implemented ByteConverter standard interface methods.
+
+		/// @brief Default implementation of To method.
+		/// Serializes data treating it as tuple generated by Convert.
+		/// @param obj Object for serialization.
+		/// @param bv output ByteVector with already allocated memory for data.
+		static void To(T const& obj, ByteVector& bv)
+		{
+			bv.Store(ByteConverter<T>::Convert(obj));
+		}
+
+		/// @brief Default implementation of From method.
+		/// Retrieves data from view and creates new object by passing tuple as arguments for T{...} construction.
+		/// This implementation uses brace enclosed construction, becouse std::make_from_tuple does not support trivial types.
+		/// Bear in mind that construction with parentheses, and with braces, is not interchangeable.
+		/// @param bv. Buffer with serialized data.
+		/// @return constructed type.
+		static T From(ByteView& bv)
+		{
+			return std::apply(Utils::Construction::Braces<T>{}, Convert(bv));
+		}
+
+		/// @brief Default implementation of Size method with compile time evaluation.
+		/// @note All template parameters are used only to determine if function should be defined.
+		/// @return size_t. Number of bytes used after serialization.
+		template <typename C = T, std::enable_if_t<IsSizeConstexprLazy<C>::value, int> = 0>
+		static constexpr size_t Size()
+		{
+			return Utils::Apply<GetConstexprSize, ConvertType<T>>::value;
+		}
+
+		/// @brief Default implementation of Size method.
+		/// @param obj Object for serialization.
+		/// @note All template parameters are used only to determine if function should be defined.
+		/// @return size_t. Number of bytes used after serialization.
+		template <typename C = T, std::enable_if_t<!IsSizeConstexprLazy<C>::value, int> = 0>
+		static size_t Size(T const& obj)
+		{
+			return ByteVector::Size(ByteConverter<T>::Convert(obj));
+		}
+	};
+
+	/// @brief Class providing simple way of generating ByteConverter listing only necessary members once.
+	/// ByteConverter can use this functionality by inheriting from PointerTupleConverter and providing
+	/// public static std::tuple<T::*...> MemberPointers() method.
+	/// Use std::make_tuple to create return value out of member list.
+	/// ByteVector can declare its own versions of To/From/Size methods if it needs dedicated logic to serialize type.
+	/// @tparam T Type for serialization.
+	template <typename T>
+	struct PointerTupleConverter : TupleConverter<T>
+	{
+	private:
+		/// @brief Class applying pointers to members to object.
+		/// Compatible with std::apply.
+		/// Creates TupleConverter<T>::ConvertType object.
+		class ReferenceMembers
+		{
+			T const& m_Obj;
+		public:
+			ReferenceMembers(T const& obj) : m_Obj{ obj } {}
+
+			template <typename ... Ts>
+			auto operator () (Ts T::*...ts) const
+			{
+				return Utils::MakeConversionTuple(m_Obj.*ts ...);
+			}
+		};
+
+		/// @brief Function assigning object members with tuple of values using tuple member pointers.
+		/// @tparam PtrTpl Tuple of pointers to members type.
+		/// @tparam ValueTpl Tuple of values type.
+		/// @tparam Is Index sequence used to match tuples one to one.
+		/// @param obj Object to be assigned.
+		/// @param ptrTpl Tuple of pointers to members.
+		/// @param valueTpl Tuple of values.
+		template <typename PtrTpl, typename ValueTpl, size_t ...Is>
+		static void AssignToMembers(T& obj, PtrTpl const& ptrTpl, ValueTpl valueTpl, std::index_sequence<Is...>)
+		{
+			((obj.*(std::get<Is>(ptrTpl)) = std::move(std::get<Is>(valueTpl))), ...);
+		}
+
+	public:
+		/// @brief Default implementation of Convert method used by TupleConverter for serialization.
+		/// Function uses ByteConverter<T>::MemberPointers() to reference T object members.
+		/// @param obj object to be serialized.
+		/// @return TupleConverter<T>::ConvertType values to be serialized.
+		static auto Convert(T const& obj)
+		{
+			auto ptrTpl = ByteConverter<T>::MemberPointers();
+			return std::apply(ReferenceMembers{ obj }, ptrTpl);
+		}
+
+		/// @brief Shadowed TupleConverter<T>::From initalizing only selected members, skipped ones will be default initialized.
+		/// @note T must have default constructor.
+		/// @param bv. Buffer with serialized data.
+		/// @return constructed type.
+		static T From(ByteView& bv)
+		{
+			auto ret = T{};
+			auto ptrTpl = ByteConverter<T>::MemberPointers();
+			auto valueTpl = TupleConverter<T>::Convert(bv);
+			AssignToMembers(ret, ptrTpl, std::move(valueTpl), std::make_index_sequence<std::tuple_size<decltype(ptrTpl)>::value>{});
+			return ret;
+		}
 	};
 }
