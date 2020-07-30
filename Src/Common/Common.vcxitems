@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Dropbox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\AddrInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.cpp" />
@@ -62,12 +64,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sql\Sql.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
