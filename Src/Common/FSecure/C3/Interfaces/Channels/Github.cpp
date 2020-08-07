@@ -15,7 +15,7 @@ FSecure::C3::Interfaces::Channels::Github::Github(ByteView arguments)
 size_t FSecure::C3::Interfaces::Channels::Github::OnSendToChannel(ByteView data)
 {
 	// There is a cap on uploads of files >150mb at which point different APIs are required.
-	data = data.SubString(0, 150 * 1024 * 1024);
+	data = data.SubString(0, 100 * 1024 * 1024);
 	m_githubObj.WriteMessageToFile(m_outboundDirectionName, data);
 	return data.size();
 }
