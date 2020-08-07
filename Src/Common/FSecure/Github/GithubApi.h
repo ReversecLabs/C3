@@ -43,7 +43,7 @@ namespace FSecure
 		/// Download file by its path.
 		/// @param filename - path of file and the size. Format "filename:filesize"
 		/// @return - string of file content
-		FSecure::ByteVector ReadFile(std::string const& fileNameSizeSHA);
+		FSecure::ByteVector ReadFile(std::string const& fileNameSHA);
 
 		/// Write a message as the contents of a file and upload to Github.
 		/// @param direction - the name of the file to upload

