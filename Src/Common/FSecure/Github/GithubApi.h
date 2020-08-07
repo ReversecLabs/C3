@@ -14,8 +14,7 @@ namespace FSecure
 
 		/// Constructor for the Github Api class.
 		GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent);
-
-
+		
 		/// Retrieve the Github Username and initialise  for the instance
 		void SetUser();
 
@@ -42,9 +41,9 @@ namespace FSecure
 		std::map<std::string, std::int64_t> ListChannels();
 
 		/// Download file by its path.
-		/// @param filename - path of file.
+		/// @param filename - path of file and the size. Format "filename:filesize"
 		/// @return - string of file content
-		FSecure::ByteVector ReadFile(std::string const& filename);
+		FSecure::ByteVector ReadFile(std::string const& fileNameSizeSHA);
 
 		/// Write a message as the contents of a file and upload to Github.
 		/// @param direction - the name of the file to upload
@@ -68,6 +67,7 @@ namespace FSecure
 		/// @return - a map of timestamp and file id, where id allows replies to be read later
 		std::map<std::string, std::string> GetMessagesByDirection(std::string const& direction);
 
+
 		/// Default constructor.
 		GithubApi() = default;
 
@@ -88,6 +88,8 @@ namespace FSecure
 		/// UserAgent 
 		std::string m_UserAgent;
 
+
+
 		/// Send http request, uses preset token for authentication (wrapper to easily set content type)
 		FSecure::ByteVector FSecure::GithubApi::SendHttpRequest(std::string const& host, WinHttp::ContentType contentType, std::vector<uint8_t> const& data, WinHttp::Method method, bool setAuthorizationHeader = true);
 
@@ -99,7 +101,6 @@ namespace FSecure
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data, WinHttp::Method method);
-
 	};
 
 }
