@@ -36,6 +36,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -121,5 +123,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
   </ItemGroup>
 </Project>
