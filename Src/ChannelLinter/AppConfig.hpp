@@ -31,6 +31,9 @@ namespace FSecure::C3::Linter
 		/// Whether application channel should test sending and receiving through the channel
 		bool m_TestChannelIO;
 
+		/// Change test IO mode to perform Overlapped Read/Write on chunks.
+		bool m_OverlappedIO;
+
 		/// Command id and its arguments
 		std::optional<StringVector> m_Command;
 	};

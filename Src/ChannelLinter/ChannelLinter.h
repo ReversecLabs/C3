@@ -26,10 +26,38 @@ namespace FSecure::C3::Linter
 		void TestCommand(std::shared_ptr<MockDeviceBridge> const& channel);
 
 		/// Test channel pair permeability
-		/// @param first of complementary channels
-		/// @param second of complementary channels
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @param overlapped informs if operations should be performed overlapped, or first read must be preceded by write of all chunks .
 		/// @throws if Channel::OnSend or Channel::OnReceive throws
-		void TestChannelIO(std::shared_ptr<MockDeviceBridge> const& channel, std::shared_ptr<MockDeviceBridge> const& ch2);
+		void TestChannelIO(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped = false);
+
+		/// Test maximal packet size that can be delivered by channel.
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @param overlapped informs if operations should be performed overlapped, or first read must be preceded by write of all chunks .
+		/// @throws if Channel::OnSend or Channel::OnReceive throws
+		void TestChannelMTU(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped = false);
+
+		/// Test maximal packet size if read/write operations are overlapped.
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @param overlapped informs if operations should be performed overlapped, or first read must be preceded by write of all chunks .
+		/// @throws if Channel::OnSend or Channel::OnReceive throws
+		bool TestOverlapped(MockDeviceBridge& channel, MockDeviceBridge& complementary, ByteView data);
+
+		/// Test maximal packet size if all chunks must be written before first read.
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @param overlapped informs if operations should be performed overlapped, or first read must be preceded by write of all chunks .
+		/// @throws if Channel::OnSend or Channel::OnReceive throws
+		bool TestSequential(MockDeviceBridge& channel, MockDeviceBridge& complementary, ByteView data);
+
+		/// Test if packets are received in the same order as were passed to send.
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @throws if Channel::OnSend or Channel::OnReceive throws
+		void TestChannelOrder(MockDeviceBridge& channel, MockDeviceBridge& complementary);
 
 		/// Create channel from string channel arguments
 		/// @param channel arguments

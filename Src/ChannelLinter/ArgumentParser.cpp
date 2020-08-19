@@ -21,6 +21,7 @@ namespace FSecure::C3::Linter
 		m_ArgParser.addArgument("-c", "--complementary", '*');
 		m_ArgParser.addArgument("-i", "--test-io");
 		m_ArgParser.addArgument("-x", "--command", '+');
+		m_ArgParser.addArgument("-o", "--overlapped");
 		m_ArgParser.useExceptions(true);
 	}
 
@@ -51,6 +52,10 @@ Options:
                         If this option is present -a [ARGS...] must be specified.
                         If -c is not present, complementary channel arguments are deduced by swapping
                         parameters from Capability/create/arguments arrays.
+
+  -o, --overlapped      Changes way IO test is performed.
+                        For each sent chunk of packet, complementary channel must read it.
+                        Packet order test is not performed.
 
   -x <ID> [ARGS... ], --command <ID> [ARGS... ]
                         Execute a command with a given <ID> and arguments [ARGS...]
@@ -85,6 +90,7 @@ Examples:
 			m_Config.m_ComplementaryChannelArguments = m_ArgParser.retrieve<std::vector<std::string>>("complementary");
 
 		m_Config.m_TestChannelIO = m_ArgParser.exists("test-io");
+		m_Config.m_OverlappedIO = m_ArgParser.exists("overlapped");
 
 		if (m_ArgParser.exists("command"))
 			m_Config.m_Command = m_ArgParser.retrieve<StringVector>("command");
