@@ -195,18 +195,14 @@ namespace FSecure::C3::Linter
 
 		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
 		{
-			if (!sender.IsDone())
-				if (sender.Send())
-					noProgressCounter = 0;
+			if (!sender.IsDone() && sender.Send())
+				noProgressCounter = 0;
 
 			if (receiver.Receive())
 				noProgressCounter = 0;
 
-			if (receiver.Size())
-			{
-				auto packets = receiver.GetPackets();
+			if (auto && packets = receiver.GetPackets(); !packets.empty())
 				return ByteView{ packets[0] } == data;
-			}
 		}
 
 		return false;

@@ -118,10 +118,6 @@ namespace FSecure::C3::Linter
 			/// @return true if at least one valid chunk was received.
 			bool Receive();
 
-			/// Number of merged complete packets.
-			/// @return packet count.
-			size_t Size();
-
 			/// Get all packets.
 			/// Packet sequential number is not used for reordering.
 			/// Packets are returned in same order, as were available for merging from chunks.

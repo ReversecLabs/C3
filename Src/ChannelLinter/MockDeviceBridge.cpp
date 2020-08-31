@@ -113,8 +113,8 @@ namespace FSecure::C3::Linter
 			if (receiver.Receive())
 				noProgressCounter = 0;
 
-			if (receiver.Size() >= minExpectedSize)
-				return receiver.GetPackets();
+			if (auto && packets = receiver.GetPackets(); packets.size() >= minExpectedSize)
+				return packets;
 		}
 
 		throw std::runtime_error("Cannot receive data");
@@ -122,12 +122,12 @@ namespace FSecure::C3::Linter
 
 	FSecure::C3::Linter::MockDeviceBridge::ChunkSender MockDeviceBridge::GetChunkSender(ByteView blob)
 	{
-		return { *m_Device.get(), m_QoS, blob };
+		return { *m_Device, m_QoS, blob };
 	}
 
 	FSecure::C3::Linter::MockDeviceBridge::ChunkReceiver MockDeviceBridge::GetChunkReceiver()
 	{
-		return { *m_Device.get(), m_QoS };
+		return { *m_Device, m_QoS };
 	}
 
 	MockDeviceBridge::ChunkSender::ChunkSender(Device& device, QualityOfService& qos, ByteView blob)
@@ -168,11 +168,6 @@ namespace FSecure::C3::Linter
 		}
 
 		return ret;
-	}
-
-	size_t MockDeviceBridge::ChunkReceiver::Size()
-	{
-		return m_Packets.size();
 	}
 
 	std::vector<FSecure::ByteVector> const& MockDeviceBridge::ChunkReceiver::GetPackets()
