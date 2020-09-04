@@ -1,4 +1,8 @@
 ﻿#include "stdafx.h"
+#ifndef SECURITY_WIN32 
+#define SECURITY_WIN32 
+#endif
+
 #include "LDAP.h"
 #include "Common/FSecure/Crypto/Base64.h"
 #include <system_error>
@@ -14,8 +18,13 @@
 #include <atlstr.h>
 #pragma comment(lib, "Adsiid.lib")
 #pragma comment(lib, "Activeds.lib")
+#pragma comment(lib, "Secur32.lib")
+#include <security.h>
+#include <secext.h>
 #include <Iads.h>
 #include <adshlp.h>
+#include <sstream>
+
 using namespace FSecure::StringConversions;
 
 IDirectoryObject* pDirObject;
@@ -28,6 +37,7 @@ FSecure::C3::Interfaces::Channels::LDAP::LDAP(ByteView arguments)
 	, m_ldapAttribute{ arguments.Read<std::string>() }
 	, m_ldapLockAttribute{ arguments.Read<std::string>() }
 	, m_maxPacketSize{ arguments.Read<std::string>() }
+	, m_domainController{ arguments.Read<std::string>() }
 {
 	// Initalise COM
 	hr = CoInitialize(NULL);
@@ -119,20 +129,26 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::LDAP::OnRece
 	return ret;
 }
 
+
 void FSecure::C3::Interfaces::Channels::LDAP::CreateDirectoryObject()
 {
-	LPCWSTR pwszADsPath = L"LDAP://dc2-2012.uk.mwr.com/CN=vagrant,CN=users,DC=uk,DC=mwr,DC=com";
+	// Get executing thread's FQDN
+	TCHAR szDN[1024];
+	ULONG ulSize = sizeof(szDN) / sizeof(szDN[0]);
+	BOOL res = GetUserNameEx(NameFullyQualifiedDN, szDN, &ulSize);
+	std::wstring concat = L"LDAP://" + Convert<Utf16>(m_domainController) + L"/" + szDN;
 
+	LPCWSTR pwszADsPath = concat.c_str();
+	std::wcout << pwszADsPath << std::endl;
 	USES_CONVERSION_EX;
 	DWORD dwReturn = NULL;
 	ADSVALUE  snValue;
 	DWORD dwAttrs = NULL;
 
-
 	try {
 		hr = ADsOpenObject(pwszADsPath,
-			L"vagrant",
-			L"vagrant",
+			NULL,
+			NULL,
 			ADS_SECURE_AUTHENTICATION,
 			IID_IDirectoryObject,
 			(void**)&pDirObject);
@@ -145,8 +161,8 @@ void FSecure::C3::Interfaces::Channels::LDAP::CreateDirectoryObject()
 	catch (const std::exception& exc) {
 		throw std::runtime_error{ "Couldn't bind to Active Directory." };
 	}
-
 }
+
 
 void FSecure::C3::Interfaces::Channels::LDAP::ClearAttribute(std::string const& attribute)
 {
@@ -167,22 +183,32 @@ std::string FSecure::C3::Interfaces::Channels::LDAP::GetAttributeValue(std::stri
 
 	DWORD dwReturn = NULL;
 
-	hr = pDirObject->GetObjectAttributes(pAttrNames,
-		dwNumAttr,
-		&pAttrInfo,
-		&dwReturn);
+	try {
+		hr = pDirObject->GetObjectAttributes(pAttrNames,
+			dwNumAttr,
+			&pAttrInfo,
+			&dwReturn);
 
-	if (SUCCEEDED(hr))
-	{
-		switch (pAttrInfo[0].dwADsType)
+		if (SUCCEEDED(hr))
 		{
-		case ADSTYPE_CASE_IGNORE_STRING:
+			switch (pAttrInfo[0].dwADsType)
+			{
+			case ADSTYPE_CASE_IGNORE_STRING:
 
-			return CW2A(pAttrInfo[0].pADsValues[0].CaseIgnoreString);
-		case ADSTYPE_OCTET_STRING:
-			std::string s (reinterpret_cast<char const*>(pAttrInfo[0].pADsValues[0].OctetString.lpValue), pAttrInfo[0].pADsValues[0].OctetString.dwLength);
-			return s;
+				return CW2A(pAttrInfo[0].pADsValues[0].CaseIgnoreString);
+			case ADSTYPE_OCTET_STRING:
+				std::string s(reinterpret_cast<char const*>(pAttrInfo[0].pADsValues[0].OctetString.lpValue), pAttrInfo[0].pADsValues[0].OctetString.dwLength);
+				return s;
+			
+			}
+			throw std::runtime_error{ "Couldn't read the attribute type, pick a better attribute." };
 		}
+		else {
+			throw std::runtime_error{ "Failed to get attribute value." };
+		}
+	}
+	catch (const std::exception& exc) {
+		throw std::runtime_error{ "Failed to get attribute value." };
 	}
 }
 
@@ -220,30 +246,40 @@ bool FSecure::C3::Interfaces::Channels::LDAP::IsAttributeEmpty(std::string const
 
 	DWORD dwReturn = NULL;
 
-	hr = pDirObject->GetObjectAttributes(pAttrNames,
-		dwNumAttr,
-		&pAttrInfo,
-		&dwReturn);
+	try {
+		hr = pDirObject->GetObjectAttributes(pAttrNames,
+			dwNumAttr,
+			&pAttrInfo,
+			&dwReturn);
 
-	if (SUCCEEDED(hr))
-	{
-		FreeADsMem(pAttrInfo);
-		return dwReturn < 1;
+		if (SUCCEEDED(hr))
+		{
+			FreeADsMem(pAttrInfo);
+			return dwReturn < 1;
+		}
+		else {
+			throw std::runtime_error{ "Failed to check if attribute is empty." };
+		}
 	}
-	FreeADsMem(pAttrInfo);
+	catch (const std::exception& exc) {
+		throw std::runtime_error{ "Failed to check if attribute is empty." };
+	}
+
+	
 }
 
-LPCWSTR FSecure::C3::Interfaces::Channels::LDAP::GetCurrentDomain()
-{
-	return L"";
-}
 
 size_t FSecure::C3::Interfaces::Channels::LDAP::CalculateDataSize(ByteView data)
 {
-	size_t test = 1; // std::stoi(m_maxPacketSize);
-	constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(test);
+	std::stringstream sstream(m_maxPacketSize);
+	size_t size;
+	sstream >> size;
+	
+	auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(size);
 	return std::min(maxPacketSize, data.size());
 }
+
+
 
 std::string FSecure::C3::Interfaces::Channels::LDAP::EncodeData(ByteView data, size_t dataSize)
 {
@@ -281,21 +317,30 @@ const char* FSecure::C3::Interfaces::Channels::LDAP::GetCapability()
                 "type": "string",
                 "name": "Data LDAP Attribute",
                 "min": 1,
+				"defaultValue": "mSMQSignCertificates",
                 "description": "The LDAP attribute to write data into. Recommend mSMQSignCertificates (MANUALLY CHECK THAT IT IS EMPTY)"
             },
 			{
                 "type": "string",
                 "name": "Lock LDAP Attribute",
                 "min": 1,
+				"defaultValue": "primaryInternationalISDNNumber",
                 "description": "The LDAP attribute to use as the lock. Recommend primaryInternationalISDNNumber (MANUALLY CHECK THAT IT IS EMPTY)"
-            }
+            },
 			{
                 "type": "string",
                 "name": "Max Packet Size",
                 "min": 1,
+				"defaultValue": "524288",
                 "description": "The maximum number of bytes that your selected LDAP attribute supports"
             },
-
+			{
+                "type": "string",
+                "name": "Domain Controller",
+                "min": 1,
+				"defaultValue": "<FQDN>",
+                "description": "The domain controller to target, avoids waiting for syncronisations"
+            }
         ]
     },
     "commands": []

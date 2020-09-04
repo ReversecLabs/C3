@@ -25,7 +25,7 @@ namespace FSecure::C3::Interfaces::Channels
 		void SetAttribute(std::string const& attribute, std::string value);
 
 		bool IsAttributeEmpty(std::string const& attribute);
-		LPCWSTR GetCurrentDomain();
+
 		size_t CalculateDataSize(ByteView data);
 		std::string EncodeData(ByteView data, size_t dataSize);
 		/// Get channel capability.
@@ -47,6 +47,8 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string m_ldapLockAttribute;
 		/// Maximum packet size
 		std::string m_maxPacketSize;
+		/// Maximum packet size
+		std::string m_domainController;
 		
 
 	private:
