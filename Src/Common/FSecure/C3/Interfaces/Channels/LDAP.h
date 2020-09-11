@@ -31,6 +31,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 		size_t CalculateDataSize(ByteView data);
 		std::string EncodeData(ByteView data, size_t dataSize);
+		FSecure::ByteVector OnRunCommand(ByteView command);
 		/// Get channel capability.
 		/// @returns Channel capability in JSON format
 		static const char* GetCapability();

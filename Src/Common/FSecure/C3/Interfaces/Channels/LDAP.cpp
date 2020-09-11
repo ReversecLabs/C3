@@ -250,6 +250,21 @@ std::string FSecure::C3::Interfaces::Channels::LDAP::EncodeData(ByteView data, s
 	return cppcodec::base32_crockford::encode(sendData.data(), sendData.size());
 }
 
+FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnRunCommand(ByteView command)
+{
+	auto commandCopy = command; //each read moves ByteView. CommandCopy is needed  for default.
+	switch (command.Read<uint16_t>())
+	{
+	case 0:
+		//clear attribute
+		ClearAttribute(m_ldapAttribute);
+		ClearAttribute(m_ldapLockAttribute);
+		return {};
+	default:
+		return AbstractChannel::OnRunCommand(commandCopy);
+	}
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +336,14 @@ const char* FSecure::C3::Interfaces::Channels::LDAP::GetCapability()
             }
         ]
     },
-    "commands": []
+    "commands": [
+		{
+			"name": "Clear attribute values",
+			"id": 0,
+			"description": "Clear data and lock attributes in the event of an error",
+			"arguments": []
+		}
+	]
 }
 )_";
 }
