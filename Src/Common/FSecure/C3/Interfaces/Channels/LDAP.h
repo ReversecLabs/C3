@@ -1,5 +1,9 @@
 ﻿#pragma once
+
 #include <winnt.h>
+
+struct IDirectoryObject;
+
 namespace FSecure::C3::Interfaces::Channels
 {
 	///Implementation of the LDAP Channel.
@@ -16,15 +20,14 @@ namespace FSecure::C3::Interfaces::Channels
 		size_t OnSendToChannel(ByteView packet);
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		std::vector<ByteVector> OnReceiveFromChannel();
+		ByteVector OnReceiveFromChannel();
 
 		void CreateDirectoryObject();
 
-		void ClearAttribute(std::string const& attribute);
-		std::string GetAttributeValue(std::string const& attribute);
-		void SetAttribute(std::string const& attribute, std::string value);
+		void ClearAttribute(std::wstring const& attribute);
+		std::string GetAttributeValue(std::wstring const& attribute);
 
-		bool IsAttributeEmpty(std::string const& attribute);
+		void SetAttribute(std::wstring const& attribute, std::wstring const& value);
 
 		size_t CalculateDataSize(ByteView data);
 		std::string EncodeData(ByteView data, size_t dataSize);
@@ -42,21 +45,29 @@ namespace FSecure::C3::Interfaces::Channels
 		/// The outbound direction name, the opposite of m_inboundDirectionName
 		std::string m_outboundDirectionName;
 		/// The LDAP atttribute to save the data too
-		std::string m_ldapAttribute;
+		std::wstring m_ldapAttribute;
 		/// The LDAP atttribute to use as the lock
-		std::string m_ldapLockAttribute;
+		std::wstring m_ldapLockAttribute;
 		/// Maximum packet size
-		std::string m_maxPacketSize;
+		uint32_t m_maxPacketSize;
 		/// Maximum packet size
-		std::string m_domainController;
+		std::wstring m_domainController;
+		/// The LDAP atttribute to use as the lock
+		std::string m_username;
+		/// The LDAP atttribute to use as the lock
+		std::string m_password;
 		
-
-	private:
-		///The directory object
-		//IDirectoryObject *pDirObject;
-		///result
-		HRESULT hr;
+		
+		/// LDAP dircetory object used to query AD
+		IDirectoryObject* pDirObject;
 	};
+
+	//private:
+	//	///The directory object
+	//	//IDirectoryObject *pDirObject;
+	//	///result
+	//	HRESULT hr;
+	//};
 
 
 }
