@@ -92,14 +92,13 @@ namespace FSecure::C3::Linter
 
 	void MockDeviceBridge::Send(ByteView blob)
 	{
-		auto packetSplitter = m_QoS.GetPacketSplitter(blob);
+		auto sender = GetChunkSender(blob);
 		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
 		{
-			auto sent = GetDevice()->OnSendToChannelInternal(packetSplitter.NextChunk());
-			if (packetSplitter.Update(sent))
+			if (sender.Send())
 				noProgressCounter = 0;
 
-			if (!packetSplitter.HasMore())
+			if (sender.IsDone())
 				return;
 		}
 
@@ -108,23 +107,71 @@ namespace FSecure::C3::Linter
 
 	std::vector<FSecure::ByteVector> MockDeviceBridge::Receive(size_t minExpectedSize)
 	{
-		auto packets = std::vector<ByteVector>{};
+		auto receiver = GetChunkReceiver();
 		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
 		{
-			std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
-			for (auto&& chunk : std::static_pointer_cast<C3::AbstractChannel>(GetDevice())->OnReceiveFromChannelInternal())
-			{
-				if (m_QoS.PushReceivedChunk(chunk))
-					noProgressCounter = 0;
+			if (receiver.Receive())
+				noProgressCounter = 0;
 
-				if (auto packet = m_QoS.GetNextPacket(); !packet.empty()) // this form will ensure that packets are returned in same order they are available.
-					packets.emplace_back(std::move(packet));
-			}
-
-			if (packets.size() >= minExpectedSize)
+			if (auto && packets = receiver.GetPackets(); packets.size() >= minExpectedSize)
 				return packets;
 		}
 
 		throw std::runtime_error("Cannot receive data");
+	}
+
+	FSecure::C3::Linter::MockDeviceBridge::ChunkSender MockDeviceBridge::GetChunkSender(ByteView blob)
+	{
+		return { *m_Device, m_QoS, blob };
+	}
+
+	FSecure::C3::Linter::MockDeviceBridge::ChunkReceiver MockDeviceBridge::GetChunkReceiver()
+	{
+		return { *m_Device, m_QoS };
+	}
+
+	MockDeviceBridge::ChunkSender::ChunkSender(Device& device, QualityOfService& qos, ByteView blob)
+		: m_Device{ device }, m_Splitter{ qos.GetPacketSplitter(blob) }
+	{
+
+	}
+
+	bool MockDeviceBridge::ChunkSender::Send()
+	{
+		auto sent = m_Device.OnSendToChannelInternal(m_Splitter.NextChunk());
+		return m_Splitter.Update(sent);
+	}
+
+	bool MockDeviceBridge::ChunkSender::IsDone()
+	{
+		return !m_Splitter.HasMore();
+	}
+
+
+	MockDeviceBridge::ChunkReceiver::ChunkReceiver(Device& device, QualityOfService& qos)
+		: m_Device{ device }, m_QoS{ qos }
+	{
+
+	}
+
+	bool MockDeviceBridge::ChunkReceiver::Receive()
+	{
+		auto ret = false;
+		std::this_thread::sleep_for(m_Device.GetUpdateDelay());
+		for (auto&& chunk : static_cast<C3::AbstractChannel&>(m_Device).OnReceiveFromChannelInternal())
+		{
+			if (m_QoS.PushReceivedChunk(chunk))
+				ret = true;
+
+			if (auto packet = m_QoS.GetNextPacket(); !packet.empty()) // this form will ensure that packets are returned in same order they are available.
+				m_Packets.emplace_back(std::move(packet));
+		}
+
+		return ret;
+	}
+
+	std::vector<FSecure::ByteVector> const& MockDeviceBridge::ChunkReceiver::GetPackets()
+	{
+		return m_Packets;
 	}
 }

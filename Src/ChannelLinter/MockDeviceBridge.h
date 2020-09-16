@@ -78,6 +78,67 @@ namespace FSecure::C3::Linter
 		/// @throws std::runtime_error if unable to return vector of required number of full packets.
 		std::vector<ByteVector> Receive(size_t minExpectedSize = 1);
 
+		/// Abstraction over sending chunks until all of data is transmitted.
+		/// This class does not participate in resource ownership.
+		/// Transmitting device, QoS object as well as data must be valid as long as ChunkSender is used.
+		class ChunkSender
+		{
+		public:
+			/// Constructor creating object responsible for sending blob of data in chunks.
+			/// @param device transmitting data over channel.
+			/// @param qos responsible for splitting data in chunks with correct identification headers.
+			/// @param blob data.
+			ChunkSender(Device& device, QualityOfService& qos, ByteView blob);
+
+			/// Sends data.
+			/// @return true if at least one valid chunk was send.
+			bool Send();
+
+			/// All of the data was correctly send.
+			/// @return true if there is no more data.
+			bool IsDone();
+
+		private:
+			Device& m_Device;
+			QualityOfService::PacketSplitter m_Splitter;
+		};
+
+		/// Abstraction over receiving data.
+		/// This class does not participate in resource ownership.
+		/// Transmitting device and QoS object must be valid as long as ChunkReceiver is used.
+		class ChunkReceiver
+		{
+		public:
+			/// Constructor creating object responsible for receiving data in chunks.
+			/// @param device receiving data from channel.
+			/// @param qos responsible for merging data from chunks.
+			ChunkReceiver(Device& device, QualityOfService& qos);
+
+			/// Receive data.
+			/// @return true if at least one valid chunk was received.
+			bool Receive();
+
+			/// Get all packets.
+			/// Packet sequential number is not used for reordering.
+			/// Packets are returned in same order, as were available for merging from chunks.
+			/// @return complete packets.
+			std::vector<ByteVector> const& GetPackets();
+
+		private:
+			Device& m_Device;
+			QualityOfService& m_QoS;
+			std::vector<ByteVector> m_Packets;
+		};
+
+		/// Create ChunkSender using current bridge to send data.
+		/// @param blob data.
+		/// @return new ChunkSender.
+		ChunkSender GetChunkSender(ByteView blob);
+
+		/// Create ChunkReceiver using current bridge to receive data.
+		/// @return ChunkReceiver.
+		ChunkReceiver GetChunkReceiver();
+
 	private:
 		/// Bridged device
 		std::shared_ptr<Device> m_Device;

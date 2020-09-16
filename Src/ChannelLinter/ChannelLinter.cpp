@@ -113,9 +113,10 @@ namespace FSecure::C3::Linter
 			std::cout << "Creating complementary channel ... " << std::flush;
 			auto complementaryArgs = GetComplementaryChannelArgs();
 			auto complementaryChannel = MakeChannel(complementaryArgs);
+			assert(complementaryChannel);
 			std::cout << "OK" << std::endl;
 
-			TestChannelIO(channel, complementaryChannel);
+			TestChannelIO(*channel.get(), *complementaryChannel.get(), m_Config.m_OverlappedIO);
 		}
 
 		if (m_Config.m_Command)
@@ -140,35 +141,44 @@ namespace FSecure::C3::Linter
 		return channelBridge;
 	}
 
-	void ChannelLinter::TestChannelIO(std::shared_ptr<MockDeviceBridge> const& channel, std::shared_ptr<MockDeviceBridge> const& complementary)
+	void ChannelLinter::TestChannelIO(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped)
 	{
-		assert(channel);
-		assert(complementary);
+		TestChannelMTU(channel, complementary, overlapped);
 
+		if (!overlapped)
+			TestChannelOrder(channel, complementary);
+	}
+
+	void ChannelLinter::TestChannelMTU(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped)
+	{
 		for (size_t packetLen : { 8, 64, 1024, 1024 * 1024})
 		{
 			std::cout << "Testing channel with " << packetLen << " bytes of data ... " << std::flush;
-			auto data = ByteVector(FSecure::Utils::GenerateRandomData(packetLen));
 
-			channel->Send(data);
-			if (data != complementary->Receive()[0])
+			auto data = ByteVector(FSecure::Utils::GenerateRandomData(packetLen));
+			auto passed = overlapped ? TestOverlapped(channel, complementary, data) : TestSequential(channel, complementary, data);
+			if (!passed)
 				throw std::exception("Data sent and received mismatch");
 
 			std::cout << "OK" << std::endl;
 		}
+	}
 
-		auto numberOfTests = 10;
-		auto packetSize = 64;
-		std::cout << "Testing channel order with " << numberOfTests << " packets of " << packetSize << " bytes of data ... " << std::flush;
+	void ChannelLinter::TestChannelOrder(MockDeviceBridge& channel, MockDeviceBridge& complementary)
+	{
+		constexpr auto  numberOfTests = 10;
+		constexpr auto packetSize = 64;
 		std::vector<ByteVector> sent;
+
+		std::cout << "Testing channel order with " << numberOfTests << " packets of " << packetSize << " bytes of data ... " << std::flush;
 
 		for (auto i = 0; i < numberOfTests; ++i)
 		{
 			sent.push_back(FSecure::Utils::GenerateRandomData(packetSize));
-			channel->Send(sent[i]);
+			channel.Send(sent[i]);
 		}
 
-		auto received = complementary->Receive(sent.size());
+		auto received = complementary.Receive(sent.size());
 		received.resize(sent.size());
 
 		if (sent != received)
@@ -176,6 +186,35 @@ namespace FSecure::C3::Linter
 
 		std::cout << "OK" << std::endl;
 	}
+
+
+	bool ChannelLinter::TestOverlapped(MockDeviceBridge& channel, MockDeviceBridge& complementary, ByteView data)
+	{
+		auto sender = channel.GetChunkSender(data);
+		auto receiver = complementary.GetChunkReceiver();
+
+		for (auto noProgressCounter = 0; noProgressCounter < 10; ++noProgressCounter)
+		{
+			if (!sender.IsDone() && sender.Send())
+				noProgressCounter = 0;
+
+			if (receiver.Receive())
+				noProgressCounter = 0;
+
+			if (auto && packets = receiver.GetPackets(); !packets.empty())
+				return ByteView{ packets[0] } == data;
+		}
+
+		return false;
+	}
+
+	bool ChannelLinter::TestSequential(MockDeviceBridge& channel, MockDeviceBridge& complementary, ByteView data)
+	{
+		channel.Send(data);
+		auto received = complementary.Receive();
+		return data == ByteView{ received[0] };
+	}
+
 
 	void ChannelLinter::TestCommand(std::shared_ptr<MockDeviceBridge> const& channel)
 	{
