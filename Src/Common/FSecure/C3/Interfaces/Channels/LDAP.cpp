@@ -50,8 +50,9 @@ FSecure::C3::Interfaces::Channels::LDAP::LDAP(ByteView arguments)
 	, m_ldapLockAttribute{ Convert<Utf16>(arguments.Read<std::string>()) }
 	, m_maxPacketSize{ arguments.Read<uint32_t>() }
 	, m_domainController{ Convert<Utf16>(arguments.Read<std::string>()) }
-	, m_username{ arguments.Read<std::string>() }
-	, m_password{ arguments.Read<std::string>() }
+	, m_username{ arguments.Read<std::wstring>() }
+	, m_password{ arguments.Read<std::wstring>() }
+	, m_userDN{ arguments.Read<std::wstring>() }
 	, m_Com{}
 	, m_DirObject{ CreateDirectoryObject() }
 {
@@ -84,13 +85,17 @@ size_t FSecure::C3::Interfaces::Channels::LDAP::OnSendToChannel(ByteView data)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnReceiveFromChannel()
 {
-	std::string attributeValue = GetAttributeValue(m_ldapAttribute);
+	
 	std::string lockValue = GetAttributeValue(m_ldapLockAttribute);
 
 	// If attribute or lock is empty then nothing to be read
-	if (attributeValue.empty() || lockValue.empty() || lockValue != m_inboundDirectionName)
+	if (lockValue.empty() || lockValue != m_inboundDirectionName)
 		return {};
 
+	std::string attributeValue = GetAttributeValue(m_ldapAttribute);
+
+	if (attributeValue.empty())
+		return {};
 	// Decode attribute value and prepare to send it back
 	ByteVector ret = base32::decode(attributeValue);
 
@@ -106,34 +111,22 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnReceiveFromChanne
 
 IDirectoryObject* FSecure::C3::Interfaces::Channels::LDAP::CreateDirectoryObject()
 {
+	IDirectoryObject* dirObject;
+	std::wstring ldapUrl = OBF(L"LDAP://") + m_domainController + L"/" + m_userDN;
+	HRESULT hr;
 	if (!m_username.empty() || !m_password.empty())
 	{
-		HANDLE hToken = nullptr;
-		if (!LogonUserA(m_username.c_str(), NULL, m_password.c_str(), LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_WINNT50, &hToken))
-			throw std::runtime_error{ OBF("Failed to logon as target user") };
-
-		SCOPE_GUARD(CloseHandle(hToken););
-
-		if (!ImpersonateLoggedOnUser(hToken))
-			throw std::runtime_error{ OBF("Failed to impersonate user") };
+		hr = ADsOpenObject(ldapUrl.c_str(), m_username.c_str(), m_password.c_str(), ADS_SECURE_AUTHENTICATION, IID_IDirectoryObject, (void**)&dirObject);
+		
 	}
-	SCOPE_GUARD(RevertToSelf(););
-
-	// Get executing thread's FQDN
-	TCHAR szDN[1024];
-	ULONG ulSize = sizeof(szDN) / sizeof(szDN[0]);
-	if (!GetUserNameEx(NameFullyQualifiedDN, szDN, &ulSize))
-		throw std::runtime_error{ OBF("Failed get user's FQDN") };
-
-	std::wstring ldapUrl = OBF(L"LDAP://") + m_domainController + L"/" + szDN;
-
-	IDirectoryObject* dirObject;
-	// ADsOpenObject binds to current impersonated user
-	auto hr = ADsOpenObject(ldapUrl.c_str(), nullptr, nullptr, ADS_SECURE_AUTHENTICATION, IID_IDirectoryObject, (void**)&dirObject);
+	else {
+		hr = ADsOpenObject(ldapUrl.c_str(), nullptr, nullptr, ADS_SECURE_AUTHENTICATION, IID_IDirectoryObject, (void**)&dirObject);
+	}
 
 	if (!SUCCEEDED(hr))
 		throw std::runtime_error{ OBF("Couldn't bind to Active Directory.") };
 
+	dirObject->Release();
 	return dirObject;
 }
 
@@ -166,7 +159,7 @@ std::string FSecure::C3::Interfaces::Channels::LDAP::GetAttributeValue(std::wstr
 	if (dwReturn == 0)
 		return "";
 
-	switch (pAttrInfo[0].dwADsType)
+	switch (pAttrInfo->dwADsType)
 	{
 	case ADSTYPE_CASE_IGNORE_STRING:
 		return Convert<Utf8>(pAttrInfo[0].pADsValues[0].CaseIgnoreString);
@@ -211,6 +204,8 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnRunCommand(ByteVi
 	switch (command.Read<uint16_t>())
 	{
 	case 0:
+		//lock first to avoid race condition
+		SetAttribute(m_ldapLockAttribute, Convert<Utf16>(L"CLEAR"));
 		//clear attribute
 		ClearAttribute(m_ldapAttribute);
 		ClearAttribute(m_ldapLockAttribute);
@@ -263,7 +258,7 @@ const char* FSecure::C3::Interfaces::Channels::LDAP::GetCapability()
                 "type": "uint32",
                 "name": "Max Packet Size",
                 "min": 1,
-                "defaultValue": "1048576",
+                "defaultValue": "524288",
                 "description": "The maximum number of bytes that your selected LDAP attribute supports"
             },
 			{
@@ -284,6 +279,12 @@ const char* FSecure::C3::Interfaces::Channels::LDAP::GetCapability()
                 "name": "Password",
                 "defaultValue": "",
                 "description": "The password of the account to modify, defaults to executing user if empty"
+            },
+{
+                "type": "string",
+                "name": "User DN",
+                "defaultValue": "CN=Jeff Smith,CN=users,DC=fabrikam,DC=com",
+                "description": "The Distinguished Name (DN) of the account to modify"
             }
         ]
     },

@@ -90,12 +90,14 @@ namespace FSecure::C3::Interfaces::Channels
 		std::wstring m_ldapLockAttribute;
 		/// Maximum packet size
 		uint32_t m_maxPacketSize;
-		/// Maximum packet size
+		/// Target domain controller to bind to
 		std::wstring m_domainController;
-		/// The LDAP attribute to use as the lock
-		std::string m_username;
-		/// The LDAP attribute to use as the lock
-		std::string m_password;
+		/// An explict LDAP username to bind to
+		std::wstring m_username;
+		/// The password needed to bind to the target user
+		std::wstring m_password;
+		/// Distinguished name of the target user
+		std::wstring m_userDN;
 
 		/// Initialize COM
 		Detail::ComInitializer m_Com;
