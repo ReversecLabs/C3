@@ -21,14 +21,11 @@ using namespace FSecure::StringConversions;
 
 namespace FSecure::C3::Interfaces::Channels::Detail
 {
-	namespace
+	bool ComInit()
 	{
-		bool ComInit()
-		{
-			if (FAILED(CoInitialize(nullptr)))
-				throw std::runtime_error{ OBF("Failed to intialize COM") };
-			return true;
-		}
+		if (FAILED(CoInitialize(nullptr)))
+			throw std::runtime_error{ OBF("Failed to intialize COM") };
+		return true;
 	}
 
 	ComInitializer::ComInitializer() :
@@ -50,9 +47,9 @@ FSecure::C3::Interfaces::Channels::LDAP::LDAP(ByteView arguments)
 	, m_ldapLockAttribute{ Convert<Utf16>(arguments.Read<std::string>()) }
 	, m_maxPacketSize{ arguments.Read<uint32_t>() }
 	, m_domainController{ Convert<Utf16>(arguments.Read<std::string>()) }
-	, m_username{ arguments.Read<std::wstring>() }
-	, m_password{ arguments.Read<std::wstring>() }
-	, m_userDN{ arguments.Read<std::wstring>() }
+	, m_username{ Convert<Utf16>(arguments.Read<std::string>()) }
+	, m_password{ Convert<Utf16>(arguments.Read<std::string>()) }
+	, m_userDN{ Convert<Utf16>(arguments.Read<std::string>()) }
 	, m_Com{}
 	, m_DirObject{ CreateDirectoryObject() }
 {
@@ -85,7 +82,7 @@ size_t FSecure::C3::Interfaces::Channels::LDAP::OnSendToChannel(ByteView data)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnReceiveFromChannel()
 {
-	
+
 	std::string lockValue = GetAttributeValue(m_ldapLockAttribute);
 
 	// If attribute or lock is empty then nothing to be read
@@ -109,25 +106,20 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::LDAP::OnReceiveFromChanne
 }
 
 
-IDirectoryObject* FSecure::C3::Interfaces::Channels::LDAP::CreateDirectoryObject()
+FSecure::C3::Interfaces::Channels::Detail::ComPtr<IDirectoryObject> FSecure::C3::Interfaces::Channels::LDAP::CreateDirectoryObject()
 {
 	IDirectoryObject* dirObject;
 	std::wstring ldapUrl = OBF(L"LDAP://") + m_domainController + L"/" + m_userDN;
 	HRESULT hr;
 	if (!m_username.empty() || !m_password.empty())
-	{
 		hr = ADsOpenObject(ldapUrl.c_str(), m_username.c_str(), m_password.c_str(), ADS_SECURE_AUTHENTICATION, IID_IDirectoryObject, (void**)&dirObject);
-		
-	}
-	else {
+	else
 		hr = ADsOpenObject(ldapUrl.c_str(), nullptr, nullptr, ADS_SECURE_AUTHENTICATION, IID_IDirectoryObject, (void**)&dirObject);
-	}
 
 	if (!SUCCEEDED(hr))
 		throw std::runtime_error{ OBF("Couldn't bind to Active Directory.") };
 
-	dirObject->Release();
-	return dirObject;
+	return { dirObject };
 }
 
 
@@ -154,12 +146,13 @@ std::string FSecure::C3::Interfaces::Channels::LDAP::GetAttributeValue(std::wstr
 	if (FAILED(hr))
 		throw std::runtime_error{ OBF("Failed to get attribute value.") };
 
-	SCOPE_GUARD(FreeADsMem(pAttrInfo); );
+	auto attrInfo = std::unique_ptr<ADS_ATTR_INFO, decltype(&FreeADsMem)>{ pAttrInfo, &FreeADsMem };
+
 	// Check if the attribute is empty, returning an empty string if so
 	if (dwReturn == 0)
 		return "";
 
-	switch (pAttrInfo->dwADsType)
+	switch (pAttrInfo[0].dwADsType)
 	{
 	case ADSTYPE_CASE_IGNORE_STRING:
 		return Convert<Utf8>(pAttrInfo[0].pADsValues[0].CaseIgnoreString);

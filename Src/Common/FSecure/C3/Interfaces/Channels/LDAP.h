@@ -57,7 +57,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @return packet retrieved from Channel.
 		ByteVector OnReceiveFromChannel();
 
-		IDirectoryObject* CreateDirectoryObject();
+		Detail::ComPtr<IDirectoryObject> CreateDirectoryObject();
 
 		void ClearAttribute(std::wstring const& attribute);
 
