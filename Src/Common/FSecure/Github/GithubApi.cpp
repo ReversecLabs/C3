@@ -142,7 +142,7 @@ void FSecure::GithubApi::WriteMessageToFile(std::string const& direction, ByteVi
 		OBF("/contents/") + filename;
 
 	j[OBF("message")] = OBF("Initial Commit");
-	j[OBF("branch")] = OBF("master");
+	j[OBF("branch")] = OBF("main");
 	j[OBF("content")] = cppcodec::base64_rfc4648::encode(data);
 
 	json response = SendJsonRequest(url, j, Method::PUT);
