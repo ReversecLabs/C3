@@ -251,7 +251,7 @@ const char* FSecure::C3::Interfaces::Channels::LDAP::GetCapability()
                 "type": "uint32",
                 "name": "Max Packet Size",
                 "min": 1,
-                "defaultValue": "524288",
+                "defaultValue": "1047552",
                 "description": "The maximum number of bytes that your selected LDAP attribute supports"
             },
 			{
