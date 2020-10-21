@@ -61,7 +61,7 @@ Options:
                         Execute a command with a given <ID> and arguments [ARGS...]
 
 Examples:
-    1. Parse the json returned from GetCapability and validate it against C3 rules:
+     1. Parse the json returned from GetCapability and validate it against C3 rules:
         ChannelLinter.exe -n UncShareFile
 
      2. Create instance of a channel:

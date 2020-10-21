@@ -32,6 +32,12 @@ namespace FSecure::C3::Linter
 		/// @throws if Channel::OnSend or Channel::OnReceive throws
 		void TestChannelIO(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped = false);
 
+		/// Test if channel "echoes" - reads packets ignoring the in/out-bound identifiers
+		/// @param channel first of channels. Used to send data.
+		/// @param complementary second of channels. Used to receive data.
+		/// @throws if any of the checks fail
+		void TestEcho(MockDeviceBridge& channel, MockDeviceBridge& complementary);
+
 		/// Test maximal packet size that can be delivered by channel.
 		/// @param channel first of channels. Used to send data.
 		/// @param complementary second of channels. Used to receive data.

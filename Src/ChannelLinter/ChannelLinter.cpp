@@ -143,10 +143,30 @@ namespace FSecure::C3::Linter
 
 	void ChannelLinter::TestChannelIO(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped)
 	{
+		TestEcho(channel, complementary);
 		TestChannelMTU(channel, complementary, overlapped);
 
 		if (!overlapped)
 			TestChannelOrder(channel, complementary);
+	}
+
+	void ChannelLinter::TestEcho(MockDeviceBridge& channel, MockDeviceBridge& complementary)
+	{
+		size_t packetLen = 8;
+		std::cout << "Testing channel echo with " << packetLen << " bytes of data ... " << std::flush;
+		auto data = ByteVector(FSecure::Utils::GenerateRandomData(packetLen));
+		if (channel.GetDevice()->OnSendToChannelInternal(data) != data.size())
+			throw std::runtime_error{ "Failed to send echo packet" };
+		auto echo = std::static_pointer_cast<FSecure::C3::AbstractChannel>(channel.GetDevice())->OnReceiveFromChannelInternal();
+		if (!echo.empty())
+			throw std::runtime_error{ "Channel read it's own message" };
+
+		// clean channel
+		auto received = std::static_pointer_cast<FSecure::C3::AbstractChannel>(complementary.GetDevice())->OnReceiveFromChannelInternal();
+		if (received.empty() || received.size() > 1 || received[0] != data)
+			throw std::runtime_error{ "Receive error" };
+
+		std::cout << "OK" << std::endl;
 	}
 
 	void ChannelLinter::TestChannelMTU(MockDeviceBridge& channel, MockDeviceBridge& complementary, bool overlapped)
