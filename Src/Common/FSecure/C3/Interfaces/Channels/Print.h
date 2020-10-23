@@ -1,0 +1,81 @@
+#pragma once
+#include <Windows.h>
+#include <Winspool.h>
+
+namespace FSecure::C3::Interfaces::Channels
+{
+	namespace Detail
+	{
+		/// @brief RAII wrapper around ComPtr to call IUnknown::Release
+		/// @tparam T
+		template<typename T>
+		struct ComPtr
+		{
+			ComPtr(T* ptr) : m_Ptr{ ptr, &Deleter } {}
+
+			T* operator -> () { return m_Ptr.get(); }
+
+		private:
+			static void Deleter(T* ptr)
+			{
+				ptr->Release();
+			}
+
+			std::unique_ptr<T, decltype(&Deleter)> m_Ptr;
+		};
+
+
+	}
+	///Implementation of the Slack Channel.
+	struct Print : public Channel<Print>
+	{
+		/// Public constructor.
+		/// @param arguments factory arguments.
+		Print(ByteView arguments);
+
+		/// Destructor
+		virtual ~Print() = default;
+
+		/// OnSend callback implementation.
+		/// @param packet data to send to Channel.
+		/// @returns size_t number of bytes successfully written.
+		size_t OnSendToChannel(ByteView packet);
+
+		/// Reads a single C3 packet from Channel.
+		/// @return packet retrieved from Channel.
+		FSecure::ByteVector OnReceiveFromChannel();
+
+		JOB_INFO_2 GetC3Job();
+
+		HANDLE  CreateHandle();
+
+		DWORD WriteData(std::string dataToWrite);
+
+		size_t CalculateDataSize(ByteView data);
+
+		static std::string EncodeData(ByteView data, size_t dataSize);
+		/// Get channel capability.
+		/// @returns Channel capability in JSON format
+		static const char* GetCapability();
+
+		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
+		/// Set long delay otherwise slack rate limit will heavily impact channel.
+		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 3500ms, s_MaxUpdateDelay = 6500ms;
+
+	protected:
+		/// The inbound direction name of data
+		std::string m_inboundDirectionName;
+
+		/// The outbound direction name, the opposite of m_inboundDirectionName
+		std::string m_outboundDirectionName;
+
+		
+
+		std::string m_jobIdentifier;
+
+		std::string m_printerAddress;
+
+		HANDLE m_pHandle;
+
+	};
+}
