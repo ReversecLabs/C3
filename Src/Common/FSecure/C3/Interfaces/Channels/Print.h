@@ -26,7 +26,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 
 	}
-	///Implementation of the Slack Channel.
+	///Implementation of the Print Channel.
 	struct Print : public Channel<Print>
 	{
 		/// Public constructor.
@@ -45,7 +45,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @return packet retrieved from Channel.
 		FSecure::ByteVector OnReceiveFromChannel();
 
-		JOB_INFO_2 GetC3Job();
+		std::tuple<LPWSTR, DWORD> GetC3Job();
 
 		HANDLE  CreateHandle();
 
@@ -69,13 +69,17 @@ namespace FSecure::C3::Interfaces::Channels
 		/// The outbound direction name, the opposite of m_inboundDirectionName
 		std::string m_outboundDirectionName;
 
-		
-
+		// ID of the created job on print queue
 		std::string m_jobIdentifier;
 
+		// Local or network address of target printer
 		std::string m_printerAddress;
 
+		// Handle to local or network printer
 		HANDLE m_pHandle;
+
+		/// Maximum packet size
+		uint32_t m_maxPacketSize;
 
 	};
 }
