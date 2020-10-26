@@ -7,21 +7,21 @@ namespace FSecure::C3::Interfaces::Channels
 	namespace Detail
 	{
 		/// @brief RAII wrapper around ComPtr to call IUnknown::Release
-		/// @tparam T
-		template<typename T>
-		struct ComPtr
+		struct PrinterHandle
 		{
-			ComPtr(T* ptr) : m_Ptr{ ptr, &Deleter } {}
+			static PrinterHandle Open(std::string_view printerAddress);
 
-			T* operator -> () { return m_Ptr.get(); }
+			HANDLE Get() const{ return m_Handle.get(); }
 
 		private:
-			static void Deleter(T* ptr)
+			PrinterHandle(HANDLE ptr) : m_Handle{ ptr, &Deleter } {}
+
+			static void Deleter(HANDLE ptr)
 			{
-				ptr->Release();
+				ClosePrinter(ptr);
 			}
 
-			std::unique_ptr<T, decltype(&Deleter)> m_Ptr;
+			std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype(&Deleter)> m_Handle;
 		};
 	}
 
@@ -45,8 +45,6 @@ namespace FSecure::C3::Interfaces::Channels
 		ByteVector OnReceiveFromChannel();
 
 		std::tuple<std::wstring, DWORD> GetC3Job();
-
-		HANDLE CreateHandle();
 
 		DWORD WriteData(std::string dataToWrite);
 
@@ -75,7 +73,7 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string m_printerAddress;
 
 		// Handle to local or network printer
-		HANDLE m_pHandle;
+		Detail::PrinterHandle m_pHandle;
 
 		/// Maximum packet size
 		uint32_t m_maxPacketSize;

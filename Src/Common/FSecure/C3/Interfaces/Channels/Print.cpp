@@ -10,13 +10,25 @@ namespace FSecure::C3::Interfaces::Channels
 {
 	using namespace FSecure::StringConversions;
 
+	Detail::PrinterHandle Detail::PrinterHandle::Open(std::string_view printerAddress)
+	{
+		HANDLE handle;
+		PRINTER_DEFAULTS defaults {};
+		std::wstring printer = Convert<Utf16>(printerAddress);
+		defaults.DesiredAccess = PRINTER_ACCESS_USE;
+		if (!OpenPrinter2(printer.c_str(), &handle, &defaults, nullptr))
+			throw std::runtime_error{ OBF("Can't connect to printer") };
+
+		return { handle };
+	}
+
 	Print::Print(ByteView arguments)
 		: m_inboundDirectionName{ arguments.Read<std::string>() }
 		, m_outboundDirectionName{ arguments.Read<std::string>() }
 		, m_jobIdentifier{ arguments.Read<std::string>() }
 		, m_printerAddress{ arguments.Read<std::string>() }
 		, m_maxPacketSize{ arguments.Read<uint32_t>() }
-		, m_pHandle{ CreateHandle() }
+		, m_pHandle{ Detail::PrinterHandle::Open(m_printerAddress) }
 	{
 	}
 
@@ -55,7 +67,7 @@ namespace FSecure::C3::Interfaces::Channels
 		std::string convertedData = Convert<Utf8>(docName.substr(0, docName.size() - m_inboundDirectionName.size() - m_jobIdentifier.size()));
 		ByteVector ret = base64::decode(convertedData);
 		//Delete the job so more data can be sent
-		if (SetJob(m_pHandle, jobID, 0, NULL, JOB_CONTROL_DELETE) == 0)
+		if (SetJob(m_pHandle.Get(), jobID, 0, NULL, JOB_CONTROL_DELETE) == 0)
 			throw std::runtime_error{ OBF("Failed to delete job") };
 
 		return ret;
@@ -66,27 +78,22 @@ namespace FSecure::C3::Interfaces::Channels
 		DWORD       dwNeeded, dwReturned, i;
 		JOB_INFO_2* pJobInfo;
 		// First you call EnumJobs() to find out how much memory you need
-		if (!EnumJobs(m_pHandle, 0, 0xFFFFFFFF, 2, NULL, 0, &dwNeeded, &dwReturned))
+		if (!EnumJobs(m_pHandle.Get(), 0, 0xFFFFFFFF, 2, NULL, 0, &dwNeeded, &dwReturned))
 		{
 			// It should have failed, but if it failed for any reason other
 			// than "not enough memory", you should bail out
 			if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-			{
-				ClosePrinter(m_pHandle);
 				throw std::runtime_error{ OBF("Couldn't enumerate jobs") };
-			}
 		}
 		// Allocate enough memory for the JOB_INFO_2 structures plus
 		// the extra data - dwNeeded from the previous call tells you
 		// the total size needed
 		if ((pJobInfo = (JOB_INFO_2*)malloc(dwNeeded)) == NULL)
 		{
-			ClosePrinter(m_pHandle);
 		}
 		// Call EnumJobs() again and let it fill out our structures
-		if (!EnumJobs(m_pHandle, 0, 0xFFFFFFFF, 2, (LPBYTE)pJobInfo, dwNeeded, &dwNeeded, &dwReturned))
+		if (!EnumJobs(m_pHandle.Get(), 0, 0xFFFFFFFF, 2, (LPBYTE)pJobInfo, dwNeeded, &dwNeeded, &dwReturned))
 		{
-			ClosePrinter(m_pHandle);
 			free(pJobInfo);
 		}
 		// It's easy to loop through the jobs and access each one
@@ -105,23 +112,6 @@ namespace FSecure::C3::Interfaces::Channels
 		return {};
 	}
 
-	HANDLE Print::CreateHandle()
-	{
-		HANDLE pHandle;
-		PRINTER_DEFAULTS defaults{};
-		PRINTER_OPTIONS options{};
-		std::wstring printer = Convert<Utf16>(m_printerAddress);
-		LPTSTR pName = (LPTSTR)(printer.c_str());
-		defaults.DesiredAccess = PRINTER_ACCESS_USE;
-		options.cbSize = 1;
-		options.dwFlags = PRINTER_OPTION_NO_CACHE;
-		if (!OpenPrinter2(pName, &pHandle, &defaults, NULL))
-		{
-			throw std::runtime_error{ OBF("Can't connect to printer") };
-		}
-		return pHandle;
-	}
-
 	DWORD Print::WriteData(std::string dataToWrite)
 	{
 		DOC_INFO_1 docInfo{};
@@ -132,14 +122,14 @@ namespace FSecure::C3::Interfaces::Channels
 		docInfo.pOutputFile = NULL;
 		docInfo.pDatatype = (LPWSTR)L"RAW";
 
-		int jobId = StartDocPrinter(m_pHandle, 1, (LPBYTE)&docInfo);
+		int jobId = StartDocPrinter(m_pHandle.Get(), 1, (LPBYTE)&docInfo);
 		if (jobId == 0)
 			throw std::runtime_error{ OBF("Couldn't write data") };
 
-		if (SetJob(m_pHandle, jobId, 0, NULL, JOB_CONTROL_PAUSE) == 0)
+		if (SetJob(m_pHandle.Get(), jobId, 0, NULL, JOB_CONTROL_PAUSE) == 0)
 			throw std::runtime_error{ OBF("Couldn't pause job") };
 
-		if (EndDocPrinter(m_pHandle) == 0)
+		if (EndDocPrinter(m_pHandle.Get()) == 0)
 			throw std::runtime_error{ OBF("Couldn't write data") };
 
 		return jobId;
