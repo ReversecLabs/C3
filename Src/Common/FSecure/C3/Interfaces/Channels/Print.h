@@ -23,9 +23,8 @@ namespace FSecure::C3::Interfaces::Channels
 
 			std::unique_ptr<T, decltype(&Deleter)> m_Ptr;
 		};
-
-
 	}
+
 	///Implementation of the Print Channel.
 	struct Print : public Channel<Print>
 	{
@@ -45,7 +44,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @return packet retrieved from Channel.
 		FSecure::ByteVector OnReceiveFromChannel();
 
-		std::tuple<LPWSTR, DWORD> GetC3Job();
+		std::tuple<std::wstring, DWORD> GetC3Job();
 
 		HANDLE  CreateHandle();
 
@@ -80,6 +79,5 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Maximum packet size
 		uint32_t m_maxPacketSize;
-
 	};
 }

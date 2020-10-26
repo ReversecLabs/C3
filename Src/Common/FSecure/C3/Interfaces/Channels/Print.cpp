@@ -1,4 +1,4 @@
-#include <Stdafx.h>
+#include "Stdafx.h"
 #include "Print.h"
 #include "Common/FSecure/Crypto/Base64.h"
 #include "Common/FSecure/CppTools/StringConversions.h"
@@ -7,7 +7,7 @@
 #include <Winspool.h>
 
 using namespace FSecure::StringConversions;
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 FSecure::C3::Interfaces::Channels::Print::Print(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
@@ -15,10 +15,9 @@ FSecure::C3::Interfaces::Channels::Print::Print(ByteView arguments)
 	, m_printerAddress{ arguments.Read<std::string>() }
 	, m_maxPacketSize{ arguments.Read<uint32_t>() }
 	, m_pHandle{ CreateHandle() }
-	
 {
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 size_t FSecure::C3::Interfaces::Channels::Print::OnSendToChannel(ByteView data)
 {
 	// Find out what size chunks we're able to send
@@ -28,46 +27,39 @@ size_t FSecure::C3::Interfaces::Channels::Print::OnSendToChannel(ByteView data)
 	//Check if there's an existing print job waiting to be read
 	auto [document, jobID] = GetC3Job();
 	//If there is then we're not ready to write another
-	if (document != L"empty")
-	{
+	if (!document.empty())
 		return 0;
-	}
-	//Otherwise create one with our data
-	int writeResult = WriteData(dataToWrite);
-	//Debug
-	if (writeResult == 0)
-	{
+
+	if (WriteData(dataToWrite) == 0)
 		return 0;
-	}
+
 	return sizeOfDataToWrite;
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::Print::OnReceiveFromChannel()
 {
 	//Check if there's an existing print job waiting to be read
 	auto [document, jobID] = GetC3Job();
 	// If there isn't then there's nothing to be read
-	if (document == L"empty")
-	{
+	if (document.empty())
 		return {};
-	}
+
 	// If it's not destined for us then ignore it
 	std::wstring docName = document;
 	if (docName.find(Convert<Utf16>(m_inboundDirectionName)) == std::string::npos)
-	{
 		return {};
-	}
+
 	//Remove trailing jobIdentifier and lock, then decode the remaining data wstring
 	std::string convertedData = Convert<Utf8>(docName.substr(0, docName.size() - m_inboundDirectionName.size() - m_jobIdentifier.size()));
 	ByteVector ret = base64::decode(convertedData);
 	//Delete the job so more data can be sent
 	if (SetJob(m_pHandle, jobID, 0, NULL, JOB_CONTROL_DELETE) == 0)
-	{
 		throw std::runtime_error{ OBF("Failed to delete job") };
-	}
+
 	return ret;
 }
-std::tuple<LPWSTR, DWORD> FSecure::C3::Interfaces::Channels::Print::GetC3Job()
+
+std::tuple<std::wstring, DWORD> FSecure::C3::Interfaces::Channels::Print::GetC3Job()
 {
 	DWORD       dwNeeded, dwReturned, i;
 	JOB_INFO_2* pJobInfo;
@@ -100,7 +92,7 @@ std::tuple<LPWSTR, DWORD> FSecure::C3::Interfaces::Channels::Print::GetC3Job()
 	{
 		std::wstring docName = pJobInfo[i].pDocument;
 		// Check that it's a C3 job
-		if (docName.compare(docName.size() - 2, docName.size(), Convert<Utf16>(m_jobIdentifier)) == 0) 
+		if (docName.compare(docName.size() - 2, docName.size(), Convert<Utf16>(m_jobIdentifier)) == 0)
 		{
 			return {pJobInfo[i].pDocument, pJobInfo[i].JobId};
 		}
@@ -108,8 +100,9 @@ std::tuple<LPWSTR, DWORD> FSecure::C3::Interfaces::Channels::Print::GetC3Job()
 	// If we get to here then no C3 job exists
 	// Clean up
 	free(pJobInfo);
-	return { L"empty",0 };
+	return {};
 }
+
 HANDLE FSecure::C3::Interfaces::Channels::Print::CreateHandle()
 {
 	HANDLE pHandle;
@@ -124,7 +117,6 @@ HANDLE FSecure::C3::Interfaces::Channels::Print::CreateHandle()
 	{
 		throw std::runtime_error{ OBF("Can't connect to printer") };
 	}
-	m_pHandle = pHandle;
 	return pHandle;
 }
 
@@ -140,31 +132,30 @@ DWORD FSecure::C3::Interfaces::Channels::Print::WriteData(std::string dataToWrit
 
 	int jobId = StartDocPrinter(m_pHandle, 1, (LPBYTE)&docInfo);
 	if (jobId == 0)
-	{
 		throw std::runtime_error{ OBF("Couldn't write data") };
-	}
+
 	if (SetJob(m_pHandle, jobId, 0, NULL, JOB_CONTROL_PAUSE) == 0)
-	{
 		throw std::runtime_error{ OBF("Couldn't pause job") };
-	}
+
 	if (EndDocPrinter(m_pHandle) == 0)
-	{
 		throw std::runtime_error{ OBF("Couldn't write data") };
-	}
+
 	return jobId;
 }
+
 size_t FSecure::C3::Interfaces::Channels::Print::CalculateDataSize(ByteView data)
 {
 	auto trueDataSize = m_maxPacketSize - m_outboundDirectionName.size() - m_jobIdentifier.size();
 	auto maxPacketSize = base64::decoded_max_size(trueDataSize);
 	return std::min(maxPacketSize, data.size());
 }
+
 std::string FSecure::C3::Interfaces::Channels::Print::EncodeData(ByteView data, size_t dataSize)
 {
 	auto sendData = data.SubString(0, dataSize);
 	return base64::encode(sendData.data(), sendData.size());
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const char* FSecure::C3::Interfaces::Channels::Print::GetCapability()
 {
 	return R"_(
