@@ -42,11 +42,11 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		FSecure::ByteVector OnReceiveFromChannel();
+		ByteVector OnReceiveFromChannel();
 
 		std::tuple<std::wstring, DWORD> GetC3Job();
 
-		HANDLE  CreateHandle();
+		HANDLE CreateHandle();
 
 		DWORD WriteData(std::string dataToWrite);
 
