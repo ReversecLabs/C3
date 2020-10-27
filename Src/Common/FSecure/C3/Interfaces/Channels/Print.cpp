@@ -208,7 +208,7 @@ namespace FSecure::C3::Interfaces::Channels
 			{
                 "type": "uint32",
                 "name": "Outbound jobs limit",
-				"defaultValue": 0,
+				"defaultValue": "0",
                 "description": "Maximum number of jobs a channel can create simultaneously, 0 means no limit"
             }
 		]
@@ -224,7 +224,7 @@ namespace FSecure::C3::Interfaces::Channels
                 {
                     "type": "uint32",
                     "name": "Outbound jobs limit",
-                    "defaultValue": 0,
+                    "defaultValue": "0",
                     "description": "Maximum number of jobs a channel can create simultaneously, 0 means no limit"
                 }
             ]
