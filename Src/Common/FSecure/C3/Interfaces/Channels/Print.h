@@ -13,6 +13,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 			HANDLE Get() const{ return m_Handle.get(); }
 
+
 		private:
 			PrinterHandle(HANDLE ptr) : m_Handle{ ptr, &Deleter } {}
 
@@ -23,6 +24,7 @@ namespace FSecure::C3::Interfaces::Channels
 
 			std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype(&Deleter)> m_Handle;
 		};
+
 	}
 
 	///Implementation of the Print Channel.
@@ -42,24 +44,30 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Reads a single C3 packet from Channel.
 		/// @return packet retrieved from Channel.
-		ByteVector OnReceiveFromChannel();
+		std::vector<ByteVector> OnReceiveFromChannel();
 
-		std::tuple<std::wstring, DWORD> GetC3Job();
-
-		DWORD WriteData(std::string dataToWrite);
-
-		size_t CalculateDataSize(ByteView data);
-
-		static std::string EncodeData(ByteView data, size_t dataSize);
 		/// Get channel capability.
 		/// @returns Channel capability in JSON format
 		static const char* GetCapability();
+
+		/// Processes command.
+		/// @param command a buffer containing whole command and it's parameters.
+		/// @return command result.
+		ByteVector OnRunCommand(ByteView command) override;
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise slack rate limit will heavily impact channel.
 		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 3500ms, s_MaxUpdateDelay = 6500ms;
 
-	protected:
+	private:
+		std::vector<std::tuple<std::wstring, DWORD>> GetC3Jobs(std::string_view direction);
+
+		void WriteData(std::string const& dataToWrite);
+
+		size_t CalculateDataSize(ByteView data);
+
+		static std::string EncodeData(ByteView data, size_t dataSize);
+
 		/// The inbound direction name of data
 		std::string m_inboundDirectionName;
 
@@ -72,10 +80,14 @@ namespace FSecure::C3::Interfaces::Channels
 		// Local or network address of target printer
 		std::string m_printerAddress;
 
+		/// Maximum packet size
+		uint32_t m_maxPacketSize;
+
+		uint32_t m_OutboudJobsLimit;
+
 		// Handle to local or network printer
 		Detail::PrinterHandle m_pHandle;
 
-		/// Maximum packet size
-		uint32_t m_maxPacketSize;
+		std::mutex m_DocMutex;
 	};
 }

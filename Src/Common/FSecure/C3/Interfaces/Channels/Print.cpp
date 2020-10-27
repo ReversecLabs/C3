@@ -2,7 +2,6 @@
 #include "Print.h"
 #include "Common/FSecure/Crypto/Base64.h"
 #include "Common/FSecure/CppTools/StringConversions.h"
-#include "Common/FSecure/CppTools/ScopeGuard.h"
 #include <Windows.h>
 #include <Winspool.h>
 
@@ -28,6 +27,7 @@ namespace FSecure::C3::Interfaces::Channels
 		, m_jobIdentifier{ arguments.Read<std::string>() }
 		, m_printerAddress{ arguments.Read<std::string>() }
 		, m_maxPacketSize{ arguments.Read<uint32_t>() }
+		, m_OutboudJobsLimit{ arguments.Read<uint32_t>() }
 		, m_pHandle{ Detail::PrinterHandle::Open(m_printerAddress) }
 	{
 	}
@@ -38,45 +38,42 @@ namespace FSecure::C3::Interfaces::Channels
 		size_t sizeOfDataToWrite = CalculateDataSize(data);
 		// Encode the data
 		std::string dataToWrite = EncodeData(data, sizeOfDataToWrite);
+
 		//Check if there's an existing print job waiting to be read
-		auto [document, jobID] = GetC3Job();
-		//If there is then we're not ready to write another
-		if (!document.empty())
-			return 0;
+		if (m_OutboudJobsLimit)
+		{
+			auto currentJobs = GetC3Jobs(m_outboundDirectionName);
+			if (currentJobs.size() >= m_OutboudJobsLimit)
+				return 0;
+		}
 
-		if (WriteData(dataToWrite) == 0)
-			return 0;
-
+		WriteData(dataToWrite);
 		return sizeOfDataToWrite;
 	}
 
-	ByteVector Print::OnReceiveFromChannel()
+	std::vector<ByteVector> Print::OnReceiveFromChannel()
 	{
 		//Check if there's an existing print job waiting to be read
-		auto [document, jobID] = GetC3Job();
-		// If there isn't then there's nothing to be read
-		if (document.empty())
-			return {};
+		auto jobs = GetC3Jobs(m_inboundDirectionName);
 
-		// If it's not destined for us then ignore it
-		std::wstring docName = document;
-		if (docName.find(Convert<Utf16>(m_inboundDirectionName)) == std::string::npos)
-			return {};
-
-		//Remove trailing jobIdentifier and lock, then decode the remaining data wstring
-		std::string convertedData = Convert<Utf8>(docName.substr(0, docName.size() - m_inboundDirectionName.size() - m_jobIdentifier.size()));
-		ByteVector ret = base64::decode(convertedData);
-		//Delete the job so more data can be sent
-		if (SetJob(m_pHandle.Get(), jobID, 0, NULL, JOB_CONTROL_DELETE) == 0)
-			throw std::runtime_error{ OBF("Failed to delete job") };
-
+		std::vector<ByteVector> ret;
+		for (auto&& [document, jobId] : jobs)
+		{
+			//Remove trailing jobIdentifierand lock, then decode the remaining data wstring
+			std::string convertedData = Convert<Utf8>(document.substr(0, document.size() - m_inboundDirectionName.size() - m_jobIdentifier.size()));
+			if (SetJob(m_pHandle.Get(), jobId, 0, NULL, JOB_CONTROL_DELETE) == 0)
+			{
+				Log({ OBF("Failed to delete job"), LogMessage::Severity::Warning });
+				continue;
+			}
+			ret.emplace_back(base64::decode(convertedData));
+		}
 		return ret;
 	}
 
-	std::tuple<std::wstring, DWORD> Print::GetC3Job()
+	std::vector<std::tuple<std::wstring, DWORD>> Print::GetC3Jobs(std::string_view direction)
 	{
-		DWORD       dwNeeded, dwReturned, i;
-		JOB_INFO_2* pJobInfo;
+		DWORD dwNeeded, dwReturned;
 		// First you call EnumJobs() to find out how much memory you need
 		if (!EnumJobs(m_pHandle.Get(), 0, 0xFFFFFFFF, 2, NULL, 0, &dwNeeded, &dwReturned))
 		{
@@ -88,51 +85,53 @@ namespace FSecure::C3::Interfaces::Channels
 		// Allocate enough memory for the JOB_INFO_2 structures plus
 		// the extra data - dwNeeded from the previous call tells you
 		// the total size needed
-		if ((pJobInfo = (JOB_INFO_2*)malloc(dwNeeded)) == NULL)
-		{
-		}
+		auto buffer = std::make_unique<uint8_t[]>(dwNeeded);
+
 		// Call EnumJobs() again and let it fill out our structures
-		if (!EnumJobs(m_pHandle.Get(), 0, 0xFFFFFFFF, 2, (LPBYTE)pJobInfo, dwNeeded, &dwNeeded, &dwReturned))
+		if (!EnumJobs(m_pHandle.Get(), 0, 0xFFFFFFFF, 2, buffer.get(), dwNeeded, &dwNeeded, &dwReturned))
+			throw std::runtime_error{ OBF("Couldn't enumerate jobs") };
+
+		auto* pJobInfo = reinterpret_cast<JOB_INFO_2*>(buffer.get());
+		std::vector<std::tuple<std::wstring, DWORD>> ret;
+		for (size_t i = 0; i < dwReturned; i++)
 		{
-			free(pJobInfo);
-		}
-		// It's easy to loop through the jobs and access each one
-		for (i = 0; i < dwReturned; i++)
-		{
+			// skip jobs that are not paused
+			if (pJobInfo[i].Status != JOB_STATUS_PAUSED)
+				continue;
+
 			std::wstring docName = pJobInfo[i].pDocument;
+			if (docName.size() < direction.size() + m_jobIdentifier.size())
+				continue;
+
 			// Check that it's a C3 job
-			if (docName.compare(docName.size() - 2, docName.size(), Convert<Utf16>(m_jobIdentifier)) == 0)
-			{
-				return { pJobInfo[i].pDocument, pJobInfo[i].JobId };
-			}
+			if (docName.compare(docName.size() - m_jobIdentifier.size(), m_jobIdentifier.size(), Convert<Utf16>(m_jobIdentifier)) == 0 &&
+				docName.compare(docName.size() - m_jobIdentifier.size() - direction.size(), direction.size(), Convert<Utf16>(direction)) == 0)
+				ret.emplace_back(pJobInfo[i].pDocument, pJobInfo[i].JobId);
 		}
-		// If we get to here then no C3 job exists
-		// Clean up
-		free(pJobInfo);
-		return {};
+		return ret;
 	}
 
-	DWORD Print::WriteData(std::string dataToWrite)
+	void Print::WriteData(std::string const& dataToWrite)
 	{
+		std::wstring docName = Convert<Utf16>(dataToWrite + m_outboundDirectionName + m_jobIdentifier);
 		DOC_INFO_1 docInfo{};
-		std::wstring data = Convert<Utf16>(dataToWrite.c_str());
-		std::wstring identifier = Convert<Utf16>(m_outboundDirectionName) + Convert<Utf16>(m_jobIdentifier);
-		std::wstring docName = data + identifier;
-		docInfo.pDocName = (LPWSTR)docName.c_str();
-		docInfo.pOutputFile = NULL;
-		docInfo.pDatatype = (LPWSTR)L"RAW";
+		docInfo.pDocName = docName.data();
+		docInfo.pOutputFile = nullptr;
+		docInfo.pDatatype = L"RAW";
 
+		std::lock_guard lock(m_DocMutex);
 		int jobId = StartDocPrinter(m_pHandle.Get(), 1, (LPBYTE)&docInfo);
 		if (jobId == 0)
 			throw std::runtime_error{ OBF("Couldn't write data") };
 
 		if (SetJob(m_pHandle.Get(), jobId, 0, NULL, JOB_CONTROL_PAUSE) == 0)
+		{
+			EndDocPrinter(m_pHandle.Get());
 			throw std::runtime_error{ OBF("Couldn't pause job") };
+		}
 
 		if (EndDocPrinter(m_pHandle.Get()) == 0)
 			throw std::runtime_error{ OBF("Couldn't write data") };
-
-		return jobId;
 	}
 
 	size_t Print::CalculateDataSize(ByteView data)
@@ -146,6 +145,19 @@ namespace FSecure::C3::Interfaces::Channels
 	{
 		auto sendData = data.SubString(0, dataSize);
 		return base64::encode(sendData.data(), sendData.size());
+	}
+
+	ByteVector Print::OnRunCommand(ByteView command)
+	{
+		auto commandCopy = command; //each read moves ByteView. CommandCoppy is needed  for default.
+		switch (command.Read<uint16_t>())
+		{
+		case 0:
+			m_OutboudJobsLimit = command.Read<uint32_t>();
+			return {};
+		default:
+			return AbstractChannel::OnRunCommand(commandCopy);
+		}
 	}
 
 	const char* Print::GetCapability()
@@ -192,10 +204,32 @@ namespace FSecure::C3::Interfaces::Channels
                 "min": 1,
 				"defaultValue": "1048576",
                 "description": "Maximum packet size (document name) that target print queue supports"
+            },
+			{
+                "type": "uint32",
+                "name": "Outbound jobs limit",
+				"defaultValue": 0,
+                "description": "Maximum number of jobs a channel can create simultaneously, 0 means no limit"
             }
 		]
 	},
-	"commands": []
+	"commands":
+    [
+		{
+			"name": "Set outbound jobs limit",
+			"id": 0,
+			"description": "Change the maximum number of outbound jobs a channel can create simultaneously",
+            "arguments":
+            [
+                {
+                    "type": "uint32",
+                    "name": "Outbound jobs limit",
+                    "defaultValue": 0,
+                    "description": "Maximum number of jobs a channel can create simultaneously, 0 means no limit"
+                }
+            ]
+		}
+    ]
 }
 )_";
 	}
