@@ -14,7 +14,7 @@ namespace FSecure
 
 		/// Constructor for the Github Api class.
 		GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent);
-		
+
 		/// Retrieve the Github Username and initialise  for the instance
 		void SetUser();
 
@@ -25,7 +25,7 @@ namespace FSecure
 		/// set UserAgent for Github HTTP Request
 		/// @param userAgent
 		void SetUserAgent(std::string const& userAgent);
-		
+
 		/// Set the channel (i.e. Github repository) that this object uses for communications
 		/// @param channelName - the channel name Id (not name), for example CGPMGFGSH.
 		void SetChannel(std::string const& channelName);
@@ -85,7 +85,7 @@ namespace FSecure
 		/// The Github OAuth Token that allows the object access to the account. Needs to be manually created as described in documentation.
 		std::string m_Token;
 
-		/// UserAgent 
+		/// UserAgent
 		std::string m_UserAgent;
 
 
