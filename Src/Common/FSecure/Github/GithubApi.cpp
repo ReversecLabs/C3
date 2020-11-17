@@ -83,14 +83,12 @@ std::string FSecure::GithubApi::CreateChannel(std::string const& channelName)
 
 	if (channels.find(channelName) == channels.end())
 	{
-		auto url = OBF("https://api.github.com/user/repos");
-
 		json j;
 		j[OBF("name")] = channelName;
 		j[OBF("auto_init")] = true;
 		j[OBF("private")] = true;
 
-		auto response = SendJsonRequest(url, j, Method::POST);
+		auto response = SendJsonRequest(OBF("https://api.github.com/user/repos"), j, Method::POST);
 
 		if (response.contains(OBF("message")))
 			throw std::runtime_error(OBF("Github: unable to create channel - ") + response[OBF("message")]);
