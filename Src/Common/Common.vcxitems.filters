@@ -42,6 +42,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -133,5 +135,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.h" />
   </ItemGroup>
 </Project>
