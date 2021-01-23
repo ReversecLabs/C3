@@ -26,6 +26,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Dropbox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
@@ -34,6 +35,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.cpp" />
@@ -72,6 +74,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
