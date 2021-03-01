@@ -203,6 +203,28 @@ namespace FSecure::Utils
 		return splittedString;
 	}
 
+	/// Function that finds a substring and replaces it with another string.
+	///
+	/// @tparam T - string type, must contain T::npos member.
+	/// @param str - input string containing phrase to replace.
+	/// @param from - substring that is to be found and replaced
+	/// @param to - string that should replace one given in `from` parameter
+	/// @returns a replaced string if matched was found, or input string given in `str` otherwise.
+	template<class T>
+    T ReplaceString(const T& str, const T& from, const T& to) {
+		if (from.empty()) 
+			return str;
+
+		size_t start_pos = 0;
+		auto out = str;
+		while ((start_pos = out.find(from, start_pos)) != T::npos) {
+			out.replace(start_pos, from.length(), to);
+			start_pos += to.length();
+		}
+
+		return out;
+    }
+
 	/// Proxy to Split<true>
 	///
 	/// @param stringToBeSplitted initial string to be tokenized.
