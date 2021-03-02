@@ -49,7 +49,7 @@ Now, to actually create your channel you will need following parameters to get s
 
 3. **Access Token** - The Personal Access Token value, should be something like that: `chhtxfgmzhfct5qi5si7tiexuc`
 
-![](MattermostImages/3.png)
+![](MattermostImages/4.png)
 
 
 ## Rate Limit
