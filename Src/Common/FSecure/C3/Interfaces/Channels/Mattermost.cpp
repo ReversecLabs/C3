@@ -14,36 +14,66 @@ FSecure::C3::Interfaces::Channels::Mattermost::Mattermost(ByteView arguments)
 	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::Mattermost::OnSendToChannel(ByteView data)
 {
-    //Begin by creating a message where we can write the data to in a thread, both client and server ignore this message to prevent race conditions
-	std::string postID = m_MattermostObj.WritePost(m_outboundDirectionName + OBF(":writing"));
-
-	//this is more than 30 messages, send it as a file (we do this infrequently as file uploads restricted to 20 per minute).
-	//Using file upload for staging (~88 messages) is a huge improvement over sending actual replies.
-	size_t actualPacketSize = 0;
-	if (data.size() > 120'000)
+	try
 	{
-		auto fileID = m_MattermostObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(data.data(), data.size()));
-        m_MattermostObj.WriteReply("", postID, fileID);
-		actualPacketSize = data.size();
+		//Begin by creating a message where we can write the data to in a thread, both client and server ignore this message to prevent race conditions
+		std::string postID = m_MattermostObj.WritePost(m_outboundDirectionName + OBF(":writing"));
+
+		// Error. Try to retransmit that packet.
+		if (postID.empty())
+			return 0;
+
+		//this is more than 30 messages, send it as a file (we do this infrequently as file uploads restricted to 20 per minute).
+		//Using file upload for staging (~88 messages) is a huge improvement over sending actual replies.
+
+		size_t actualPacketSize = 0;
+		if (data.size() > 30 * 16'370)
+		{
+			// Mattermost accepts files no bigger than 50MBs in its default configuration. 
+			constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(48 * 1024 * 1024);
+			
+			actualPacketSize = std::min(maxPacketSize, data.size());
+			auto sendData = data.SubString(0, actualPacketSize);
+			auto fileID = m_MattermostObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()));
+
+            // Error. Try to retransmit that packet.
+            if (fileID.empty())
+                return 0;
+
+			auto foo = m_MattermostObj.WriteReply("", postID, fileID);
+            
+			// Error. Try to retransmit that packet.
+            if (foo.empty())
+                return 0;
+		}
+		else
+		{
+			//Write the full data into the thread. This makes it a lot easier to read in onRecieve as Mattermost limits messages to 16383 characters.
+			constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(16'370);
+			actualPacketSize = std::min(maxPacketSize, data.size());
+			auto sendData = data.SubString(0, actualPacketSize);
+			auto foo = m_MattermostObj.WriteReply(cppcodec::base64_rfc4648::encode(sendData.data(), sendData.size()), postID);
+
+            // Error. Try to retransmit that packet.
+            if (foo.empty())
+                return 0;
+		}
+
+		//Update the original first message with "C2S||S2C:Done" - these messages will always be read in onRecieve.
+		std::string message = m_outboundDirectionName + OBF(":Done");
+
+		m_MattermostObj.UpdatePost(message, postID);
+		return actualPacketSize;
 	}
-	else
+	catch (...)
 	{
-		//Write the full data into the thread. This makes it a lot easier to read in onRecieve as Mattermost limits messages to 16383 characters.
-		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(16'380);
-		actualPacketSize = std::min(maxPacketSize, data.size());
-		auto sendData = data.SubString(0, actualPacketSize);
-
-		m_MattermostObj.WriteReply(cppcodec::base64_rfc4648::encode(sendData.data(), sendData.size()), postID);
+        // Should exception be thrown, return 0 to make C3 retransmit that packet.
+		return 0;
 	}
-
-	//Update the original first message with "C2S||S2C:Done" - these messages will always be read in onRecieve.
-	std::string message = m_outboundDirectionName + OBF(":Done");
-
-	m_MattermostObj.UpdatePost(message, postID);
-	return actualPacketSize;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +85,8 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Mattermost::
 
 	//Read the messages in reverse order (which is actually from the oldest to newest)
 	//Avoids old messages being left behind.
-	for (std::vector<std::string>::reverse_iterator postID = messages.rbegin(); postID != messages.rend(); ++postID)
+	//for (std::vector<std::string>::reverse_iterator postID = messages.rbegin(); postID != messages.rend(); ++postID)
+	for (std::vector<std::string>::iterator postID = messages.begin(); postID != messages.end(); ++postID)
 	{
 		auto replies = m_MattermostObj.ReadReplies(*postID);
 		std::vector<std::string> postIDs;
@@ -67,12 +98,12 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Mattermost::
 			message.append(reply.second);
 			postIDs.push_back(std::move(reply.first)); //get all of the post_ids for later deletion
 		}
+		
+        auto relayMsg = cppcodec::base64_rfc4648::decode(message);
+		ret.emplace_back(std::move(relayMsg));
 
-		// Base64 decode the entire message
-		auto relayMsg = cppcodec::base64_rfc4648::decode(message);
 		DeleteReplies(postIDs);
 		m_MattermostObj.DeletePost(*postID);
-		ret.emplace_back(std::move(relayMsg));
 	}
 
 	return ret;

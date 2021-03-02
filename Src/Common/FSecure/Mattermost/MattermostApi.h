@@ -4,6 +4,12 @@
 #include "Common/FSecure/WinHttp/WebProxy.h"
 #include "Common/FSecure/WinHttp/Constants.h"
 
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include <random>
+#include <fstream>
+
 using json = nlohmann::json; //for easy parsing of json API: https://github.com/nlohmann/json
 
 namespace FSecure

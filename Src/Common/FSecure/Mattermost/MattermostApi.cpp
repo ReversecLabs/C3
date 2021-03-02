@@ -84,7 +84,7 @@ std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, st
 
 	json output = SendJsonRequest(url, j, Method::POST);
 
-	if (output.contains("detailed_error") && output.contains("status_code") && output.value("status_code", 0) == 400)
+	if (output.contains(OBF("detailed_error")) && output.contains(OBF("status_code")) && output.value(OBF("status_code"), 0) == 400)
 		return "";
 
 	return output[OBF("id")].get<std::string>();
@@ -148,7 +148,9 @@ std::string FSecure::Mattermost::CreateChannel(std::string const& channelName)
 	j[OBF("display_name")] = channelName;
 	j[OBF("purpose")] = "";
 	j[OBF("header")] = "";
-	j[OBF("type")] = OBF("P");		// O - for public channel, P - for private channel.
+
+	// O - for public channel, P - for private channel.
+	j[OBF("type")] = OBF("P");
 
 	json response = SendJsonRequest(url, j, Method::POST);
 
@@ -191,46 +193,63 @@ std::vector<std::pair<std::string, std::string>> FSecure::Mattermost::ReadReplie
 	json const& posts = output[OBF("posts")];
 
 	if (posts.empty() || posts.front().value(OBF("reply_count"), 0) == 0)
-	{
 		return {};
-	}
 
 	std::vector<std::pair<std::string, std::string>> ret;
 	std::set<std::string> postIDs;
 
-    for (const auto& postID : order)
+    for (const auto& orderPostID : order) 
     {
-        json postData = posts[postID];
+		if (orderPostID == postID) continue;
+
+        json postData = posts[orderPostID];
+
+		if (!postData.contains(OBF("root_id"))) continue;
+
+        std::string rootID = postData[OBF("root_id")].get<std::string>();
+		std::string thisPostID = postData[OBF("id")].get<std::string>();
         std::string_view data = postData[OBF("message")].get<std::string_view>();
 
-		if (!postData.contains(OBF("root_id")) || postData[OBF("root_id")].get<std::string>().empty())
+		if (rootID.empty() || rootID == thisPostID)
 		{
 			//skip the first message (parent message) (it doesn't contain the data we want).
 			continue;
 		}
 
-		if (postIDs.find(postID) != postIDs.end())
+		if (postIDs.find(orderPostID) != postIDs.end())
 		{
 			// this element was already appended to the messages list. skip it.
 			continue;
 		}
+
+		bool gotFiles = false;
 
 		if (postData.contains(OBF("metadata")) && postData[OBF("metadata")].contains(OBF("files")))
 		{
 			json file = postData[OBF("metadata")][OBF("files")].get<json>();
 			if (file.size() > 0)
 			{
-				std::string fileID = file[0][OBF("id")].get<std::string>();
-				std::string text = GetFile(fileID);
-				postIDs.insert(postID);
-				ret.emplace_back(std::move(postID), std::move(text));
+				gotFiles = true;
+				json files = file;
+				std::string message;
+
+				for (const auto& fileData : files)
+				{
+					std::string fileID = fileData[OBF("id")].get<std::string>();
+					std::string text = GetFile(fileID);
+					message.append(text);
+				}
+
+                postIDs.insert(thisPostID);
+                ret.emplace_back(std::move(thisPostID), std::move(message));
 			}
 		}
-		else
+
+		if(!gotFiles)
 		{
 			std::string text = postData[OBF("message")];
-			postIDs.insert(postID);
-			ret.emplace_back(std::move(postID), std::move(text));
+			postIDs.insert(thisPostID);
+			ret.emplace_back(std::move(thisPostID), std::move(text));
 		}
 	}
 
@@ -239,39 +258,58 @@ std::vector<std::pair<std::string, std::string>> FSecure::Mattermost::ReadReplie
 
 std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string const& direction)
 {
-	std::vector<std::string> ret;
-	std::string cursor;
-
-	std::string url = m_ServerUrl + OBF("/api/v4/channels/") + this->m_ChannelID + OBF("/posts");
-
-	//Actually send the http request and grab the messages
-	auto resp = GetJsonResponse(url);
-
-	if (!resp.contains(OBF("posts"))) 
-		return {};
-
-	auto& order = resp[OBF("order")].get<std::vector<std::string>>();
-    auto& posts = resp[OBF("posts")];
+    std::vector<std::string> ret;
+	std::vector<std::string> order;
+    std::vector<std::pair<std::string, std::uint32_t>> unsortedMessages;
+    std::string cursor;
     std::set<std::string> postIDs;
 
-	for (const auto& postID : order)
+    json resp;
+	size_t pageCount = 0;
+
+	do
 	{
-		json postData = posts[postID];
+		std::string url = m_ServerUrl + OBF("/api/v4/channels/") + this->m_ChannelID + OBF("/posts?per_page=200&page=");
+		url.append(std::to_string(pageCount++));
 
-        std::string_view data = postData[OBF("message")].get<std::string_view>();
+		//Actually send the http request and grab the messages
+		resp = GetJsonResponse(url);
 
-        if (postIDs.find(postID) != postIDs.end())
-        {
-            // this element was already appended to the messages list. skip it.
-            continue;
-        }
+		if (!resp.contains(OBF("posts")) || !resp.contains(OBF("order")))
+			break;
 
-        //make sure it's a message we care about
-		if (data == direction)
+		order = resp[OBF("order")].get<std::vector<std::string>>();
+		auto& posts = resp[OBF("posts")];
+
+		for (const auto& orderPostID : order)
 		{
-            ret.emplace_back(postID);
-            postIDs.insert(postID);
+			json postData = posts[orderPostID];
+
+			std::string_view data = postData[OBF("message")].get<std::string_view>();
+			uint32_t timestamp = postData[OBF("create_at")].get<uint32_t>();
+
+			if (postIDs.find(orderPostID) != postIDs.end())
+			{
+				// this element was already appended to the messages list. skip it.
+				continue;
+			}
+
+			//make sure it's a message we care about
+			if (data == direction)
+			{
+				unsortedMessages.emplace_back(std::make_pair(orderPostID, timestamp));
+				postIDs.insert(orderPostID);
+			}
 		}
+	} while (resp.contains(OBF("order")) && !order.empty());
+
+	// Now we sort collected replies in order of their create timestamp, oldest first.
+	std::sort(unsortedMessages.begin(), unsortedMessages.end(), [](const auto& p1, const auto& p2) -> bool {
+		return (p1.second < p2.second);
+	});
+
+	for (const auto& v : unsortedMessages) {
+		ret.emplace_back(v.first);
 	}
 
 	return ret;
@@ -300,12 +338,20 @@ void FSecure::Mattermost::DeletePost(std::string const& postID)
 	SendJsonRequest(url, {}, Method::DEL);
 }
 
-FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(std::string const& host, FSecure::WinHttp::Method method, std::optional<WinHttp::ContentType> contentType /* = {} */, std::string const& data /* = "" */)
+FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
+	std::string const& host, 
+	FSecure::WinHttp::Method method, 
+	std::optional<WinHttp::ContentType> contentType /* = {} */, 
+	std::string const& data /* = "" */
+)
 {
+    auto wm = GetMethodString(method);
+    auto m = std::string(wm.begin(), wm.end());
+
     while (true)
     {
         HttpClient webClient(ToWideString(host), m_ProxyConfig);
-        HttpRequest request; // default request is GET
+        HttpRequest request;
 
 		request.m_Method = method;
 
@@ -324,8 +370,8 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(std::string const& host
 			return resp.GetData();
 		}
 		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
-		{
-			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
+        {
+            std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		}
         else if (resp.GetStatusCode() == StatusCode::BadRequest)
         {
@@ -334,8 +380,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(std::string const& host
 		else
 		{
 			std::stringstream s;
-			json j = json::parse(ByteVector(resp.GetData()));
-			s << std::string(OBF("[x] Unexpected response status code returned: HTTP ")) << resp.GetStatusCode() << std::string(OBF(" - JSON: ")) << j << std::endl;
+            s << OBF("[x] Unexpected HTTP Response status code: ") << resp.GetStatusCode() << std::endl;
 			throw std::exception(s.str().c_str());
 		}
     }
@@ -355,13 +400,41 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(std::string const& host
 
 json FSecure::Mattermost::SendJsonRequest(std::string const& url, json const& data, FSecure::WinHttp::Method method /* Method::GET */)
 {
-	auto out = json::parse(SendHttpRequest(url, method, ContentType::ApplicationJson, data.dump()));
-	return out;
+	auto wm = GetMethodString(method);
+	auto m = std::string(wm.begin(), wm.end());
+
+	auto out = SendHttpRequest(url, method, ContentType::ApplicationJson, data.dump());
+	json outj;
+
+    try
+    {
+		outj = json::parse(out);
+		return outj;
+    }
+    catch (...)
+    {
+		std::stringstream s;
+		s << OBF("[x] SendJsonRequest(") << url << OBF("): could not parse JSON response.") << std::endl;
+		throw std::exception(s.str().c_str());
+    }
 }
 
 json FSecure::Mattermost::GetJsonResponse(std::string const& url)
 {
-	return json::parse(SendHttpRequest(url));
+    auto out = SendHttpRequest(url);
+    json outj;
+
+    try
+    {
+        outj = json::parse(out);
+		return outj;
+    }
+    catch (...)
+    {
+        std::stringstream s;
+        s << OBF("GetJsonResponse(") << url << OBF("): could not parse JSON response.") << std::endl;
+        throw std::exception(s.str().c_str());
+    }
 }
 
 std::string FSecure::Mattermost::UploadFile(ByteView data)
@@ -410,15 +483,14 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 			auto out = json::parse(ByteVector(resp.GetData()));
 			return out[OBF("file_infos")][0][OBF("id")];
 		}
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
-		{
-			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		}
+        else if (resp.GetStatusCode() == StatusCode::TooManyRequests)
+        {
+            std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
+        }
 		else
 		{
             std::stringstream s;
-            json j = json::parse(ByteVector(resp.GetData()));
-            s << std::string(OBF("[x] Unexpected response status code returned while uploading file: HTTP ")) << resp.GetStatusCode() << std::string(OBF(" - JSON: ")) << j << std::endl;
+			s << std::string(OBF("[x] Unexpected response status code returned while uploading file: HTTP ")) << resp.GetStatusCode() << std::endl;
             throw std::exception(s.str().c_str());
 		}
     }
