@@ -60,7 +60,7 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Used to exit
 		bool m_Close = false;
 
-		/// A handle to a beacon thread
-		HANDLE m_BeaconThread = INVALID_HANDLE_VALUE;
+		/// Used to get a handle to the beacon thread
+		FSecure::WinTools::InjectionBuffer m_Beacon;
 	};
 }
