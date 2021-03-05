@@ -140,6 +140,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -272,6 +273,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir);$(ProjectDir)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp2.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
@@ -302,6 +304,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir);$(ProjectDir)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp2.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
@@ -405,6 +408,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir);$(ProjectDir)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp2.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
@@ -446,6 +450,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir);$(ProjectDir)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp2.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
@@ -526,6 +531,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir);$(ProjectDir)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp2.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
@@ -738,5 +744,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

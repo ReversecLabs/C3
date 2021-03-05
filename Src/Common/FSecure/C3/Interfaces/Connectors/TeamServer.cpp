@@ -385,7 +385,7 @@ bool FSecure::C3::Interfaces::Connectors::TeamServer::Connection::SecondThreadSt
 
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials/*, payload*/] = data.Read<std::string, uint16_t, uint16_t/*, ByteView*/>();
+	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials, useSyscalls/*, payload*/] = data.Read<std::string, uint16_t, uint16_t, bool/*, ByteView*/>();
 
 	// custom payload is removed from release.
 	//if (!payload.empty())
@@ -393,5 +393,5 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralC
 	//	return data;
 	//}
 
-	return ByteVector{}.Write(pipeName,maxConnectionTrials, delayBetweenConnectionTrials, GeneratePayload(connectionId, pipeName, isX64, 100u));
+	return ByteVector{}.Write(pipeName,maxConnectionTrials, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, isX64, 100u));
 }
