@@ -56,4 +56,34 @@ Now, to actually create your channel you will need following parameters to get s
 
 There is a rate limiting implemented for Mattermost API. Consecutive requests will quickly be bounced off by nginx with HTTP 429 status code. Should that occur, Mattermost C3 channel will cool down before resending affected request with a random delay between 10 to 20 seconds. More information can be found here: [Mattermost API Rate Limiting](https://api.mattermost.com/#tag/rate-limiting)
 
+You can change the Rate Limitting threshold or even disable that functionality if you have access to the Mattermost configuration files on the server it's been launched. 
 
+To do so, edit the `config.json` file located at:
+
+```
+mattermost-docker/volumes/app/mattermost/config/config.json
+```
+
+Find `RateLimitSettings` section and flip the `Enable` from `true` to `false` option:
+
+```
+"RateLimitSettings": {
+        "Enable": false,
+        "PerSec": 10,
+        "MaxBurst": 100,
+        "MemoryStoreSize": 10000,
+        "VaryByRemoteAddr": true,
+        "VaryByUser": false,
+        "VaryByHeader": ""
+    },
+```
+
+After that you'll have to restart your Mattermost server. If it's been ran using `docker-compose` then like so:
+
+```
+mattermost-docker/ $ sudo docker-compose restart
+```
+
+After that you'll be free to issue `Set UpdateDelayJitter` command on your C3 Channel with values of your choosal.
+
+![](MattermostImages/5.png)
