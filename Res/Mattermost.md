@@ -87,3 +87,43 @@ mattermost-docker/ $ sudo docker-compose restart
 After that you'll be free to issue `Set UpdateDelayJitter` command on your C3 Channel with values of your choosal.
 
 ![](MattermostImages/5.png)
+
+
+## Performance
+
+To optimize channel's performance one could consider removing old or dangling messages from Mattermost channels.
+
+To do so, two approaches are discussed:
+
+### 1. By using C3 Channel command
+
+There is a C3 Mattermost Channel command named _"Clear all channel messages"_ that purges all messages from the Mattermost channel configured.
+Due to this, messages lookup will get a bit faster optimizing entire channels throughput. 
+
+Also, if for whatever reason there are dangling, not-processed messages in your Mattermost channel, they will be subject for examination during C3 I/O operations.
+Whenever that's something not desired, they could be removed using discussed command.
+
+
+### 2. By directly interacting with Mattermost's Postgresql Database
+
+Another more radical approach to lift general Mattermost server cleanup, would be to remove all posts and uploaded files information.
+To do just that, one has to interact with Mattermost's Postgresql database in order to purge `posts` and `fileinfo` tables.
+
+The following script will facilitate that assuming correct database credentials are given:
+
+```
+#!/bin/bash
+
+HOSTNAME=localhost
+USERNAME=mmuser
+PORT=5432
+DATABASE=mattermost
+DOCKERNAME=mattermost-docker_db_1
+
+docker exec -it $DOCKERNAME psql -h $HOSTNAME -d $DATABASE -U $USERNAME -p $PORT -c 'delete from posts'
+docker exec -it $DOCKERNAME psql -h $HOSTNAME -d $DATABASE -U $USERNAME -p $PORT -c 'delete from fileinfo'
+```
+
+Be careful though - this script will corrupt your ongoing Mattermost I/O operations!
+
+Use only when you're sure you can afford losing all unprocessed posts.

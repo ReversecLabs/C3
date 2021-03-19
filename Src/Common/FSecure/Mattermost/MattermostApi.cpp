@@ -29,6 +29,7 @@ FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const&
     this->m_ServerUrl = serverUrl;
 	this->m_AccessToken = accessToken;
 	this->m_UserAgent = userAgent;
+	this->m_OriginalChannelName = channelName;
 
 	std::string lowerChannelName = channelName;
 	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -40,6 +41,11 @@ FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const&
 void FSecure::Mattermost::SetTeamID(std::string const& teamID)
 {
     this->m_TeamID = teamID;
+}
+
+void FSecure::Mattermost::SetUserAgent(std::string const& userAgent)
+{
+	this->m_UserAgent = userAgent;
 }
 
 void FSecure::Mattermost::SetChannel(std::string const& channelId)
@@ -62,10 +68,11 @@ std::string FSecure::Mattermost::WriteReply(std::string const& message, std::str
     return WritePostOrReply(message, postID, fileID);
 }
 
-std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, std::string const& postID /* = "" */, std::string const& fileID /* = "" */)
+std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, std::string const& postID /*= ""*/, std::string const& fileID /*= ""*/, std::string channelID /*= ""*/)
 {
 	json j;
-	j[OBF("channel_id")] = this->m_ChannelID;
+
+	j[OBF("channel_id")] = (channelID.empty())? this->m_ChannelID : channelID;
 	j[OBF("message")] = message;
 	j[OBF("root_id")] = postID;
 
@@ -256,7 +263,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Mattermost::ReadReplie
 	return ret;
 }
 
-std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string const& direction)
+std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string const& direction, std::string channelID /*= ""*/)
 {
     std::vector<std::string> ret;
 	std::vector<std::string> order;
@@ -267,9 +274,12 @@ std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string
     json resp;
 	size_t pageCount = 0;
 
+	if (channelID.empty()) 
+		channelID = this->m_ChannelID;
+
 	do
 	{
-		std::string url = m_ServerUrl + OBF("/api/v4/channels/") + this->m_ChannelID + OBF("/posts?per_page=200&page=");
+		std::string url = m_ServerUrl + OBF("/api/v4/channels/") + channelID + OBF("/posts?per_page=200&page=");
 		url.append(std::to_string(pageCount++));
 
 		//Actually send the http request and grab the messages
@@ -295,7 +305,7 @@ std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string
 			}
 
 			//make sure it's a message we care about
-			if (data == direction)
+			if (data == direction || direction.empty())
 			{
 				unsortedMessages.emplace_back(std::make_pair(orderPostID, timestamp));
 				postIDs.insert(orderPostID);
@@ -337,6 +347,18 @@ void FSecure::Mattermost::DeletePost(std::string const& postID)
 	std::string url = m_ServerUrl + OBF("/api/v4/posts/") + postID;
 	SendJsonRequest(url, {}, Method::DEL);
 }
+
+
+void FSecure::Mattermost::PurgeChannel()
+{
+	auto messages = GetMessagesByDirection("", this->m_ChannelID);
+
+    for (auto&& postID : messages)
+    {
+        DeletePost(postID);
+    }
+}
+
 
 FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
 	std::string const& host, 

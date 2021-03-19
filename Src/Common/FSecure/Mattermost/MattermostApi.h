@@ -14,6 +14,7 @@ using json = nlohmann::json; //for easy parsing of json API: https://github.com/
 
 namespace FSecure
 {
+
 	class Mattermost
 	{
 	public:
@@ -41,6 +42,8 @@ namespace FSecure
 
         void SetTeamID(std::string const& teamID);
 
+        void SetUserAgent(std::string const& userAgent);
+
         std::string FindTeamID(std::string const& teamName);
 
 		/// Set the channel that this object uses for communications
@@ -66,9 +69,10 @@ namespace FSecure
 		std::map<std::string, std::string> ListChannels();
 
 		/// Get all of the messages by a direction. This is a C3 specific method, used by a server relay to get client messages and vice versa.
-		/// @param direction - the direction to search for (eg. "S2C").
+		/// @param direction - the direction to search for (eg. "S2C"). If empty string given, will return all messages from used channel.
+		/// @param channelID - the ID of the channel to pull messages from
 		/// @return - a vector of timestamps, where timestamp allows replies to be read later
-		std::vector<std::string> GetMessagesByDirection(std::string const& direction);
+		std::vector<std::string> GetMessagesByDirection(std::string const& direction, std::string channelID = "");
 
 		/// Edit a previously sent message.
 		/// @param message - the message to update to, this will overwrite the previous message.
@@ -84,7 +88,10 @@ namespace FSecure
 
 		/// Delete a message from the channel
 		/// @param postID - the post_id of post message to delete.
-		void DeletePost(std::string const& postID);
+        void DeletePost(std::string const& postID);
+
+        /// Delete all messages from the channel
+        void PurgeChannel();
 
 	private:
 
@@ -99,13 +106,16 @@ namespace FSecure
 		/// The channel through which messages are sent and received, will be sent when the object is created.
 		std::string m_ChannelID;
 
+		/// The channel name that will be used while switching channels.
+		std::string m_OriginalChannelName;
+
 		/// The Mattermost API token that allows the object access to the workspace. Needs to be manually created as described in documentation.
 		std::string m_AccessToken;
 
 		/// Hold proxy settings
-		WinHttp::WebProxy m_ProxyConfig;
+        WinHttp::WebProxy m_ProxyConfig;
 
-		std::string WritePostOrReply(std::string const& message, std::string const& postID = "", std::string const& fileID = "");
+		std::string WritePostOrReply(std::string const& message, std::string const& postID = "", std::string const& fileID = "", std::string channelID = "");
 
         /// Send http request, uses preset token for authentication
         ByteVector SendHttpRequest(std::string const& host, FSecure::WinHttp::Method method, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");

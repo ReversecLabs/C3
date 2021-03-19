@@ -117,6 +117,30 @@ void FSecure::C3::Interfaces::Channels::Mattermost::DeleteReplies(std::vector<st
 		m_MattermostObj.DeletePost(postID);
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FSecure::ByteVector FSecure::C3::Interfaces::Channels::Mattermost::OnRunCommand(ByteView command)
+{
+    auto commandCopy = command; //each read moves ByteView. CommandCopy is needed  for default.
+    switch (command.Read<uint16_t>())
+    {
+    case 0:
+        //lock first to avoid race condition
+		m_MattermostObj.PurgeChannel();
+        return {};
+    case 1:
+        //lock first to avoid race condition
+        m_MattermostObj.SetToken(commandCopy.Read<std::string>());
+        return {};
+    case 2:
+        //lock first to avoid race condition
+        m_MattermostObj.SetUserAgent(commandCopy.Read<std::string>());
+        return {};
+    default:
+        return AbstractChannel::OnRunCommand(commandCopy);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 {
@@ -176,7 +200,43 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 			}
 		]
 	},
-	"commands": []
+    "commands": [
+		{
+			"name": "Clear all channel messages",
+			"id": 0,
+			"description": "Clearing old messages from a channel may increase bandwidth",
+            "arguments": []
+		},
+        {
+			"name": "Change Mattermost Access Token",
+			"id": 1,
+			"description": "Change Mattermost Access Token used to authenticate to Mattermost.",
+			"arguments":
+			[
+				{
+                    "type" : "string",
+					"name": "New Mattermost Access Token",
+				    "min": 1,
+					"description" : "New Mattermost Access Token value."
+				}
+			]
+		},
+        {
+			"name": "Change User-Agent Header",
+			"id": 2,
+			"description": "Change User-Agent Header.",
+			"arguments":
+			[
+				{
+                    "type" : "string",
+					"name": "New User-Agent Header",
+				    "min": 1,
+				    "defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+					"description" : "New User-Agent Header value."
+				}
+			]
+		}
+	]
 }
 )_";
 }
