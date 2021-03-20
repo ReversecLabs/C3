@@ -353,10 +353,18 @@ void FSecure::Mattermost::PurgeChannel()
 {
 	auto messages = GetMessagesByDirection("", this->m_ChannelID);
 
-    for (auto&& postID : messages)
-    {
-        DeletePost(postID);
-    }
+	for (auto&& postID : messages)
+	{
+		try
+		{
+			// Already-deleted post may still be present in PostgreSQL and returned during posts-collection.
+			// Deleting previously-removed post will return 403 which in turn throws exception. Carry on if that happens...
+			DeletePost(postID);
+		}
+		catch (...)
+		{
+		}
+	}
 }
 
 
