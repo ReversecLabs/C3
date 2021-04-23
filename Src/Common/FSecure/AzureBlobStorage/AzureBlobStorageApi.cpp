@@ -55,14 +55,14 @@ void FSecure::AzureBlobStorage::WriteMessageToFile(std::string const& direction,
 
 	if (providedFilename == "")
 	{
-		///Create a filename thats prefixed with message direction and suffixed
+		// Create a filename thats prefixed with message direction and suffixed
 		// with more granular timestamp for querying later
-		std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+		std::string ts = std::to_string(FSecure::Utils::MillisecondsTimestamp());
 		filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
 	}
 	else
 		filename = providedFilename;
-
+	// check if filename here needs an '/' added - probably doesn't
 	std::string blobPath = OBF("/") + this->m_Channel + OBF("/") + filename + OBF("?");
 
 	//json j;
@@ -143,6 +143,8 @@ std::string FSecure::AzureBlobStorage::CreateChannel(std::string const& channelN
 
 	if (channels.find(channelName) == channels.end())
 	{
+		// is that if statement the right way around? should it be != ? 
+
 		//url = OBF("https://") + accountName + OBF("blob.core.windows.net/") + containerName + OBF("/") + channelName + OBF("/");
 		//contentType = FSecure::WinHttp::ContentType::TextPlain;
 		//json j;
@@ -161,6 +163,7 @@ std::string FSecure::AzureBlobStorage::CreateChannel(std::string const& channelN
 	}
 	else
 	{
+		// do we want to delete channels that bear the channel name we're after?
 		DeleteFile(channelName + "/");
 		blobPath = OBF("/") + channelName + OBF("/?");
 		response = SendHttpRequest(blobPath, ContentType::TextPlain, Method::PUT);
@@ -186,9 +189,12 @@ std::vector<std::string> FSecure::AzureBlobStorage::SplitBlobName(const std::str
 FSecure::ByteVector FSecure::AzureBlobStorage::ReadFile(std::string const& filename)
 {
 	//std::cout << "Entering ReadFile\n";
+	// check OctetStream
 	std::string blobPath = OBF("/") + filename + OBF("?");
-	return SendHttpRequest(blobPath, ContentType::ApplicationOctetstream, Method::GET);
-	
+	FSecure::ByteVector response;
+
+	response = SendHttpRequest(blobPath, ContentType::ApplicationOctetstream, Method::GET);
+	return response;
 }
 
 void FSecure::AzureBlobStorage::DeleteFile(std::string const& filename)
@@ -231,7 +237,7 @@ std::map<std::string, std::string> FSecure::AzureBlobStorage::GetMessagesByDirec
 	doc.parse<0>(&stringResponse[0]);
 	root_node = doc.first_node("EnumerationResults");
 	xml_node<>* blobsNode = doc.first_node("EnumerationResults")->first_node("Blobs");
-
+	// does this actually get hte message?
 	//std::cout << "About to enter xml loop\n";
 	for (xml_node<>* singleBlobNode = blobsNode->first_node("Blob"); singleBlobNode; singleBlobNode = singleBlobNode->next_sibling())
 	{
