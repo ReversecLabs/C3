@@ -14,8 +14,6 @@ FSecure::C3::Interfaces::Channels::AzureBlobStorage::AzureBlobStorage(ByteView a
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::AzureBlobStorage::OnSendToChannel(ByteView data)
 {
-	// There is a cap on uploads of files >5mb at which point different APIs are required.
-	std::cout << "Entering OnSendToChannel\n";
 	data = data.SubString(0, 5 * 1024 * 1024);
 	m_AzureBlobStorageObj.WriteMessageToFile(m_outboundDirectionName, data, "");
 	return data.size();
@@ -25,12 +23,10 @@ size_t FSecure::C3::Interfaces::Channels::AzureBlobStorage::OnSendToChannel(Byte
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::AzureBlobStorage::OnReceiveFromChannel()
 {
-	std::cout << "Entering OnReceiveFromChannel\n";
 	std::vector<ByteVector> ret;
 	for (auto& [ts, fileName]: m_AzureBlobStorageObj.GetMessagesByDirection(m_inboundDirectionName))
 	{
 		ret.push_back(m_AzureBlobStorageObj.ReadFile(fileName));
-		//std::cout << "I've read the file\n";
 		m_AzureBlobStorageObj.DeleteFile(fileName);
 	}
 
