@@ -14,6 +14,8 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
@@ -63,6 +65,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base64_default_rfc4648.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppRestSdk\include\cpprest\http_client.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Office365.h" />
@@ -142,6 +146,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\UniqueHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\XError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml-1.13\rapidxml.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
   </ItemGroup>
