@@ -55,6 +55,7 @@ void FSecure::AzureBlobStorage::WriteMessageToFile(std::string const& direction,
 	{
 		std::string ts = std::to_string(FSecure::Utils::MillisecondsTimestamp());
 		filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
+		std::cout << ts;
 	}
 	else
 		filename = providedFilename;
@@ -164,7 +165,7 @@ void FSecure::AzureBlobStorage::UploadFile(std::string const& path)
 	ByteVector packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
 	readFile.close();
 
-	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+	std::string ts = std::to_string(FSecure::Utils::MillisecondsTimestamp());
 	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
 
@@ -197,7 +198,7 @@ std::map<std::string, std::string> FSecure::AzureBlobStorage::GetMessagesByDirec
 
 
 		if (blobName.find(direction) != std::string::npos) {
-			std::string ts = blobName.substr(blobName.length() - 10); // 10 = epoch time length
+			std::string ts = blobName.substr(blobName.length() - 7); // 10 = epoch time length
 			messages.insert({ ts, blobName });
 		}
 
