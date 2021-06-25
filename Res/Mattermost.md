@@ -45,11 +45,24 @@ Now, to actually create your channel you will need following parameters to get s
 
 1. **Server URL** - the full URL of the server, that starts with a scheme (http/https), contains port number one's needed and **does not** end with a trailing slash. Example: `https://my-mattermost.com:8080`
 
-2. **Team Name** - The team that will have channels created to facilitate communication. First screenshot in this page indicates that team is named `team1`
+2. **Team Name** - The team name (or ID) that will have channels created to facilitate communication. First screenshot in this page indicates that team is named `team1`
 
-3. **Access Token** - The Personal Access Token value, should be something like that: `chhtxfgmzhfct5qi5si7tiexuc`
+3. **Access Token** - The Personal Access Token value, should be something like that: `chhtxfgmzhfct5qi5si7tiexuc` (also acquired from authenticated session cookie named `MMAUTHTOKEN`)
+
+4. **Username** - Username (or `user_id`, also acquired from authenticated session cookie named `MMUSERID`) of the user associated with that access token.
 
 ![](MattermostImages/4.png)
+
+
+### Remarks
+
+Some Mattermost deployments use Single-Sign On functionality to authenticate to Mattermost using providers such as GitLab. Sometimes even Mattermost can have Personal Access Tokens functionality disabled preventing you to generate your own tokens. These cases are not directly supported by this C3 channel, however there is an easy workaround for them. As soon as you successfully authenticate to the Mattermost server, review your HTTP session cookies.
+
+You'll find your temporary _Personal Access Token_ stored in a cookie named `MMAUTHTOKEN`, whereas your user's ID will be stored in `MMUSERID` cookie (however Username should be sufficient to setup this channel correctly).
+
+![](MattermostImages/6.png)
+
+The username is required to setup the channel properly, as sometimes there are Mattermost teams that are visible only to the specific user (the not global ones). If user created his own Team, he might be unable to find it using typical Mattermost APIs, and a different API would need to be called requiring user's ID. That case is handled by this version of the C3 Mattermost channel, provided the username is non-empty.
 
 
 ## Rate Limit

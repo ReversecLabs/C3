@@ -10,8 +10,8 @@ FSecure::C3::Interfaces::Channels::Mattermost::Mattermost(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [MattermostServerUrl, MattermostTeamName, MattermostAccessToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string, std::string, std::string>();
-	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
+	auto [MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string>();
+	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
 }
 
 
@@ -121,19 +121,16 @@ void FSecure::C3::Interfaces::Channels::Mattermost::DeleteReplies(std::vector<st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::Mattermost::OnRunCommand(ByteView command)
 {
-    auto commandCopy = command; //each read moves ByteView. CommandCopy is needed  for default.
+    auto commandCopy = command;
     switch (command.Read<uint16_t>())
     {
     case 0:
-        //lock first to avoid race condition
 		m_MattermostObj.PurgeChannel();
         return {};
     case 1:
-        //lock first to avoid race condition
         m_MattermostObj.SetToken(commandCopy.Read<std::string>());
         return {};
     case 2:
-        //lock first to avoid race condition
         m_MattermostObj.SetUserAgent(commandCopy.Read<std::string>());
         return {};
     default:
@@ -172,9 +169,15 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 				"min": 1,
 				"description": "Mattermost Server URL starting with schema, without a trailing slash. E.g. https://my-mattermost.com"
 			},
+            {
+				"type": "string",
+				"name": "Mattermost Username / ID",
+				"min": 1,
+				"description": "Some channels are only visible to the specific user. Submit the username to search for more channels."
+			},
 			{
 				"type": "string",
-				"name": "Mattermost Team Name",
+				"name": "Mattermost Team Name / ID",
 				"min": 1,
 				"description": "Mattermost Team Name to create a channel within. Mattermost's Teams are analogy to Slack's Workspaces."
 			},

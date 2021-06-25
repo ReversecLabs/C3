@@ -22,8 +22,7 @@ namespace FSecure
 		/// Constructor for the Mattermost Api class.
 		/// @param serverUrl - the Mattermost server url with schema, without trailing slash, ex. https://my-mattermost.com
 		/// @param accessToken - the Mattermost Personal Access Token value
-		/// @param proxyString - the proxy to use
-		Mattermost(std::string const& serverUrl, std::string const& teamName, std::string const& accessToken, std::string const& channelName, std::string const& userAgent);
+		Mattermost(std::string const& serverUrl, std::string const& userName, std::string const& teamName, std::string const& accessToken, std::string const& channelName, std::string const& userAgent);
 
 		/// Default constructor.
 		Mattermost() = default;
@@ -40,11 +39,11 @@ namespace FSecure
         std::string WriteReply(std::string const& text, std::string const& postID, std::string const& fileID = "");
 
 
-        void SetTeamID(std::string const& teamID);
+        void SetTeamID(std::pair<std::string, std::string> const& teamID);
 
         void SetUserAgent(std::string const& userAgent);
 
-        std::string FindTeamID(std::string const& teamName);
+		std::pair<std::string, std::string> FindTeamID(std::string const& teamName);
 
 		/// Set the channel that this object uses for communications
 		/// @param channel - the channelId (not name), for example CGPMGFGSH.
@@ -100,8 +99,12 @@ namespace FSecure
 		/// The Mattermost server URL
 		std::string m_ServerUrl;
 
-        /// The Team ID that contains/is to contain specified channel. Team is an analogy to Slack's Workspace.
+		/// The Mattermost username associated with given access token.
+		std::string m_UserName;
+
+        /// The Team Name and ID that contains/is to contain a specified channel. Team is an analogy to Slack's Workspace.
         std::string m_TeamID;
+		std::string m_TeamName;
 
 		/// The channel through which messages are sent and received, will be sent when the object is created.
 		std::string m_ChannelID;
@@ -120,6 +123,9 @@ namespace FSecure
         /// Send http request, uses preset token for authentication
         ByteVector SendHttpRequest(std::string const& host, FSecure::WinHttp::Method method, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");
 		ByteVector SendHttpRequest(std::string const& host, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");
+
+		/// Returns user_id field of the user.
+		std::string GetUserId(std::string const& userName);
 
 		/// Send http request with json data, uses preset token for authentication
 		json SendJsonRequest(std::string const& url, json const& data, FSecure::WinHttp::Method method = FSecure::WinHttp::Method::GET);

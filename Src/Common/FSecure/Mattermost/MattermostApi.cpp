@@ -21,7 +21,7 @@ namespace
 	}
 }
 
-FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const& teamName, std::string const& accessToken, std::string const& channelName, std::string const& userAgent)
+FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const& userName, std::string const& teamName, std::string const& accessToken, std::string const& channelName, std::string const& userAgent)
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
 		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
@@ -30,6 +30,7 @@ FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const&
 	this->m_AccessToken = accessToken;
 	this->m_UserAgent = userAgent;
 	this->m_OriginalChannelName = channelName;
+	this->m_UserName = userName;
 
 	std::string lowerChannelName = channelName;
 	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -38,9 +39,10 @@ FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const&
 	SetChannel(CreateChannel(lowerChannelName));
 }
 
-void FSecure::Mattermost::SetTeamID(std::string const& teamID)
+void FSecure::Mattermost::SetTeamID(std::pair<std::string, std::string> const& teamID)
 {
-    this->m_TeamID = teamID;
+    this->m_TeamID = teamID.first;
+	this->m_TeamName = teamID.second;
 }
 
 void FSecure::Mattermost::SetUserAgent(std::string const& userAgent)
@@ -66,6 +68,29 @@ std::string FSecure::Mattermost::WritePost(std::string const& message, std::stri
 std::string FSecure::Mattermost::WriteReply(std::string const& message, std::string const& postID, std::string const& fileID /* = "" */)
 {
     return WritePostOrReply(message, postID, fileID);
+}
+
+std::string FSecure::Mattermost::GetUserId(std::string const& userName)
+{
+	if (userName.empty())
+		return "";
+
+	std::string url = m_ServerUrl + OBF("/api/v4/users/") + userName;
+	auto response = GetJsonResponse(url);
+
+	if (response.value(OBF("status_code"), 0) == 400 || !response.contains(OBF("roles")))
+	{
+		url = m_ServerUrl + OBF("/api/v4/users/username/") + userName;
+		response = GetJsonResponse(url);
+
+		if (response.value(OBF("status_code"), 0) == 400 || !response.contains(OBF("roles")))
+		{
+			throw std::exception(OBF("[x] Could not find user specified by neither ID nor username!\n"));
+			return "";
+		}
+	}
+
+	return response[OBF("id")];
 }
 
 std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, std::string const& postID /*= ""*/, std::string const& fileID /*= ""*/, std::string channelID /*= ""*/)
@@ -97,26 +122,62 @@ std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, st
 	return output[OBF("id")].get<std::string>();
 }
 
-std::string FSecure::Mattermost::FindTeamID(const std::string& teamName)
+std::pair<std::string, std::string> FSecure::Mattermost::FindTeamID(const std::string& teamName)
 {
-    std::map<std::string, std::string> channelMap;
-    std::string url = m_ServerUrl + OBF("/api/v4/teams");
+	unsigned int channelNum = 0;
+	std::map<std::string, std::string> channelMap;
+	json response;
 
-    json response = GetJsonResponse(url);
+	std::string userId = GetUserId(m_UserName);
+	std::string url;
 
-    for (auto& team : response)
-    {
-        std::string teamId = team[OBF("id")];
-        std::string cName = team[OBF("name")];
+	if (!userId.empty())
+	{
+		url = m_ServerUrl + OBF("/api/v4/users/") + userId + OBF("/teams");
+		response = GetJsonResponse(url);
+		
+		for (auto& team : response)
+		{
+			std::string teamId = team[OBF("id")];
+			std::string cName = team[OBF("name")];
 
-        if (cName == teamName)
-        {
-			return teamId;
-        }
-    }
+			if (cName == teamName || teamId == teamName)
+			{
+				return std::make_pair(teamId, cName);
+			}
+		}
+	}
+
+	do
+	{
+		std::string channelNums = std::to_string(channelNum);
+		url = m_ServerUrl + OBF("/api/v4/teams?page=") + channelNums + OBF("&per_page=30&include_total_count=true");
+
+		response = GetJsonResponse(url);
+		channelNum++;
+
+		if (!response.contains(OBF("teams")) || response[OBF("teams")].empty())
+		{
+			break;
+		}
+
+		auto& teams = response[OBF("teams")];
+
+		for (auto& team : teams)
+		{
+			std::string teamId = team[OBF("id")];
+			std::string cName = team[OBF("name")];
+
+			if (cName == teamName || teamId == teamName)
+			{
+				return std::make_pair(teamId, cName);
+			}
+		}
+
+	} while (response.contains(OBF("teams")));
 
 	throw std::exception(OBF("[x] Could not find Team specified by ID.\n"));
-	return "";
+	return std::make_pair("", "");
 }
 
 
@@ -148,20 +209,49 @@ std::map<std::string, std::string> FSecure::Mattermost::ListChannels()
 
 std::string FSecure::Mattermost::CreateChannel(std::string const& channelName)
 {
-    json j;
-    std::string url = m_ServerUrl + OBF("/api/v4/channels");
-	j[OBF("team_id")] = this->m_TeamID;
-	j[OBF("name")] = channelName;
-	j[OBF("display_name")] = channelName;
-	j[OBF("purpose")] = "";
-	j[OBF("header")] = "";
+	std::string url = m_ServerUrl + OBF("/api/v4/teams/name/") + m_TeamName + OBF("/channels/name/") + channelName;
 
-	// O - for public channel, P - for private channel.
-	j[OBF("type")] = OBF("P");
+	json response = GetJsonResponse(url);
 
-	json response = SendJsonRequest(url, j, Method::POST);
+	if (!response.contains(OBF("status_code")) && response.contains(OBF("id")) && response.contains(OBF("name")))
+	{
+		return response[OBF("id")].get<std::string>();
+	}
+	else if (response.contains(OBF("status_code")) && (response[OBF("status_code")] == 403))
+	{
+		throw std::runtime_error(OBF("Throwing exception: unable to access specified channel, got 403 Forbidden\n"));
+	}
+	else if (response.contains(OBF("status_code")) && (response[OBF("status_code")] == 404))
+	{
+		json j;
+		url = m_ServerUrl + OBF("/api/v4/channels");
+		j[OBF("team_id")] = this->m_TeamID;
+		j[OBF("name")] = channelName;
+		j[OBF("display_name")] = channelName;
+		j[OBF("purpose")] = "";
+		j[OBF("header")] = "";
 
-	if (response.contains(OBF("status_code")) && response[OBF("status_code")] == 400)
+		// O - for public channel, P - for private channel.
+		j[OBF("type")] = OBF("P");
+
+		json response = SendJsonRequest(url, j, Method::POST);
+
+		if (response.contains(OBF("id")) && response.contains(OBF("team_id")) && response.contains(OBF("name")))
+		{
+			return response[OBF("id")].get<std::string>();
+		}
+		else
+		{
+			throw std::runtime_error(OBF("Throwing exception: unable to create a channel\n"));
+		}
+	}
+	else
+	{
+		throw std::runtime_error(OBF("Throwing exception: got unexpected result while searching for a channel!\n"));
+	}
+
+	/*
+	if (response.contains(OBF("status_code")) && (response[OBF("status_code")] == 400 || response[OBF("status_code")] == 403))
 	{
 		// channel already exists
 		std::map<std::string, std::string> channels = this->ListChannels();
@@ -179,6 +269,9 @@ std::string FSecure::Mattermost::CreateChannel(std::string const& channelName)
 	{
 		return response[OBF("id")].get<std::string>();
 	}
+	*/
+
+	return "";
 }
 
 
@@ -403,7 +496,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
         {
             std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		}
-        else if (resp.GetStatusCode() == StatusCode::BadRequest)
+        else if (resp.GetStatusCode() == StatusCode::BadRequest || resp.GetStatusCode() == StatusCode::NotFound || resp.GetStatusCode() == StatusCode::Forbidden)
         {
 			return resp.GetData();
         }
