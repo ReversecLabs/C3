@@ -52,8 +52,10 @@ namespace FSecure::C3::Interfaces::Channels
 		/// An object encapsulating Discord's API, providing methods allowing the consumer to send and receive messages to Discord, among other things.
 		FSecure::Discord m_discordObj;
 
-		/// Delete all the replies to a message.
-		/// @param repliesTs - an array of ids of messages to be deleted through DeleteMessage.
-		void DeleteReplies(std::vector<std::string> const& replyIds);
+		/// we're getting the messages we care about from returned messages, saving extra API calls and slowing the channel down
+		std::vector<std::string> GetMessagesByDirection(json const& messages, std::string const& direction);
+
+		// get all messages that are a reply to a given message, use existing message json to reduce API calls
+		std::vector<std::pair<std::string, std::string>> ReadReplies(json const& messages, std::string const& messageId);
 	};
 }
