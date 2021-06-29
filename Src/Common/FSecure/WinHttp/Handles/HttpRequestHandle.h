@@ -87,8 +87,54 @@ namespace FSecure::WinHttp
 				SetHeader(Header::ContentType, contentType);
 
 			auto xdata = data.size() ? data.data() : nullptr;
-			if (!WinHttpSendRequest(m_RequestHandle.get(), nullptr, 0, const_cast<uint8_t*>(xdata), dataSize, dataSize, NULL))
-				Detail::ThrowLastError(OBF("SendRequest failed"));
+
+			DWORD result = NO_ERROR;
+			bool retry = false;
+
+			do
+			{
+				retry = false;
+
+				// (1) If you want to allow SSL certificate errors and continue
+				// with the connection, you must allow and initial failure and then
+				// reset the security flags. From: "HOWTO: Handle Invalid Certificate
+				// Authority Error with WinInet"
+				// http://support.microsoft.com/default.aspx?scid=kb;EN-US;182888
+				if (!WinHttpSendRequest(m_RequestHandle.get(), nullptr, 0, const_cast<uint8_t*>(xdata), dataSize, dataSize, NULL))
+				{
+					result = GetLastError();
+
+					if (result == ERROR_WINHTTP_SECURE_FAILURE)
+					{
+						DWORD dwFlags =
+							SECURITY_FLAG_IGNORE_UNKNOWN_CA |
+							SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE |
+							SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
+							SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+
+						if (WinHttpSetOption(
+							m_RequestHandle.get(),
+							WINHTTP_OPTION_SECURITY_FLAGS,
+							&dwFlags,
+							sizeof(dwFlags)))
+						{
+							retry = true;
+						}
+					}
+					// (2) Negotiate authorization handshakes may return this error
+					// and require multiple attempts
+					// http://msdn.microsoft.com/en-us/library/windows/desktop/aa383144%28v=vs.85%29.aspx
+					else if (result == ERROR_WINHTTP_RESEND_REQUEST)
+					{
+						retry = true;
+					}
+					else
+					{
+						Detail::ThrowLastError(OBF("SendRequest failed"));
+						break;
+					}
+				}
+			} while (retry);
 		}
 
 		/// Sets timeouts involved with HTTP transactions.
