@@ -11,6 +11,13 @@ FSecure::C3::Interfaces::Channels::Mattermost::Mattermost(ByteView arguments)
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
 	auto [MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string>();
+
+	if (MattermostServerUrl.back() == '/')
+	{
+		auto s = MattermostServerUrl.substr(0, MattermostServerUrl.size() - 1);
+		MattermostServerUrl = s;
+	}
+
 	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
 }
 
