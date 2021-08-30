@@ -137,5 +137,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpConnection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpRequestHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpResponse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpSession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\ProxyHelpers.h" />
   </ItemGroup>
 </Project>

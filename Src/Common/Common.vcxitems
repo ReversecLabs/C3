@@ -89,6 +89,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Config.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Constants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpConnection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpRequestHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpResponse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpSession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\ProxyHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpRequest.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Uri.h" />
