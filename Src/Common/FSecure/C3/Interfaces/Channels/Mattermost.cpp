@@ -93,20 +93,19 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Mattermost::
 	for (std::vector<std::string>::iterator postID = messages.begin(); postID != messages.end(); ++postID)
 	{
 		auto replies = m_MattermostObj.ReadReplies(*postID);
-		std::vector<std::string> postIDs;
+		std::vector<std::string> replyIDs;
 		std::string message;
 
 		//Get all of the messages from the replies.
 		for (auto&& reply : replies)
 		{
 			message.append(reply.second);
-			postIDs.push_back(std::move(reply.first)); //get all of the post_ids for later deletion
+			replyIDs.push_back(std::move(reply.first)); //get all of the post_ids for later deletion
 		}
 		
-		auto relayMsg = cppcodec::base64_rfc4648::decode(message);
-		ret.emplace_back(std::move(relayMsg));
+		ret.emplace_back(std::move(cppcodec::base64_rfc4648::decode(message)));
 
-		DeleteReplies(postIDs);
+		DeleteReplies(replyIDs);
 		m_MattermostObj.DeletePost(*postID);
 	}
 
@@ -132,10 +131,10 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Mattermost::OnRunCommand(
 		m_MattermostObj.PurgeChannel();
 		return {};
 	case 1:
-		m_MattermostObj.SetToken(commandCopy.Read<std::string>());
+		m_MattermostObj.SetToken(command.Read<std::string>());
 		return {};
 	case 2:
-		m_MattermostObj.SetUserAgent(commandCopy.Read<std::string>());
+		m_MattermostObj.SetUserAgent(command.Read<std::string>());
 		return {};
 	default:
 		return AbstractChannel::OnRunCommand(commandCopy);

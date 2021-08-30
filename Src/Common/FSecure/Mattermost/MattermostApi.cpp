@@ -13,51 +13,35 @@
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
 
-namespace
-{
-	std::wstring ToWideString(std::string const& str)
-	{
-		return Convert<Utf16>(str);
-	}
-}
-
-FSecure::Mattermost::Mattermost(std::string const& serverUrl, std::string const& userName, std::string const& teamName, std::string const& accessToken, std::string const& channelName, std::string const& userAgent)
+FSecure::Mattermost::Mattermost(std::string serverUrl, std::string userName, std::string teamName, std::string accessToken, std::string channelName, std::string userAgent)
+	: m_ServerUrl(std::move(serverUrl)), m_UserName(std::move(userName)), m_TeamName(std::move(teamName)), m_AccessToken(std::move(accessToken)), m_OriginalChannelName(std::move(channelName)), m_UserAgent(std::move(userAgent))
 {
 	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
+		m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
 
-	this->m_ServerUrl = serverUrl;
-	this->m_AccessToken = accessToken;
-	this->m_UserAgent = userAgent;
-	this->m_OriginalChannelName = channelName;
-	this->m_UserName = userName;
-
-	std::string lowerChannelName = channelName;
-	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });
-
-	SetTeamID(FindTeamID(teamName));
-	SetChannel(CreateChannel(lowerChannelName));
+	SetTeamID(FindTeamID(m_TeamName));
+	SetChannel(CreateChannel(Convert<Lowercase>(m_OriginalChannelName)));
 }
 
 void FSecure::Mattermost::SetTeamID(std::pair<std::string, std::string> const& teamID)
 {
-	this->m_TeamID = teamID.first;
-	this->m_TeamName = teamID.second;
+	m_TeamID = teamID.first;
+	m_TeamName = teamID.second;
 }
 
 void FSecure::Mattermost::SetUserAgent(std::string const& userAgent)
 {
-	this->m_UserAgent = userAgent;
+	m_UserAgent = userAgent;
 }
 
 void FSecure::Mattermost::SetChannel(std::string const& channelId)
 {
-	this->m_ChannelID = channelId;
+	m_ChannelID = channelId;
 }
 
 void FSecure::Mattermost::SetToken(std::string const& accessToken)
 {
-	this->m_AccessToken = accessToken;
+	m_AccessToken = accessToken;
 }
 
 std::string FSecure::Mattermost::WritePost(std::string const& message, std::string const& fileID /* = "" */)
@@ -73,7 +57,7 @@ std::string FSecure::Mattermost::WriteReply(std::string const& message, std::str
 std::string FSecure::Mattermost::GetUserId(std::string const& userName)
 {
 	if (userName.empty())
-		return "";
+		throw std::runtime_error(OBF("[x] Empty username!\n"));
 
 	std::string url = m_ServerUrl + OBF("/api/v4/users/") + userName;
 	auto response = GetJsonResponse(url);
@@ -85,8 +69,7 @@ std::string FSecure::Mattermost::GetUserId(std::string const& userName)
 
 		if (response.value(OBF("status_code"), 0) == 400 || !response.contains(OBF("roles")))
 		{
-			throw std::exception(OBF("[x] Could not find user specified by neither ID nor username!\n"));
-			return "";
+			throw std::runtime_error(OBF("[x] Could not find user specified by neither ID nor username!\n"));
 		}
 	}
 
@@ -97,7 +80,7 @@ std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, st
 {
 	json j;
 
-	j[OBF("channel_id")] = (channelID.empty())? this->m_ChannelID : channelID;
+	j[OBF("channel_id")] = (channelID.empty())? m_ChannelID : channelID;
 	j[OBF("message")] = message;
 	j[OBF("root_id")] = postID;
 
@@ -116,10 +99,9 @@ std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, st
 
 	json output = SendJsonRequest(url, j, Method::POST);
 
-	if (output.contains(OBF("detailed_error")) && output.contains(OBF("status_code")) && output.value(OBF("status_code"), 0) == 400)
-		return "";
-
-	return output[OBF("id")].get<std::string>();
+	return (output.contains(OBF("detailed_error")) && output.contains(OBF("status_code")) && output.value(OBF("status_code"), 0) == 400) ?
+		std::string{} :
+		output[OBF("id")].get<std::string>();
 }
 
 std::pair<std::string, std::string> FSecure::Mattermost::FindTeamID(const std::string& teamName)
@@ -176,8 +158,7 @@ std::pair<std::string, std::string> FSecure::Mattermost::FindTeamID(const std::s
 
 	} while (response.contains(OBF("teams")));
 
-	throw std::exception(OBF("[x] Could not find Team specified by ID.\n"));
-	return std::make_pair("", "");
+	throw std::runtime_error(OBF("[x] Could not find Team specified by ID.\n"));
 }
 
 
@@ -225,7 +206,7 @@ std::string FSecure::Mattermost::CreateChannel(std::string const& channelName)
 	{
 		json j;
 		url = m_ServerUrl + OBF("/api/v4/channels");
-		j[OBF("team_id")] = this->m_TeamID;
+		j[OBF("team_id")] = m_TeamID;
 		j[OBF("name")] = channelName;
 		j[OBF("display_name")] = channelName;
 		j[OBF("purpose")] = "";
@@ -249,27 +230,6 @@ std::string FSecure::Mattermost::CreateChannel(std::string const& channelName)
 	{
 		throw std::runtime_error(OBF("Throwing exception: got unexpected result while searching for a channel!\n"));
 	}
-
-	/*
-	if (response.contains(OBF("status_code")) && (response[OBF("status_code")] == 400 || response[OBF("status_code")] == 403))
-	{
-		// channel already exists
-		std::map<std::string, std::string> channels = this->ListChannels();
-
-		if (channels.find(channelName) != channels.end())
-		{
-			return channels[channelName];
-		}
-		else
-		{
-			throw std::runtime_error(OBF("Throwing exception: unable to create a channel\n"));
-		}
-	}
-	else
-	{
-		return response[OBF("id")].get<std::string>();
-	}
-	*/
 
 	return "";
 }
@@ -368,7 +328,7 @@ std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string
 	size_t pageCount = 0;
 
 	if (channelID.empty()) 
-		channelID = this->m_ChannelID;
+		channelID = m_ChannelID;
 
 	do
 	{
@@ -444,7 +404,7 @@ void FSecure::Mattermost::DeletePost(std::string const& postID)
 
 void FSecure::Mattermost::PurgeChannel()
 {
-	auto messages = GetMessagesByDirection("", this->m_ChannelID);
+	auto messages = GetMessagesByDirection("", m_ChannelID);
 
 	for (auto&& postID : messages)
 	{
@@ -472,7 +432,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
 
 	while (true)
 	{
-		HttpClient webClient(ToWideString(host), m_ProxyConfig);
+		HttpClient webClient(Convert<std::wstring>(host), m_ProxyConfig);
 		HttpRequest request;
 
 		request.m_Method = method;
@@ -482,8 +442,8 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
 			request.SetData(*contentType, { data.begin(), data.end() });
 		}
 
-		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_AccessToken));
-		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + Convert<std::wstring>(m_AccessToken));
+		request.SetHeader(Header::UserAgent, Convert<std::wstring>(m_UserAgent));
 
 		auto resp = webClient.Request(request);
 
@@ -501,9 +461,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
 		}
 		else
 		{
-			std::stringstream s;
-			s << OBF("[x] Unexpected HTTP Response status code: ") << resp.GetStatusCode() << std::endl;
-			throw std::exception(s.str().c_str());
+			throw std::runtime_error(OBF("[x] Unexpected HTTP Response status code: ") + std::to_string(resp.GetStatusCode()));
 		}
 	}
 }
@@ -534,9 +492,7 @@ json FSecure::Mattermost::SendJsonRequest(std::string const& url, json const& da
 	}
 	catch (...)
 	{
-		std::stringstream s;
-		s << OBF("[x] SendJsonRequest(") << url << OBF("): could not parse JSON response.") << std::endl;
-		throw std::exception(s.str().c_str());
+		throw std::runtime_error(OBF("[x] SendJsonRequest(") + url + OBF("): could not parse JSON response."));
 	}
 }
 
@@ -552,9 +508,7 @@ json FSecure::Mattermost::GetJsonResponse(std::string const& url)
 	}
 	catch (...)
 	{
-		std::stringstream s;
-		s << OBF("GetJsonResponse(") << url << OBF("): could not parse JSON response.") << std::endl;
-		throw std::exception(s.str().c_str());
+		throw std::runtime_error(OBF("GetJsonResponse(") + url + OBF("): could not parse JSON response."));
 	}
 }
 
@@ -579,23 +533,23 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 	formData += OBF("CHANNEL_ID\r\n");
 	formData += OBF("------WebKitFormBoundaryBOUNDARY--\r\n");
 
-	formData = FSecure::Utils::ReplaceString(formData, std::string(OBF("FILE_NAME")), cFilename);
-	formData = FSecure::Utils::ReplaceString(formData, std::string(OBF("CHANNEL_ID")), m_ChannelID);
-	formData = FSecure::Utils::ReplaceString(formData, std::string(OBF("BOUNDARY")), boundary);
-	formData = FSecure::Utils::ReplaceString(formData, std::string(OBF("FILE_DATA")), dataString);
+	Utils::ReplaceString(formData, OBF("FILE_NAME"), cFilename);
+	Utils::ReplaceString(formData, OBF("CHANNEL_ID"), m_ChannelID);
+	Utils::ReplaceString(formData, OBF("BOUNDARY"), boundary);
+	Utils::ReplaceString(formData, OBF("FILE_DATA"), dataString);
 
 	ByteView rawData(formData.data());
 	
 	while (true)
 	{
-		HttpClient webClient(ToWideString(url), m_ProxyConfig);
+		HttpClient webClient(Convert<std::wstring>(url), m_ProxyConfig);
 		HttpRequest request;
 
 		request.m_Method = Method::POST;
 
 		request.SetData(wcontentType, { rawData.begin(), rawData.end() });
-		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_AccessToken));
-		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
+		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + Convert<std::wstring>(m_AccessToken));
+		request.SetHeader(Header::UserAgent, Convert<std::wstring>(m_UserAgent));
 
 		auto resp = webClient.Request(request);
 
@@ -610,9 +564,7 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 		}
 		else
 		{
-			std::stringstream s;
-			s << std::string(OBF("[x] Unexpected response status code returned while uploading file: HTTP ")) << resp.GetStatusCode() << std::endl;
-			throw std::exception(s.str().c_str());
+			throw std::runtime_error(OBF("[x] Unexpected response status code returned while uploading file: HTTP ") + std::to_string(resp.GetStatusCode()));
 		}
 	}
 

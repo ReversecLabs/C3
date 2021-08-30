@@ -209,20 +209,14 @@ namespace FSecure::Utils
 	/// @param str - input string containing phrase to replace.
 	/// @param from - substring that is to be found and replaced
 	/// @param to - string that should replace one given in `from` parameter
-	/// @returns a replaced string if matched was found, or input string given in `str` otherwise.
-	template<class T>
-	T ReplaceString(const T& str, const T& from, const T& to) {
-		if (from.empty()) 
-			return str;
-
+	template<class T> 
+	void ReplaceString(T& str, std::basic_string_view<typename T::value_type> from, std::basic_string_view<typename T::value_type> to)
+	{
 		size_t start_pos = 0;
-		auto out = str;
-		while ((start_pos = out.find(from, start_pos)) != T::npos) {
-			out.replace(start_pos, from.length(), to);
-			start_pos += to.length();
+		while ((start_pos = str.find(from, start_pos)) != T::npos) {
+			str.replace(start_pos, size(from), to);
+			start_pos += size(to);
 		}
-
-		return out;
 	}
 
 	/// Proxy to Split<true>
