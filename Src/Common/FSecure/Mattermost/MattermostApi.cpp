@@ -468,8 +468,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
 	std::string const& data /* = "" */
 )
 {
-    auto wm = GetMethodString(method);
-    auto m = std::string(wm.begin(), wm.end());
+    auto m = Convert<std::string>(GetMethodString(method));
 
     while (true)
     {
@@ -523,8 +522,7 @@ FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(std::string const& host
 
 json FSecure::Mattermost::SendJsonRequest(std::string const& url, json const& data, FSecure::WinHttp::Method method /* Method::GET */)
 {
-	auto wm = GetMethodString(method);
-	auto m = std::string(wm.begin(), wm.end());
+	auto m = Convert<std::string>(GetMethodString(method));
 
 	auto out = SendHttpRequest(url, method, ContentType::ApplicationJson, data.dump());
 	json outj;
@@ -565,7 +563,7 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 	std::string url = m_ServerUrl + OBF("/api/v4/files");
 
 	std::wstring wboundary = FSecure::Utils::GenerateRandomString<std::wstring>(15);
-	std::string boundary(wboundary.begin(), wboundary.end());
+	std::string boundary = Convert<std::string>(wboundary);
 	std::wstring wcontentType = GetContentType(ContentType::MultipartFormData) + OBF(L"; boundary=----WebKitFormBoundary") + wboundary;
 	
     std::string cFilename = FSecure::Utils::GenerateRandomString(16) + "." + FSecure::Utils::GenerateRandomString(3);
