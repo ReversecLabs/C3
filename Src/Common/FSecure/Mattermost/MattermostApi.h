@@ -32,16 +32,16 @@ namespace FSecure
 		/// @return - the post_id of post message created.
 		std::string WritePost(std::string const& text, std::string const& fileID = "");
 
-        /// Create a thread on a message by writing a reply to it.
-        /// @param text - the text to send as a reply.
-        /// @param timestamp - the timestamp of the message that the reply is for.
-        /// @return - the post_id of reply message created.
-        std::string WriteReply(std::string const& text, std::string const& postID, std::string const& fileID = "");
+		/// Create a thread on a message by writing a reply to it.
+		/// @param text - the text to send as a reply.
+		/// @param timestamp - the timestamp of the message that the reply is for.
+		/// @return - the post_id of reply message created.
+		std::string WriteReply(std::string const& text, std::string const& postID, std::string const& fileID = "");
 
 
-        void SetTeamID(std::pair<std::string, std::string> const& teamID);
+		void SetTeamID(std::pair<std::string, std::string> const& teamID);
 
-        void SetUserAgent(std::string const& userAgent);
+		void SetUserAgent(std::string const& userAgent);
 
 		std::pair<std::string, std::string> FindTeamID(std::string const& teamName);
 
@@ -87,10 +87,10 @@ namespace FSecure
 
 		/// Delete a message from the channel
 		/// @param postID - the post_id of post message to delete.
-        void DeletePost(std::string const& postID);
+		void DeletePost(std::string const& postID);
 
-        /// Delete all messages from the channel
-        void PurgeChannel();
+		/// Delete all messages from the channel
+		void PurgeChannel();
 
 	private:
 
@@ -102,8 +102,8 @@ namespace FSecure
 		/// The Mattermost username associated with given access token.
 		std::string m_UserName;
 
-        /// The Team Name and ID that contains/is to contain a specified channel. Team is an analogy to Slack's Workspace.
-        std::string m_TeamID;
+		/// The Team Name and ID that contains/is to contain a specified channel. Team is an analogy to Slack's Workspace.
+		std::string m_TeamID;
 		std::string m_TeamName;
 
 		/// The channel through which messages are sent and received, will be sent when the object is created.
@@ -116,12 +116,12 @@ namespace FSecure
 		std::string m_AccessToken;
 
 		/// Hold proxy settings
-        WinHttp::WebProxy m_ProxyConfig;
+		WinHttp::WebProxy m_ProxyConfig;
 
 		std::string WritePostOrReply(std::string const& message, std::string const& postID = "", std::string const& fileID = "", std::string channelID = "");
 
-        /// Send http request, uses preset token for authentication
-        ByteVector SendHttpRequest(std::string const& host, FSecure::WinHttp::Method method, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");
+		/// Send http request, uses preset token for authentication
+		ByteVector SendHttpRequest(std::string const& host, FSecure::WinHttp::Method method, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");
 		ByteVector SendHttpRequest(std::string const& host, std::optional<WinHttp::ContentType> contentType = {}, std::string const& data = "");
 
 		/// Returns user_id field of the user.

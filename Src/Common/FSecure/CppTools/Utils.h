@@ -211,7 +211,7 @@ namespace FSecure::Utils
 	/// @param to - string that should replace one given in `from` parameter
 	/// @returns a replaced string if matched was found, or input string given in `str` otherwise.
 	template<class T>
-    T ReplaceString(const T& str, const T& from, const T& to) {
+	T ReplaceString(const T& str, const T& from, const T& to) {
 		if (from.empty()) 
 			return str;
 
@@ -223,7 +223,7 @@ namespace FSecure::Utils
 		}
 
 		return out;
-    }
+	}
 
 	/// Proxy to Split<true>
 	///

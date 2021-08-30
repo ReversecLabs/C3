@@ -24,9 +24,9 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// Get channel capability.
 		/// @returns Channel capability in JSON format
-        static const char* GetCapability();
+		static const char* GetCapability();
 
-        FSecure::ByteVector OnRunCommand(ByteView command) override;
+		FSecure::ByteVector OnRunCommand(ByteView command) override;
 
 		/// Values used as default for channel jitter. 30 ms if unset. Current jitter value can be changed at runtime.
 		/// Set long delay otherwise Mattermost rate limit will heavily impact channel.

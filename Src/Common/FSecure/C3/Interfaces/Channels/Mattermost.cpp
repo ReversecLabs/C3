@@ -12,11 +12,8 @@ FSecure::C3::Interfaces::Channels::Mattermost::Mattermost(ByteView arguments)
 {
 	auto [MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string>();
 
-	if (MattermostServerUrl.back() == '/')
-	{
-		auto s = MattermostServerUrl.substr(0, MattermostServerUrl.size() - 1);
-		MattermostServerUrl = s;
-	}
+	if (!MattermostServerUrl.empty() && MattermostServerUrl.back() == '/')
+		MattermostServerUrl.pop_back();
 
 	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
 }
@@ -47,15 +44,15 @@ size_t FSecure::C3::Interfaces::Channels::Mattermost::OnSendToChannel(ByteView d
 			auto sendData = data.SubString(0, actualPacketSize);
 			auto fileID = m_MattermostObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()));
 
-            // Error. Try to retransmit that packet.
-            if (fileID.empty())
-                return 0;
+			// Error. Try to retransmit that packet.
+			if (fileID.empty())
+				return 0;
 
 			auto foo = m_MattermostObj.WriteReply("", postID, fileID);
-            
+			
 			// Error. Try to retransmit that packet.
-            if (foo.empty())
-                return 0;
+			if (foo.empty())
+				return 0;
 		}
 		else
 		{
@@ -65,9 +62,9 @@ size_t FSecure::C3::Interfaces::Channels::Mattermost::OnSendToChannel(ByteView d
 			auto sendData = data.SubString(0, actualPacketSize);
 			auto foo = m_MattermostObj.WriteReply(cppcodec::base64_rfc4648::encode(sendData.data(), sendData.size()), postID);
 
-            // Error. Try to retransmit that packet.
-            if (foo.empty())
-                return 0;
+			// Error. Try to retransmit that packet.
+			if (foo.empty())
+				return 0;
 		}
 
 		//Update the original first message with "C2S||S2C:Done" - these messages will always be read in onRecieve.
@@ -78,7 +75,7 @@ size_t FSecure::C3::Interfaces::Channels::Mattermost::OnSendToChannel(ByteView d
 	}
 	catch (...)
 	{
-        // Should exception be thrown, return 0 to make C3 retransmit that packet.
+		// Should exception be thrown, return 0 to make C3 retransmit that packet.
 		return 0;
 	}
 }
@@ -106,7 +103,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Mattermost::
 			postIDs.push_back(std::move(reply.first)); //get all of the post_ids for later deletion
 		}
 		
-        auto relayMsg = cppcodec::base64_rfc4648::decode(message);
+		auto relayMsg = cppcodec::base64_rfc4648::decode(message);
 		ret.emplace_back(std::move(relayMsg));
 
 		DeleteReplies(postIDs);
@@ -128,21 +125,21 @@ void FSecure::C3::Interfaces::Channels::Mattermost::DeleteReplies(std::vector<st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::Mattermost::OnRunCommand(ByteView command)
 {
-    auto commandCopy = command;
-    switch (command.Read<uint16_t>())
-    {
-    case 0:
+	auto commandCopy = command;
+	switch (command.Read<uint16_t>())
+	{
+	case 0:
 		m_MattermostObj.PurgeChannel();
-        return {};
-    case 1:
-        m_MattermostObj.SetToken(commandCopy.Read<std::string>());
-        return {};
-    case 2:
-        m_MattermostObj.SetUserAgent(commandCopy.Read<std::string>());
-        return {};
-    default:
-        return AbstractChannel::OnRunCommand(commandCopy);
-    }
+		return {};
+	case 1:
+		m_MattermostObj.SetToken(commandCopy.Read<std::string>());
+		return {};
+	case 2:
+		m_MattermostObj.SetUserAgent(commandCopy.Read<std::string>());
+		return {};
+	default:
+		return AbstractChannel::OnRunCommand(commandCopy);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +173,7 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 				"min": 1,
 				"description": "Mattermost Server URL starting with schema, without a trailing slash. E.g. https://my-mattermost.com"
 			},
-            {
+			{
 				"type": "string",
 				"name": "Mattermost Username / ID",
 				"min": 1,
@@ -210,38 +207,38 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 			}
 		]
 	},
-    "commands": [
+	"commands": [
 		{
 			"name": "Clear all channel messages",
 			"id": 0,
 			"description": "Clearing old messages from a channel may increase bandwidth",
-            "arguments": []
+			"arguments": []
 		},
-        {
+		{
 			"name": "Change Mattermost Access Token",
 			"id": 1,
 			"description": "Change Mattermost Access Token used to authenticate to Mattermost.",
 			"arguments":
 			[
 				{
-                    "type" : "string",
+					"type" : "string",
 					"name": "New Mattermost Access Token",
-				    "min": 1,
+					"min": 1,
 					"description" : "New Mattermost Access Token value."
 				}
 			]
 		},
-        {
+		{
 			"name": "Change User-Agent Header",
 			"id": 2,
 			"description": "Change User-Agent Header.",
 			"arguments":
 			[
 				{
-                    "type" : "string",
+					"type" : "string",
 					"name": "New User-Agent Header",
-				    "min": 1,
-				    "defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+					"min": 1,
+					"defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
 					"description" : "New User-Agent Header value."
 				}
 			]

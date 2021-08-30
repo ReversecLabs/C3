@@ -43,7 +43,7 @@ _System Console -> Integrations -> Integration Management -> Enable Personal Acc
 
 Now, to actually create your channel you will need following parameters to get straight:
 
-1. **Server URL** - the full URL of the server, that starts with a scheme (http/https), contains port number one's needed and **does not** end with a trailing slash. Example: `https://my-mattermost.com:8080`
+1. **Server URL** - the full URL of the server, that starts with a scheme (http/https), contains port number one's needed. Example: `https://my-mattermost.com:8080`
 
 2. **Team Name** - The team name (or ID) that will have channels created to facilitate communication. First screenshot in this page indicates that team is named `team1`
 
@@ -81,14 +81,14 @@ Find `RateLimitSettings` section and flip the `Enable` from `true` to `false` op
 
 ```
 "RateLimitSettings": {
-        "Enable": false,
-        "PerSec": 10,
-        "MaxBurst": 100,
-        "MemoryStoreSize": 10000,
-        "VaryByRemoteAddr": true,
-        "VaryByUser": false,
-        "VaryByHeader": ""
-    },
+		"Enable": false,
+		"PerSec": 10,
+		"MaxBurst": 100,
+		"MemoryStoreSize": 10000,
+		"VaryByRemoteAddr": true,
+		"VaryByUser": false,
+		"VaryByHeader": ""
+	},
 ```
 
 After that you'll have to restart your Mattermost server. If it's been ran using `docker-compose` then like so:
