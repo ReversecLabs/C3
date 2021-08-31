@@ -94,7 +94,7 @@ std::string FSecure::Mattermost::WritePostOrReply(std::string const& message, st
 	}
 
 	j[OBF("props")] = std::map<std::string, std::string>();
-	
+
 	std::string url = m_ServerUrl + OBF("/api/v4/posts");
 
 	json output = SendJsonRequest(url, j, Method::POST);
@@ -117,7 +117,7 @@ std::pair<std::string, std::string> FSecure::Mattermost::FindTeamID(const std::s
 	{
 		url = m_ServerUrl + OBF("/api/v4/users/") + userId + OBF("/teams");
 		response = GetJsonResponse(url);
-		
+
 		for (auto& team : response)
 		{
 			std::string teamId = team[OBF("id")];
@@ -179,7 +179,7 @@ std::map<std::string, std::string> FSecure::Mattermost::ListChannels()
 		{
 			continue;
 		}
-		
+
 		channelMap.insert({ cName, cId });
 	}
 
@@ -258,7 +258,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Mattermost::ReadReplie
 	std::vector<std::pair<std::string, std::string>> ret;
 	std::set<std::string> postIDs;
 
-	for (const auto& orderPostID : order) 
+	for (const auto& orderPostID : order)
 	{
 		if (orderPostID == postID) continue;
 
@@ -327,7 +327,7 @@ std::vector<std::string> FSecure::Mattermost::GetMessagesByDirection(std::string
 	json resp;
 	size_t pageCount = 0;
 
-	if (channelID.empty()) 
+	if (channelID.empty())
 		channelID = m_ChannelID;
 
 	do
@@ -422,9 +422,9 @@ void FSecure::Mattermost::PurgeChannel()
 
 
 FSecure::ByteVector FSecure::Mattermost::SendHttpRequest(
-	std::string const& host, 
-	FSecure::WinHttp::Method method, 
-	std::optional<WinHttp::ContentType> contentType /* = {} */, 
+	std::string const& host,
+	FSecure::WinHttp::Method method,
+	std::optional<WinHttp::ContentType> contentType /* = {} */,
 	std::string const& data /* = "" */
 )
 {
@@ -519,7 +519,7 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 	std::wstring wboundary = FSecure::Utils::GenerateRandomString<std::wstring>(15);
 	std::string boundary = Convert<std::string>(wboundary);
 	std::wstring wcontentType = GetContentType(ContentType::MultipartFormData) + OBF(L"; boundary=----WebKitFormBoundary") + wboundary;
-	
+
 	std::string cFilename = FSecure::Utils::GenerateRandomString(16) + "." + FSecure::Utils::GenerateRandomString(3);
 	std::string dataString(data.begin(), data.end());
 
@@ -539,7 +539,7 @@ std::string FSecure::Mattermost::UploadFile(ByteView data)
 	Utils::ReplaceString(formData, OBF("FILE_DATA"), dataString);
 
 	ByteView rawData(formData.data());
-	
+
 	while (true)
 	{
 		HttpClient webClient(Convert<std::wstring>(url), m_ProxyConfig);
@@ -580,7 +580,7 @@ std::string FSecure::Mattermost::GetFile(std::string const& fileID)
 	if (!out.contains(OBF("link")))
 		return {};
 
-	std::string fileUrl = out[OBF("link")];
+	auto fileUrl = m_ServerUrl + std::string{ out[OBF("link")] };
 	auto data = SendHttpRequest(fileUrl);
 	return { data.begin(), data.end() };
 }
