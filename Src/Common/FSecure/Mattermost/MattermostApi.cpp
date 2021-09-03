@@ -580,7 +580,9 @@ std::string FSecure::Mattermost::GetFile(std::string const& fileID)
 	if (!out.contains(OBF("link")))
 		return {};
 
-	auto fileUrl = m_ServerUrl + std::string{ out[OBF("link")] };
+	auto link = std::string{ out[OBF("link")] };
+	auto fileUrl = WinHttp::Uri::IsValid(StringConversions::Convert<std::wstring>(link).c_str()) ? link : m_ServerUrl + link;
+
 	auto data = SendHttpRequest(fileUrl);
 	return { data.begin(), data.end() };
 }
