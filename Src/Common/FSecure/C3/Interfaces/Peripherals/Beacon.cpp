@@ -16,7 +16,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
 	// Store a handle to the beacon object for later use
-	WinTools::InjectionBuffer m_Beacon(payload, useSyscalls);
+	m_Beacon = WinTools::InjectionBuffer(payload, useSyscalls)
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
 
