@@ -216,8 +216,6 @@ FSecure::ByteVector FSecure::Discord::SendHttpRequest(std::string const& host, s
 			request.SetData(contentType, data);
 		}
 
-		std::cout << host << std::endl;
-
 		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		request.SetHeader(Header::Authorization, OBF(L"Bot ") + ToWideString(this->m_Token));
 
