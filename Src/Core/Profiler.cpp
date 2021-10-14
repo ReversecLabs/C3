@@ -955,8 +955,7 @@ json FSecure::C3::Core::Profiler::Gateway::GetCapability()
 				}} });
 
 	addRelayCommand({ "relay" }, json{ {"name", "Rename"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Rename) }, {"arguments", {
-					{{"type", "string"}, {"name", "Name"}, {"description", "New friendly name."}},
-					{{"type", "string"}, {"name", "Description"}, {"description", "Additional information about Relay."}}
+					{{"type", "string"}, {"name", "Name"}, {"description", "New friendly name."}}
 				}} });
 
 

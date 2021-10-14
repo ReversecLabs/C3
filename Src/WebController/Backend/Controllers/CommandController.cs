@@ -94,33 +94,26 @@ namespace FSecure.C3.WebController.Controllers
             try 
             {
                 // Id check should be enough, but check also name command for sanity.
-                if ((int)command.Data["id"] != 65528 || (string)command.Data["command"] != "Rename")
+                if ((int) command.Data["id"] != 65528 || (string) command.Data["command"] != "Rename")
                     return;
 
                 if (context.Relays.Where(r => r.GatewayAgentId == gatewayId.Value).Count(r => r.AgentId == relayId.Value) != 1)
                     throw new InvalidOperationException();
 
-                var name = command.Data["arguments"].FirstOrDefault(n => (string)n["name"] == "Name")["value"];
-                var description = command.Data["arguments"].FirstOrDefault(n => (string)n["name"] == "Description")["value"];
-                if (name == null || description == null)
-                    return;
+                var name = command.Data["arguments"].FirstOrDefault(n => (string) n["name"] == "Name")["value"];
+                if (name == null)
+                    throw new InvalidOperationException();
 
                 var note = context.Notes.FirstOrDefault(n => n.AgentId == relayId.Value);
                 if (note != null)
-                {
-                    note.DisplayName = (string)name;
-                    note.Description = (string)description;
-                }
+                    note.DisplayName = (string) name;
                 else
-                {
-                    note = new Note
+                    context.Add(new Note
                     {
                         AgentId = relayId.Value,
-                        DisplayName = (string)name,
-                        Description = (string)description,
-                    };
-                    context.Add(note);
-                }
+                        DisplayName = (string) name,
+                    });
+
                 await context.SaveChangesAsync();
             }
             catch (Exception e)
