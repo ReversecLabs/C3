@@ -42,6 +42,7 @@ namespace FSecure.C3.WebController
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "C3 API", Version = "v1" });
+                c.MapType<HexId>(() => new OpenApiSchema { Type = "string" });
             });
             services.Configure<DonutServiceOptions>(Configuration.GetSection("Donut"));
             services.AddTransient<IDonutService, DonutService>();
