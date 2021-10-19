@@ -48,6 +48,7 @@ namespace FSecure::C3
 		SetGRC = static_cast<std::uint16_t>(-5),
 		Ping = static_cast<std::uint16_t>(-6),
 		ClearNetwork = static_cast<std::uint16_t>(-7),
+		Rename = static_cast<std::uint16_t>(-8),
 	};
 
 	namespace Utils
