@@ -94,6 +94,7 @@ namespace FSecure.C3.WebController.Controllers
             try 
             {
                 // Id check should be enough, but check also name command for sanity.
+                // Magic number is from enum Rename = static_cast<std::uint16_t>(-8).
                 if ((int) command.Data["id"] != 65528 || (string) command.Data["command"] != "Rename")
                     return;
 
