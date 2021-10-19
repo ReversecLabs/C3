@@ -44,6 +44,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -137,6 +139,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpConnection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpRequestHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpResponse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpSession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\ProxyHelpers.h" />
   </ItemGroup>
 </Project>
 </Project>

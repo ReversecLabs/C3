@@ -87,8 +87,38 @@ namespace FSecure::WinHttp
 				SetHeader(Header::ContentType, contentType);
 
 			auto xdata = data.size() ? data.data() : nullptr;
-			if (!WinHttpSendRequest(m_RequestHandle.get(), nullptr, 0, const_cast<uint8_t*>(xdata), dataSize, dataSize, NULL))
-				Detail::ThrowLastError(OBF("SendRequest failed"));
+
+			while (!WinHttpSendRequest(m_RequestHandle.get(), nullptr, 0, const_cast<uint8_t*>(xdata), dataSize, dataSize, NULL))
+			{
+				auto result = GetLastError();
+
+				// Negotiate authorization handshakes may return this error
+				// and require multiple attempts
+				// http://msdn.microsoft.com/en-us/library/windows/desktop/aa383144%28v=vs.85%29.aspx
+				if (result == ERROR_WINHTTP_RESEND_REQUEST)
+					continue;
+
+				// If you want to allow SSL certificate errors and continue
+				// with the connection, you must allow and initial failure and then
+				// reset the security flags. From: "HOWTO: Handle Invalid Certificate
+				// Authority Error with WinInet"
+				// http://support.microsoft.com/default.aspx?scid=kb;EN-US;182888
+				if  (result == ERROR_WINHTTP_SECURE_FAILURE)
+				{
+					DWORD dwFlags =
+						SECURITY_FLAG_IGNORE_UNKNOWN_CA |
+						SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE |
+						SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
+						SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+
+					if (!WinHttpSetOption(m_RequestHandle.get(), WINHTTP_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags)))
+						Detail::ThrowLastError(OBF("WinHttpSetOption failed"));
+					else
+						continue;
+				}
+
+				throw std::runtime_error{ OBF("SendRequest failed, Error code: ") + std::to_string(result) };
+			}
 		}
 
 		/// Sets timeouts involved with HTTP transactions.
