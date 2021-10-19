@@ -274,7 +274,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -304,7 +304,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -335,7 +335,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -366,7 +366,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_d64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -407,7 +407,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -448,7 +448,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -488,7 +488,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -528,7 +528,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi86.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -567,7 +567,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -606,7 +606,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_r64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -644,7 +644,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -682,7 +682,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>dotnet "$(SolutionDir)..\Bin\Tools\etcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
+      <Command>dotnet "$(SolutionDir)..\Bin\Tools\netcoreapp3.1\ResourceGenerator.dll" "$(OutDir)NodeRelayDll_rwdi64.dll" "$(IntDir)\gen" "StartNodeRelay"</Command>
     </PreBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
