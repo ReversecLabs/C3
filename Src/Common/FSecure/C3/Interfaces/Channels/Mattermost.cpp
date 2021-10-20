@@ -200,7 +200,7 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 			{
 				"type": "string",
 				"name": "User-Agent Header",
-				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from funcionating."
+				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
 			}
 		]
 	},
@@ -234,7 +234,7 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 				{
 					"type": "string",
 					"name": "User-Agent Header",
-					"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from funcionating."
+					"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
 				}
 			]
 		}
