@@ -249,7 +249,7 @@ std::vector<std::pair<std::string, std::string>> FSecure::Mattermost::ReadReplie
 	if (!output.contains(OBF("posts")) || !output.contains(OBF("order")))
 		return {};
 
-	auto& order = output[OBF("order")].get<std::vector<std::string>>();
+	auto order = output[OBF("order")].get<std::vector<std::string>>();
 	json const& posts = output[OBF("posts")];
 
 	if (posts.empty() || posts.front().value(OBF("reply_count"), 0) == 0)

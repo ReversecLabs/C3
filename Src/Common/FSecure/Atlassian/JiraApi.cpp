@@ -31,7 +31,7 @@ FSecure::Jira::Jira(std::string const& userAgent, std::string const& host, std::
 
 	this->m_projectkey = project_key;
 	this->m_UserAgent = userAgent;
-	
+
 	SetAuthToken(username, password);
 	SetChannel(CreateIssue(issue_name));
 }
@@ -49,7 +49,7 @@ void FSecure::Jira::SetAuthToken(std::string const& username, std::string const&
 void FSecure::Jira::UpdateCommentOnIssue(std::string const& commentId, std::string const& message)
 {
 	std::string url = this->m_host + OBF_STR("/rest/api/2/issue/") + this->m_issue + OBF("/comment/") + commentId;
-	
+
 	json j;
 	j[OBF("body")] = message;
 
@@ -62,7 +62,7 @@ std::string FSecure::Jira::WriteCommentOnIssue(std::string const& message)
 
 	json j;
 	j[OBF("body")] = message;
-	
+
 	json resp = SendJsonRequest(Method::POST, url, j);
 	return resp[OBF("id")];
 }
@@ -70,7 +70,7 @@ std::string FSecure::Jira::WriteCommentOnIssue(std::string const& message)
 void FSecure::Jira::UploadAttachment(ByteView data, std::string const& commentId)
 {
 	std::string url = this->m_host + OBF("/rest/api/2/issue/") + this->m_issue + OBF("/attachments");
-	
+
 	// Generating body
 	std::string boundary = OBF("----------------------") + Utils::GenerateRandomString(24);
 
@@ -115,9 +115,9 @@ std::map<std::string, std::string> FSecure::Jira::ListIssues()
 			channelMap.emplace(issue[OBF("fields")][OBF("summary")], issue[OBF("key")]);
 		}
 		// From our current result number, plus the max results we're getting back in each request
-		// have we reached the total number of results? If we're under the total let's shift our 
+		// have we reached the total number of results? If we're under the total let's shift our
 		// starting result and go again.
-		if ((startAt + response[OBF("maxResults")]) < response[OBF("total")])
+		if ((startAt + response[OBF("maxResults")].get<int32_t>()) < response[OBF("total")].get<int32_t>())
 			startAt += response.at(OBF("maxResults")).get<uint32_t>();
 		else
 			break;
@@ -168,9 +168,9 @@ std::map<std::string, std::string> FSecure::Jira::GetMessagesByDirection(std::st
 		}
 
 		// From our current result number, plus the max results we're getting back in each request
-		// have we reached the total number of results? If we're under the total let's shift our 
+		// have we reached the total number of results? If we're under the total let's shift our
 		// starting result and go again.
-		if ((startAt + response[OBF("maxResults")]) < response[OBF("total")])
+		if ((startAt + response[OBF("maxResults")].get<int32_t>()) < response[OBF("total")].get<int32_t>())
 			startAt += response.at(OBF("maxResults")).get<uint32_t>();
 		else
 			break;
@@ -182,7 +182,7 @@ std::vector<std::tuple<std::string, std::string, int>> FSecure::Jira::ReadCommen
 {
 	std::string url = this->m_host + OBF("/rest/api/2/issue/") + this->m_issue;
 	json response = json::parse(SendHttpRequest(Method::GET, url));
-	
+
 	std::vector<std::tuple<std::string, std::string, int>> ret;
 	auto attachments = response[OBF("fields")][OBF("attachment")];
 
@@ -198,7 +198,7 @@ std::vector<std::tuple<std::string, std::string, int>> FSecure::Jira::ReadCommen
 	std::uint32_t startAt = 0;
 	auto commentsBlock = response[OBF("fields")][OBF("comment")];
 	url = this->m_host + OBF("/rest/api/2/issue/") + this->m_issue + OBF("/comment?orderBy=created");
-	
+
 	while(true)
 	{
 		auto comments = commentsBlock[OBF("comments")];
@@ -221,7 +221,7 @@ std::vector<std::tuple<std::string, std::string, int>> FSecure::Jira::ReadCommen
 			}
 		}
 
-		if ((startAt + commentsBlock[OBF("maxResults")]) < commentsBlock[OBF("total")])
+		if ((startAt + commentsBlock[OBF("maxResults")].get<int32_t>()) < commentsBlock[OBF("total")].get<int32_t>())
 		{
 			startAt += commentsBlock.at(OBF("maxResults")).get<uint32_t>();
 			commentsBlock = json::parse(SendHttpRequest(Method::GET, url + OBF("&startAt=") + std::to_string(startAt)));
@@ -276,7 +276,7 @@ FSecure::WinHttp::HttpRequest FSecure::Jira::CreateHttpRequest(FSecure::WinHttp:
 	}
 
 	request.SetHeader(Header::Authorization, OBF(L"Basic ") + ToWideString(this->m_authtoken));
-	
+
 	if (!xsrfCheck)
 		request.SetHeader(ToWideString("X-Atlassian-Token"), ToWideString(OBF("no-check")));
 
