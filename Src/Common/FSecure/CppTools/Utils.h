@@ -203,6 +203,22 @@ namespace FSecure::Utils
 		return splittedString;
 	}
 
+	/// Function that finds a substring and replaces it with another string.
+	///
+	/// @tparam T - string type, must contain T::npos member.
+	/// @param str - input string containing phrase to replace.
+	/// @param from - substring that is to be found and replaced
+	/// @param to - string that should replace one given in `from` parameter
+	template<class T> 
+	void ReplaceString(T& str, std::basic_string_view<typename T::value_type> from, std::basic_string_view<typename T::value_type> to)
+	{
+		size_t start_pos = 0;
+		while ((start_pos = str.find(from, start_pos)) != T::npos) {
+			str.replace(start_pos, size(from), to);
+			start_pos += size(to);
+		}
+	}
+
 	/// Proxy to Split<true>
 	///
 	/// @param stringToBeSplitted initial string to be tokenized.

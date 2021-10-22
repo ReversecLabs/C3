@@ -578,6 +578,10 @@ void FSecure::C3::Core::Profiler::Agent::RunCommand(ByteView commandWithArgument
 	if (commandId <= static_cast<uint16_t>(-256))
 		return;
 
+	// There is nothing to do here, as only change made by rename is to controller database.
+	if (commandId == static_cast<uint16_t>(Command::Rename))
+		return;
+
 	auto profiler = m_Owner.lock();
 	if (!profiler)
 		return; // probably shutting down
@@ -948,6 +952,10 @@ json FSecure::C3::Core::Profiler::Gateway::GetCapability()
 
 	addRelayCommand({ "gateway" }, json{ {"name", "ClearNetwork"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::ClearNetwork) }, {"arguments", {
 					{{"type", "boolean"}, {"name", "Are you sure?"}, {"description", "Confirm clearing the network. All network state will be lost, this can not be undone."}, {"default", false}}
+				}} });
+
+	addRelayCommand({ "relay" }, json{ {"name", "Rename"}, {"id", static_cast<std::underlying_type_t<Command>>(Command::Rename) }, {"arguments", {
+					{{"type", "string"}, {"name", "Name"}, {"description", "New friendly name."}}
 				}} });
 
 
