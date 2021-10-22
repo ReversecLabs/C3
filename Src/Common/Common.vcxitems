@@ -80,7 +80,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Office365.h" />
@@ -100,8 +99,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sql\Sql.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
