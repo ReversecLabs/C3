@@ -23,8 +23,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.cpp" />
@@ -52,9 +50,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\AddrInfo.cpp" />
@@ -183,5 +178,4 @@
   <ItemGroup>
     <MASM Include="$(MSBuildThisFileDirectory)FSecure\WinTools\syscalls.asm" />
   </ItemGroup>
-</Project>
 </Project>
