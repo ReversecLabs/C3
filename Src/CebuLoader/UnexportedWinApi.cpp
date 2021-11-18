@@ -14,7 +14,9 @@ namespace FSecure::Loader::UnexportedWinApi
 		std::pair<std::string, size_t> GetLdrpHandleTlsOffsetData()
 		{
 #if defined _M_X64
-			if (IsWindows10RS3OrGreater())
+			if (IsWindows1121H1OrGreater())
+				return { "\x74\x2e\x44\x8d\x43\x09"s, 0x46 };
+			else if (IsWindows10RS3OrGreater())
 			{
 				auto offset = 0x43;
 				if (IsWindows1019H1OrGreater())
