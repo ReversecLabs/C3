@@ -6,8 +6,8 @@ It is now possible for raw shellcode to be downloaded from the web interface. Th
 
 3. Within the Relay Setup window, select “shellcode” from the target suffix dropdown. A new set of options will be provided, as shown in the next image.
 
-<img src="./UsageImages/figure3.png"/>
+<img src="images/ShellcodeUsageGuide/figure3.png"/>
 
-4. Select the various options that will be passed to Donut. Note that it is strongly advised to use compression, of which the apLib option is the best.
+1. Select the various options that will be passed to Donut. Note that it is strongly advised to use compression, of which the apLib option is the best.
 
-5. Click on “Generate and Download Relay”.
+2. Click on “Generate and Download Relay”.
