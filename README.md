@@ -1,6 +1,6 @@
 # C3
 
-![C3](Res/C3.png)
+![C3](Res/Images/C3.png)
 
 ![Build C3 (MSVC)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
 
