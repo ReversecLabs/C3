@@ -10,7 +10,7 @@ C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly devel
 
 ## Usage
 
-See [this](https://labs.mwrinfosecurity.com/tools/c3) blog post for a detailed tutorial. 
+See [this](https://labs.withsecure.com/tools/c3) blog post for a detailed tutorial. 
 
 For contribution guide (how to develop a Channel tutorials), see [this page](CONTRIBUTING.md).
 
