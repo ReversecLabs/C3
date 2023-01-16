@@ -22,7 +22,7 @@ Finally, for ease of integration it helps if the chosen framework provides acces
 
 At a high level, the objective of integration would result in the communication flow described in the figure below:
 
-<img src="images\C2ImplementationGuide\01.png"/>
+![](./Images/C2ImplementationGuide/01.png)
 
 
 
@@ -137,7 +137,7 @@ FSecure::ByteView FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
 ```
 The resulting form is shown in the next figure. Note that no changes were made to the actual web interface of C3.
 
-<img src="images/AttachingCovenantGrunt/figure1.png" />
+![](./Images/AttachingCovenantGrunt/figure1.png)
 
 **Stage 2 - Handle User Input**
 
