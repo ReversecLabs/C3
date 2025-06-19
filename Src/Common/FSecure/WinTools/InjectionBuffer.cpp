@@ -28,10 +28,17 @@ namespace FSecure::WinTools
 		//Fallback to normal thread execution if direct syscalls failed or was not requested
 		if(!useSyscalls || !resolved)
 		{
-			// Allocate memory as R/W
-			auto codePointer = VirtualAlloc(0, m_Size, MEM_COMMIT, PAGE_READWRITE);
+			// Allocate memory as RX
+			auto codePointer = VirtualAlloc(0, m_Size, MEM_COMMIT, PAGE_EXECUTE_READ);
+
 			if (!codePointer)
-				throw std::runtime_error{ OBF("Couldn't allocate R/W virtual memory: ") + std::to_string(GetLastError()) + OBF(".") };
+				throw std::runtime_error{ OBF("Couldn't allocate R/X virtual memory: ") + std::to_string(GetLastError()) + OBF(".") };
+
+			DWORD oldProtect = 0;
+			auto ret = VirtualProtect(codePointer, m_Size, PAGE_READWRITE, &oldProtect);
+
+			if (!ret)
+				throw std::runtime_error{ OBF("Couldn't change to  R/W memory: ") + std::to_string(GetLastError()) + OBF(".") };
 
 			m_Buffer = decltype(m_Buffer)(codePointer, [](void* buffer) { VirtualFree(buffer, 0, MEM_RELEASE); });
 
