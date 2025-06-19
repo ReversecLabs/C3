@@ -69,8 +69,8 @@ COPY "Bin\\GatewayConsoleExe_r64.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bi
 COPY "Bin\\NodeRelayConsoleExe_r64.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayConsoleExe_r64.exe" || GOTO :ERROR
 COPY "Bin\\GatewayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\GatewayConsoleExe_r86.exe" || GOTO :ERROR
 COPY "Bin\\NodeRelayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayConsoleExe_r86.exe" || GOTO :ERROR
-COPY "Bin\\NodeRelayDll_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r64.dll" || GOTO :ERROR
-COPY "Bin\\NodeRelayDll_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r86.dll" || GOTO :ERROR
+COPY "Bin\\Dll_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\Dll_r64.dll" || GOTO :ERROR
+COPY "Bin\\Dll_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\Dll_r86.dll" || GOTO :ERROR
 COPY "Bin\\CebuLoader_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r64.dll" || GOTO :ERROR
 COPY "Bin\\CebuLoader_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r86.dll" || GOTO :ERROR
 
@@ -82,7 +82,7 @@ ECHO.
 ECHO Building WebController...
 IF EXIST "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController" (RMDIR /s /q "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController") || GOTO :ERROR
 dotnet publish -c Release "Src\\WebController\\Backend" || GOTO :ERROR
-XCOPY /s /q "Bin\\WebController\\Release\\netcoreapp2.1\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
+XCOPY /s /q "Src\\WebController\\Backend\\bin\\x64\\Release\\netcoreapp3.1\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
 
 ECHO.
 ECHO Copying scripts...

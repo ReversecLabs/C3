@@ -50,6 +50,21 @@ namespace FSecure.C3.WebController.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notes",
+                columns: table => new
+                {
+                    NoteId = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AgentId = table.Column<ulong>(nullable: false),
+                    DisplayName = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notes", x => x.NoteId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Agents",
                 columns: table => new
                 {
@@ -224,6 +239,9 @@ namespace FSecure.C3.WebController.Migrations
 
             migrationBuilder.DropTable(
                 name: "Connectors");
+
+            migrationBuilder.DropTable(
+                name: "Notes");
 
             migrationBuilder.DropTable(
                 name: "Peripherals");
