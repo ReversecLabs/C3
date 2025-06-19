@@ -78,7 +78,7 @@ std::string FSecure::Discord::CreateChannel(std::string const& channelName)
 	if (channels.find(channelName) == channels.end())
 	{
 		std::string url = OBF("https://discord.com/api/v9/guilds/") + this->m_guildId + OBF("/channels");
-	
+
 		json j;
 		j[OBF("name")] = channelName;
 		j[OBF("type")] = 0; //text channel
@@ -183,7 +183,7 @@ void FSecure::Discord::DeleteAllMessages()
 
 	do {
 		json j;
-		auto& messages = GetJsonResponse(url);
+		auto messages = GetJsonResponse(url);
 		message_count = (int)messages.size();
 
 		if (message_count > 0) {
