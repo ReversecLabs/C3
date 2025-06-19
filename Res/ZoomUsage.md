@@ -9,15 +9,12 @@ Take a note of the following:
 * Account ID
 * Client ID
 * Client Secret
-* Account Email
 
 Add Scopes:
 
 * Select All Team Chat Permissions
 
 Or individual scopes:
-
-(to be completed)
 
 * team_chat:read:list_user_channels:admin
 * team_chat:write:user_message:admin
