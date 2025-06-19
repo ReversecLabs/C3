@@ -53,6 +53,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -166,5 +168,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\ProxyHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.h" />
   </ItemGroup>
 </Project>
