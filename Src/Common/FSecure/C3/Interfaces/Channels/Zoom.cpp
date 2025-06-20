@@ -222,19 +222,19 @@ const char* FSecure::C3::Interfaces::Channels::Zoom::GetCapability()
 			{
 				"type": "string",
 				"name": "Account ID",
-				"min": 22,
+				"min": 20,
 				"description": "Zoom Server to Server Account ID"
 			},
 			{
 				"type": "string",
 				"name": "Client ID",
-				"min": 22,
+				"min": 20,
 				"description": "Zoom Server to Server Client ID"
 			},
 			{
 				"type": "string",
 				"name": "Client Secret",
-				"min": 32,
+				"min": 30,
 				"description": "Zoom Server to Server Client Secret"
 			},
 			{
