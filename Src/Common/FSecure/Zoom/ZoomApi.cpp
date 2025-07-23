@@ -13,6 +13,7 @@
 #include <ctime>
 #include <sstream>
 
+
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
 
@@ -22,6 +23,17 @@ namespace
 	{
 		return Convert<Utf16>(str);
 	}
+
+
+	std::string WStringToString(const std::wstring& wstr)
+	{
+		std::string result;
+		result.reserve(wstr.size());
+		for (wchar_t wc : wstr)
+			result += (wc < 128) ? static_cast<char>(wc) : '?'; // Replace non-ASCII with '?'
+		return result;
+	}
+
 }
 
 FSecure::Zoom::Zoom(std::string const& userAgent, std::string const& account_id, std::string const& client_id, std::string const& client_secret, std::string const& email, std::string const& vanity_domain, std::string const& channelName)
@@ -80,7 +92,7 @@ void FSecure::Zoom::GetAccessToken()
 			std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
 		}
 		else
-			throw std::exception(OBF("[x] Failed to retrieve access token.\n"));
+			throw std::exception(OBF("[x] Zoom Failed to retrieve access token.\n"));
 	}
 }
 
@@ -168,7 +180,7 @@ json FSecure::Zoom::GetAllMessages()
 
 		nextPageToken = response[OBF("next_page_token")];
 		path = OBF("/v2/chat/users/me/messages?to_channel=") + this->m_channelId + OBF("&page_size=50&next_page_token=") + nextPageToken + OBF("&from=") + yesterday;
-	} while (!nextPageToken.empty()); 
+	} while (!nextPageToken.empty());
 	return all_messages;
 }
 
@@ -181,20 +193,6 @@ void FSecure::Zoom::UpdateMessage(std::string const& message, std::string const&
 
 	std::string jsonString = j.dump();
 	SendHttpRequest(path, ContentType::ApplicationJson, { std::make_move_iterator(jsonString.begin()), std::make_move_iterator(jsonString.end()) }, Method::PUT);
-}
-
-// Unusued 
-void FSecure::Zoom::WriteReply(std::string const& text, std::string const& messageId)
-{
-	assert(text.size() <= 1024);
-	std::string path = OBF("/v2/chat/users/me/messages");
-
-	json j;
-	j[OBF("message")] = text;
-	j[OBF("to_channel")] = this->m_channelId;
-	j[OBF("reply_main_message_id")] = messageId;
-
-	SendJsonRequest(path, j, Method::POST);
 }
 
 void FSecure::Zoom::DeleteMessage(std::string const& messageId)
@@ -258,20 +256,27 @@ FSecure::ByteVector FSecure::Zoom::SendHttpRequest(std::string const& path, std:
 			return resp.GetData();
 		else if (resp.GetStatusCode() == StatusCode::Forbidden || resp.GetStatusCode() == StatusCode::Unauthorized)
 			GetAccessToken(); // Refresh access token (1 hour lifetime)
-		else if (resp.GetStatusCode() == StatusCode::NoContent)
+		else if (resp.GetStatusCode() == StatusCode::NoContent) // 204 response for update message
 			return {};
 		else if (resp.GetStatusCode() == StatusCode::TooManyRequests || resp.GetStatusCode() == StatusCode::Conflict)
-		{	
-			std::wstring retry = resp.GetHeader(ToWideString(OBF("Retry-After")));
-			if (!retry.empty())
-			{
-				std::this_thread::sleep_for(std::chrono::seconds(std::stoi(retry)+1));
-			}
-			else
-				std::this_thread::sleep_for(Utils::GenerateRandomValue(10s, 20s));
+		{
+			std::this_thread::sleep_for(Utils::GenerateRandomValue(1s, 1s));
 		}
 		else
-			throw std::exception(OBF("[x] Non 200/201/429 HTTP Response\n"));
+		{
+			std::ostringstream oss;
+			oss << OBF("[x] Zoom Unknown HTTP Response for ") << path;
+			oss << OBF("Status Code: ") << static_cast<int>(resp.GetStatusCode()) << "\n";
+
+			// Append headers
+			oss << OBF("Headers:\n");
+			oss << "  " << WStringToString(resp.GetHeaders()) << "\n";
+
+			// Append body
+			oss << OBF("Body:\n") << std::string(resp.GetData());
+
+			throw std::runtime_error(oss.str());
+		}
 	}
 }
 
@@ -296,9 +301,9 @@ json FSecure::Zoom::GetJsonResponse(std::string const& url)
 
 std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& messageId)
 {
-	// Should get a 307 redirect from file.zoom.us to us04file.zoom.usendpoint which will automatically be followed
-	// Hardcode it here to improve speed
-	std::string url = OBF("https://us04file.zoom.us/v2/chat/users/me/messages/files");
+	// Should get a 307 redirect from file.zoom.us to us0#file.zoom.use ndpoint which will automatically be followed
+	// Hardcode it here to improve speed? May cause 400 errors?
+	std::string url = OBF("https://file.zoom.us/v2/chat/users/me/messages/files");
 
 	// Generating body
 	std::string boundary = OBF("------WebKitFormBoundary") + Utils::GenerateRandomString(16); // Mimicking WebKit, generate random boundary string
@@ -346,8 +351,47 @@ std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& messageI
 		}
 		else if (resp.GetStatusCode() == StatusCode::Forbidden || resp.GetStatusCode() == StatusCode::Unauthorized)
 			GetAccessToken(); // Refresh access token (1 hour lifetime)
+		else if (resp.GetStatusCode() == StatusCode::TooManyRequests || resp.GetStatusCode() == StatusCode::Conflict)
+			std::this_thread::sleep_for(Utils::GenerateRandomValue(1s, 2s));
+		else if (resp.GetStatusCode() == StatusCode::BadRequest)
+		{
+			auto errJson = json::parse(resp.GetData());
+			std::uint64_t errCode = errJson[OBF("code")].get<std::uint64_t>();
+			if (errCode == 124) // Invalid Access Token
+			{
+				GetAccessToken();
+			}
+			else
+			{
+				std::ostringstream oss;
+				oss << OBF("[x] Zoom Unknown HTTP Response for ") << url;
+				oss << OBF("Status Code: ") << static_cast<int>(resp.GetStatusCode()) << "\n";
+
+				// Append headers
+				oss << OBF("Headers:\n");
+				oss << "  " << WStringToString(resp.GetHeaders()) << "\n";
+
+				// Append body
+				oss << OBF("Body:\n") << std::string(resp.GetData());
+
+				throw std::runtime_error(oss.str());
+			}
+		}
 		else
-			throw std::exception(OBF("[x] Non 201 HTTP Response\n"));
+		{
+			std::ostringstream oss;
+			oss << OBF("[x] Zoom Unknown HTTP Response for ") << url;
+			oss << OBF("Status Code: ") << static_cast<int>(resp.GetStatusCode()) << "\n";
+
+			// Append headers
+			oss << OBF("Headers:\n");
+			oss << "  " << WStringToString(resp.GetHeaders()) << "\n";
+
+			// Append body
+			oss << OBF("Body:\n") << std::string(resp.GetData());
+
+			throw std::runtime_error(oss.str());
+		}
 	}
 }
 
@@ -362,7 +406,7 @@ std::string FSecure::Zoom::GetFile(std::string const& url)
 	auto resp = webClient.Request(request);
 
 	if (!resp.GetStatusCode() == StatusCode::OK)
-		throw std::exception(OBF("[x] Non 200 HTTP Response\n"));
+		throw std::exception(OBF("[x] Zoom Non 200 HTTP Response\n"));
 	else
 		return { resp.GetData().begin(), resp.GetData().end() };
 }
