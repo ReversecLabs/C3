@@ -50,6 +50,11 @@ namespace FSecure
 		/// @return - json of all messages
 		json GetAllMessages();
 
+		/// Retrieves the download URL for a file
+		/// @param id - file upload id
+		/// @return - download URL.
+		std::string GetFileInfo(std::string const& id);
+
 		/// Edit a previously sent message.
 		/// @param message - the message to update to, this will overwrite the previous message.
 		/// @param messageId - the id of the message to update.
@@ -63,8 +68,7 @@ namespace FSecure
 		/// Use Zoom's file API to upload data as files. This is useful when a payload is large (for example during implant staging).
 		/// This function is called internally whenever a WriteReply is called with a payload of more than 6k characters.
 		/// @param data - the data to be sent.
-		/// @param messageId - the message id, needed as this method is only used during WriteReply.
-		std::string UploadFile(ByteView data, std::string const& messageId);
+		std::string UploadFile(ByteView data, std::string const& filename);
 
 		/// Use Zoom's File API to retrieve files.
 		/// @param url - the url where the file can be retrieved.
@@ -72,8 +76,11 @@ namespace FSecure
 		std::string GetFile(std::string const& url);
 
 		/// Delete a message from the channel
-		/// @param timestamp - the timestamp of the message to delete.
+		/// @param messageId - the id of the message to delete.
 		void DeleteMessage(std::string const& messageId);
+
+		/// Delete a file from the channel
+		void DeleteFile(std::string const& fileId);
 
 		/// Delete entire channel
 		void DeleteChannel();

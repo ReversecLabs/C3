@@ -9,7 +9,6 @@ FSecure::C3::Interfaces::Channels::Zoom::Zoom(ByteView arguments)
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
 	auto [userAgent, accountId, clientId, clientSecret,  email, vanityDomain, channelName] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
-	 //userAgent, std::string const& client_id, std::string const& client_secret, std::string const& account_id, std::string const& email, std::string const& vanity_domain, std::string const& channelName)
 
 	m_ZoomObj = FSecure::Zoom{ userAgent, accountId, clientId, clientSecret, email, vanityDomain, channelName};
 }
@@ -17,24 +16,20 @@ FSecure::C3::Interfaces::Channels::Zoom::Zoom(ByteView arguments)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::Zoom::OnSendToChannel(ByteView data)
 {
-	//Using file upload API for staging i.e. data greater than 3 messages in size.
+	//Using file upload API for larger messages.
 	size_t actualPacketSize = 0;
-	if (data.size() > 1000)
+	size_t max_size = 4000 - m_outboundDirectionName.length() - 10;
+	if (data.size() > max_size)
 	{
-		std::string messageId = m_ZoomObj.WriteMessage(m_outboundDirectionName + OBF(":W"));
-		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(1024*1024*10); // 10MB - should be a 20MB limit;
+		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(1024*1024*10); // 10MB - should be a 20MB limit...
 		actualPacketSize = std::min(maxPacketSize, data.size());
 		auto sendData = data.SubString(0, actualPacketSize);
-		m_ZoomObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()), messageId);
-
-		//Update the original first message with "C2S||S2C:Done" - these messages will always be read in onRecieve.
-		std::string message = m_outboundDirectionName + OBF(":D");
-		m_ZoomObj.UpdateMessage(message, messageId);
+		std::string uploadId = m_ZoomObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()), m_outboundDirectionName + OBF(":D"));
 	}
 	else
 	{
 		//Write the full data into the thread.
-		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(1024);
+		auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(max_size);
 		actualPacketSize = std::min(maxPacketSize, data.size());
 		auto sendData = data.SubString(0, actualPacketSize);
 
@@ -50,7 +45,8 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Zoom::OnRece
 {
 	std::vector<FSecure::ByteVector> ret;
 	auto all_messages = m_ZoomObj.GetAllMessages();
-	auto direction_messages = GetMessagesByDirection(all_messages, m_inboundDirectionName + OBF(":D"));
+	std::string direction = m_inboundDirectionName + OBF(":D");
+	auto direction_messages = GetMessagesByDirection(all_messages, direction);
 
 	std::vector<std::string> deleteMessageIds;
 
@@ -62,46 +58,53 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Zoom::OnRece
 			if (m.contains(OBF("id"))) {
 				auto id = m[OBF("id")].get<std::string>();
 				if (id == *messageId) {
-					if (m.contains(OBF("message"))) {
-						std::string_view data = m[OBF("message")].get<std::string_view>();
-						std::string direction = m_inboundDirectionName + OBF(":D:");
-						std::string actual_data;
+					if (m.contains(OBF("file_name")))
+					{
+						std::string_view data = m[OBF("file_name")].get<std::string_view>();
+						std::string fileData;
 
 						if (
 							data.size() >= direction.size() &&
 							data.substr(0, direction.size()) == direction
 							)
 						{
-							// Split the message on : to get the third chunk - base64 message
-							size_t pos1 = data.find(':');
-							if (pos1 == std::string_view::npos)
-								break;
-
-							size_t pos2 = data.find(':', pos1 + 1);
-							if (pos2 == std::string_view::npos)
-								break;
-
-							size_t pos3 = data.find(':', pos2 + 1); // Optional: in case there are more parts
-							actual_data = data.substr(pos2 + 1, pos3 == std::string_view::npos ? std::string_view::npos : pos3 - pos2 - 1);
-							auto relayMsg = cppcodec::base64_rfc4648::decode(actual_data); //Base64 decode the entire message
+							std::string file_url = m[OBF("download_url")].get<std::string>();
+							fileData = m_ZoomObj.GetFile(file_url);
+							auto relayMsg = cppcodec::base64_rfc4648::decode(fileData);
 							ret.emplace_back(std::move(relayMsg));
+							std::string fileId = m[OBF("file_id")].get<std::string>();
+							m_ZoomObj.DeleteFile(fileId);
+						}
+					}
+					else
+					{
+						if (m.contains(OBF("message"))) {
+							std::string_view data = m[OBF("message")].get<std::string_view>();
+							std::string actual_data;
+
+							if (
+								data.size() >= direction.size() &&
+								data.substr(0, direction.size()) == direction
+								)
+							{
+								// Split the message on : to get the third chunk - base64 message
+								size_t pos1 = data.find(':');
+								if (pos1 == std::string_view::npos)
+									break;
+
+								size_t pos2 = data.find(':', pos1 + 1);
+								if (pos2 == std::string_view::npos)
+									break;
+
+								actual_data = data.substr(pos2 + 1);
+
+								auto relayMsg = cppcodec::base64_rfc4648::decode(actual_data);
+								ret.emplace_back(std::move(relayMsg));
+							}
 						}
 					}
 				}
 			}
-		}
-
-
-		//Get all of the messages sent as files in replies
-		auto replies = ReadReplies(all_messages, *messageId);
-
-		for (auto&& reply : replies)
-		{
-			std::string message;
-			message.append(reply.second);
-			deleteMessageIds.push_back(std::move(reply.first)); //get all of the ids for later deletion
-			auto relayMsg = cppcodec::base64_rfc4648::decode(message); //Base64 decode the entire message
-			ret.emplace_back(std::move(relayMsg));
 		}
 
 		deleteMessageIds.push_back(std::move(*messageId));
@@ -129,6 +132,21 @@ std::vector<std::string> FSecure::C3::Interfaces::Channels::Zoom::GetMessagesByD
 			)
 		{
 			direction_messages.emplace_back(m[OBF("id")].get<std::string>());
+		}
+		else
+		{
+			if (m.contains(OBF("file_name")))
+			{
+				std::string_view file_name = m[OBF("file_name")].get<std::string_view>();
+
+				if (
+					file_name.size() >= direction.size() &&
+					file_name.substr(0, direction.size()) == direction
+					)
+				{
+					direction_messages.emplace_back(m[OBF("id")].get<std::string>());
+				}
+			}
 		}
 	}
 	return direction_messages;
