@@ -184,6 +184,14 @@ json FSecure::Zoom::GetAllMessages()
 	return all_messages;
 }
 
+std::string FSecure::Zoom::GetFileInfo(std::string const& id)
+{
+	std::string path = OBF("/v2/chat/files") + id;
+	json response = GetJsonResponse(path);
+	std::string url = response[OBF("download_url")]; 
+	return url;
+}
+
 void FSecure::Zoom::UpdateMessage(std::string const& message, std::string const& messageId)
 {
 	std::string path = OBF("/v2/chat/users/me/messages/") + messageId;
@@ -193,6 +201,12 @@ void FSecure::Zoom::UpdateMessage(std::string const& message, std::string const&
 
 	std::string jsonString = j.dump();
 	SendHttpRequest(path, ContentType::ApplicationJson, { std::make_move_iterator(jsonString.begin()), std::make_move_iterator(jsonString.end()) }, Method::PUT);
+}
+
+void FSecure::Zoom::DeleteFile(std::string const& fileId)
+{
+	std::string path = OBF("/v2/chat/files/") + fileId;
+	SendHttpRequest(path, ContentType::ApplicationJson, {}, Method::DEL);
 }
 
 void FSecure::Zoom::DeleteMessage(std::string const& messageId)
@@ -211,7 +225,11 @@ void FSecure::Zoom::DeleteMessages(std::vector<std::string> const& replyIds)
 {
 	for (auto& id : replyIds)
 	{
-		DeleteMessage(id);
+		try
+		{
+			DeleteMessage(id);
+		}
+		catch (std::exception) {}
 	}
 }
 
@@ -265,15 +283,17 @@ FSecure::ByteVector FSecure::Zoom::SendHttpRequest(std::string const& path, std:
 		else
 		{
 			std::ostringstream oss;
-			oss << OBF("[x] Zoom Unknown HTTP Response for ") << path;
+			oss << OBF("[x] Zoom Unknown HTTP Response for ") << path << "\n";
 			oss << OBF("Status Code: ") << static_cast<int>(resp.GetStatusCode()) << "\n";
 
 			// Append headers
 			oss << OBF("Headers:\n");
 			oss << "  " << WStringToString(resp.GetHeaders()) << "\n";
 
+			auto errResp = json::parse(resp.GetData());
+
 			// Append body
-			oss << OBF("Body:\n") << std::string(resp.GetData());
+			oss << OBF("Code:\n") << errResp[OBF("code")].get<std::string>();
 
 			throw std::runtime_error(oss.str());
 		}
@@ -299,11 +319,12 @@ json FSecure::Zoom::GetJsonResponse(std::string const& url)
 	return resp;
 }
 
-std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& messageId)
+std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& filename)
 {
-	// Should get a 307 redirect from file.zoom.us to us0#file.zoom.use ndpoint which will automatically be followed
+	// Should get a 307 redirect from file.zoom.us to us04file.zoom.us endpoint which will automatically be followed
 	// Hardcode it here to improve speed? May cause 400 errors?
-	std::string url = OBF("https://file.zoom.us/v2/chat/users/me/messages/files");
+	std::string url = OBF("https://file.zoom.us/v2/chat/users/me/messages/files");  // Sends to a chat window
+	
 
 	// Generating body
 	std::string boundary = OBF("------WebKitFormBoundary") + Utils::GenerateRandomString(16); // Mimicking WebKit, generate random boundary string
@@ -316,11 +337,7 @@ std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& messageI
 	bodyPrefix += this->m_channelId;
 	bodyPrefix += OBF("\r\n");
 	bodyPrefix += OBF("--") + boundary + OBF("\r\n");
-	bodyPrefix += OBF("Content-Disposition: form-data; name=\"reply_main_message_id\"\r\n\r\n");
-	bodyPrefix += messageId;
-	bodyPrefix += OBF("\r\n");
-	bodyPrefix += OBF("--") + boundary + OBF("\r\n");
-	bodyPrefix += OBF("Content-Disposition: form-data; name=\"file\"; filename=\"file.txt\"\r\n");
+	bodyPrefix += OBF("Content-Disposition: form-data; name=\"file\"; filename=\"") + filename + OBF("\"\r\n");
 	bodyPrefix += OBF("Content-Type: application/octet-stream\r\n\r\n");
 
 	body.insert(body.begin(), bodyPrefix.begin(), bodyPrefix.end()); // Insert the prefix
@@ -394,6 +411,7 @@ std::string FSecure::Zoom::UploadFile(ByteView data, std::string const& messageI
 		}
 	}
 }
+
 
 std::string FSecure::Zoom::GetFile(std::string const& url)
 {
