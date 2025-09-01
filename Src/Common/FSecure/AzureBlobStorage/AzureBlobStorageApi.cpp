@@ -55,7 +55,7 @@ void FSecure::AzureBlobStorage::WriteMessageToFile(std::string const& direction,
 	{
 		std::string ts = std::to_string(FSecure::Utils::MillisecondsTimestamp());
 		filename = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
-		std::cout << ts;
+		//std::cout << ts;
 	}
 	else
 		filename = providedFilename;

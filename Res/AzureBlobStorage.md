@@ -22,3 +22,20 @@ It is important that the SAS token is configured correctly so that the C3 channe
 
 
 With these three parameters, you can create the Azure Blob Storage channel in the C3 web interface. C3 will create folders within your container to use as separate channels.
+
+
+### Shared Access Signature Format:
+
+The SAS is in the form of query parameters for a web request and starts with a date:
+
+```
+sv=202x-xx-xx&
+```
+
+### Testing
+
+Use the follow args with ChannelLinter: 
+
+```
+Bin\ChannelLinter_r64.exe -n AzureBlobStorage  -a "inputid" -a "outputid"  -a "SharedAccessSignature" -a "accountname" -a "containername"  -a "foldername" -i
+```

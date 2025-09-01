@@ -1,146 +1,3 @@
-<<<<<<< HEAD
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Beacon.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\AddrInfo.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\InitializeSockets.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Socket.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\AbstractService.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Pipe.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Proxy.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base64_default_rfc4648.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CppRestSdk\include\cpprest\http_client.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Beacon.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\AutomaticRegistrator.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\BackendCommons.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Sdk.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Hash.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Payload.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ScopeGuard.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\XError.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Base32.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Base64.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Crypto.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\EncryptionKey.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Nonce.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\AddrInfo.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\InitializeSockets.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Socket.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\SocketsException.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\AbstractService.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Pipe.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Proxy.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\PrecompiledHeader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\UniqueHandle.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\XError.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Sockets.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.hxx" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\SafeSmartPointerContainer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\Indexes.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\Inline.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\MetaRandom.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\MetaString.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\SecureString.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)C3_BUILD_VERSION_HASH_PART.hxx" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Utils.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\OneDrive365RestFile.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Outlook365RestTask.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sql\Sql.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\WindowsVersion.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Config.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Constants.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpRequest.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Uri.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\WebProxy.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Office365.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Asana.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml-1.13\rapidxml.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.h" />
-  </ItemGroup>
-=======
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
@@ -199,6 +56,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -295,6 +154,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\EwsTask.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Dropbox.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.h" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="$(MSBuildThisFileDirectory)FSecure\WinTools\syscalls.asm" />
@@ -315,5 +176,4 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.h" />
   </ItemGroup>
->>>>>>> InternalMaster
 </Project>
