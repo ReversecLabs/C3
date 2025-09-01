@@ -23,10 +23,10 @@ size_t FSecure::C3::Interfaces::Channels::Zoom::OnSendToChannel(ByteView data)
 	auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(max_size);
 	if (data.size() > maxPacketSize)
 	{
-		auto maxFileSize = cppcodec::base64_rfc4648::decoded_max_size(1024*1024*19); // 19MB - should be a 20MB limit...
+		size_t maxFileSize = 1024*1024*19; // 19MB - should be a 20MB limit...
 		actualPacketSize = std::min(maxFileSize, data.size());
 		auto sendData = data.SubString(0, actualPacketSize);
-		std::string uploadId = m_ZoomObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()), m_outboundDirectionName + OBF(":D"));
+		std::string uploadId = m_ZoomObj.UploadFile(sendData, m_outboundDirectionName + OBF(":D"));
 	}
 	else
 	{
@@ -71,7 +71,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Zoom::OnRece
 						{
 							std::string file_url = m[OBF("download_url")].get<std::string>();
 							fileData = m_ZoomObj.GetFile(file_url);
-							auto relayMsg = cppcodec::base64_rfc4648::decode(fileData);
+							FSecure::ByteVector relayMsg{ fileData.begin(), fileData.end() };
 							ret.emplace_back(std::move(relayMsg));
 							std::string fileId = m[OBF("file_id")].get<std::string>();
 							m_ZoomObj.DeleteFile(fileId);
