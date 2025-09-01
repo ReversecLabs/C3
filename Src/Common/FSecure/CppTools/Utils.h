@@ -129,6 +129,12 @@ namespace FSecure::Utils
 		return static_cast<int32_t>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count());
 	}
 
+	/// @brief milliseconds precision timestamp (_not_ the number of milliseconds since UNiX epoch)
+	inline uint64_t MillisecondsTimestamp()
+	{
+		return static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).time_since_epoch().count());
+	}
+
 	/// Alias for float based seconds
 	using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
 
