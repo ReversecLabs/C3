@@ -58,3 +58,12 @@
 
 ![](UsageImages/servicebus4.png)
 
+# Testing
+
+Ensure to escape % symbols in the SAS with %%.
+
+Using the linter:
+
+```
+Bin\ChannelLinter_d64.exe -n AzureServiceBus  -a "inputid" -a "outputid" -a "useragent" -a "SharedAccessSignature" -a "c3servicebus" -a "ordernameprefix"  -a "messagelabel" -i
+```
