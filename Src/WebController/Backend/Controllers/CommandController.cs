@@ -88,6 +88,41 @@ namespace FSecure.C3.WebController.Controllers
             }
         }
 
+        // This is not perfect, but allows relay/command api (defined by relay capability) to affect relay data in controller db
+        async void RelayAddNote(HexId gatewayId, HexId relayId, Command command)
+        {
+            try 
+            {
+                // Id check should be enough, but check also name command for sanity.
+                // Magic number is from enum Rename = static_cast<std::uint16_t>(-8).
+                if ((int) command.Data["id"] != 65528 || (string) command.Data["command"] != "Rename")
+                    return;
+
+                if (context.Relays.Where(r => r.GatewayAgentId == gatewayId.Value).Count(r => r.AgentId == relayId.Value) != 1)
+                    throw new InvalidOperationException();
+
+                var name = command.Data["arguments"].FirstOrDefault(n => (string) n["name"] == "Name")["value"];
+                if (name == null)
+                    throw new InvalidOperationException();
+
+                var note = context.Notes.FirstOrDefault(n => n.AgentId == relayId.Value);
+                if (note != null)
+                    note.DisplayName = (string) name;
+                else
+                    context.Add(new Note
+                    {
+                        AgentId = relayId.Value,
+                        DisplayName = (string) name,
+                    });
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+        }
+
         [HttpPost("relay/{relayId}/command")]
         public async Task<IActionResult> AddRelayCommand([FromRoute] HexId gatewayId, [FromRoute] HexId relayId, [FromBody] Command command)
         {
@@ -99,6 +134,8 @@ namespace FSecure.C3.WebController.Controllers
 
             try
             {
+                RelayAddNote(gatewayId, relayId, command);
+
                 await helper.AddRelayCommand(command, gatewayId, relayId);
                 return CreatedAtAction(nameof(Get), new { gatewayId, commandId = command.Id }, command);
             }
