@@ -18,18 +18,19 @@ size_t FSecure::C3::Interfaces::Channels::Zoom::OnSendToChannel(ByteView data)
 {
 	//Using file upload API for larger messages.
 	size_t actualPacketSize = 0;
-	size_t max_size = 4000 - m_outboundDirectionName.length() - 10;
-	if (data.size() > max_size)
+	// Max message size 4000 chars - outboundName - ':D:' 
+	size_t max_size = 4000 - m_outboundDirectionName.length() - 3;
+	auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(max_size);
+	if (data.size() > maxPacketSize)
 	{
-		constexpr auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(1024*1024*10); // 10MB - should be a 20MB limit...
-		actualPacketSize = std::min(maxPacketSize, data.size());
+		auto maxFileSize = cppcodec::base64_rfc4648::decoded_max_size(1024*1024*19); // 19MB - should be a 20MB limit...
+		actualPacketSize = std::min(maxFileSize, data.size());
 		auto sendData = data.SubString(0, actualPacketSize);
 		std::string uploadId = m_ZoomObj.UploadFile(cppcodec::base64_rfc4648::encode<ByteVector>(sendData.data(), sendData.size()), m_outboundDirectionName + OBF(":D"));
 	}
 	else
 	{
 		//Write the full data into the thread.
-		auto maxPacketSize = cppcodec::base64_rfc4648::decoded_max_size(max_size);
 		actualPacketSize = std::min(maxPacketSize, data.size());
 		auto sendData = data.SubString(0, actualPacketSize);
 
