@@ -199,7 +199,7 @@ FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read()
 {
-	// Wait other side to read the pipe.
+	// Ensure we have written to the pipe before we try to read
 	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
 		return{};
 
