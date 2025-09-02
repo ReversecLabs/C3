@@ -49,50 +49,45 @@ FSecure::C3::Interfaces::Peripherals::Beacon::~Beacon()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::Interfaces::Peripherals::Beacon::OnCommandFromConnector(ByteView data)
 {
-	// Get access to write when whole reed is done.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
+	m_SendQueue.emplace_back(data);
 
 	if (m_Close)
 		return;
-
-	// Write
-	m_Pipe->Write(data);
-
-	// Unlock, and block writing until read is done.
-	m_ReadingState = true;
-	lock.unlock();
-	m_ConditionalVariable.notify_one();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Beacon expects fairly synchronous traffic. A command comes from external C2, over the C2 mechanism, and should be received by the Beacon. It then waits to receive the data before sending another command.
+/// If no data is received it sends a NoOp (0x00), and the Beacon responds with a NoOp if no data is to  be sent. This would flood many C2 mechanisms with unrequired messages
+/// So we have a fairly complicated state machine. When we send a Command we enter read mode and wait for all the data to be received followed by a NoOp from the beacon.
+/// We then enter Idle mode, which is our hack to spoof NoOp messages between the Beacon and the Relay agent so it can capture any slow data not tied to a specific command (e.g. socks proxy data)
+/// I still think we hit deadlocks/delays with the locks/state machine changes.
+/// I'm not exactly sure how Beacon sends data back from a long running process
+/// Downloads seem to break the flow a bit - and cause the connection to slow down, probably because its trapped in some of the waits?
 FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Beacon::OnReceiveFromPeripheral()
 {
-	// Get Access to reed after normal write.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
-
 	if (m_Close)
 		return {};
 
-	// Read
+	// No Commands to Send
+	if (m_SendQueue.empty())
+	{
+		// Send a NoOp to get any data that it is ready to send
+		m_SendQueue.emplace_back("\0"_bv);
+	}
+
+	auto msg = std::move(m_SendQueue.front());
+	m_SendQueue.pop_front();
+	m_Pipe->Write(msg);
 	auto ret = m_Pipe->Read();
 
+	// Dont transfer NoOps over the C2
 	if (IsNoOp(ret))
-	{
-		// Unlock, and block reading until write is done.
-		m_ReadingState = false;
-		lock.unlock();
-		m_ConditionalVariable.notify_one();
-	}
-	else
-	{
-		// Continue in read mode. Send no-op to beacon to get next chunk of data.
-		m_Pipe->Write("\0"_bv);
-	}
+		return {};
 
-	return  ret;
+	return ret;
 }
+
+
 
 bool FSecure::C3::Interfaces::Peripherals::Beacon::IsNoOp(ByteView data)
 {
@@ -145,9 +140,7 @@ const char* FSecure::C3::Interfaces::Peripherals::Beacon::GetCapability()
 void FSecure::C3::Interfaces::Peripherals::Beacon::Close()
 {
 	FSecure::C3::Device::Close();
-	std::scoped_lock lock(m_Mutex);
 	m_Close = true;
-	m_ConditionalVariable.notify_one();
 }
 
 // Custom payload is removed from release.
