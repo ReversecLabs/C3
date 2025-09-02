@@ -129,9 +129,7 @@ const char* FSecure::C3::Interfaces::Peripherals::Beacon::GetCapability()
 void FSecure::C3::Interfaces::Peripherals::Beacon::Close()
 {
 	FSecure::C3::Device::Close();
-	std::scoped_lock lock(m_Mutex);
 	m_Close = true;
-	m_ConditionalVariable.notify_one();
 }
 
 // Custom payload is removed from release.
