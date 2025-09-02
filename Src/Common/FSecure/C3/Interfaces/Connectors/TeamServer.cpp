@@ -373,15 +373,14 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 
 		while (bridge->IsAlive() && self.use_count() > 1)
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
 			try
 			{
 				// Read packet and post it to Binder.
 				if (auto packet = Receive(); !packet.empty())
 				{
-
 					// Don't forward NoOps over C3
 					if (packet.size() == 1u && packet[0] == 0u)
-						Send(packet);
 					{
 						if (m_RecvQueue.empty())
 							Send("\0"_bv);
@@ -404,9 +403,10 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 			}
 			catch (std::exception& e)
 			{
-				bridge->Log({ e.what(), LogMessage::Severity::Error});
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
 			}
 		}
+
 	}).detach();
 }
 
