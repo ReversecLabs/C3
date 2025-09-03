@@ -330,7 +330,8 @@ void FSecure::C3::Core::Profiler::RestoreFromSnapshot()
 				auto connectionId = ByteVector::Create(RouteId{ route->m_RouteId.GetAgentId(),  DeviceId{ peripheral["iId"].get<std::string>() } });
 				readView.remove_prefix(sizeof(uint16_t)); // remove command id
 				connector->PeripheralCreationCommand(connectionId, readView); // throw away the response.
-				connector->OnCommandFromBinder(connectionId, base64::decode<ByteVector>(peripheral["startupCommand"]["FirstResponse"].get<std::string>()));
+				if (peripheral["startupCommand"].contains("FirstResponse"))
+					connector->OnCommandFromBinder(connectionId, base64::decode<ByteVector>(peripheral["startupCommand"]["FirstResponse"].get<std::string>()));
 			}
 		}
 	}
