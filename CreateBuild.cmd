@@ -81,7 +81,7 @@ COPY "Res\\GatewayConfiguration.json" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bi
 ECHO.
 ECHO Building WebController...
 IF EXIST "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController" (RMDIR /s /q "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController") || GOTO :ERROR
-dotnet publish -c Release "Src\\WebController\\Backend" || GOTO :ERROR
+dotnet publish -p:Platform=any -c Release "Src\\WebController\\Backend" || GOTO :ERROR
 XCOPY /s /q "Src\\WebController\\Backend\\bin\\x64\\Release\\netcoreapp3.1\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
 
 ECHO.
