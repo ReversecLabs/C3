@@ -48,19 +48,12 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Must contain object if constructor call was successful.
 		std::optional<WinTools::AlternatingPipe> m_Pipe;
 
-		/// Used to synchronize access to underlying implant.
-		std::mutex m_Mutex;
-
-		/// Used to synchronize read/write.
-		std::condition_variable m_ConditionalVariable;
-
-		/// Used to support beacon chunking data.
-		bool m_ReadingState = true;
-
+		std::deque<ByteVector> m_SendQueue;
+		
 		/// Used to exit
 		bool m_Close = false;
 
-		/// A handle to a beacon thread
-		HANDLE m_BeaconThread = INVALID_HANDLE_VALUE;
+		/// Used to get a handle to the beacon thread
+		FSecure::WinTools::InjectionBuffer m_Beacon;
 	};
 }

@@ -31,6 +31,9 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | EWS Tasks               |             |
 | OneDrive 365 Rest File  |             |
 | OneDrive 365 Rest Task  |             |
+| Zoom Chat API           |             |
+| TCP                     |             |
+| Azure Service Bus       |             |
 
 ### Internal Channels
 
