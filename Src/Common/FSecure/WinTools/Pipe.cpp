@@ -157,7 +157,7 @@ FSecure::WinTools::AlternatingPipe::AlternatingPipe(ByteView pipename)
 	, m_Event(CreateEvent(nullptr, false, true, nullptr))
 {
 	if (!m_Pipe)
-		throw std::runtime_error{ OBF("Couldn't open named") };
+		throw std::runtime_error{ OBF("Couldn't open named pipe") };
 
 	if (!m_Event)
 		throw std::runtime_error{ OBF("Couldn't create synchronization event") };
