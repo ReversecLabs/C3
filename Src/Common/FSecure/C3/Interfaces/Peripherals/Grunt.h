@@ -24,6 +24,9 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// @param arguments view of arguments prepared by Connector.
 		Grunt(ByteView arguments);
 
+		/// Destructor
+		virtual ~Grunt();
+
 		/// Sending callback implementation.
 		/// @param packet to send to the Implant.
 		void OnCommandFromConnector(ByteView packet) override;
@@ -57,6 +60,9 @@ namespace FSecure::C3::Interfaces::Peripherals
 		bool m_ReadingState = true;
 
 		bool m_Close = false;
+
+		/// Used to get a handle to the beacon thread
+		FSecure::WinTools::InjectionBuffer m_Grunt;
 	};
 }
 #endif
