@@ -658,9 +658,7 @@ bool FSecure::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStar
 
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, delay, jitter, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls] = data.Read<std::string, uint16_t, uint16_t, uint16_t, uint16_t, bool>();
-
-
+	auto [pipeName, delay, jitter, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls] = data.Read<std::string, uint32_t, uint32_t, uint16_t, uint16_t, bool>();
 	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, delay, jitter, maxConnectionAttempts, isX64));
 }
 

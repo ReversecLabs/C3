@@ -22,6 +22,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 
 	// Connect to our Beacon named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
+	{
 		try
 		{
 			m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
@@ -33,6 +34,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 			Log({ OBF_SEC("Beacon constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
 			std::this_thread::sleep_for(std::chrono::milliseconds{ delayBetweenConnectionTrials });
 		}
+	}
 
 	// Throw a time-out exception.
 	throw std::runtime_error{OBF("Beacon creation failed")};

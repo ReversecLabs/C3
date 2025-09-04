@@ -22,16 +22,18 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 
 	// Connect to our Beacon named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
+	{
 		try
-	{
-		m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
-		return;
-	}
-	catch (std::exception& e)
-	{
-		// Sleep between trials.
-		Log({ OBF_SEC("Grunt constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
-		std::this_thread::sleep_for(std::chrono::milliseconds{ delayBetweenConnectionTrials });
+		{
+			m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
+			return;
+		}
+		catch (std::exception& e)
+		{
+			// Sleep between trials.
+			Log({ OBF_SEC("Grunt constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
+			std::this_thread::sleep_for(std::chrono::milliseconds{ delayBetweenConnectionTrials });
+		}
 	}
 
 	// Throw a time-out exception.
@@ -125,7 +127,7 @@ FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
 				"type": "int16",
 				"min": 1,
 				"defaultValue" : 10,
-				"name": "Connection tries",
+				"name": "Connection attempts",
 				"description": "Number of connection tries before marking whole staging process unsuccessful."
 			},
 			{
