@@ -32,6 +32,8 @@ namespace FSecure.C3.WebController.Migrations
 
                     b.Property<int>("Timestamp");
 
+                    b.Property<int>("InitialTimestamp");
+
                     b.HasKey("AgentId");
 
                     b.HasIndex("BuildId");
