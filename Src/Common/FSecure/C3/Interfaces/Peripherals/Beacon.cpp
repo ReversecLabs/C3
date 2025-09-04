@@ -6,13 +6,13 @@ using namespace FSecure::Literals;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 {
-	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials, useSyscalls, payload] = arguments.Read<std::string, uint16_t, uint16_t, bool, ByteView>();
+	auto [pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, payload] = arguments.Read<std::string, uint16_t, uint16_t, bool, ByteView>();
 
 	// Arguments validation.
 	if (payload.empty())
 		throw std::invalid_argument(OBF("There was no payload provided."));
 
-	if (!maxConnectionTrials)
+	if (!maxConnectionAttempts)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
 	// Store a handle to the beacon object for later use
@@ -21,7 +21,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
 
 	// Connect to our Beacon named Pipe.
-	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionTrials; ++connectionTrial)
+	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
 		try
 		{
 			m_Pipe = WinTools::AlternatingPipe{ ByteView{ pipeName } };
