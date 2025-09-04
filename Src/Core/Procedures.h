@@ -130,12 +130,13 @@ namespace FSecure::C3::Core
 			/// @param gatewayEncryptionKey key used to encrypt package. Only gateway will be able to decrypt package.
 			/// @param agentsPublicEncryptionKey gateway will use this key to send encrypted messages to relay.
 			/// @param grcHash hash identifying type of first interface.
+			/// @param timestamp time of firstMessage??
 			/// @param timestamp time of generating message.
 			/// @param responseType inform if recipient if response is required.
-			static std::unique_ptr<InitializeRouteQuery> Create(RouteId sendersRid, BuildId buildId, Crypto::PublicKey gatewayEncryptionKey, Crypto::PublicKey agentsPublicEncryptionKey, HashT grcHash, int32_t timestamp, ResponseType responseType = ResponseType::None)
+			static std::unique_ptr<InitializeRouteQuery> Create(RouteId sendersRid, BuildId buildId, Crypto::PublicKey gatewayEncryptionKey, Crypto::PublicKey agentsPublicEncryptionKey, HashT grcHash, int32_t firstSeen, int32_t lastSeen, ResponseType responseType = ResponseType::None)
 			{
 				auto query = std::make_unique<InitializeRouteQuery>(sendersRid, responseType);
-				query->m_QueryPacketBody = Crypto::EncryptAnonymously(ByteVector::Create(buildId, agentsPublicEncryptionKey.ToByteVector(), grcHash, timestamp, HostInfo::Gather()), gatewayEncryptionKey);
+				query->m_QueryPacketBody = Crypto::EncryptAnonymously(ByteVector::Create(buildId, agentsPublicEncryptionKey.ToByteVector(), grcHash, firstSeen, lastSeen, HostInfo::Gather()), gatewayEncryptionKey);
 				return query;
 			}
 

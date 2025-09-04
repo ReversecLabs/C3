@@ -295,6 +295,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 	// todo prepending fixed-size key with 4 byte length is unnecessary, (remember to change writing, not only reading)
 	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
+	auto firstSeen = readView.Read<int32_t>();
 	auto lastSeen = readView.Read<int32_t>();
 	auto hostInfo = readView.Read<HostInfo>();
 
@@ -305,7 +306,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 	auto const& returnChannelRoute = query.GetSenderRouteId();
 	this->AddRoute(returnChannelRoute, receivedFrom);
 	m_Profiler->Get().m_Gateway.ReAddRoute(returnChannelRoute, receivedFrom->GetDid(), true);
-	m_Profiler->Get().m_Gateway.ReAddAgent(returnChannelRoute.GetAgentId(), newRelayBuildId, newRelayPublicKey, false, lastSeen, std::move(hostInfo)); // TODO check if is banned
+	m_Profiler->Get().m_Gateway.ReAddAgent(returnChannelRoute.GetAgentId(), newRelayBuildId, newRelayPublicKey, false, firstSeen, lastSeen, std::move(hostInfo)); // TODO check if is banned
 	m_Profiler->Get().m_Gateway.m_Agents.Find(returnChannelRoute.GetAgentId())->ReAddChannel(returnChannelRoute.GetInterfaceId(), hash, true);
 	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ GetAgentId(), receivedFrom->GetDid() });
 }
@@ -327,6 +328,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 	auto newRelayBuildId = BuildId{ readView.Read<BuildId::UnderlyingIntegerType>() }; // todo blocking
 	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
+	auto firstSeen = readView.Read<int32_t>();
 	auto lastSeen = readView.Read<int32_t>();
 	auto hostInfo= readView.Read<HostInfo>();
 
@@ -338,7 +340,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 	AddRoute(childRid, receivedFrom);
 
 	//update profiler
-	m_Profiler->Get().m_Gateway.ReAddRemoteAgent(childRid, newRelayBuildId, newRelayPublicKey, RouteId{ parentRid.GetAgentId(), childSideDid }, hash, lastSeen, hostInfo);
+	m_Profiler->Get().m_Gateway.ReAddRemoteAgent(childRid, newRelayBuildId, newRelayPublicKey, RouteId{ parentRid.GetAgentId(), childSideDid }, hash, firstSeen, lastSeen, hostInfo);
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(parentRid.GetAgentId(), timestamp);
 	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ parentRid.GetAgentId(), childSideDid });
 
