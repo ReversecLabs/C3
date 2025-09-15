@@ -18,7 +18,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	// Store a handle to the beacon object for later use
 	m_Beacon = WinTools::InjectionBuffer(payload, useSyscalls);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
+	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give beacon thread time to start pipe.
 
 	// Connect to our Beacon named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
