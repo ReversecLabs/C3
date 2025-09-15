@@ -1,3 +1,11 @@
+To integrate with the latest Covenant version a 1-line modification to the Covenant source code is required:
+
+
+```
+ # Model/Launcher/ShellCodeLauncher.cs:50
+ this.LauncherString = Convert.ToBase64String(File.ReadAllBytes(outputf));//template.Name + ".bin";
+ ```
+
 This section demonstrates how to use the new integration of the Covenant C2 framework. The process is described below. These steps assuming an instance of Covenant is running. Users are also required to download and compile the C2Bridge project.
 
 1. Select a running gateway, open its command centre and select TurnOnConnectorCovenant.
