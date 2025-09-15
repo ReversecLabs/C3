@@ -9,7 +9,7 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	if (payload.empty())
 		throw std::invalid_argument(OBF("There was no payload provided."));
 
-	if (!connectAttempts)
+	if (pipeName.empty() || !connectAttempts)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
 	// Originally we were setting up the CLR for our .NET assembly, now we're using donut'd shellcode
