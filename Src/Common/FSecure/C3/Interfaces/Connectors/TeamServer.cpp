@@ -83,7 +83,6 @@ namespace FSecure::C3::Interfaces::Connectors
 
 			/// Indicates that receiving thread was already started.
 			bool m_SecondThreadStarted = false;
-
 		};
 
 		/// Retrieves beacon payload from Team Server.
@@ -157,7 +156,6 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::OnCommandFromBinder(ByteVi
 		// After thread has started use the queue
 		it->second->m_RecvQueue.emplace_back(command);
 	}
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,7 +406,6 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 				bridge->Log({ e.what(), LogMessage::Severity::Error });
 			}
 		}
-
 	}).detach();
 }
 
