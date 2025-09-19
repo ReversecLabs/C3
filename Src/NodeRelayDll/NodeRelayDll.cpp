@@ -9,7 +9,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD, LPVOID)
 
 /// Starts a NodeRelay.
 /// @param leaveImmediately if false then waits for Relay to be shut down internally by a C3 API Command.
-extern "C" __declspec(dllexport) void StartNodeRelay()
+extern "C" __declspec(dllexport) void ListVersionEx()
 {
 	FSecure::WinTools::StructuredExceptionHandling::SehWrapper(
 	[]()

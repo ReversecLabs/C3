@@ -19,11 +19,11 @@ Prior to using Mattermost API within C3, the steps below must be followed.
 1. Install or locate Mattermost server to use.
 2. Create an account and either join to a Team or create a new one. Save that Team's name somewhere, as its going to be needed later on.
 
-![](MattermostImages/1.png)
+![](../Images/MattermostRelayGuide/1.png)
 
 3. Generate Personal Access Token clicking on your _user name -> Account Settings -> Security -> Personal Access Tokens_
 
-![](MattermostImages/2.png)
+![](../Images/MattermostRelayGuide/2.png)
 
 3. Insert the generated Personal Access Token to C3 channel.
 
@@ -36,7 +36,7 @@ _System Console -> Integrations -> Integration Management -> Enable Personal Acc
 
 (URL: `/admin_console/integrations/integration_management`)
 
-![](MattermostImages/3.png)
+![](../Images/MattermostRelayGuide/3.png)
 
 
 ## Channel creation
@@ -51,7 +51,7 @@ Now, to actually create your channel you will need following parameters to get s
 
 4. **Username** - Username (or `user_id`, also acquired from authenticated session cookie named `MMUSERID`) of the user associated with that access token.
 
-![](MattermostImages/4.png)
+![](../Images/MattermostRelayGuide/4.png)
 
 
 ### Remarks
@@ -60,7 +60,7 @@ Some Mattermost deployments use Single-Sign On functionality to authenticate to 
 
 You'll find your temporary _Personal Access Token_ stored in a cookie named `MMAUTHTOKEN`, whereas your user's ID will be stored in `MMUSERID` cookie (however Username should be sufficient to setup this channel correctly).
 
-![](MattermostImages/6.png)
+![](../Images/MattermostRelayGuide/6.png)
 
 The username is required to setup the channel properly, as sometimes there are Mattermost teams that are visible only to the specific user (the not global ones). If user created his own Team, he might be unable to find it using typical Mattermost APIs, and a different API would need to be called requiring user's ID. That case is handled by this version of the C3 Mattermost channel, provided the username is non-empty.
 
@@ -99,7 +99,7 @@ mattermost-docker/ $ sudo docker-compose restart
 
 After that you'll be free to issue `Set UpdateDelayJitter` command on your C3 Channel with values of your choosal.
 
-![](MattermostImages/5.png)
+![](../Images/MattermostRelayGuide/5.png)
 
 
 ## Performance

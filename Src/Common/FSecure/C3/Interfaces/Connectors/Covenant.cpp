@@ -628,27 +628,29 @@ void FSecure::C3::Interfaces::Connectors::Covenant::Connection::StartUpdatingInS
 {
 	m_SecondThreadStarted = true;
 	std::thread([this]()
+	{
+		// Lock pointers.
+		auto owner = m_Owner.lock();
+		auto bridge = owner->GetBridge();
+		auto self = shared_from_this();
+
+		while (bridge->IsAlive() && self.use_count() > 1)
 		{
-			// Lock pointers.
-			auto owner = m_Owner.lock();
-			auto bridge = owner->GetBridge();
-			auto self = shared_from_this();
-			while (bridge->IsAlive() && self.use_count() > 1)
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+			try
 			{
-				try
+				// Read packet and post it to Binder.
+				if (auto packet = Receive(); !packet.empty())
 				{
-					// Read packet and post it to Binder.
-					if (auto packet = Receive(); !packet.empty())
-					{
-						bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
-					}
-				}
-				catch (std::exception& e)
-				{
-					bridge->Log({ e.what(), LogMessage::Severity::Error });
+					bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
 				}
 			}
-		}).detach();
+			catch (std::exception& e)
+			{
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
+			}
+		}
+	}).detach();
 }
 
 bool FSecure::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStarted()
@@ -658,10 +660,8 @@ bool FSecure::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStar
 
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t>();
-
-
-	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, connectAttempts, isX64), connectAttempts);
+	auto [pipeName, delay, jitter, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls] = data.Read<std::string, uint32_t, uint32_t, uint16_t, uint16_t, bool>();
+	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, delay, jitter, maxConnectionAttempts, isX64));
 }
 
 

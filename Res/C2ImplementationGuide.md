@@ -22,7 +22,7 @@ Finally, for ease of integration it helps if the chosen framework provides acces
 
 At a high level, the objective of integration would result in the communication flow described in the figure below:
 
-<img src="./ContributionGuide/figure1.png"/>
+![](./Images/C2ImplementationGuide/01.png)
 
 
 
@@ -137,7 +137,7 @@ FSecure::ByteView FSecure::C3::Interfaces::Connectors::Covenant::GetCapability()
 ```
 The resulting form is shown in the next figure. Note that no changes were made to the actual web interface of C3.
 
-<img src="./UsageImages/figure1.png" />
+![](./Images/AttachingCovenantGrunt/figure1.png)
 
 **Stage 2 - Handle User Input**
 
@@ -258,7 +258,7 @@ The second step involves parsing the user supplied data and then fudging a reque
 		request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/x-www-form-urlencoded")));
 
 		std::string authHeader = OBF("Bearer ") + this->m_token;
-		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
 		std::string createBridgeString = "Id=0&GUID=b85ea642f2&ListenerTypeId=2&Status=Active&CovenantToken=&Description=A+Bridge+for+custom+listeners.&Name=C3Bridge&BindAddress=0.0.0.0&BindPort=" + \
 			std::to_string(this->m_ListeningPostPort) + "&ConnectPort=" + std::to_string(this->m_ListeningPostPort) + "&ConnectAddresses%5B0%5D=" + \
@@ -349,7 +349,7 @@ if (binderId.empty() || pipename.empty())
 		request.headers().set_content_type(utility::conversions::to_string_t("application/json"));
 		request.set_body(utility::conversions::to_string_t(postData.dump()));
 
-		request.headers().add(OBF_W(L"Authorization"), utility::conversions::to_string_t(authHeader));
+		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 		pplx::task<web::http::http_response> task = webClient.request(request);
 		web::http::http_response resp = task.get();
 
