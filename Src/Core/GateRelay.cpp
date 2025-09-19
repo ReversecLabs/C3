@@ -305,8 +305,11 @@ void FSecure::C3::Core::GateRelay::On(ProceduresN2N::InitializeRouteQuery query)
 	auto const& returnChannelRoute = query.GetSenderRouteId();
 	this->AddRoute(returnChannelRoute, receivedFrom);
 	m_Profiler->Get().m_Gateway.ReAddRoute(returnChannelRoute, receivedFrom->GetDid(), true);
-	m_Profiler->Get().m_Gateway.ReAddAgent(returnChannelRoute.GetAgentId(), newRelayBuildId, newRelayPublicKey, false, lastSeen, std::move(hostInfo)); // TODO check if is banned
-	m_Profiler->Get().m_Gateway.m_Agents.Find(returnChannelRoute.GetAgentId())->ReAddChannel(returnChannelRoute.GetInterfaceId(), hash, true);
+
+	auto agentId = returnChannelRoute.GetAgentId();
+	Log({ OBF("N2N Agent addded. Hostname:") + hostInfo.m_ComputerName + OBF(", UserName:") + hostInfo.m_UserName + OBF(", PID:") + std::to_string(hostInfo.m_ProcessId) + OBF(", AgentID:") + agentId.ToString() , LogMessage::Severity::Information});
+	m_Profiler->Get().m_Gateway.ReAddAgent(agentId, newRelayBuildId, newRelayPublicKey, false, lastSeen, std::move(hostInfo)); // TODO check if is banned
+	m_Profiler->Get().m_Gateway.m_Agents.Find(agentId)->ReAddChannel(returnChannelRoute.GetInterfaceId(), hash, true);
 	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ GetAgentId(), receivedFrom->GetDid() });
 }
 
@@ -328,7 +331,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 	auto newRelayPublicKey = Crypto::PublicKey{ readView.Read<ByteView>() };
 	auto hash = readView.Read<HashT>();
 	auto lastSeen = readView.Read<int32_t>();
-	auto hostInfo= readView.Read<HostInfo>();
+	auto hostInfo = readView.Read<HostInfo>();
 
 	auto receivedFrom = query.GetSenderChannel().lock();
 	if (!receivedFrom)
@@ -338,6 +341,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::InitializeRouteQuery query)
 	AddRoute(childRid, receivedFrom);
 
 	//update profiler
+	Log({ OBF("N2N Agent addded. Hostname:") + hostInfo.m_ComputerName + OBF(", UserName:") + hostInfo.m_UserName + OBF(", PID:") + std::to_string(hostInfo.m_ProcessId) + OBF(", AgentID:") + childRid.ToString() , LogMessage::Severity::Information });
 	m_Profiler->Get().m_Gateway.ReAddRemoteAgent(childRid, newRelayBuildId, newRelayPublicKey, RouteId{ parentRid.GetAgentId(), childSideDid }, hash, lastSeen, hostInfo);
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(parentRid.GetAgentId(), timestamp);
 	m_Profiler->Get().m_Gateway.ConditionalUpdateChannelParameters({ parentRid.GetAgentId(), childSideDid });
