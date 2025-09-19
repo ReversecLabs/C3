@@ -92,13 +92,13 @@ namespace std
 		auto& _My_data = _Mypair._Myval2;
 #elif _MSC_VER >= 1910 // v141 toolset
 		auto& _My_data = this->_Get_data();
-#elif
+#else
 #error Unsupported toolset
 #endif
 
 #if defined(__clang__)
 		if (!_My_data._Large_mode_engaged())
-#elif
+#else
 		if (!_My_data._Large_string_engaged())
 #endif
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
@@ -117,13 +117,13 @@ namespace std
 		auto& _My_data = _Mypair._Myval2;
 #elif _MSC_VER >= 1910 // v141 toolset
 		auto& _My_data = this->_Get_data();
-#elif
+#else
 #error Unsupported toolset
 #endif
 
 #if defined(__clang__)
 		if (!_My_data._Large_mode_engaged())
-#elif
+#else
 		if (!_My_data._Large_string_engaged())
 #endif
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
