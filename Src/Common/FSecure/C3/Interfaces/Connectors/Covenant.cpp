@@ -628,27 +628,29 @@ void FSecure::C3::Interfaces::Connectors::Covenant::Connection::StartUpdatingInS
 {
 	m_SecondThreadStarted = true;
 	std::thread([this]()
+	{
+		// Lock pointers.
+		auto owner = m_Owner.lock();
+		auto bridge = owner->GetBridge();
+		auto self = shared_from_this();
+
+		while (bridge->IsAlive() && self.use_count() > 1)
 		{
-			// Lock pointers.
-			auto owner = m_Owner.lock();
-			auto bridge = owner->GetBridge();
-			auto self = shared_from_this();
-			while (bridge->IsAlive() && self.use_count() > 1)
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+			try
 			{
-				try
+				// Read packet and post it to Binder.
+				if (auto packet = Receive(); !packet.empty())
 				{
-					// Read packet and post it to Binder.
-					if (auto packet = Receive(); !packet.empty())
-					{
-						bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
-					}
-				}
-				catch (std::exception& e)
-				{
-					bridge->Log({ e.what(), LogMessage::Severity::Error });
+					bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
 				}
 			}
-		}).detach();
+			catch (std::exception& e)
+			{
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
+			}
+		}
+	}).detach();
 }
 
 bool FSecure::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStarted()
