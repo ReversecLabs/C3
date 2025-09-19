@@ -60,19 +60,7 @@ void FSecure::C3::Core::DeviceBridge::PassNetworkPacket(ByteView packet)
 void FSecure::C3::Core::DeviceBridge::OnPassNetworkPacket(ByteView packet)
 {
 	auto lock = std::lock_guard<std::mutex>{ m_ProtectWriteInConcurrentThreads };
-
-	if (m_IsNegotiationChannel) // negotiation channel does not support chunking. Just pass packet and leave.
-	{
-		auto sent = GetDevice()->OnSendToChannelInternal(packet);
-		if (sent != packet.size())
-			throw std::runtime_error{OBF("Negotiation channel does not support chunking. Packet size: ") + std::to_string(packet.size()) + OBF(" Channel sent: ") + std::to_string(sent)};
-
-		return;
-	}
-
-	auto packetSplitter = m_QoS.GetPacketSplitter(packet);
-	while (packetSplitter.HasMore())
-		packetSplitter.Update(GetDevice()->OnSendToChannelInternal(packetSplitter.NextChunk()));
+	m_SendQueue.emplace_back(packet);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +73,7 @@ void FSecure::C3::Core::DeviceBridge::PostCommandToConnector(ByteView packet)
 void FSecure::C3::Core::DeviceBridge::OnCommandFromConnector(ByteView command)
 {
 	auto lock = std::lock_guard<std::mutex>{ m_ProtectWriteInConcurrentThreads };
-	GetDevice()->OnCommandFromConnector(command);
+	m_SendQueue.emplace_back(command);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +112,20 @@ void FSecure::C3::Core::DeviceBridge::StartUpdatingInSeparateThread()
 					try
 					{
 						std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
-						OnReceive();
+						
+						if (m_SendQueue.empty())
+						{
+							OnReceive();
+							continue;
+						}
+
+						ByteVector msg;
+						{
+							auto lock = std::lock_guard<std::mutex>{ m_ProtectWriteInConcurrentThreads };
+							msg = std::move(m_SendQueue.front());
+							m_SendQueue.pop_front();
+						}
+						OnSend(msg);
 					}
 					catch (std::exception const& exception)
 					{
@@ -198,4 +199,43 @@ void FSecure::C3::Core::DeviceBridge::SetErrorStatus(std::string_view errorMessa
 std::string FSecure::C3::Core::DeviceBridge::GetErrorStatus()
 {
 	return m_Error;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void FSecure::C3::Core::DeviceBridge::OnSend(ByteView command)
+{
+	// Send to peripheral
+	if (!m_Device->IsChannel())
+	{
+		m_Device->OnCommandFromConnector(command);
+		return;
+	}
+
+	// Send to channel.
+
+	// Negotiation channel does not support chunking. Just pass packet and leave.
+	if (m_IsNegotiationChannel)
+	{
+		auto sent = GetDevice()->OnSendToChannelInternal(command);
+		if (sent != command.size())
+			throw std::runtime_error{ OBF("Negotiation channel does not support chunking. Packet size: ") + std::to_string(command.size()) + OBF(" Channel sent: ") + std::to_string(sent) };
+
+		return;
+	}
+
+	// Chunk message.
+	auto originalSize = static_cast<uint32_t>(command.size());
+	auto messageId = m_QoS.GetOutgoingPacketId();
+	uint32_t chunkId = 0u;
+	while (!command.empty())
+	{
+		auto data = ByteVector{}.Write(messageId, chunkId, originalSize).Concat(command);
+		auto sent = GetDevice()->OnSendToChannelInternal(data);
+
+		if (sent >= QualityOfService::s_MinFrameSize || sent == data.size()) // if this condition were not channel must resend data.
+		{
+			chunkId++;
+			command.remove_prefix(sent - QualityOfService::s_HeaderSize);
+		}
+	}
 }

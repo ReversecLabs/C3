@@ -47,13 +47,12 @@ namespace FSecure::C3
 		};
 
 		/// Used to mark order to outgoing packets.
-		uint32_t m_OutgouingPacketId = 0u;
+		uint32_t m_OutgoingPacketId = 0u;
 
 		/// Map of received packets. Packets could be not complete, or there could be packet missing.
 		std::map<uint32_t, Packet> m_ReciveQueue;
 
-		/// Returns next ids for packets.
-		uint32_t GetOutgouingPacketId();
+
 
 		/// Used to find order in incoming packets. GetNextPacket will hold ready packets if there was gap in numbering.
 		// removed, manual route table management means that channels should not wait for missing packets. It will be introduced at the edges of network
@@ -99,6 +98,9 @@ namespace FSecure::C3
 			/// Current packet chunk id.
 			uint32_t m_ChunkId;
 		};
+
+		/// Returns next ids for packets.
+		uint32_t GetOutgoingPacketId();
 
 		/// Get next packet.
 		/// @returns ByteVector whole packet when it's ready or empty buffer otherwise.
