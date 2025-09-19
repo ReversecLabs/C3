@@ -95,7 +95,12 @@ namespace std
 #elif
 #error Unsupported toolset
 #endif
+
+#if defined(__clang__)
+		if (!_My_data._Large_mode_engaged())
+#elif
 		if (!_My_data._Large_string_engaged())
+#endif
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
 
 		// This is a copy of basic_string dtor
@@ -115,7 +120,12 @@ namespace std
 #elif
 #error Unsupported toolset
 #endif
+
+#if defined(__clang__)
+		if (!_My_data._Large_mode_engaged())
+#elif
 		if (!_My_data._Large_string_engaged())
+#endif
 			SecureZeroMemory(_My_data._Bx._Buf, sizeof _My_data._Bx._Buf);
 
 		// This is a copy of basic_string dtor

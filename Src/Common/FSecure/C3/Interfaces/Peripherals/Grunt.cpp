@@ -84,7 +84,7 @@ void FSecure::C3::Interfaces::Peripherals::Grunt::Close()
 }
 
 
-FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
+const char* FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()
 {
 	return R"(
 {
