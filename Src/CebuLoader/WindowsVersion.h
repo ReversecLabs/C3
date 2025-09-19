@@ -34,6 +34,12 @@ namespace FSecure::Loader
 		Build_19H1 = 18362,
 		Build_19H2 = 18363,
 		Build_20H1 = 19041,
+		Build_20H2 = 19042,
+		Build_21H1 = 19043,
+		Build_W11_21H2 = 22000,
+		Build_W11_22H2 = 22621,
+		Build_W11_23H2 = 22631,
+		Build_W11_24H2 = 26100,
 		Build_RS_MAX = 99999,
 	};
 
@@ -54,6 +60,12 @@ namespace FSecure::Loader
 		Win10_19H1,     // Windows 10 May 2019 update
 		Win10_19H2,     // Windows 10 November 2019 update
 		Win10_20H1,     // Windows 10 April 2020 update
+		Win10_20H2,
+		Win10_21H1,
+		Win11_21H2,
+		Win11_22H2,
+		Win11_23H2,
+		Win11_24H2
 	};
 
 	struct WinVersion
@@ -194,6 +206,41 @@ namespace FSecure::Loader
 	inline bool IsWindows1020H1OrGreater()
 	{
 		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_20H1);
+	}
+
+	inline bool IsWindows1020H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_20H2);
+	}
+
+	inline bool IsWindows1021H1OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_21H1);
+	}
+
+	inline bool IsWindows1121H1OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(Win32WinNtWIN10), LOBYTE(Win32WinNtWIN10), 0, Build_W11_21H2);
+	}
+
+	inline bool IsWindows1121H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_W11_21H2);
+	}
+
+	inline bool IsWindows1122H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_W11_22H2);
+	}
+
+	inline bool IsWindows1123H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_W11_23H2);
+	}
+
+	inline bool IsWindows1124H2OrGreater()
+	{
+		return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0, Build_W11_24H2);
 	}
 
 	inline bool IsWindowsServer()

@@ -14,6 +14,7 @@ namespace FSecure.C3.WebController.Models
         [JsonConverter(typeof(HexStringJsonConverter))]
         public ulong BuildId { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public ICollection<Channel> Channels { get; set; }
         public ICollection<Peripheral> Peripherals { get; set; }
         public ICollection<Route> Routes { get; set; }
@@ -27,11 +28,12 @@ namespace FSecure.C3.WebController.Models
         {
         }
 
-        public AgentViewModel(Agent a, string name)
+        public AgentViewModel(Agent a, Note note)
         {
             AgentId = a.AgentId;
             BuildId = a.BuildId;
-            Name = name;
+            Name = note?.DisplayName ?? a.Build?.Name;
+            Description = note?.Description;
             Channels = a.Channels;
             Peripherals = a.Peripherals;
             Routes = a.Routes;
