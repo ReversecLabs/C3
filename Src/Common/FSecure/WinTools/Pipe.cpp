@@ -163,12 +163,27 @@ FSecure::WinTools::AlternatingPipe::AlternatingPipe(ByteView pipename)
 		throw std::runtime_error{ OBF("Couldn't create synchronization event") };
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool FSecure::WinTools::AlternatingPipe::PeakCov()
+{
+	DWORD bytesAvailable = 0;
+	BOOL result = PeekNamedPipe(
+		m_Pipe.get(),     // handle to pipe
+		NULL,             // pointer to buffer (not used here)
+		0,                // size of buffer
+		NULL,             // number of bytes read (not used here)
+		&bytesAvailable,  // number of bytes available
+		NULL              // number of bytes left in message (not used here)
+	);
+
+	return result && bytesAvailable >= 4; // At least 4 bytes needed to read the size header
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 {
 	DWORD temp = 0, total = 0;
-	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
-		return{};
 
 	//The SMB Grunt writes the size of the chunk in a loop like the below, mimic that here.
 	BYTE size[4] = { 0 };
@@ -193,7 +208,6 @@ FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 	}
 
 	return buffer;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,9 +259,6 @@ size_t FSecure::WinTools::AlternatingPipe::WriteCov(ByteView data)
 
 	if (start != data.size())
 		throw std::runtime_error{ OBF("Write pipe failed ") };
-
-	// Let Read() know that the pipe is ready to be read.
-	SetEvent(m_Event.get());
 
 	return data.size();
 }

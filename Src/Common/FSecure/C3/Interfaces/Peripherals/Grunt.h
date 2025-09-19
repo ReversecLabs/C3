@@ -50,11 +50,8 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Used to synchronize access to underlying implant.
 		std::mutex m_Mutex;
 
-		/// Used to synchronize read/write.
-		std::condition_variable m_ConditionalVariable;
-
-		/// Used to support beacon chunking data.
-		bool m_ReadingState = true;
+		/// Send queue from TeamServer
+		std::deque<ByteVector> m_SendQueue;
 
 		bool m_Close = false;
 	};
