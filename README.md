@@ -2,15 +2,15 @@
 
 ![C3](Res/Images/C3.png)
 
-![Build C3 (MSVC)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
+![Build C3 (MSVC)](https://github.com/ReversecLabs/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
 
-![Build C3 (Clang)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(Clang)/badge.svg)
+![Build C3 (Clang)](https://github.com/ReversecLabs/C3/workflows/Build%20C3%20(Clang)/badge.svg)
 
-C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly develop and utilise esoteric command and control channels (C2). It's a framework that extends other red team tooling, such as the commercial Cobalt Strike (CS) product via [ExternalC2](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), which is supported at release. It allows the Red Team to concern themselves only with the C2 they want to implement; relying on the robustness of C3 and the CS tooling to take care of the rest. This efficiency and reliability enable Red Teams to operate safely in critical client environments (by assuring a professional level of stability and security); whilst allowing for safe experimentation and rapid deployment of customised Tactics, Techniques and Procedures (TTPs). Thus, empowering Red Teams to emulate and simulate an adaptive real-world attacker.
+C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly develop and utilise esoteric command and control channels (C2). It's a framework that extends other red team tooling, such as the commercial Cobalt Strike (CS) product via [ExternalC2](https://hstechdocs.helpsystems.com/manuals/cobaltstrike/current/userguide/content/externalc2spec.pdf), which is supported at release. It allows the Red Team to concern themselves only with the C2 they want to implement; relying on the robustness of C3 and the CS tooling to take care of the rest. This efficiency and reliability enable Red Teams to operate safely in critical client environments (by assuring a professional level of stability and security); whilst allowing for safe experimentation and rapid deployment of customised Tactics, Techniques and Procedures (TTPs). Thus, empowering Red Teams to emulate and simulate an adaptive real-world attacker.
 
 ## Usage
 
-See [this](https://labs.withsecure.com/tools/c3) blog post for a detailed tutorial. 
+See [this](https://labs.reversec.com/tools/c3) blog post for a detailed tutorial. 
 
 For contribution guide (how to develop a Channel tutorials), see [this page](CONTRIBUTING.md).
 
@@ -43,10 +43,10 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 
 
 ## Detection
-- [Hunting for C3 (release blog)](https://labs.f-secure.com/blog/hunting-for-c3/)
-- [Attack Detection Fundamentals C2 and Exfiltration Lab - Dropbox](https://labs.f-secure.com/blog/attack-detection-fundamentals-c2-and-exfiltration-lab-3)
-- [Attack Detection Fundamentals Discovery and Lateral Movement Lab - UNC Share File](https://labs.f-secure.com/blog/attack-detection-fundamentals-discovery-and-lateral-movement-lab-3/)
-- [Using and detecting C2 printer pivoting](https://labs.f-secure.com/blog/print-c2/)
+- [Hunting for C3 (release blog)](https://labs.withsecure.com/publications/hunting-for-c3)
+- [Attack Detection Fundamentals C2 and Exfiltration Lab - Dropbox](https://labs.reversec.com/posts/2020/07/attack-detection-fundamentals-c2-and-exfiltration-lab-3)
+- [Attack Detection Fundamentals Discovery and Lateral Movement Lab - UNC Share File](https://labs.reversec.com/posts/2020/07/attack-detection-fundamentals-discovery-and-lateral-movement-lab-4)
+- [Using and detecting C2 printer pivoting](https://labs.reversec.com/posts/2020/11/using-and-detecting-c2-printer-pivoting)
 - [Black Hat USA 2021 - I'm a Hacker Get Me Out of Here! Breaking Network Segregation Using Esoteric Command & Control Channels](http://i.blackhat.com/USA21/Wednesday-Handouts/us-21-Coote-Im-A-Hacker-Get-Me-Out-Of-Here-Breaking-Network-Segregation-Using-Esoteric-Command-Control-Channels.pdf)
 - [Pursuing Evasive Custom Command & Control - Guide M - ROOTCON](https://media.rootcon.org/ROOTCON%2014%20(Recovery%20Mode)/Talks/Pursuing%20Evasive%20Custom%20Command%20&%20Control%20(C3).pdf)
 - [YARA Rule - C3 Reflective DLL Usage](https://gist.github.com/ajpc500/9ae6eb427375438f906b0bf394813bc5)
@@ -80,7 +80,9 @@ The most commonly used terms in C3:
 
 BSD 3-Clause License
 
-Copyright (c) 2019-2020, F-Secure
+Copyright (c) 2025 Reversec
+Copyright (c) 2022-2025, WithSecure
+Copyright (c) 2019-2022, F-Secure
 Copyright (c) 2018-2019, MWR Infosecurity
 All rights reserved.
 
