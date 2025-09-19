@@ -18,7 +18,7 @@ https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Regis
 ```
 Click "New registration". You should be presented with the following screen:
 
-<img src="./images/office365/AzureRegister.JPG"/>
+<img src="../Images/Office365RelayGuide/AzureRegister.JPG"/>
 
 Add name for your application.
 As supported account types choose "Accounts in any organizational directory and personal Microsoft accounts".
@@ -30,7 +30,7 @@ Directly after creation of the app, give it the correct permissions. To do this,
 
 You should be presented with the following screen:
 
-<img src="./images/office365/AzureApiPermissions.JPG"/>
+<img src="../Images/Office365RelayGuide/AzureApiPermissions.JPG"/>
 
 The following permissions are required:
 * https://outlook.office365.com/Tasks.ReadWrite	(Exchange/Delegated)
@@ -41,11 +41,11 @@ The following permissions are required:
 
 If user creating application is also an admin of target user tenant, it is possible to directly grant permission from "API permissions".
 
-<img src="./images/office365/AzureGrantPermissionsAdmin.JPG"/>
+<img src="../Images/Office365RelayGuide/AzureGrantPermissionsAdmin.JPG"/>
 
 Otherwise, target user must sign in to agree with usage of application popup.
 
-<img src="./images/office365/AzureGrantPermissionsUser.JPG"/>
+<img src="../Images/Office365RelayGuide/AzureGrantPermissionsUser.JPG"/>
 
 For onedrive channel use:
 ```
@@ -60,7 +60,7 @@ https://login.windows.net/common/oauth2/v2.0/authorize?client_id=<application_id
 #### Pass authentication data to C3 channel
 With application data, and tartget username/password C3 can use Office 365 Management API.
 
-<img src="./images/office365/CreatingChannel.jpg"/>
+<img src="../Images/Office365RelayGuide/CreatingChannel.jpg"/>
 
 #### Add a Licence
 
