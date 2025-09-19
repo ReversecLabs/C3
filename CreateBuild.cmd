@@ -73,8 +73,8 @@ COPY "Bin\\GatewayConsoleExe_r64.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bi
 COPY "Bin\\NodeRelayConsoleExe_r64.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayConsoleExe_r64.exe" || GOTO :ERROR
 COPY "Bin\\GatewayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\GatewayConsoleExe_r86.exe" || GOTO :ERROR
 COPY "Bin\\NodeRelayConsoleExe_r86.exe" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayConsoleExe_r86.exe" || GOTO :ERROR
-COPY "Bin\\Dll_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\Dll_r64.dll" || GOTO :ERROR
-COPY "Bin\\Dll_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\Dll_r86.dll" || GOTO :ERROR
+COPY "Bin\\NodeRelayDll_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r64.dll" || GOTO :ERROR
+COPY "Bin\\NodeRelayDll_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\NodeRelayDll_r86.dll" || GOTO :ERROR
 COPY "Bin\\CebuLoader_r64.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r64.dll" || GOTO :ERROR
 COPY "Bin\\CebuLoader_r86.dll" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bin\\CebuLoader_r86.dll" || GOTO :ERROR
 
