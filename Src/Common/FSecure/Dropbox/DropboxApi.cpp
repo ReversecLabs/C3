@@ -209,7 +209,7 @@ FSecure::ByteVector FSecure::Dropbox::SendHttpRequest(std::string const& host, s
 			request.SetData(*contentType, { data.begin(), data.end() });
 
 		if(!header.empty())
-			request.SetHeader(ToWideString("Dropbox-API-Arg"), ToWideString(header));
+			request.SetHeader(OBF(L"Dropbox-API-Arg"), ToWideString(header));
 
 		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
 		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));

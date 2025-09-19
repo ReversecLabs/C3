@@ -2,10 +2,13 @@
 #include "UncShareFile.h"
 #include "Common/FSecure/Crypto/Base64.h"
 #include <Common/FSecure/WinTools/UniqueHandle.h>
+#include <Common/FSecure/CppTools/StringConversions.h>
 #include <random>
 #include <fstream>
 #include <sstream>
 #include <sddl.h>
+
+using namespace FSecure::StringConversions;
 
 namespace
 {
@@ -40,9 +43,9 @@ namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Channels::UncShareFile::UncShareFile(ByteView arguments)
-	: m_InboundDirectionName{ arguments.Read<std::string>() }
-	, m_OutboundDirectionName{ arguments.Read<std::string>() }
-	, m_FilesystemPath{ arguments.Read<std::string>() }
+	: m_InboundDirectionName{ StringConversions::Convert<Utf16>(arguments.Read<std::string>()) }
+	, m_OutboundDirectionName{ StringConversions::Convert<Utf16>(arguments.Read<std::string>()) }
+	, m_FilesystemPath{ StringConversions::Convert<Utf16>(arguments.Read<std::string>()) }
 {
 	// If path doesn't exist, create it
 	if (!std::filesystem::exists(m_FilesystemPath))
@@ -65,7 +68,7 @@ size_t FSecure::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView
 		std::filesystem::path packetFilePath;
 		do
 		{
-			lockFilePath = m_FilesystemPath / (m_OutboundDirectionName + std::to_string(FSecure::Utils::GenerateRandomValue<int>(10000, 99999)) + OBF(".lock"));
+			lockFilePath = m_FilesystemPath / (m_OutboundDirectionName + std::to_wstring(FSecure::Utils::GenerateRandomValue<int>(10000, 99999)) + OBF(L".lock"));
 			packetFilePath = lockFilePath;
 			packetFilePath.replace_extension();
 		} while (std::filesystem::exists(packetFilePath) or std::filesystem::exists(lockFilePath));
@@ -73,7 +76,7 @@ size_t FSecure::C3::Interfaces::Channels::UncShareFile::OnSendToChannel(ByteView
 		auto createFile = [](auto const& path)
 		{
 			// Create file with FullAccess to "Everyone" group
-			auto file = WinTools::UniqueHandle(CreateFileA(path.generic_string().c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, g_FullAccessDACL.get(), CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
+			auto file = WinTools::UniqueHandle(CreateFileW(path.generic_wstring().c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, g_FullAccessDACL.get(), CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
 			if (file.get() == INVALID_HANDLE_VALUE)
 				throw std::runtime_error(OBF_STR("UncShareFile channel: failed to create a file ") + path.generic_string());
 		};
@@ -143,11 +146,11 @@ void FSecure::C3::Interfaces::Channels::UncShareFile::RemoveAllPackets()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool FSecure::C3::Interfaces::Channels::UncShareFile::BelongToChannel(std::filesystem::path const& path) const
 {
-	auto filename = path.filename().string();
+	auto filename = path.filename().generic_wstring();
 	if (filename.size() < m_InboundDirectionName.size())
 		return false;
 
-	auto startsWith = std::string_view{ filename }.substr(0, m_InboundDirectionName.size());
+	auto startsWith = std::wstring_view{ filename }.substr(0, m_InboundDirectionName.size());
 	if (startsWith != m_InboundDirectionName)
 		return false;
 

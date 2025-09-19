@@ -5,7 +5,7 @@ The following tutorials describe the process of C3 channel development in a step
 ## Basic Tutorial
 This tutorial focuses only on a bare minimum effort required to develop a C3 Channel. First, open the C3 solution file in MS Visual Studio and add a new `*.cpp` file to the “Common” project. The Preferred location is: *“Src/Common/FSecure/C3/Interfaces/Channels”* or its sub folder.
 
-![C3](Res/ContributionGuide/01.png)
+![C3](Res/Images/C2ImplementationGuide/01.png)
 
 Next, open the newly created file and enter a type that will represent the Channel. An example for a channel named `MyChannel` is as follows:
 ```cpp
@@ -89,7 +89,7 @@ Testing channel with 1048576 bytes of data ... OK
 ```
 Re-starting the C3 web application and gateway is all that is required after compilation to use the newly created channel.
 
-![C3](Res/ContributionGuide/02.png)
+![C3](Res/Images/C2ImplementationGuide/02.png)
 
 However this implementation has some limitations, critical for usage in C3:
 + It doesn't synchronize reads and writes to the file across processes.
@@ -113,7 +113,7 @@ This tutorial will cover more advanced features that can allow developers to cre
 
 The previously created Channel from the Basic tutorial has a flaw in its implementation – the file name is hard-coded. This not only prevents it from being reused multiple times in a single C3 network, but also disables some useful features. For example, this flaw prevents the channel from being used as a *Negotiation Channel*. Additionally, as C3 has no way of knowing the creation parameters of `MyChannel`, it will default them to a single binary blob of data:
 
-![C3](Res/ContributionGuide/03.png)
+![C3](Res/Images/C2ImplementationGuide/03.png)
 
 The UI can be made to explicitly ask for each parameter and validate their values in a few steps. First, a single filename `m_Filename` is replaced by a pair of files `m_InFile` and `m_OutFile`, used to read and write data respectively. The two variables allow for two identifiers to be assigned for every `MyChannel` instance. Whilst not strictly required, this design decision adds a number of benefits.
 
@@ -128,7 +128,7 @@ As an example, consider a file system Channel implementation and the various way
 
 All implementations are valid and will work with the C3 Framework, but some features won’t be available for Model 1. The figure below provides a visualisation of sample incompatible and compatible channel designs.
 
-![C3](Res/ContributionGuide/04.png)
+![C3](Res/Images/C2ImplementationGuide/04.png)
 
 As can be seen on the bottom diagram (compatible version), “Ch1” Interface’s output ID is the same as “Ch2” Interface’s input ID, and vice versa. The same goes for “Ch2” and “Ch3” pair. This diagram will now be applied to `MyChannel` – every `MyChannel` instance will get an input ID and an output ID assigned to them.
 
@@ -192,21 +192,21 @@ MyChannel(FSecure::ByteView bv)
 
 As in the basic tutorial, compile the whole C3 solution, go to the root folder of C3 and run the *StartWebController.cmd* script. The channel creation command window in the Web UI should now look as such:
 
-![C3](Res/ContributionGuide/05.png)
+![C3](Res/Images/C2ImplementationGuide/05.png)
 
 Because this channel uses the *Double-ID design*, additional features of C3 will be unlocked. Firstly, a new command will be provided in the user interface that can be used to create a Negotiation channel:
 
-![C3](Res/ContributionGuide/06.png)
+![C3](Res/Images/C2ImplementationGuide/06.png)
 
 Secondly, C3 will add the “Connect Relay” option to all instances of `MyChannel`, which automatically attaches a complementary `MyChannel` instance (fills in swapped Input and Output identifiers) for a selected Relay:
 
-![C3](Res/ContributionGuide/07.png)
-![C3](Res/ContributionGuide/08.png)
+![C3](Res/Images/C2ImplementationGuide/07.png)
+![C3](Res/Images/C2ImplementationGuide/08.png)
 
 Finally, C3 will add the “New Relay” option for all existing `MyChannels`, which creates a new Relay payload with a complementary initial Channel:
 
-![C3](Res/ContributionGuide/09.png)
-![C3](Res/ContributionGuide/10.png)
+![C3](Res/Images/C2ImplementationGuide/09.png)
+![C3](Res/Images/C2ImplementationGuide/10.png)
 
 ### Creating a Custom Command
 
@@ -270,8 +270,8 @@ The `TestCommand` method adds a debug text entry to C3’s *Log*. `DebugInformat
 
 After rebuilding the solution once again and launching C3 the Test Command becomes available in `MyChannel’s` Command Center:
 
-![C3](Res/ContributionGuide/11.png)
-![C3](Res/ContributionGuide/12.png)
+![C3](Res/Images/C2ImplementationGuide/11.png)
+![C3](Res/Images/C2ImplementationGuide/12.png)
 
 **Note:** C3 can be launched in a debug mode by running `dotnet run -c Debug` console command from the *Src/WebController/Backend* location. Debug mode enables Node Relay’s console window, allowing to read their local C3 *Log*.
 

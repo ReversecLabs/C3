@@ -39,16 +39,53 @@ namespace FSecure.C3.WebController.Controllers
         // GET: api/gateway/{gatewayId}/relay/{relayId}]
         [HttpGet("{relayId}")]
         [Produces("application/json")]
-        public ActionResult<Relay> GetRelay([FromRoute]HexId gatewayId, [FromRoute]HexId relayId)
+        public ActionResult<RelayViewModel> GetRelay([FromRoute]HexId gatewayId, [FromRoute]HexId relayId)
         {
             try
             {
-                return context.Relays
+                var relay = context.Relays
                     .Include(r => r.Channels)
                     .Include(r => r.Peripherals)
                     .Include(r => r.Routes)
                     .Where(r => r.GatewayAgentId == gatewayId.Value)
                     .Single(r => r.AgentId == relayId.Value);
+                return new RelayViewModel(relay, context.Notes.FirstOrDefault(n => n.AgentId == relay.AgentId));
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPut("{relayId}")]
+        [Produces("application/json")]
+        public async Task<ActionResult> AddNote([FromRoute] HexId gatewayId, [FromRoute] HexId relayId, string name, string description)
+        {
+            try
+            {
+                if (context.Relays.Where(r => r.GatewayAgentId == gatewayId.Value).Count(r => r.AgentId == relayId.Value) != 1)
+                    throw new InvalidOperationException();
+
+                var note = context.Notes.FirstOrDefault(n => n.AgentId == relayId.Value);
+                if (note != null)
+                {
+                    if (name != null)
+                       note.DisplayName = name;
+                    if (description != null)
+                       note.Description= description;
+                }
+                else
+                {
+                    note = new Note
+                    {
+                        AgentId = relayId.Value,
+                        DisplayName = name,
+                        Description = description,
+                    };
+                    context.Add(note);
+                }
+                await context.SaveChangesAsync();
+                return Ok();
             }
             catch (InvalidOperationException)
             {

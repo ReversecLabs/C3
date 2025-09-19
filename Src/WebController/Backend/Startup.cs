@@ -11,6 +11,7 @@ using FSecure.C3.Comms;
 using FSecure.C3.WebController.Models;
 using FSecure.C3.WebController.Comms;
 using System.Threading;
+using Microsoft.OpenApi.Models;
 
 namespace FSecure.C3.WebController
 {
@@ -28,14 +29,20 @@ namespace FSecure.C3.WebController
         {
             CheckCryptoLib();
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddJsonOptions(options => {
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+                .AddMvcOptions(options =>
+                {
+                    options.EnableEndpointRouting = false;
+                })
+                .AddNewtonsoftJson(options => {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                    
                 });
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "C3 API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "C3 API", Version = "v1" });
+                c.MapType<HexId>(() => new OpenApiSchema { Type = "string" });
             });
             services.Configure<DonutServiceOptions>(Configuration.GetSection("Donut"));
             services.AddTransient<IDonutService, DonutService>();
@@ -47,7 +54,7 @@ namespace FSecure.C3.WebController
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
             using (var serviceScope = app.ApplicationServices.CreateScope())

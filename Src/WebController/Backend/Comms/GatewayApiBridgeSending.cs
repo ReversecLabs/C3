@@ -37,7 +37,7 @@ namespace FSecure.C3.WebController.Comms
 
         public async Task SendRequest(GatewayRequest action)
         {
-            await EncryptAndSend(System.Text.Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(action)));
+            await EncryptAndSend(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(action)));
         }
 
         public async Task EncryptAndSend(byte[] data)

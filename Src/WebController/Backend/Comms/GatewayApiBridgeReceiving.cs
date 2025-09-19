@@ -116,7 +116,7 @@ namespace FSecure.C3.WebController.Comms
 
         private GatewayResponses.GatewayResponse ParseResponse(byte[] responseData)
         {
-            var message = System.Text.Encoding.ASCII.GetString(responseData);
+            var message = System.Text.Encoding.UTF8.GetString(responseData);
             try
             {
                 return JsonConvert.DeserializeObject<GatewayResponses.GatewayResponse>(message);

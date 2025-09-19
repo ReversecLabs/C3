@@ -327,7 +327,10 @@ namespace FSecure::Loader
 			auto functionTable = Rva2Va<PRUNTIME_FUNCTION>(baseAddress, pImageEntryException->VirtualAddress);
 			DWORD count = pImageEntryException->Size / sizeof(IMAGE_RUNTIME_FUNCTION_ENTRY);
 			if (!RtlAddFunctionTable(functionTable, count, (DWORD64)baseAddress))
+			{
+				VirtualFree((void*)baseAddress, 0, MEM_RELEASE);
 				return 1;
+			}
 		}
 
 #elif defined _M_IX86

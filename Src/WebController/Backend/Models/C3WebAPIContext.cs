@@ -20,6 +20,7 @@ namespace FSecure.C3.WebController.Models
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Peripheral> Peripherals { get; set; }
         public DbSet<Connector> Connectors { get; set; }
+        public DbSet<Note> Notes { get; set; }
 
         public C3WebAPIContext(DbContextOptions<C3WebAPIContext> options) : base(options)
         {
