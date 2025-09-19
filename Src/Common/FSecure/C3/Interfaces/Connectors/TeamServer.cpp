@@ -371,7 +371,7 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 		// Lock pointers.
 		auto owner = m_Owner.lock();
 		auto bridge = owner->GetBridge();
-		auto self = shared_from_this(); 
+		auto self = shared_from_this();
 
 		while (bridge->IsAlive() && self.use_count() > 1)
 		{
@@ -405,9 +405,10 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 			}
 			catch (std::exception& e)
 			{
-				bridge->Log({ e.what(), LogMessage::Severity::Error});
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
 			}
 		}
+
 	}).detach();
 }
 

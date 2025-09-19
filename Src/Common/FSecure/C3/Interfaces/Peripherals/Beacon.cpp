@@ -12,7 +12,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	if (payload.empty())
 		throw std::invalid_argument(OBF("There was no payload provided."));
 
-	if (!maxConnectionAttempts)
+	if (pipeName.empty() || !maxConnectionAttempts)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
 	// Store a handle to the beacon object for later use
@@ -52,9 +52,6 @@ FSecure::C3::Interfaces::Peripherals::Beacon::~Beacon()
 void FSecure::C3::Interfaces::Peripherals::Beacon::OnCommandFromConnector(ByteView data)
 {
 	m_SendQueue.emplace_back(data);
-
-	if (m_Close)
-		return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +78,6 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Beacon::OnReceiveFromP
 
 	return ret;
 }
-
 
 
 bool FSecure::C3::Interfaces::Peripherals::Beacon::IsNoOp(ByteView data)
@@ -137,12 +133,4 @@ void FSecure::C3::Interfaces::Peripherals::Beacon::Close()
 	FSecure::C3::Device::Close();
 	m_Close = true;
 }
-
-// Custom payload is removed from release.
-//			,
-//			{
-//				"type": "binary",
-//				"name" : "Payload",
-//				"description" : "Implant to inject. Leave empty to generate payload."
-//			}
 
