@@ -31,6 +31,9 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | EWS Tasks               |             |
 | OneDrive 365 Rest File  |             |
 | OneDrive 365 Rest Task  |             |
+| Zoom Chat API           |             |
+| TCP                     |             |
+| Azure Service Bus       |             |
 
 ### Internal Channels
 
@@ -75,6 +78,18 @@ The most commonly used terms in C3:
 - `Route ID` - a pair of an `Agent ID` and a `Device ID`. Used to describe one "path" to a `Node Relay` (`Node Relays` might be reachable via many `Routes`).
 - `Route` - a "path" to a `Node Relay`. Every `Relay` keeps a table of all of their child `Relays` (and grandchildren, grand-grandchildren, and so on) along with `Channel` `Device IDs` used to reach that particular `Relay` (see `Route ID`). When a packet from the `Gateway` arrives to a `Node Relay`, routing table is used to choose appropriate `Channel` to send the packet through to the recipient.
 - `Update Delay Jitter` - delay between successive updates of an `Interface` (in case of `Channels` - calls to OnReceiveFromChannel method). Can be set to be randomized in provided range of time values.
+
+## Building
+
+To install the necessary packages to compile C3 the following individual components need to be added to the Visual Studio environment. This can be achieved by using the VS setup.exe (e.g. "c:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"), selecting Modify and adding the following individual components:
+
+- .NET 7.0
+- .NET Core 3.1 Runtime (Out of support)
+- MSVC v142 - VS 2019 C++ x64/x86 build tools
+- (Optional) C++ Clang tools for Windows for clang builds
+- (Optional) MSBuild support for LLVM (clang-cl) toolset
+
+Once these components are installed launch the Visual Studio Developer Command Prompt and run the CreateBuild.bat file. The output should be present in the Builds directory.
 
 ## License
 
