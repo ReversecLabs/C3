@@ -1,9 +1,5 @@
 #pragma once
 
-#if defined (__clang__)
-+#warning("Compilation of Grunt peripheral is only supported with MSVC")
-#elif defined (_MSC_VER)
-
 #include <optional>
 #include <metahost.h>
 
@@ -37,7 +33,7 @@ namespace FSecure::C3::Interfaces::Peripherals
 
 		/// Return json with commands.
 		/// @return ByteView Commands description in JSON format.
-		static ByteView GetCapability();
+		static const char* GetCapability();
 
 		/// Close peripheral Grunt
 		/// Calls superclass CLose and prepares to exit without deadlocking
@@ -59,4 +55,3 @@ namespace FSecure::C3::Interfaces::Peripherals
 		FSecure::WinTools::InjectionBuffer m_Grunt;
 	};
 }
-#endif
