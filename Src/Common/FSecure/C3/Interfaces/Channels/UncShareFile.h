@@ -45,7 +45,7 @@ namespace FSecure::C3::Interfaces::Channels
 		void RemoveFile(std::filesystem::path const& path);
 
 		/// Flow direction names.
-		std::string m_InboundDirectionName, m_OutboundDirectionName;
+		std::wstring m_InboundDirectionName, m_OutboundDirectionName;
 
 		/// Path of the directory to store the C2 messages.
 		std::filesystem::path m_FilesystemPath;
