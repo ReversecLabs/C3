@@ -6,15 +6,15 @@
 
 * Within the Azure Portal go to Home -> Service Bus -> Add, fill in the options as shown below. Note that the namespace name option will form the endpoint communication will occur over, so use something legitimate looking.
 
-![](UsageImages/servicebus1.png)
+![](../Images/AzureServiceBusRelayGuide/servicebus1.png)
 
 * Once created, go back to the service bus home page and click on the newly created namespace.
 
 * Go to the Shared Access Policies page, click on the RootManageSharedAccessKey and copy the Primary Key Value.
 
-![](UsageImages/servicebus2.png)
+![](../Images/AzureServiceBusRelayGuide/servicebus2.png)
 
-* Use the key value to generate a signature, it is advised to use the project at https://git.f-secure.com/tim.carrington/azureservicebussignaturegenerator as follows:
+* Use the key value to generate a signature, it is advised to use the project at https://git.reversec.com/tim.carrington/azureservicebussignaturegenerator as follows:
 
 `servicebus.exe payment-task-bus RootManageSharedAccessKey 10T4N5apNbM0K4jGcBgVY6TqG+/PeZxT9niFzkaQlrc=`
 
@@ -42,9 +42,9 @@
 
 * Below is examples of a negotiation and single channel creation in C3's UI:
 
-![](UsageImages/servicebus5.PNG)
+![](../Images/AzureServiceBusRelayGuide/servicebus5.PNG)
 
-![](UsageImages/servicebus6.PNG)
+![](../Images/AzureServiceBusRelayGuide/servicebus6.PNG)
 
 ### Opsec
 
@@ -52,11 +52,11 @@
 
 * The following image shows queues that have been setup after a relay has been executed over a negotiation channel:
 
-![](UsageImages/servicebus3.png)
+![](../Images/AzureServiceBusRelayGuide/servicebus3.png)
 
 * This image shows the data available within Azure:
 
-![](UsageImages/servicebus4.png)
+![](../Images/AzureServiceBusRelayGuide/servicebus4.png)
 
 # Testing
 
