@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSecure.C3.WebController.Migrations
 {
     [DbContext(typeof(C3WebAPIContext))]
-    [Migration("20200130113057_Initial")]
+    [Migration("20210108094828_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,6 +137,22 @@ namespace FSecure.C3.WebController.Migrations
                     b.HasKey("AgentId", "InterfaceId");
 
                     b.ToTable("Connectors");
+                });
+
+            modelBuilder.Entity("FSecure.C3.WebController.Models.Note", b =>
+                {
+                    b.Property<int>("NoteId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<ulong>("AgentId");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("DisplayName");
+
+                    b.HasKey("NoteId");
+
+                    b.ToTable("Notes");
                 });
 
             modelBuilder.Entity("FSecure.C3.WebController.Models.Peripheral", b =>

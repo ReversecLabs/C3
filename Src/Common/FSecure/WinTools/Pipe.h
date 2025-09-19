@@ -19,6 +19,8 @@ namespace FSecure::WinTools
 		/// @throws std::runtime_error on any WinAPI errors occurring during writing to the named pipe.
 		ByteVector Read();
 
+		bool PeakCov();
+
 		///Covenant specific implementation of Read
 		ByteVector ReadCov();
 

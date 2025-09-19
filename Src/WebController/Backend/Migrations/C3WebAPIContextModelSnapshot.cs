@@ -137,6 +137,22 @@ namespace FSecure.C3.WebController.Migrations
                     b.ToTable("Connectors");
                 });
 
+            modelBuilder.Entity("FSecure.C3.WebController.Models.Note", b =>
+                {
+                    b.Property<int>("NoteId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<ulong>("AgentId");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("DisplayName");
+
+                    b.HasKey("NoteId");
+
+                    b.ToTable("Notes");
+                });
+
             modelBuilder.Entity("FSecure.C3.WebController.Models.Peripheral", b =>
                 {
                     b.Property<ulong>("AgentId");

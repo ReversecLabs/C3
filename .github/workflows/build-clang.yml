@@ -13,7 +13,7 @@ jobs:
       matrix:
         platfom: [x86, x64]
         configuration: [ClangDebug, ClangRwdi, ClangRelease]
-    runs-on: windows-latest
+    runs-on: windows-2019
     
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
