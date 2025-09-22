@@ -12,11 +12,11 @@ To register a new Asana account, go to [asana.com/create-account](https://asana.
 
 To retrieve the `gid` of the project, simply browse to "My Workspace" in the sidebar and open the project. The `gid` should appear in the URL bar.
 
-![](AsanaChannelImages/1.png)
+![](../Images/AsanaRelayGuide/1.png)
 
-![](AsanaChannelImages/2.png)
+![](../Images/AsanaRelayGuide/2.png)
 
-![](AsanaChannelImages/3.png)
+![](../Images/AsanaRelayGuide/3.png)
 
 That number (starting with '1174' in the screenshot) is the `gid`. You'll need this when creating the channel in the web interface.
 
@@ -38,15 +38,15 @@ Messages are sent as Asana tasks. For every message, a new task is created in th
 
 Sending messages works as follows: first, the size of the message is checked. The size of the message will dictate how we'll send this message to the other end of the channel. If the message is sufficiently small, we can transfer the message in one API call by base64 encoding the message and saving the result in the `Description` field of a task. 
 
-![](AsanaChannelImages/4.png)
+![](../Images/AsanaRelayGuide/4.png)
 
 If the message is too large to fit in the `Description` field, we upload an attachment to the task instead. Since creating a task and uploading an attachment can't be done in one API call, we need to ensure that the receiving end does not process the task before we have added the attachment. This is done by appending `:writing` to the task name (tasks with this suffix will be ignored by the receiver). 
 
-![](AsanaChannelImages/5.png)
+![](../Images/AsanaRelayGuide/5.png)
 
 After we successfully upload the attachment, we rename the task to remove the `:writing` suffix.
 
-![](AsanaChannelImages/6.png)
+![](../Images/AsanaRelayGuide/6.png)
 
 The messages in an attachment are obfuscated by prepending them with a JPEG image. We do this to avoid detection: a file containing a random string of bytes or a base64 text file might arouse suspicion, while a valid JPG image might not. Of course this is a very basic way of hiding the message, but its all I managed to do with my limited C++ skills.
 

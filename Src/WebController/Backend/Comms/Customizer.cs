@@ -26,6 +26,7 @@ namespace FSecure.C3.WebController.Comms
         private readonly string PayloadTemplateDir;
         private readonly int PatchBufferSize;
         private readonly bool UseDebugBinaries;
+        private readonly bool UseRWDIBinaries;
 
         private CommandQueues commandQueue;
 
@@ -36,11 +37,12 @@ namespace FSecure.C3.WebController.Comms
             PayloadTemplateDir = customizerConfiguration.GetValue(nameof(PayloadTemplateDir), defaultPayloadTemplateDir);
             PatchBufferSize = customizerConfiguration.GetValue(nameof(PatchBufferSize), defaultPatchBufferSize);
             UseDebugBinaries = customizerConfiguration.GetValue(nameof(UseDebugBinaries), false);
+            UseRWDIBinaries = customizerConfiguration.GetValue(nameof(UseRWDIBinaries), false);
         }
 
         public byte[] GetGateway(Build.Architecture arch)
         {
-            var c3FileName = Path.Combine(PayloadTemplateDir, GetGatewayFileName(arch, UseDebugBinaries));
+            var c3FileName = Path.Combine(PayloadTemplateDir, GetGatewayFileName(arch));
             return File.ReadAllBytes(c3FileName);
         }
 
@@ -56,7 +58,7 @@ namespace FSecure.C3.WebController.Comms
             if (build is null)
                 throw new ArgumentNullException(nameof(build));
 
-            var c3FileName = Path.Combine(PayloadTemplateDir, GetRelayFileName(build.Type, build.Arch, UseDebugBinaries));
+            var c3FileName = Path.Combine(PayloadTemplateDir, GetRelayFileName(build.Type, build.Arch));
             var bin = File.ReadAllBytes(c3FileName);
 
             // FIXME support more then one startupCommand
@@ -108,15 +110,21 @@ namespace FSecure.C3.WebController.Comms
                 .Concat(RC4.Encrypt(password, resource));
         }
 
-        private static string GetRelayFileName(Build.BinaryType binaryType, Build.Architecture arch, bool debug = false) =>
-            String.Format(payloadTemplateFiles[binaryType], GetBinaryDescription(arch, debug));
+        private string GetRelayFileName(Build.BinaryType binaryType, Build.Architecture arch) =>
+            String.Format(payloadTemplateFiles[binaryType], GetBinaryDescription(arch));
 
-        private static string GetGatewayFileName(Build.Architecture arch, bool debug = false) =>
-            String.Format(gatewayFile, GetBinaryDescription(arch, debug));
+        private string GetGatewayFileName(Build.Architecture arch) =>
+            String.Format(gatewayFile, GetBinaryDescription(arch));
 
-        private static string GetBinaryDescription(Build.Architecture arch, bool debug = false)
+        private string GetBinaryDescription(Build.Architecture arch)
         {
-            var config = debug ? "d" : "r";
+            string config;
+            if (this.UseDebugBinaries)
+                config = "d";
+            else if (this.UseRWDIBinaries)
+                config = "rwdi";
+            else
+                config = "r";
             var ar = arch == Build.Architecture.X64 ? "64" : "86";
             return $"{config}{ar}";
         }

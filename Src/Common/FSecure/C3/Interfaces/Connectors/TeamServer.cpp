@@ -68,6 +68,9 @@ namespace FSecure::C3::Interfaces::Connectors
 			/// @returns true if receiving thread was started, false otherwise.
 			bool SecondThreadStarted();
 
+			/// Received messages from the beacon
+			std::deque<ByteVector> m_RecvQueue;
+
 		private:
 			/// Pointer to TeamServer instance.
 			std::weak_ptr<TeamServer> m_Owner;
@@ -143,9 +146,16 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::OnCommandFromBinder(ByteVi
 		throw std::runtime_error{OBF("Unknown connection")};
 
 	if (!(it->second->SecondThreadStarted()))
+	{
+		// On first run send the command directly
 		it->second->StartUpdatingInSeparateThread();
-
-	it->second->Send(command);
+		it->second->Send(command);
+	}
+	else
+	{
+		// After thread has started use the queue
+		it->second->m_RecvQueue.emplace_back(command);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,6 +305,9 @@ FSecure::C3::Interfaces::Connectors::TeamServer::Connection::Connection(std::str
 
 	if (SOCKET_ERROR == connect(m_Socket, (struct sockaddr*) & client, sizeof(client)))
 		throw FSecure::SocketsException(OBF("Could not connect to ") + std::string{ listeningPostAddress } + OBF(":") + std::to_string(listeningPostPort) + OBF("."), WSAGetLastError());
+
+	BOOL flag = TRUE;
+	setsockopt(m_Socket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,24 +370,43 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 		auto owner = m_Owner.lock();
 		auto bridge = owner->GetBridge();
 		auto self = shared_from_this();
+
 		while (bridge->IsAlive() && self.use_count() > 1)
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
 			try
 			{
 				// Read packet and post it to Binder.
 				if (auto packet = Receive(); !packet.empty())
 				{
+					// Don't forward NoOps over C3
 					if (packet.size() == 1u && packet[0] == 0u)
-						Send(packet);
+					{
+						if (m_RecvQueue.empty())
+							Send("\0"_bv);
+						else
+						{
+							// Just send one message at a time or Beacon gets slowed down from downloads/socks
+							auto msg = std::move(m_RecvQueue.front());
+							m_RecvQueue.pop_front();
+							Send(msg);
+						}
+					}
 					else
+					{
+						// Send valid Commands over C3
 						bridge->PostCommandToBinder(m_Id, packet);
+						// Send NoOp on response to all commands.
+						Send("\0"_bv);
+					}
 				}
 			}
 			catch (std::exception& e)
 			{
-				bridge->Log({ e.what(), LogMessage::Severity::Error});
+				bridge->Log({ e.what(), LogMessage::Severity::Error });
 			}
 		}
+
 	}).detach();
 }
 
@@ -393,5 +425,5 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralC
 	//	return data;
 	//}
 
-	return ByteVector{}.Write(pipeName,maxConnectionTrials, delayBetweenConnectionTrials, GeneratePayload(connectionId, pipeName, isX64, 100u));
+	return ByteVector{}.Write(pipeName, maxConnectionTrials, delayBetweenConnectionTrials, GeneratePayload(connectionId, pipeName, isX64, 1u));
 }

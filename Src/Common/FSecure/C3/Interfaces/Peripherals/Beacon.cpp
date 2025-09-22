@@ -25,7 +25,7 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	if (m_BeaconThread = CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(sehWrapper), m_BeaconStager.Get(), 0, nullptr); m_BeaconThread == INVALID_HANDLE_VALUE)
 		throw std::runtime_error{ OBF("Couldn't run payload: ") + std::to_string(GetLastError()) + OBF(".") };
 
-	std::this_thread::sleep_for(std::chrono::milliseconds{ 30 }); // Give beacon thread time to start pipe.
+	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give beacon thread time to start pipe.
 
 	// Connect to our Beacon named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionTrials; ++connectionTrial)
@@ -56,49 +56,32 @@ FSecure::C3::Interfaces::Peripherals::Beacon::~Beacon()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::Interfaces::Peripherals::Beacon::OnCommandFromConnector(ByteView data)
 {
-	// Get access to write when whole reed is done.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return !m_ReadingState || m_Close; });
-
-	if (m_Close)
-		return;
-
-	// Write
-	m_Pipe->Write(data);
-
-	// Unlock, and block writing until read is done.
-	m_ReadingState = true;
-	lock.unlock();
-	m_ConditionalVariable.notify_one();
+	m_SendQueue.emplace_back(data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Beacon::OnReceiveFromPeripheral()
 {
-	// Get Access to reed after normal write.
-	std::unique_lock<std::mutex> lock{ m_Mutex };
-	m_ConditionalVariable.wait(lock, [this]() { return m_ReadingState || m_Close; });
-
 	if (m_Close)
 		return {};
 
-	// Read
+	// No Commands to Send
+	if (m_SendQueue.empty())
+	{
+		// Send a NoOp to get any data that it is ready to send
+		m_SendQueue.emplace_back("\0"_bv);
+	}
+
+	auto msg = std::move(m_SendQueue.front());
+	m_SendQueue.pop_front();
+	m_Pipe->Write(msg);
 	auto ret = m_Pipe->Read();
 
+	// Dont transfer NoOps over the C2
 	if (IsNoOp(ret))
-	{
-		// Unlock, and block reading until write is done.
-		m_ReadingState = false;
-		lock.unlock();
-		m_ConditionalVariable.notify_one();
-	}
-	else
-	{
-		// Continue in read mode. Send no-op to beacon to get next chunk of data.
-		m_Pipe->Write("\0"_bv);
-	}
+		return {};
 
-	return  ret;
+	return ret;
 }
 
 bool FSecure::C3::Interfaces::Peripherals::Beacon::IsNoOp(ByteView data)
@@ -146,9 +129,7 @@ const char* FSecure::C3::Interfaces::Peripherals::Beacon::GetCapability()
 void FSecure::C3::Interfaces::Peripherals::Beacon::Close()
 {
 	FSecure::C3::Device::Close();
-	std::scoped_lock lock(m_Mutex);
 	m_Close = true;
-	m_ConditionalVariable.notify_one();
 }
 
 // Custom payload is removed from release.
