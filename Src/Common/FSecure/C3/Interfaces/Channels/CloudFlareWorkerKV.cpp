@@ -38,26 +38,7 @@ FSecure::C3::Interfaces::Channels::CloudFlareWorkerKV::OnReceiveFromChannel()
 
 	for (auto const& [tsStr, id] : src)
 	{
-		std::uint64_t ts = 0;
-
-		// Prefer from_chars (fast, no allocation, no locale)
-		auto const* beg = tsStr.data();
-		auto const* end = beg + tsStr.size();
-		auto res = std::from_chars(beg, end, ts);
-
-		if (res.ec != std::errc{} || res.ptr != end)
-		{
-			// Fallback if parsing fails (e.g., leading/trailing spaces)
-			// You may choose to skip/continue instead, depending on your tolerance.
-			try {
-				ts = static_cast<std::uint64_t>(std::stoull(tsStr));
-			}
-			catch (...) {
-				// Skip malformed timestamps
-				continue;
-			}
-		}
-
+		std::uint64_t ts = static_cast<std::uint64_t>(std::stoull(tsStr));
 		messages.emplace_back(ts, id);
 	}
 
