@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
@@ -37,6 +37,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureServiceBus.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureServiceBusApi\AzureServiceBusApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.cpp" />
@@ -58,6 +59,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -145,6 +148,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureServiceBusApi\AzureServiceBusApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\DirectSyscalls.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\NamedPipe.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\DropBox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
@@ -175,5 +180,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.h" />
   </ItemGroup>
 </Project>
