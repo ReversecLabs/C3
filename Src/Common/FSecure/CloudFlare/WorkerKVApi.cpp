@@ -47,8 +47,8 @@ void FSecure::WorkerKV::WriteToKeyValue(std::string const& direction, std::strin
 
 	///Create a key name thats prefixed with message direction and suffixed
 	// with more granular timestamp for querying later
-	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
-	keyname = direction + OBF("-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts;
+	std::string ts = std::to_string(FSecure::Utils::MillisecondsSinceEpoch());
+	keyname = direction + OBF("-") + FSecure::Utils::GenerateRandomString(4) + OBF("-") + ts;
 
 	std::string url = OBF("https://api.cloudflare.com/client/v4/accounts/") + this->m_AccountId + OBF("/storage/kv/namespaces/") + this->m_Namespace + OBF("/values/") + keyname;
 
@@ -125,7 +125,7 @@ std::map<std::string, std::string> FSecure::WorkerKV::GetMessagesByDirection(std
 		for (auto& match : response[OBF("result")])
 		{
 			std::string key_name = match[OBF("name")];
-			std::string ts = key_name.substr(key_name.length() - 10); // 10 = epoch time length
+			std::string ts = key_name.substr(key_name.length() - 13); // 13 = epoch time length
 
 			messages.insert({ ts, key_name });
 		}
