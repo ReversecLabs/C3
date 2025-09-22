@@ -13,8 +13,14 @@ interface OptionsState {
 // State
 
 const state: OptionsState = {
-  baseUrl: 'http://localhost',
-  port: 52935,
+  baseUrl: `${window.location.protocol}//${window.location.hostname}`,
+  port: parseInt(
+    window.location.port !== ''
+      ? window.location.port
+      : window.location.protocol === 'http:'
+      ? '80'
+      : '443'
+  ),
   refreshInterval: 2000
 };
 
