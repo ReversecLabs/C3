@@ -152,11 +152,16 @@ export default class C3 extends Vue {
   }
 
   public unixTimeToString(unixTimestamp: number) {
-    const time = new Date(unixTimestamp * 1000);
+    let time = new Date(0);
+    if (typeof unixTimestamp !== 'undefined')
+    {
+         time = new Date(unixTimestamp * 1000);
+    }
     let timeStr = time.toISOString();
     timeStr = timeStr.replace(/-/g, '/');
     timeStr = timeStr.replace('T', ' ');
     timeStr = timeStr.replace('.000Z', '');
     return timeStr;
+
   }
 }

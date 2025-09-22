@@ -230,7 +230,8 @@ export const nodes: C3Node[] = [
     parentId: '7c864a181f31cdba',
     parentKlass: NodeKlass.Gateway,
     initialCommand: {},
-    timestamp: 1565270492
+    timestamp: 1565270492,
+    initialTimestamp: 1565260492
   },
   {
     uid: '0-aa0eaa3839d6d9c8',

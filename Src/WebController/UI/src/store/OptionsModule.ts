@@ -20,7 +20,7 @@ const state: OptionsState = {
       : window.location.protocol === 'http:'
       ? '80'
       : '443'
-  ),
+  , 10),
   refreshInterval: 2000
 };
 

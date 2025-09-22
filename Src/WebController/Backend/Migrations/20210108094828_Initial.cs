@@ -74,6 +74,7 @@ namespace FSecure.C3.WebController.Migrations
                     Error = table.Column<string>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     Timestamp = table.Column<int>(nullable: false),
+                    InitialTimestamp = table.Column<int>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
                     GatewayAgentId = table.Column<ulong>(nullable: true)
                 },

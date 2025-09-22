@@ -176,7 +176,7 @@ void FSecure::C3::Core::NodeRelay::InitializeRoute()
 		throw std::runtime_error{ OBF("No GRC.") };
 
 	// And post it to Neighbor through GRC.
-	auto query = ProceduresN2N::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, GetBuildId(), m_GatewayEncryptionKey, m_MyEncryptionKey, grc->GetTypeNameHash(), FSecure::Utils::TimeSinceEpoch());
+	auto query = ProceduresN2N::InitializeRouteQuery::Create(RouteId{ GetAgentId(), grc->GetDid() }, GetBuildId(), m_GatewayEncryptionKey, m_MyEncryptionKey, grc->GetTypeNameHash(), FSecure::Utils::TimeSinceEpoch(), FSecure::Utils::TimeSinceEpoch());
 	LockAndSendPacket(query->ComposeQueryPacket(), grc);
 }
 
