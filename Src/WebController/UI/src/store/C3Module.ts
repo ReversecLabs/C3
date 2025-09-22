@@ -120,7 +120,8 @@ export const getters: GetterTree<C3State, RootState> = {
         parentId: null,
         parentKlass: NodeKlass.Gateway,
         initialCommand: {},
-        timestamp: Math.floor(Date.now() / 1000)
+        timestamp: Math.floor(Date.now() / 1000),
+        initialTimestamp: Math.floor(Date.now() / 1000)
       };
     }
 
@@ -307,6 +308,7 @@ export const mutations: MutationTree<C3State> = {
         parentKlass: NodeKlass.Gateway,
         initialCommand: relay.initialCommand || {},
         timestamp: relayTimestamp,
+        initialTimestamp: relay.initialTimestamp,
         hostInfo: relay.hostInfo
       });
 

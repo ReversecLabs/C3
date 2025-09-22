@@ -33,6 +33,7 @@ export interface C3Node {
   isActive?: boolean;
   type: number;
   timestamp?: number;
+  initialTimestamp?: number;
   error: string | null;
   initialCommand?: any;
   propertiesText?: any;
@@ -105,6 +106,7 @@ export interface C3Relay {
   routes: C3Route[];
   isActive: boolean;
   timestamp?: number;
+  initialTimestamp?: number;
   hostInfo: C3HostInfo;
 }
 
