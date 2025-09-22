@@ -26,7 +26,7 @@ Webex [supports several authentication mechanisms](https://developer.webex.com/d
 Navigate to [developer.webex.com/my-apps/new/integration](https://developer.webex.com/my-apps/new/integration) and log in with your Webex Teams account. 
 Enter an _Integration Name_, _Contact email_, _Icon_ and _description_ (these can be anything). 
 At _Redirect URI(s)_ enter `https://oauthdebugger.com/debug`. 
-Under _Permissions_, select `spark:messages_read`, `spark:messages_write`, `spark:rooms_read` and `spark:messages_write`.
+Under _Permissions_, select `spark:messages_read`, `spark:messages_write`, `spark:rooms_read` and `spark:rooms_write`.
 
 ![](../images/WebexTeamsRelayGuide/oauth-app-permissions.jpg)
 
@@ -150,3 +150,11 @@ There are several OPSEC considerations when using this channel in your engagemen
    2. The Webex API endpoint doesn't provide the contents of attachments directly. Instead, the API will provide a URL where the client can retrieve the attachment. This URL is entirely controlled by the API and C3 will blindly trust this URL. This could cause the Relay/Gateway to connect to unintended domains/endpoints. For example, if tomorrow  Cisco decides that attachments are hosted in `randomciscowebsite.com`, C3 will suddenly be making HTTP calls to `randomciscowebsite.com`, which might not be desirable in your engagement.
    
       During testing, we observed that (at this time) attachments are hosted at `webexapis.com`, however, Cisco could change this at any time. 
+	  
+## Testing
+
+Using the linter:
+
+```
+Bin\ChannelLinter_d64.exe -n WebexTeams -a "inputid" -a "outputid" -a "webexapis.com" -a "CLIENT_ID" -a "CLIENT_SECRET" -a "Refresh Token"  -a "user-agent" -a "use_attachmentsBOOL" -i
+```
