@@ -69,7 +69,7 @@ namespace FSecure.C3.WebController.Controllers
                 .Include(g => g.Build)
                 .OrderBy(gateway => gateway.AgentId)
                 .TakePage(page, perPage)
-                .Select(g => new GatewayViewModel(g));
+                .Select(g => new GatewayViewModel(g, context.Notes.Where(n => n.AgentId == g.AgentId)));
         }
 
         // GET: api/[controller]/[buildId]
@@ -96,7 +96,10 @@ namespace FSecure.C3.WebController.Controllers
             if (gateway is null)
                 return NotFound($"Gateway with id = {gatewayId} not found");
 
-            return new GatewayViewModel(gateway);
+            var agentIds = gateway.Relays.Select(r => r.AgentId).Append(gateway.AgentId);
+            var notes = context.Notes.Where(n => agentIds.Any(i => i == n.AgentId)).ToList();
+
+            return new GatewayViewModel(gateway, notes);
         }
 
         [HttpGet("{gatewayId}/capability")]

@@ -11,10 +11,10 @@ namespace FSecure.C3.WebController.Models
 
         public ICollection<Connector> Connectors { get; set; }
 
-        public GatewayViewModel(Gateway g): base(g, g.Build?.Name)
+        public GatewayViewModel(Gateway g, IEnumerable<Note> notes): base(g, notes?.FirstOrDefault(n => n.AgentId == g.AgentId))
         {
             Connectors = g.Connectors;
-            Relays = g.Relays?.Select(r => new RelayViewModel(r)).ToList();
+            Relays = g.Relays?.Select(r => new RelayViewModel(r, notes?.FirstOrDefault(n => n.AgentId == r.AgentId))).ToList();
         }
     }
 }

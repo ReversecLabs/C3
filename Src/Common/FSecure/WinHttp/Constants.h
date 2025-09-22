@@ -217,6 +217,7 @@ namespace FSecure::WinHttp
 		ApplicationHttp,
 		ApplicationJavascript,
 		ApplicationJson,
+		ApplicationJsonUtf8,
 		ApplicationXjson,
 		ApplicationOctetstream,
 		ApplicationXWwwFormUrlencoded,
@@ -245,6 +246,7 @@ namespace FSecure::WinHttp
 		case ContentType::ApplicationHttp: return OBF(L"application/http");
 		case ContentType::ApplicationJavascript: return OBF(L"application/javascript");
 		case ContentType::ApplicationJson: return OBF(L"application/json");
+		case ContentType::ApplicationJsonUtf8: return OBF(L"application/json;charset=utf-8");
 		case ContentType::ApplicationXjson: return OBF(L"application/x-json");
 		case ContentType::ApplicationOctetstream: return OBF(L"application/octet-stream");
 		case ContentType::ApplicationXWwwFormUrlencoded: return OBF(L"application/x-www-form-urlencoded");

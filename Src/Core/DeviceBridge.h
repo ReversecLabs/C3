@@ -130,6 +130,10 @@ namespace FSecure::C3::Core
 		/// @return Device this object binds Relay with.
 		std::shared_ptr<Device> GetDevice() const;
 
+		/// Generalize sending command.
+		/// @param command full Command with arguments.
+		void OnSend(ByteView command);
+
 	private:
 		bool m_IsAlive = true;																							///< False if detached and about to be destroyed.
 		const bool m_IsNegotiationChannel = false;																		///< Indicates that device is channel, and will be used in negotiation procedure.
@@ -145,5 +149,6 @@ namespace FSecure::C3::Core
 		std::shared_ptr<Device> m_Device;																				///< Device this object binds Relay with.
 		std::string m_Error;																							///< String with error text. No error if empty.
 		std::mutex m_ProtectWriteInConcurrentThreads;																	///< Allow only one thread to Write to device at one time.
+		std::deque<ByteVector> m_SendQueue;																				///< Data to be sent from channel.
 	};
 }
