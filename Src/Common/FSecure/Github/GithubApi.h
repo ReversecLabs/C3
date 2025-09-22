@@ -11,11 +11,19 @@ namespace FSecure
 	class GithubApi
 	{
 	public:
+		struct FileEntry
+		{
+			FileEntry(std::string name, std::string sha, std::string downloadUrl);
+
+			std::string m_Name;
+			std::string m_Sha;
+			std::string m_DownloadUrl;
+		};
 
 		/// Constructor for the Github Api class.
 		GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent);
-		
-		/// Retrieve the Github Username and initialise  for the instance
+
+		/// Retrieve the Github Username and initialise for the instance
 		void SetUser();
 
 		/// set OAuth token for Github
@@ -25,7 +33,7 @@ namespace FSecure
 		/// set UserAgent for Github HTTP Request
 		/// @param userAgent
 		void SetUserAgent(std::string const& userAgent);
-		
+
 		/// Set the channel (i.e. Github repository) that this object uses for communications
 		/// @param channelName - the channel name Id (not name), for example CGPMGFGSH.
 		void SetChannel(std::string const& channelName);
@@ -41,23 +49,18 @@ namespace FSecure
 		std::map<std::string, std::int64_t> ListChannels();
 
 		/// Download file by its path.
-		/// @param filename - path of file and the size. Format "filename:filesize"
-		/// @return - string of file content
-		FSecure::ByteVector ReadFile(std::string const& fileNameSHA);
+		/// @param fileDownloadURL - file download url
+		/// @return file content
+		FSecure::ByteVector ReadFile(std::string const& fileDownloadURL);
 
 		/// Write a message as the contents of a file and upload to Github.
-		/// @param direction - the name of the file to upload
 		/// @param data - the text of the message
-		/// @param filename - optional custom filename for uploaded file
-		void WriteMessageToFile(std::string const& direction = "", ByteView data = {}, std::string const& providedFilename = "");
-
-		/// Upload a file in its entirety to Github
-		/// @param path - path to file for upload
-		void UploadFile(std::string const& path);
+		/// @param filename - filename for uploaded file
+		void UploadFile(ByteView data, std::string const& filename);
 
 		/// Delete a file
 		/// @param filename - the full path of the file on Github.
-		void DeleteFile(std::string const& filename);
+		void DeleteFile(FileEntry const& filename);
 
 		/// Delete channel folder and all files within Github
 		void DeleteAllFiles();
@@ -65,8 +68,7 @@ namespace FSecure
 		/// Get all of the files representing messages by a direction. This is a C3 specific method, used by a server relay to get client messages and vice versa.
 		/// @param direction - the direction to search for (eg. "S2C").
 		/// @return - a map of timestamp and file id, where id allows replies to be read later
-		std::map<std::string, std::string> GetMessagesByDirection(std::string const& direction);
-
+		std::vector<FileEntry> GetMessagesByDirection(std::string const& direction);
 
 		/// Default constructor.
 		GithubApi() = default;
@@ -85,7 +87,7 @@ namespace FSecure
 		/// The Github OAuth Token that allows the object access to the account. Needs to be manually created as described in documentation.
 		std::string m_Token;
 
-		/// UserAgent 
+		/// UserAgent
 		std::string m_UserAgent;
 
 

@@ -1,5 +1,14 @@
 # c3
 
+## Dependencies
+
+Install node v12 (https://nodejs.org/en/download/archive/v12.22.12) with all dependencies. Should install VS 2017 build tools.
+
+From the Visual Studio 2017 Command Prompt:
+
+```npm i``` 
+
+May need to follow these instructions to install `C:\GTK` https://github.com/Automattic/node-canvas/wiki/Installation:-Windows
 ## Project setup
 
 ```

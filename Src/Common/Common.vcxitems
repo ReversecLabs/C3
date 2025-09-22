@@ -37,7 +37,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\TCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
@@ -46,20 +46,22 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Slack\SlackApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\AddrInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\DuplexConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\InitializeSockets.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Sockets\Socket.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\AbstractService.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.cpp" />
@@ -68,6 +70,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.h" />
@@ -97,6 +100,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
@@ -111,6 +116,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sql\Sql.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Config.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Constants.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Handles\HttpConnection.h" />
@@ -178,6 +184,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\UniqueHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\XError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
   </ItemGroup>
