@@ -125,7 +125,9 @@ const char* FSecure::C3::Interfaces::Channels::Github::GetCapability()
 			{
 				"type": "string",
 				"name": "User-Agent Header",
-				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
+				"description": "The User-Agent header to set. The API requires a UA is set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning.",
+				"min": 1,
+				"defaultValue": "GitHub CLI v1.2.3"
 			}
 		]
 	},
