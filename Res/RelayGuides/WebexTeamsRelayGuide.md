@@ -28,11 +28,11 @@ Enter an _Integration Name_, _Contact email_, _Icon_ and _description_ (these ca
 At _Redirect URI(s)_ enter `https://oauthdebugger.com/debug`. 
 Under _Permissions_, select `spark:messages_read`, `spark:messages_write`, `spark:rooms_read` and `spark:messages_write`.
 
-![](images/webexteams/oauth-app-permissions.jpg)
+![](../images/WebexTeamsRelayGuide/oauth-app-permissions.jpg)
 
 Once the integration is created, you'll notice the _OAuth Settings_ section. Make note of the `Client ID` and `Client Secret` (you'll need these later).
 
-![](images/webexteams/oauth-app-secret.jpg)
+![](../images/WebexTeamsRelayGuide/oauth-app-secret.jpg)
 
 #### Step 3: Authorize the Integration
 
@@ -40,15 +40,15 @@ Next, we need to authorize the application and obtain an authorization code.
 
 On the page with the Integration details, you'll see the _OAuth Authorization URL_. Browse to this URL and log in with your Webex account, if requested.
 
-![](images/webexteams/oauth-app-authorization-url.jpg)
+![](../images/WebexTeamsRelayGuide/oauth-app-authorization-url.jpg)
 
 On the authorization screen, click "Accept". This authorizes the OAuth application to interact with Webex Teams on your behalf. 
 
-![](images/webexteams/oauth-app-authorization.jpg)
+![](../images/WebexTeamsRelayGuide/oauth-app-authorization.jpg)
 
 You'll be redirected to oauthdebugger.com (the `Redirect URL` we set earlier). Make note of the `Authorization Code` (you'll need this later).
 
-![](images/webexteams/oauth-app-authorization-code.jpg)
+![](../images/WebexTeamsRelayGuide/oauth-app-authorization-code.jpg)
 
 #### Step 4: Obtain a `refresh token`
 
@@ -82,7 +82,7 @@ This section will cover how to create the C3 channel in the C3 web interface.
 
 In the C3 web interface, select the desired node (usually the Gateway) and select `AddNegotiationChannelWebexTeams` or `AddChannelWebexTeams`. 
 
-![](images/webexteams/c3-channel-options.jpg)
+![](../images/WebexTeamsRelayGuide/c3-channel-options.jpg)
 
 The interface presents several options:
 
@@ -97,7 +97,7 @@ Once the channel is created, you can create a new Relay with the same options.
 
 If you're nearing the expiration deadline of your `refresh_token`, you can instruct an existing C3 channel to use a new `refresh_token`. To do so, select the channel in the C3 web interface and issue the command "Assign new refresh token".
 
-![](images/webexteams/c3-new-refresh-token.jpg)
+![](../images/WebexTeamsRelayGuide/c3-new-refresh-token.jpg)
 
 **Note:** Relays and Gateways communicate using two different C3 channels (purple and green in the web interface). You'll need to assign a new refresh token to both channels to ensure Gateway and Relay can communicate in both directions.
 
@@ -109,7 +109,7 @@ This channel implementation uses the Cisco Webex Teams API to exchange data betw
 
 When a new C3 channel is initialized, it will retrieve the Webex room (or create a new one) based on the channel ID. The channel ID is used as the 'title' for the room. You can see this happening in the [Webex web UI](https://web.webex.com).
 
-![](images/webexteams/webex-spaces.jpg)
+![](../images/WebexTeamsRelayGuide/webex-spaces.jpg)
 
 Once the room is created, C3 will start sending messages across. 
 
