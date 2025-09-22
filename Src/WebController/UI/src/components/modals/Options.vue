@@ -37,7 +37,7 @@
           v-on:click="saveNetworkConfig()"
           :disabled="!isFormValid"
         >
-          Save Confing
+          Save Config
         </button>
       </dir>
     </div>
