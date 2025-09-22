@@ -24,6 +24,7 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | Asana                   | [@tvgdb2](https://twitter.com/tvgdb2)            |
 | GitHub                  | [@sunn_y_k](https://twitter.com/sunn_y_k)            |
 | Dropbox                 | [@adm1nPanda](https://twitter.com/adm1nPanda)            |
+| Cisco WebEx Teams       | [@tvgdb](https://github.com/tvgdb) |
 | JIRA                    |             |
 | Discord                 |             |
 | GoogleDrive             |             |
@@ -31,9 +32,9 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | EWS Tasks               |             |
 | OneDrive 365 Rest File  |             |
 | OneDrive 365 Rest Task  |             |
-| Zoom Chat API           |             |
-| TCP                     |             |
-| Azure Service Bus       |             |
+
+
+
 
 ### Internal Channels
 
@@ -43,6 +44,7 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | UNC Share File          |             |
 | LDAP                    |             |
 | Printer Jobs                   |             |
+
 
 
 ## Detection
