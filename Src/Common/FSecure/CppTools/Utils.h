@@ -129,6 +129,12 @@ namespace FSecure::Utils
 		return static_cast<int32_t>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count());
 	}
 
+	/// Impersonation of Y2038 problem
+	inline uint64_t MillisecondsSinceEpoch()
+	{
+		return static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch().count());
+	}
+
 	/// @brief milliseconds precision timestamp (_not_ the number of milliseconds since UNiX epoch)
 	inline uint64_t MillisecondsTimestamp()
 	{

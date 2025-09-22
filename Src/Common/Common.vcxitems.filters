@@ -48,7 +48,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\NamedPipe.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\TCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Dropbox\DropboxApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.cpp" />
@@ -61,6 +60,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
@@ -182,5 +183,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WebexTeams\WebexTeamsApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.h" />
   </ItemGroup>
 </Project>
