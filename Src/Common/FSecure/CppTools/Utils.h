@@ -130,7 +130,7 @@ namespace FSecure::Utils
 	}
 
 	/// @brief milliseconds precision timestamp (_not_ the number of milliseconds since UNiX epoch)
-	inline uint64_t MilisecondsTimestamp()
+	inline uint64_t MillisecondsTimestamp()
 	{
 		return static_cast<uint64_t>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).time_since_epoch().count());
 	}
