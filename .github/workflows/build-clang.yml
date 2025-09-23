@@ -11,15 +11,13 @@ jobs:
     name: Build C3 (Clang)
     strategy:
       matrix:
-        platfom: [x86, x64]
+        platform: [x86, x64]
         configuration: [ClangDebug, ClangRwdi, ClangRelease]
     runs-on: windows-2022
     
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
-      with:
-        vs-version: '[16.10]'
         
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
