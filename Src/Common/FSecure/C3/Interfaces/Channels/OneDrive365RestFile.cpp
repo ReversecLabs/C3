@@ -19,7 +19,7 @@ FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::ItemEndpoint = OBF("https://graph.microsoft.com/v1.0/me/drive/items/");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::ListEndpoint = OBF("https://graph.microsoft.com/v1.0/me/drive/root/children");
 FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::TokenEndpoint = OBF("https://login.windows.net/organizations/oauth2/v2.0/token");
-FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::Scope = OBF("files.readwrite.all");
+FSecure::Crypto::String FSecure::C3::Interfaces::Channels::OneDrive365RestFile::Scope = OBF("https://graph.microsoft.com/.default offline_access");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OneDrive365RestFile(ByteView arguments)
