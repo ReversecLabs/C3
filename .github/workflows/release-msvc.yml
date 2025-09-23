@@ -1,3 +1,5 @@
+name: Build C3 Release Artifact (MSVC)
+
 on:
   release:
     types: [published]
