@@ -18,6 +18,11 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
+      
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '3.1.x'
         
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
