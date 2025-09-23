@@ -27,7 +27,7 @@ jobs:
       run: msbuild Src/C3.sln "/t:restore"
 
     - name: Build MSVC
-      run: msbuild Src/C3.sln /p:Platform=${{ matrix.platform }} /p:Configuration=${{ matrix.configuration }}
+      run: msbuild Src/C3.sln /p:Platform=${{ matrix.platform }} /p:Configuration=${{ matrix.configuration }} /t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter
     
     - name: Build WebService
       run: dotnet publish -p:Platform=any -c ${{ matrix.configuration }} Src/WebController/Backend -o Bin/WebController 
