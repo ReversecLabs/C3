@@ -40,20 +40,25 @@ jobs:
     - name: Build WebService
       run: dotnet publish -p:Platform=any -c ${{ matrix.configuration }} Src/WebController/Backend -o Bin/WebController
       
-    - name: Copy Gateway Configuration
-      run: copy Res\GatewayConfiguration.json Bin\GatewayConfiguration.json
 
-    - name: Copy Web Controller Startup Script
-      run: copy StartWebController.cmd Bin\StartWebController.cmd
-      
-    - name: Copy Web Controller Restart Script
-      run: copy RestartWebController.cmd Bin\RestartWebController.cmd
-      
+    - name: Prepare Build Output Structure
+      run: |
+        mkdir Build
+        mkdir Build\Bin
+        mkdir Build\Bin\WebController
+
+        copy StartWebController.cmd Build\StartWebController.cmd
+        copy RestartWebController.cmd Build\RestartWebController.cmd
+        copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+        xcopy /E /I /Y Bin\WebController Build\Bin\WebController
+        xcopy /E /I /Y Bin Build\Bin
+
     - name: Upload Release Artifacts
       if: matrix.configuration == 'Release'
       uses: actions/upload-artifact@v3
       with:
-        name: C3-${{ matrix.platform }}-Release
-        path: Bin/**
+        name: C3-Release
+        path: Build/**
+
 
         
