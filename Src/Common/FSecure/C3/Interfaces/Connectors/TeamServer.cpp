@@ -406,7 +406,6 @@ void FSecure::C3::Interfaces::Connectors::TeamServer::Connection::StartUpdatingI
 				bridge->Log({ e.what(), LogMessage::Severity::Error });
 			}
 		}
-
 	}).detach();
 }
 
@@ -417,7 +416,7 @@ bool FSecure::C3::Interfaces::Connectors::TeamServer::Connection::SecondThreadSt
 
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, maxConnectionTrials, delayBetweenConnectionTrials/*, payload*/] = data.Read<std::string, uint16_t, uint16_t/*, ByteView*/>();
+	auto [pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls/*, payload*/] = data.Read<std::string, uint16_t, uint16_t, bool/*, ByteView*/>();
 
 	// custom payload is removed from release.
 	//if (!payload.empty())
@@ -425,5 +424,5 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralC
 	//	return data;
 	//}
 
-	return ByteVector{}.Write(pipeName, maxConnectionTrials, delayBetweenConnectionTrials, GeneratePayload(connectionId, pipeName, isX64, 1u));
+	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, isX64,1u));
 }

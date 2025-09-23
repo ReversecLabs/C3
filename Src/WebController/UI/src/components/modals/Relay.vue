@@ -23,6 +23,9 @@
             Build ID <span>{{ relay.buildId }}</span>
           </p>
           <p>
+            First seen <span>{{ unixTimeToString(relay.initialTimestamp) }}</span>
+          </p>
+          <p>
             Last seen <span>{{ unixTimeToString(relay.timestamp) }}</span>
           </p>
         </div>

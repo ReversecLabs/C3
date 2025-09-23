@@ -262,6 +262,7 @@ void FSecure::C3::Core::Profiler::RestoreFromSnapshot()
 				relay["buildId"].get<std::string>(),
 				base64::decode<ByteVector>(relay["publicKey"].get<std::string>()),
 				false,
+				relay["initialTimestamp"].get<int32_t>(),
 				relay["timestamp"].get<int32_t>(),
 				HostInfo(relay["hostInfo"])
 			);
@@ -426,8 +427,8 @@ json FSecure::C3::Core::Profiler::Gateway::CreateProfileSnapshot() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Core::Profiler::Agent::Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo)
-	: Relay(owner, agentId, buildId, lastSeen)
+FSecure::C3::Core::Profiler::Agent::Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t firstSeen, int32_t lastSeen, bool isX64, HostInfo hostInfo)
+	: Relay(owner, agentId, buildId, firstSeen, lastSeen)
 	, m_EncryptionKey(encryptionKey)
 	, m_HostInfo(std::move(hostInfo))
 	, m_IsBanned(isBanned)
@@ -445,6 +446,7 @@ json FSecure::C3::Core::Profiler::Agent::CreateProfileSnapshot() const
 		{ "publicKey", m_EncryptionKey.ToBase64() },
 		{ "_LastDeviceId", m_LastDeviceId },
 		{ "timestamp", m_LastSeen },
+		{ "initialTimestamp", m_FirstSeen },
 		{ "hostInfo", m_HostInfo },
 		{ "isActive", FSecure::Utils::TimeSinceEpoch() - m_LastSeen < 300 }
 	};
@@ -768,7 +770,7 @@ FSecure::C3::Core::Profiler::Channel* FSecure::C3::Core::Profiler::Agent::FindGr
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Core::Profiler::Gateway::Gateway(std::weak_ptr<Profiler> owner, std::string name, std::shared_ptr<GateRelay> gateway)
-	: Relay(owner, gateway->m_AgentId, gateway->m_BuildId, FSecure::Utils::TimeSinceEpoch())
+	: Relay(owner, gateway->m_AgentId, gateway->m_BuildId, FSecure::Utils::TimeSinceEpoch(), FSecure::Utils::TimeSinceEpoch())
 	, m_Name(std::move(name))
 	, m_Gateway(gateway)
 {
@@ -1130,23 +1132,23 @@ void FSecure::C3::Core::Profiler::Gateway::ReDeletePeripheral(DeviceId iidOfDevi
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Core::Profiler::Agent* FSecure::C3::Core::Profiler::Gateway::ReAddAgent(AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, HostInfo hostInfo)
+FSecure::C3::Core::Profiler::Agent* FSecure::C3::Core::Profiler::Gateway::ReAddAgent(AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t firstSeen, int32_t lastSeen, HostInfo hostInfo)
 {
 	auto build = m_AgentBuilds.find(buildId);
 	if (build == m_AgentBuilds.cend())
 		throw std::runtime_error{ "Tried to add agent with unknown buildId" };
 	if (build->second.m_IsBanned)
 		return nullptr;
-	auto agent = m_Agents.Add(agentId, Agent{ m_Owner, agentId, buildId, encryptionKey, isBanned, lastSeen, build->second.m_IsX64, std::move(hostInfo) });
+	auto agent = m_Agents.Add(agentId, Agent{ m_Owner, agentId, buildId, encryptionKey, isBanned, firstSeen, lastSeen, build->second.m_IsX64, std::move(hostInfo) });
 	agent->AddScheduledDevice(0u, build->second.m_StartupCmd);
 	return agent;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Core::Profiler::Agent* FSecure::C3::Core::Profiler::Gateway::ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t lastSeen, HostInfo hostInfo)
+FSecure::C3::Core::Profiler::Agent* FSecure::C3::Core::Profiler::Gateway::ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t firstSeen, int32_t lastSeen, HostInfo hostInfo)
 {
 	// add agent
-	auto newAgent = ReAddAgent(childRouteId.GetAgentId(), buildId, encryptionKey, false, lastSeen, std::move(hostInfo)); // TODO check if is banned
+	auto newAgent = ReAddAgent(childRouteId.GetAgentId(), buildId, encryptionKey, false, firstSeen, lastSeen, std::move(hostInfo)); // TODO check if is banned
 
 	// add routes
 	Relay* current = this;
@@ -1376,10 +1378,11 @@ void FSecure::C3::Core::Profiler::Route::RunCommand(ByteView commandWithArgument
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Core::Profiler::Relay::Relay(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, int32_t lastSeen)
+FSecure::C3::Core::Profiler::Relay::Relay(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, int32_t firstSeen, int32_t lastSeen)
 	: ProfileElement(owner)
 	, m_Id(agentId)
 	, m_BuildId(buildId)
+	, m_FirstSeen(firstSeen)
 	, m_LastSeen(lastSeen)
 {
 }

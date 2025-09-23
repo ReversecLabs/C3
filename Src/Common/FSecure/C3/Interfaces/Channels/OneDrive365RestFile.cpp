@@ -48,6 +48,7 @@ size_t FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnSendToChannel(B
 
 		auto body = fileData.dump();
 		request.SetData(ContentType::TextPlain, { body.begin(), body.end() });
+		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		EvaluateResponse(webClient.Request(request));
 
 		return chunkSize;
@@ -76,6 +77,7 @@ std::vector<FSecure::ByteVector> FSecure::C3::Interfaces::Channels::OneDrive365R
 			//download the file
 			auto  webClientFile = HttpClient{ Convert<Utf16>(element.at(OBF("@microsoft.graph.downloadUrl")).get<std::string>()), m_ProxyConfig };
 			auto request = CreateAuthRequest();
+			request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 			auto resp = webClientFile.Request(request);
 			EvaluateResponse(resp);
 
@@ -123,3 +125,4 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::OneDrive365RestFile::OnRu
 		return AbstractChannel::OnRunCommand(commandCopy);
 	}
 }
+
