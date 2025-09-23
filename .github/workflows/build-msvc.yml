@@ -3,6 +3,7 @@ name: Build C3 (MSVC)
 on:
   push:
     branches: [ master ]
+    tags: ['v*.*.*']
   pull_request:
     branches: [ master ]
 
@@ -45,19 +46,32 @@ jobs:
       run: |
         mkdir Build
         mkdir Build\Bin
-        mkdir Build\Bin\WebController
 
         copy StartWebController.cmd Build\StartWebController.cmd
         copy RestartWebController.cmd Build\RestartWebController.cmd
         copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
-        xcopy /E /I /Y Bin\WebController Build\Bin\WebController
+        xcopy /E /I /Y Bin\WebController Build\WebController
+        rmdir Bin\WebController
         xcopy /E /I /Y Bin Build\Bin
+        Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+        
+    - name: Set artifact name
+      id: artifact_name
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "name=C3-pr-${{ github.event.pull_request.number }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref_type }}" = "tag" ]; then
+          echo "name=C3-${{ github.ref_name }}-Release" >> $GITHUB_OUTPUT
+        else
+          echo "name=C3-${{ github.run_number }}-Release" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
 
     - name: Upload Release Artifacts
       if: matrix.configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: C3-Release
+        name: ${{ steps.artifact_name.outputs.name }}
         path: Build/**
 
 
