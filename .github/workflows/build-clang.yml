@@ -3,15 +3,16 @@ name: Build C3 (Clang)
 on:
   push:
     branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
     name: Build C3 (Clang)
     strategy:
       matrix:
-        configuration: [ClangDebug, ClangRwdi, ClangRelease]
+        configuration: [ClangRelease]      
+#        configuration: [ClangDebug, ClangRwdi, ClangRelease]
     runs-on: windows-2022
     
     steps:
