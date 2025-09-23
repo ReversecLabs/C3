@@ -3,6 +3,7 @@
 #include "Common/FSecure/Crypto/Base64.h"
 #include "GateRelay.h"
 #include "NodeRelay.h"
+#include <ctime>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Anonymous namespace with helpers.
@@ -118,10 +119,31 @@ std::shared_ptr<FSecure::C3::Relay> FSecure::C3::Utils::CreateNodeRelayFromImage
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::string GetCurrentTimestamp()
+{
+
+	std::time_t now = std::time(nullptr);
+	std::tm timeInfo{};
+
+	// Convert to local time safely
+	if (localtime_s(&timeInfo, &now) != 0)
+		return "[Invalid Time] ";
+
+	char buf[32]; // Format: [YYYY-MM-DD HH:MM:SS]
+	if (std::strftime(buf, sizeof(buf), "[%Y-%m-%d %H:%M:%S] ", &timeInfo) == 0)
+		return "[Time Format Error] ";
+
+	return std::string(buf);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string FSecure::C3::Utils::ConvertLogMessageToConsoleText(std::string_view relayName, LogMessage const& message, std::string_view sender)
 {
+	// Format message as: "[timestamp][relay]|@> [InterfaceID] message"
+	std::string retVal = GetCurrentTimestamp();
+
 	// Format message as: "[relay]|@> [InterfaceID] message", where @ is different for each severity.
-	std::string retVal = sender.empty() ? (std::string(relayName) + '|') : ""s;
+	retVal += sender.empty() ? (std::string(relayName) + '|') : ""s;
 
 	switch (message.m_Severity)
 	{

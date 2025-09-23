@@ -2,15 +2,15 @@
 
 ![C3](Res/Images/C3.png)
 
-![Build C3 (MSVC)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
+![Build C3 (MSVC)](https://github.com/ReversecLabs/C3/workflows/Build%20C3%20(MSVC)/badge.svg)
 
-![Build C3 (Clang)](https://github.com/FSecureLABS/C3/workflows/Build%20C3%20(Clang)/badge.svg)
+![Build C3 (Clang)](https://github.com/ReversecLabs/C3/workflows/Build%20C3%20(Clang)/badge.svg)
 
-C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly develop and utilise esoteric command and control channels (C2). It's a framework that extends other red team tooling, such as the commercial Cobalt Strike (CS) product via [ExternalC2](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), which is supported at release. It allows the Red Team to concern themselves only with the C2 they want to implement; relying on the robustness of C3 and the CS tooling to take care of the rest. This efficiency and reliability enable Red Teams to operate safely in critical client environments (by assuring a professional level of stability and security); whilst allowing for safe experimentation and rapid deployment of customised Tactics, Techniques and Procedures (TTPs). Thus, empowering Red Teams to emulate and simulate an adaptive real-world attacker.
+C3 (Custom Command and Control) is a tool that allows Red Teams to rapidly develop and utilise esoteric command and control channels (C2). It's a framework that extends other red team tooling, such as the commercial Cobalt Strike (CS) product via [ExternalC2](https://hstechdocs.helpsystems.com/manuals/cobaltstrike/current/userguide/content/externalc2spec.pdf), which is supported at release. It allows the Red Team to concern themselves only with the C2 they want to implement; relying on the robustness of C3 and the CS tooling to take care of the rest. This efficiency and reliability enable Red Teams to operate safely in critical client environments (by assuring a professional level of stability and security); whilst allowing for safe experimentation and rapid deployment of customised Tactics, Techniques and Procedures (TTPs). Thus, empowering Red Teams to emulate and simulate an adaptive real-world attacker.
 
 ## Usage
 
-See [this](https://labs.withsecure.com/tools/c3) blog post for a detailed tutorial. 
+See [this](https://labs.reversec.com/tools/c3) blog post for a detailed tutorial. 
 
 For contribution guide (how to develop a Channel tutorials), see [this page](CONTRIBUTING.md).
 
@@ -24,6 +24,7 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | Asana                   | [@tvgdb2](https://twitter.com/tvgdb2)            |
 | GitHub                  | [@sunn_y_k](https://twitter.com/sunn_y_k)            |
 | Dropbox                 | [@adm1nPanda](https://twitter.com/adm1nPanda)            |
+| Cisco WebEx Teams       | [@tvgdb2](https://twitter.com/tvgdb2) |
 | JIRA                    |             |
 | Discord                 |             |
 | GoogleDrive             |             |
@@ -31,6 +32,9 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | EWS Tasks               |             |
 | OneDrive 365 Rest File  |             |
 | OneDrive 365 Rest Task  |             |
+
+
+
 
 ### Internal Channels
 
@@ -42,11 +46,12 @@ For contribution guide (how to develop a Channel tutorials), see [this page](CON
 | Printer Jobs                   |             |
 
 
+
 ## Detection
-- [Hunting for C3 (release blog)](https://labs.f-secure.com/blog/hunting-for-c3/)
-- [Attack Detection Fundamentals C2 and Exfiltration Lab - Dropbox](https://labs.f-secure.com/blog/attack-detection-fundamentals-c2-and-exfiltration-lab-3)
-- [Attack Detection Fundamentals Discovery and Lateral Movement Lab - UNC Share File](https://labs.f-secure.com/blog/attack-detection-fundamentals-discovery-and-lateral-movement-lab-3/)
-- [Using and detecting C2 printer pivoting](https://labs.f-secure.com/blog/print-c2/)
+- [Hunting for C3 (release blog)](https://labs.withsecure.com/publications/hunting-for-c3)
+- [Attack Detection Fundamentals C2 and Exfiltration Lab - Dropbox](https://labs.reversec.com/posts/2020/07/attack-detection-fundamentals-c2-and-exfiltration-lab-3)
+- [Attack Detection Fundamentals Discovery and Lateral Movement Lab - UNC Share File](https://labs.reversec.com/posts/2020/07/attack-detection-fundamentals-discovery-and-lateral-movement-lab-4)
+- [Using and detecting C2 printer pivoting](https://labs.reversec.com/posts/2020/11/using-and-detecting-c2-printer-pivoting)
 - [Black Hat USA 2021 - I'm a Hacker Get Me Out of Here! Breaking Network Segregation Using Esoteric Command & Control Channels](http://i.blackhat.com/USA21/Wednesday-Handouts/us-21-Coote-Im-A-Hacker-Get-Me-Out-Of-Here-Breaking-Network-Segregation-Using-Esoteric-Command-Control-Channels.pdf)
 - [Pursuing Evasive Custom Command & Control - Guide M - ROOTCON](https://media.rootcon.org/ROOTCON%2014%20(Recovery%20Mode)/Talks/Pursuing%20Evasive%20Custom%20Command%20&%20Control%20(C3).pdf)
 - [YARA Rule - C3 Reflective DLL Usage](https://gist.github.com/ajpc500/9ae6eb427375438f906b0bf394813bc5)
@@ -76,35 +81,14 @@ The most commonly used terms in C3:
 - `Route` - a "path" to a `Node Relay`. Every `Relay` keeps a table of all of their child `Relays` (and grandchildren, grand-grandchildren, and so on) along with `Channel` `Device IDs` used to reach that particular `Relay` (see `Route ID`). When a packet from the `Gateway` arrives to a `Node Relay`, routing table is used to choose appropriate `Channel` to send the packet through to the recipient.
 - `Update Delay Jitter` - delay between successive updates of an `Interface` (in case of `Channels` - calls to OnReceiveFromChannel method). Can be set to be randomized in provided range of time values.
 
-## License
+## Building
 
-BSD 3-Clause License
+To install the necessary packages to compile C3 the following individual components need to be added to the Visual Studio environment. This can be achieved by using the VS setup.exe (e.g. "c:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"), selecting Modify and adding the following individual components:
 
-Copyright (c) 2019-2020, F-Secure
-Copyright (c) 2018-2019, MWR Infosecurity
-All rights reserved.
+- .NET 7.0
+- .NET Core 3.1 Runtime (Out of support)
+- MSVC v142 - VS 2019 C++ x64/x86 build tools
+- (Optional) C++ Clang tools for Windows for clang builds
+- (Optional) MSBuild support for LLVM (clang-cl) toolset
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its
-   contributors may be used to endorse or promote products derived from
-   this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Once these components are installed launch the Visual Studio Developer Command Prompt and run the CreateBuild.bat file. The output should be present in the Builds directory.

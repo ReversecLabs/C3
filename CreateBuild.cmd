@@ -55,12 +55,16 @@ if ""=="%~1" (
 )
 
 ECHO.
+ECHO Restore...
+%BuildTool% /m /nologo /verbosity:quiet /consoleloggerparameters:summary Src /t:restore || GOTO :ERROR
+
+ECHO.
 ECHO Building x64 binaries...
-%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:restore" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x64" || GOTO :ERROR
+%BuildTool% /m /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x64" || GOTO :ERROR
 
 ECHO.
 ECHO Building x86 binaries...
-%BuildTool% /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:restore" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x86" || GOTO :ERROR
+%BuildTool% /m /nologo /verbosity:quiet /consoleloggerparameters:summary "Src" "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader" "/p:Configuration=Release" "/p:Platform=x86" || GOTO :ERROR
 
 ECHO.
 ECHO Copying binaries...
@@ -81,8 +85,8 @@ COPY "Res\\GatewayConfiguration.json" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\Bi
 ECHO.
 ECHO Building WebController...
 IF EXIST "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController" (RMDIR /s /q "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController") || GOTO :ERROR
-dotnet publish -c Release "Src\\WebController\\Backend" || GOTO :ERROR
-XCOPY /s /q "Bin\\WebController\\Release\\netcoreapp3.1\\publish" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\" || GOTO :ERROR
+dotnet publish -p:Platform=any -c Release "Src\\WebController\\Backend" -o "Bin\\WebController" || GOTO :ERROR
+XCOPY /s /q "Bin\\WebController\\" "%BUILDS_PATH%\\%BUILD_FULL_SIGNATURE%\\WebController\\" || GOTO :ERROR
 
 ECHO.
 ECHO Copying scripts...
