@@ -49,7 +49,7 @@ jobs:
 #        copy RestartWebController.cmd Build\RestartWebController.cmd
 #        copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
 #        Move-Item Bin\WebController Build\WebController
-#        Move-Item Bin Build\
+#        Move-Item Bin\* Build\Bin
 #        Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
 #        
 #    - name: Set artifact name
