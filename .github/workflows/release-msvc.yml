@@ -1,0 +1,62 @@
+name: Build C3 (MSVC)
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build C3 (MSVC)
+    runs-on: windows-2022
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup .NET Core 3.1
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '3.1.x'
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Dotnet restore
+        run: msbuild Src/C3.sln "/t:restore"
+
+      - name: Build MSVC x86
+        run: msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=Release "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
+
+      - name: Build MSVC x64
+        run: msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=Release "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
+
+      - name: Build WebService
+        run: dotnet publish -p:Platform=any -c Release Src/WebController/Backend -o Bin/WebController
+
+      - name: Prepare Build Output Structure
+        run: |
+          mkdir Build
+
+          copy StartWebController.cmd Build\StartWebController.cmd
+          copy RestartWebController.cmd Build\RestartWebController.cmd
+          copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+
+          Move-Item Bin\WebController Build\WebController
+          Move-Item Bin Build\Bin
+          Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+
+
+        - name: Build and Zip Artifact
+          run: |
+            powershell Compress-Archive -Path Build\* -DestinationPath C3-${{ github.event.release.tag_name }}-Release.zip
+
+          
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: C3-${{ github.event.release.tag_name }}-Release.zip
+          asset_name: C3-${{ github.event.release.tag_name }}-Release.zip
+          asset_content_type: application/zip
+

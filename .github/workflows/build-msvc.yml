@@ -3,6 +3,7 @@ name: Build C3 (MSVC)
 on:
   push:
     branches: [ master ]
+    tags: ['v*.*.*']
   pull_request:
     branches: [ master ]
 
@@ -11,8 +12,8 @@ jobs:
     name: Build C3 (MSVC)
     strategy:
       matrix:
-        platform: [x86, x64]
-        configuration: [Debug, ReleaseWithDebInfo, Release]
+        configuration: [Release]
+#        configuration: [Debug, ReleaseWithDebInfo, Release]
     runs-on: windows-2022
     
     steps:
@@ -31,9 +32,41 @@ jobs:
     - name: Dotnet restore
       run: msbuild Src/C3.sln "/t:restore"
 
-    - name: Build MSVC
-      run: msbuild Src/C3.sln /p:Platform=${{ matrix.platform }} /p:Configuration=${{ matrix.configuration }} "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
-    
+    - name: Build MSVC x86
+      run: msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=${{ matrix.configuration }} "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
+  
+    - name: Build MSVC x64
+      run: msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=${{ matrix.configuration }} "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
+      
     - name: Build WebService
-      run: dotnet publish -p:Platform=any -c ${{ matrix.configuration }} Src/WebController/Backend -o Bin/WebController 
-        
+      run: dotnet publish -p:Platform=any -c ${{ matrix.configuration }} Src/WebController/Backend -o Bin/WebController
+      
+#    - name: Prepare Build Output Structure
+#      run: |
+#        mkdir Build
+#
+#        copy StartWebController.cmd Build\StartWebController.cmd
+#        copy RestartWebController.cmd Build\RestartWebController.cmd
+#        copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+#        Move-Item Bin\WebController Build\WebController
+#        Move-Item Bin Build\Bin
+#        Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+#        
+#    - name: Set artifact name
+#      id: artifact_name
+#      run: |
+#        if [ "${{ github.event_name }}" = "pull_request" ]; then
+#          echo "name=C3-pr-${{ github.event.pull_request.number }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+#        elif [ "${{ github.ref_type }}" = "tag" ]; then
+#          echo "name=C3-${{ github.ref_name }}-Release" >> $GITHUB_OUTPUT
+#        else
+#          echo "name=C3-${{ github.run_number }}-Release" >> $GITHUB_OUTPUT
+#        fi
+#      shell: bash
+#
+#    - name: Upload Release Artifacts
+#      if: matrix.configuration == 'Release'
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: ${{ steps.artifact_name.outputs.name }}
+#        path: Build/**      
