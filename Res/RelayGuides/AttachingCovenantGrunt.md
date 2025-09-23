@@ -1,12 +1,22 @@
-To integrate with the latest Covenant version a 1-line modification to the Covenant source code is required:
+This section demonstrates how to use the new integration of the Covenant C2 framework. The process is described below.
 
+A 1-line modification is required to the Covenant C2 source code to allow integration:
 
 ```
- # Model/Launcher/ShellCodeLauncher.cs:50
- this.LauncherString = Convert.ToBase64String(File.ReadAllBytes(outputf));//template.Name + ".bin";
- ```
-
-This section demonstrates how to use the new integration of the Covenant C2 framework. The process is described below. These steps assuming an instance of Covenant is running. Users are also required to download and compile the C2Bridge project.
+diff --git a/Covenant/Models/Launchers/ShellCodeLauncher.cs b/Covenant/Models/Launchers/ShellCodeLauncher.cs
+index 14c395b..4771da2 100644
+--- a/Covenant/Models/Launchers/ShellCodeLauncher.cs
++++ b/Covenant/Models/Launchers/ShellCodeLauncher.cs
+@@ -47,7 +47,7 @@ namespace Covenant.Models.Launchers
+             if (ret == Constants.DONUT_ERROR_SUCCESS)
+             {
+                 this.Base64ILByteString = Convert.ToBase64String(File.ReadAllBytes(outputf));
+-                this.LauncherString = template.Name + ".bin";
++                this.LauncherString = Convert.ToBase64String(File.ReadAllBytes(outputf)); //template.Name + ".bin";
+             }
+             return this.LauncherString;
+         }
+```
 
 1. Select a running gateway, open its command centre and select TurnOnConnectorCovenant.
 
@@ -14,9 +24,7 @@ This section demonstrates how to use the new integration of the Covenant C2 fram
 
 ![](../Images/AttachingCovenantGrunt/figure1.png)
 
-3. Run the C2Bridge project on the same system as C3’s gateway. If TCP port 8000 was chosen as the C2Bridge port, then the correct arguments for C2Bridge would be “dotnet C2Bridge.dll covenant-host-ip 8000 8000”.
-
-4. In order to stage an SMB Grunt, select a running Node Relay’s command centre and select AddPeripheralGrunt. 
+3. In order to stage an SMB Grunt, select a running Node Relay’s command centre and select AddPeripheralGrunt. 
 
 ![](../Images/AttachingCovenantGrunt/figure2.png)
 
