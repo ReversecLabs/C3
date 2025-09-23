@@ -15,11 +15,11 @@ namespace FSecure::Loader::UnexportedWinApi
 		{
 #if defined _M_X64
 			if (IsWindows1124H2OrGreater())
-				return { "\x4C\x8B\xDC\x49\x89\x5B\x10\x49\x89\x73\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x00\x01\x00\x00", 0 };
+				return { "\x4C\x8B\xDC\x49\x89\x5B\x10\x49\x89\x73\x18\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x00\x01\x00\x00"s, 0 };
 			else if (IsWindows1123H2OrGreater())
-				return { "\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x55", 0 };
+				return { "\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x55"s, 0 };
 			else if (IsWindows1121H2OrGreater())
-				return { "\x41\x55\x41\x56\x41\x57\x48\x81\xEC\xF0\x00\x00", 0xf };
+				return { "\x41\x55\x41\x56\x41\x57\x48\x81\xEC\xF0\x00\x00"s, 0xf };
 			else if (IsWindows10RS3OrGreater())
 			{
 				auto offset = 0x43;
@@ -44,22 +44,25 @@ namespace FSecure::Loader::UnexportedWinApi
 			else
 				QuietAbort();
 #elif defined _M_IX86
-			if (IsWindows1121H2OrGreater())
+			if (IsWindows1124H2OrGreater())
+				return { "\x8B\x4D\xB8\x33\xD2"s, 0x42 }; // Untested Win11 x86 offsets
+			else if (IsWindows1123H2OrGreater())
+				return { "\x33\xF6\x85\xC0\x79\x03"s, 0x42 }; // Untested Win11 x86 offsets
+			else if (IsWindows1121H2OrGreater())
 			{
 				auto offset = 0x2c;
 				if (IsWindows1122H2OrGreater())
 					offset = 0x42;
 
-				return { "\x33\xf6\x85\xc0\x79\x03", offset };
-
+				return { "\x33\xf6\x85\xc0\x79\x03"s, offset };
 			}
 			else if (IsWindows10RS3OrGreater())
 			{
-				auto pattern = "\x8b\xc1\x8d\x4d\xbc\x51";
+				auto pattern = "\x8b\xc1\x8d\x4d\xbc\x51"s;
 				if (IsWindows10RS5OrGreater())
-					pattern = "\x33\xf6\x85\xc0\x79\x03";
+					pattern = "\x33\xf6\x85\xc0\x79\x03"s;
 				else if (IsWindows10RS4OrGreater())
-					pattern = "\x8b\xc1\x8d\x4d\xac\x51";
+					pattern = "\x8b\xc1\x8d\x4d\xac\x51"s;
 
 				auto offset = 0x18;
 				if (IsWindows1020H1OrGreater())
@@ -89,7 +92,11 @@ namespace FSecure::Loader::UnexportedWinApi
 #if defined _M_IX86
 		std::pair<std::string, size_t> GetRtlInsertInvertedFunctionTableOffset()
 		{
-			if(IsWindows10RS3OrGreater())
+			if (IsWindows1124H2OrGreater())
+				return { "\x8B\xFF\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x57\x8D\x45\xF8\x8B\xFA"s, 0 }; // Untested Win11 x86 offsets
+			else if (IsWindows1123H2OrGreater())
+				return { "\x83\xEC\x0C\x53\x56\x57\x8D\x45\xF8\x8B\xFA"s, 0 }; // Untested Win11 x86 offsets
+			else if(IsWindows10RS3OrGreater())
 				return { "\x53\x56\x57\x8d\x45\xf8\x8b\xfa"s, 0x8 };
 			else if (IsWindows10RS2OrGreater())
 				return { "\x8d\x45\xf0\x89\x55\xf8\x50\x8d\x55\xf4"s, 0xB };
@@ -109,7 +116,7 @@ namespace FSecure::Loader::UnexportedWinApi
 			if (IsWindows8OrGreater())
 				QuietAbort();
 			else if (IsWindows7OrGreater())
-				return { "\x89\x5D\xE0\x38", -0x1B };
+				return { "\x89\x5D\xE0\x38"s, -0x1B };
 			else
 				QuietAbort();
 		}
