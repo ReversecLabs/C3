@@ -3,7 +3,6 @@ name: Build C3 (MSVC)
 on:
   push:
     branches: [ master ]
-    tags: ['v*.*.*']
   pull_request:
     branches: [ master ]
 

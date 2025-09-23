@@ -1,12 +1,10 @@
-name: Build C3 (MSVC)
-
 on:
   release:
     types: [published]
 
 jobs:
   build:
-    name: Build C3 (MSVC)
+    name: Build C3 Release Artifact (MSVC)
     runs-on: windows-2022
     steps:
       - name: Add msbuild to PATH
@@ -44,12 +42,10 @@ jobs:
           Move-Item Bin Build\Bin
           Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
 
+      - name: Build and Zip Artifact
+        run: |
+          powershell Compress-Archive -Path Build\* -DestinationPath C3-${{ github.event.release.tag_name }}-Release.zip
 
-        - name: Build and Zip Artifact
-          run: |
-            powershell Compress-Archive -Path Build\* -DestinationPath C3-${{ github.event.release.tag_name }}-Release.zip
-
-          
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -59,4 +55,3 @@ jobs:
           asset_path: C3-${{ github.event.release.tag_name }}-Release.zip
           asset_name: C3-${{ github.event.release.tag_name }}-Release.zip
           asset_content_type: application/zip
-
