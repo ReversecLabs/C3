@@ -16,17 +16,18 @@ jobs:
     runs-on: windows-2022
     
     steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: '[16.10]'
+  
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
       uses: actions/checkout@v2
     
     - name: Dotnet restore
-      shell: cmd
-      run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" Src/C3.sln "/t:restore"
+      run: msbuild Src/C3.sln "/t:restore"
 
     - name: Build MSVC
-      shell: cmd
-      run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" Src/C3.sln "/p:Platform=${{ matrix.platfom }}" "/p:Configuration="${{ matrix.configuration }}"
+      run: msbuild Src/C3.sln "/p:Platform=${{ matrix.platfom }}" "/p:Configuration="${{ matrix.configuration }}"
         
