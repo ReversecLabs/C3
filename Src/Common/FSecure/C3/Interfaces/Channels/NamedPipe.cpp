@@ -88,22 +88,18 @@ Cleanup:
 FSecure::C3::Interfaces::Channels::NamedPipe::NamedPipe(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
+	, m_pipeNamePrefix { arguments.Read<std::string>() }
+	, m_isServer { arguments.Read<bool>() }
 {
-	ByteReader{ arguments }.Read(m_localPipe, m_remotePipe);
-	
-	SECURITY_ATTRIBUTES sa;
-	CreateDACL(&sa);
-
-	//If the local pipe arg is set, then this is the server that will accept connections
-	//There is no initialisation for the client performed
-	if (!m_localPipe.empty())
+	if (m_isServer)
 	{
-		m_isServer = true;
+		SECURITY_ATTRIBUTES sa;
+		CreateDACL(&sa);
 
-		std::string pipeName = m_localPipe + m_outboundDirectionName;
+		std::string pipeName = m_pipeNamePrefix + m_outboundDirectionName;
 		m_hServerWritePipe = CreateNamedPipeA(pipeName.c_str(), PIPE_ACCESS_OUTBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
 
-		pipeName = m_localPipe + m_inboundDirectionName;
+		pipeName = m_pipeNamePrefix + m_inboundDirectionName;
 		m_hServerReadPipe = CreateNamedPipeA(pipeName.c_str(), PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
 	}
 }
@@ -126,12 +122,12 @@ HANDLE FSecure::C3::Interfaces::Channels::NamedPipe::ConnectOrOpen(BOOL read)
 		DWORD desiredAccess = 0;
 		if (read)
 		{
-			pipeName = m_remotePipe + m_inboundDirectionName;
+			pipeName = m_pipeNamePrefix + m_inboundDirectionName;
 			desiredAccess = GENERIC_READ;
 		}
 		else
 		{
-			pipeName = m_remotePipe + m_outboundDirectionName;
+			pipeName = m_pipeNamePrefix + m_outboundDirectionName;
 			desiredAccess = GENERIC_WRITE;
 		}
 
@@ -262,17 +258,16 @@ const char* FSecure::C3::Interfaces::Channels::NamedPipe::GetCapability()
 			],
 			{
 				"type": "string",
-				"name": "local pipe name",
-				"min": 0,
-				"description": "The local named pipe name - only set this for the remote client",
-				"defaultValue": "\\\\.\\pipe\\somepipename"
+				"name": "pipename prefix",
+				"min": 1,
+				"description": "The pipename prefix, two pipes will be created with the input and output IDs appended.",
+				"defaultValue": "\\\\.\\pipe\\somepipe"
 			},
 			{
-				"type": "string",
-				"name": "remote pipe name",
-				"min": 0,
-				"description": "The remote named pipe name - only set this on a gateway or node relay",
-				"defaultValue": "\\\\servername\\pipe\\somepipe"
+				"type": "boolean",
+				"name": "Server",
+				"defaultValue": false,
+				"description": "Is this the server?"
 			}
 			
 		]
