@@ -31,11 +31,8 @@ namespace FSecure::C3::Interfaces::Channels
 		/// The outbound direction name, the opposite of m_inboundDirectionName
 		std::string m_outboundDirectionName;
 	private:
-		/// a string indicating the pipe name to listen locally on IF this is the server (of the form \\.\pipe\somepipe)
-		std::string m_localPipe;
-
-		/// a string indicating the pipe name to connect to if this relay is the client (of the form \\servername\pipe\somepipe)
-		std::string m_remotePipe;
+		/// a string indicating the address and prefix used for the pipename
+		std::string m_pipeNamePrefix;
 
 		/// if this is a server then keep handles to the read and write pipes created by CreateNamedPipe
 		HANDLE m_hServerReadPipe;
