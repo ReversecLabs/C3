@@ -423,7 +423,7 @@ std::string FSecure::Zoom::GetFile(std::string const& url)
 
 	auto resp = webClient.Request(request);
 
-	if (!resp.GetStatusCode() == StatusCode::OK)
+	if (!(resp.GetStatusCode() == StatusCode::OK))
 		throw std::exception(OBF("[x] Zoom Non 200 HTTP Response\n"));
 	else
 		return { resp.GetData().begin(), resp.GetData().end() };
