@@ -479,6 +479,7 @@ void FSecure::C3::Core::GateRelay::On(ProceduresS2G::Notification query)
 	if (!agent)
 		throw std::runtime_error("Received response from agent which is not tracked. [AgentId] = " + query.GetSenderRouteId().GetAgentId().ToString());
 
+	Log({ OBF("S2G Ping Response from: ") + agent->m_Id.ToString() + OBF(" at ") + std::to_string(timestamp), LogMessage::Severity::Information});
 	m_Profiler->Get().m_Gateway.UpdateRouteTimestamps(query.GetSenderRouteId().GetAgentId(), timestamp);
 }
 
