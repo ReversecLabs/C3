@@ -29,7 +29,7 @@ jobs:
       uses: actions/checkout@v2
     
     - name: Dotnet restore
-      run: msbuild Src/C3.sln "/t:restore"
+      run: msbuild Src/C3.sln "/t:restore" /p:Configuration=${{ matrix.configuration }}
       
     - name: Build MSVC x86
       run: msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=${{ matrix.configuration }} "/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter"
