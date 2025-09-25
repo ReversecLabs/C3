@@ -18,10 +18,6 @@ namespace FSecure::C3::Interfaces::Channels
                 m_ListeningSocket.Bind(AddrInfo{ m_IP, m_Port });
                 m_ListeningSocket.Listen(1); // Defaults to 1 maximum Connection, need to add more logic to handle multiple input/output IDs and share the socket
             }
-            else
-            {
-                ConnectClient();
-            }
         }
 
         size_t OnSendToChannel(FSecure::ByteView packet)
