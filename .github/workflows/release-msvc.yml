@@ -8,6 +8,8 @@ jobs:
   build:
     name: Build C3 Release Artifact (MSVC)
     runs-on: windows-2022
+    permissions:
+      contents: write
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
