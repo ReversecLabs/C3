@@ -23,7 +23,7 @@ namespace FSecure::C3::Interfaces::Channels
 		static const char* GetCapability();
 
 		/// Explicit values used as the defaults for Channel's UpdateDelayJitter. Values can be changed later, at runtime.
-		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 5000ms, s_MaxUpdateDelay = 10000ms;
+		constexpr static std::chrono::milliseconds s_MinUpdateDelay = 30ms, s_MaxUpdateDelay = 30ms;
 	protected:
 		/// The inbound direction name of data
 		std::string m_inboundDirectionName;
@@ -34,9 +34,18 @@ namespace FSecure::C3::Interfaces::Channels
 		/// a string indicating the address and prefix used for the pipename
 		std::string m_pipeNamePrefix;
 
-		/// if this is a server then keep handles to the read and write pipes created by CreateNamedPipe
-		HANDLE m_hServerReadPipe;
-		HANDLE m_hServerWritePipe;
+		/// The inbound pipe name
+		std::string m_readPipeName;
+
+		/// The outbound pipe name
+		std::string m_writePipeName;
+
+		// marked as true when client disconnects to restarted the named pipe.
+		bool m_isDisconnected;
+
+		/// handles to created pipes
+		HANDLE m_hReadPipe;
+		HANDLE m_hWritePipe;
 
 		/// allow the relay to determine whether it is a client or server.
 		BOOL m_isServer = false;
@@ -45,7 +54,12 @@ namespace FSecure::C3::Interfaces::Channels
 		HANDLE ConnectOrOpen(BOOL read);
 
 		/// calls DisconnectNamedPipe if this is a server, or closeHandle if it is a client.
-		void DisconnectOrClose(HANDLE hPipe);
+		void DisconnectOrClose();
 
+		/// Creates the server side pipes
+		void CreateServerPipes();
+
+		/// Creates the client side pipes
+		BOOL CreateClientPipes();
 	};
 }
