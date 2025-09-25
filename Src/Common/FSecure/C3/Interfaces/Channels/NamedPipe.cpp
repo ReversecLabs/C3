@@ -91,145 +91,265 @@ FSecure::C3::Interfaces::Channels::NamedPipe::NamedPipe(ByteView arguments)
 	, m_pipeNamePrefix { arguments.Read<std::string>() }
 	, m_isServer { arguments.Read<bool>() }
 {
+	m_isDisconnected = true;
+	m_writePipeName = m_pipeNamePrefix + m_outboundDirectionName;
+	m_readPipeName = m_pipeNamePrefix + m_inboundDirectionName;
+	m_hReadPipe = INVALID_HANDLE_VALUE;
+	m_hWritePipe = INVALID_HANDLE_VALUE;
+
 	if (m_isServer)
 	{
-		SECURITY_ATTRIBUTES sa;
-		CreateDACL(&sa);
-
-		std::string pipeName = m_pipeNamePrefix + m_outboundDirectionName;
-		m_hServerWritePipe = CreateNamedPipeA(pipeName.c_str(), PIPE_ACCESS_OUTBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
-
-		pipeName = m_pipeNamePrefix + m_inboundDirectionName;
-		m_hServerReadPipe = CreateNamedPipeA(pipeName.c_str(), PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
+		CreateServerPipes();
 	}
+}
+
+void FSecure::C3::Interfaces::Channels::NamedPipe::CreateServerPipes()
+{
+	SECURITY_ATTRIBUTES sa;
+	CreateDACL(&sa);
+
+	m_hWritePipe = CreateNamedPipeA(m_writePipeName.c_str(), PIPE_ACCESS_OUTBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
+	m_hReadPipe = CreateNamedPipeA(m_readPipeName.c_str(), PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_ACCEPT_REMOTE_CLIENTS | PIPE_WAIT, 1, PIPE_CHUNK_SIZE, 2048000, 0, &sa);
+}
+
+BOOL FSecure::C3::Interfaces::Channels::NamedPipe::CreateClientPipes()
+{
+	DWORD desiredAccess = 0;
+	std::string pipeName;
+
+	pipeName = m_readPipeName;
+	desiredAccess = GENERIC_READ;
+
+	if (!WaitNamedPipeA(pipeName.c_str(), 1000))
+		return false;
+
+	m_hReadPipe = CreateFileA(pipeName.c_str(), desiredAccess, 0, NULL, OPEN_EXISTING, NULL, NULL);
+
+	pipeName = m_writePipeName;
+	desiredAccess = GENERIC_WRITE;
+
+	if (!WaitNamedPipeA(pipeName.c_str(), 1000))
+		return false;
+
+	m_hWritePipe = CreateFileA(pipeName.c_str(), desiredAccess, 0, NULL, OPEN_EXISTING, NULL, NULL);
+	return true;
 }
 
 HANDLE FSecure::C3::Interfaces::Channels::NamedPipe::ConnectOrOpen(BOOL read)
 {
 	HANDLE hPipe;
-	if (m_isServer)
-	{
-		if (read)
-			hPipe = m_hServerReadPipe;
-		else
-			hPipe = m_hServerWritePipe;
 
-		ConnectNamedPipe(hPipe, NULL);
+	if (m_isDisconnected || m_hReadPipe == INVALID_HANDLE_VALUE || m_hWritePipe == INVALID_HANDLE_VALUE)
+	{
+		if (m_isServer)
+		{
+			if (m_hReadPipe == INVALID_HANDLE_VALUE || m_hWritePipe == INVALID_HANDLE_VALUE)
+				throw std::runtime_error{ OBF("[NamedPipe] Server named pipes invalid handles GetLastError: ") + std::to_string(GetLastError()) + OBF(".") };
+
+			m_isDisconnected = !ConnectNamedPipe(m_hReadPipe, NULL);
+
+			if (m_isDisconnected)
+			{
+				DWORD err = GetLastError();
+				if (err == ERROR_PIPE_CONNECTED)
+				{
+					m_isDisconnected = false;
+				}
+				else
+				{
+					throw std::runtime_error{ OBF("[NamedPipe] Server named pipes connection failed GetLastError: ") + std::to_string(GetLastError()) + OBF(".") };
+				}
+			}
+
+			m_isDisconnected = !ConnectNamedPipe(m_hWritePipe, NULL);
+
+			if (m_isDisconnected)
+			{
+				DWORD err = GetLastError();
+				if (err == ERROR_PIPE_CONNECTED)
+				{
+					m_isDisconnected = false;
+				}
+				else
+				{
+					throw std::runtime_error{ OBF("[NamedPipe] Server named pipes connection failed GetLastError: ") + std::to_string(GetLastError()) + OBF(".") };
+				}
+			}
+		}
+		else
+		{
+			m_isDisconnected = !CreateClientPipes();
+		}
 	}
+
+	if (read)
+		hPipe = m_hReadPipe;
 	else
-	{
-		std::string pipeName;
-		DWORD desiredAccess = 0;
-		if (read)
-		{
-			pipeName = m_pipeNamePrefix + m_inboundDirectionName;
-			desiredAccess = GENERIC_READ;
-		}
-		else
-		{
-			pipeName = m_pipeNamePrefix + m_outboundDirectionName;
-			desiredAccess = GENERIC_WRITE;
-		}
+		hPipe = m_hWritePipe;
 
-		if (!WaitNamedPipeA(pipeName.c_str(), INFINITE))
-			return INVALID_HANDLE_VALUE;
-
-		hPipe = CreateFileA(pipeName.c_str(), desiredAccess, 0, NULL, OPEN_EXISTING, NULL, NULL);
-	}
 	return hPipe;
 }
 
 size_t FSecure::C3::Interfaces::Channels::NamedPipe::OnSendToChannel(FSecure::ByteView packet)
 {
-	//Get a handle to a pipe we can write to
+	// Get a handle to a pipe we can write to
 	HANDLE hPipe = ConnectOrOpen(false);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
 		throw std::runtime_error{ OBF("[OnSend] Could not get handle to pipe. GetLastError returned: ") + std::to_string(GetLastError()) + OBF(".") };
 
-	DWORD written;
+	DWORD written = 0;
 	uint32_t len = static_cast<uint32_t>(packet.size());
 
-	//Write the first chunk which indicates the size of the actual message
-	WriteFile(hPipe, &len, sizeof(len), nullptr, nullptr);
+	// Write the first chunk which indicates the size of the actual message
+	if (!WriteFile(hPipe, &len, sizeof(len), &written, nullptr))
+	{
+		DWORD error = GetLastError();
+		DisconnectOrClose();
 
-	//Block until a read occurs 
+		if (error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA)
+			throw std::runtime_error{ OBF("[OnSend Error] Client disconnected. Error: ") + std::to_string(error) };
+		else
+			throw std::runtime_error{ OBF("[OnSend Error] Failed to write message length. Error: ") + std::to_string(error) };
+	}
+
+	// Block until a read occurs
 	FlushFileBuffers(hPipe);
 
-	//Loop and perform multiple chunked writes as needed.
-	//Note that a single WriteFile call fails for messages > PIPE_CHUNK_SIZE - so we must loop.
+	// Loop and perform multiple chunked writes as needed
 	size_t total = 0;
 	while (len > PIPE_CHUNK_SIZE)
 	{
-		WriteFile(hPipe, &packet.front() + total, PIPE_CHUNK_SIZE, &written, nullptr);
+		if (!WriteFile(hPipe, &packet.front() + total, PIPE_CHUNK_SIZE, &written, nullptr))
+		{
+			DWORD error = GetLastError();
+			DisconnectOrClose();
+
+			if (error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA)
+				throw std::runtime_error{ OBF("[OnSend Error] Client disconnected during chunked write. Error: ") + std::to_string(error) };
+			else
+				throw std::runtime_error{ OBF("[OnSend Error] Failed during chunked write. Error: ") + std::to_string(error) };
+		}
+
 		total += written;
 		len -= written;
 	}
 
-	//Perform the final write for the last chunk
-	WriteFile(hPipe, &packet.front() + total, len, &written, nullptr);
-	total += written;
-
-	if (total != packet.size())
+	// Final write for the last chunk
+	if (!WriteFile(hPipe, &packet.front() + total, len, &written, nullptr))
 	{
-		DisconnectOrClose(hPipe);
-		throw std::runtime_error{ OBF("[OnSend Error] Could not write all bytes to pipe. GetLastError returned: ") + std::to_string(GetLastError()) + OBF(".") };
+		DWORD error = GetLastError();
+		DisconnectOrClose();
+
+		if (error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA)
+			throw std::runtime_error{ OBF("[OnSend Error] Client disconnected during final write. Error: ") + std::to_string(error) };
+		else
+			throw std::runtime_error{ OBF("[OnSend Error] Failed during final write. Error: ") + std::to_string(error) };
 	}
 
-	//Flush the buffer before disconnecting the client or closing any handles.
+	total += written;
+
+	// Flush the buffer
 	FlushFileBuffers(hPipe);
-	DisconnectOrClose(hPipe);
 
 	return total;
 }
 
+
 FSecure::ByteVector FSecure::C3::Interfaces::Channels::NamedPipe::OnReceiveFromChannel()
 {
-	//Get a handle to a pipe we can read from
+	// Get a handle to a pipe we can read from
 	HANDLE hPipe = ConnectOrOpen(true);
 
 	if (hPipe == INVALID_HANDLE_VALUE)
-		throw std::runtime_error{ OBF("[OnSend] Could not get handle to pipe. GetLastError returned: ") + std::to_string(GetLastError()) + OBF(".") };
+		return {};
+		//throw std::runtime_error{ OBF("[OnReceive] Could not get handle to pipe. GetLastError returned: ") + std::to_string(GetLastError()) + OBF(".") };
 
-
-	DWORD chunkSize;
+	DWORD chunkSize = 0;
 	uint32_t dataSize = 0u;
 
-	//Read 4 bytes to get the message length
-	if (!ReadFile(hPipe, static_cast<LPVOID>(&dataSize), 4, nullptr, nullptr))
+
+	DWORD bytesAvailable = 0;
+	if (!PeekNamedPipe(hPipe, nullptr, 0, nullptr, &bytesAvailable, nullptr))
 	{
-		DisconnectOrClose(hPipe);
-		throw std::runtime_error{ OBF("Couldn't read from Pipe: ") + std::to_string(GetLastError()) + OBF(".") };
+		DWORD error = GetLastError();
+		DisconnectOrClose();
+		throw std::runtime_error{ OBF("[OnReceive Error] PeekNamedPipe failed. Error: ") + std::to_string(error) };
+	}
+
+	if (bytesAvailable < sizeof(uint32_t))
+	{
+		// No full message length available yet — return or retry later
+		return {};
 	}
 
 
+	// Read 4 bytes to get the message length
+	if (!ReadFile(hPipe, static_cast<LPVOID>(&dataSize), sizeof(dataSize), nullptr, nullptr))
+	{
+		DWORD error = GetLastError();
+		DisconnectOrClose();
+
+		if (error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA)
+			throw std::runtime_error{ OBF("[OnReceive Error] Client disconnected before message length read. Error: ") + std::to_string(error) };
+		else
+			throw std::runtime_error{ OBF("[OnReceive Error] Failed to read message length. Error: ") + std::to_string(error) };
+	}
+
+	// Allocate buffer
 	ByteVector buffer;
 	buffer.resize(dataSize);
 	DWORD read = 0;
 
-	//Now read dataSize bytes 
+	// Read the full message in chunks
 	while (read < dataSize)
 	{
-		if (!ReadFile(hPipe, (LPVOID)&buffer[read], static_cast<DWORD>((PIPE_CHUNK_SIZE < (dataSize - read)) ? PIPE_CHUNK_SIZE : (dataSize - read)), &chunkSize, nullptr) || !chunkSize)
+		DWORD toRead = static_cast<DWORD>((PIPE_CHUNK_SIZE < (dataSize - read)) ? PIPE_CHUNK_SIZE : (dataSize - read));
+
+		if (!ReadFile(hPipe, (LPVOID)&buffer[read], toRead, &chunkSize, nullptr))
 		{
-			DisconnectOrClose(hPipe);
-			throw std::runtime_error{ OBF("Couldn't read from Pipe: ") + std::to_string(GetLastError()) + OBF(".") };
+			DWORD error = GetLastError();
+			DisconnectOrClose();
+
+			if (error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA)
+				throw std::runtime_error{ OBF("[OnReceive Error] Client disconnected during chunked read. Error: ") + std::to_string(error) };
+			else
+				throw std::runtime_error{ OBF("[OnReceive Error] Failed during chunked read. Error: ") + std::to_string(error) };
+		}
+
+		if (chunkSize == 0)
+		{
+			DisconnectOrClose();
+			throw std::runtime_error{ OBF("[OnReceive Error] Read returned 0 bytes, client may have disconnected.") };
 		}
 
 		read += chunkSize;
 	}
 
-	DisconnectOrClose(hPipe);
-
 	return buffer;
 }
 
-void FSecure::C3::Interfaces::Channels::NamedPipe::DisconnectOrClose(HANDLE hPipe)
+
+void FSecure::C3::Interfaces::Channels::NamedPipe::DisconnectOrClose()
 {
 	if (m_isServer)
-		DisconnectNamedPipe(hPipe);
+	{
+		DisconnectNamedPipe(m_hReadPipe);
+		DisconnectNamedPipe(m_hWritePipe);
+		CloseHandle(m_hReadPipe);
+		CloseHandle(m_hWritePipe);
+		CreateServerPipes();
+	}
 	else
-		CloseHandle(hPipe);
+	{
+		CloseHandle(m_hReadPipe);
+		CloseHandle(m_hWritePipe);
+		m_hReadPipe = INVALID_HANDLE_VALUE;
+		m_hWritePipe = INVALID_HANDLE_VALUE;
+	}
+
+
+	m_isDisconnected = true;
 }
 
 const char* FSecure::C3::Interfaces::Channels::NamedPipe::GetCapability()
