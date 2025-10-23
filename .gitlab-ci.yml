@@ -90,7 +90,7 @@ release_c3:
   rules:
     - if: $CI_COMMIT_TAG
   script:
-    - Invoke-WebRequest -Uri 'https://gitlab.com/gitlab-org/cli/-/releases/v1.74.0/downloads/glab_1.74.0_windows_amd64.zip' -OutFile 'glab.zip'
+    - Invoke-WebRequest -Uri 'https://gitlab.com/gitlab-org/cli/-/releases/v1.58.0/downloads/glab_1.58.0_windows_amd64.zip' -OutFile 'glab.zip'
     - Expand-Archive -Path 'glab.zip' -DestinationPath 'glab'
     - $env:PATH = "$PWD\\glab\\bin;$env:PATH"
     - glab.exe --version
