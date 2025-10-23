@@ -1,0 +1,102 @@
+stages:
+  - build
+  - release
+
+variables:
+  DOTNET_VERSION: "3.1.x"
+
+build_c3_msvc:
+  stage: build
+  tags:
+    - windows
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_COMMIT_BRANCH == "InternalMaster"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+  script:
+    - Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    - "$vsinstallPath = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath"
+    - "$env:VS_PATH=Join-Path $vsInstallPath 'Common7\\Tools\\Launch-VsDevShell.ps1'"
+    - "& \"$env:VS_PATH\""
+    - echo "Restoring solution"
+    - msbuild Src/C3.sln /t:restore /p:Configuration=Release
+    - echo "Building MSVC x86"
+    - "msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Building MSVC x64"
+    - "msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Publishing WebService"
+    - dotnet publish -p:Platform=any -c Release Src/WebController/Backend -o Bin/WebController
+    - echo "Preparing Build Output Structure"
+    - mkdir Build
+    - mkdir Build\Bin
+    - copy StartWebController.cmd Build\StartWebController.cmd
+    - copy RestartWebController.cmd Build\RestartWebController.cmd
+    - copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+    - Move-Item Bin\WebController Build\WebController
+    - Move-Item Bin\* Build\Bin
+    - Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+    - echo "Compressing Build Output"
+    - "powershell Compress-Archive -Path Build\\* -DestinationPath \"C3-$($env:CI_COMMIT_SHA.Substring(0,8))-Release.zip\""
+  artifacts:
+    when: always
+    paths:
+        - C3-${CI_COMMIT_SHA:0:8}-Release.zip
+    expire_in: 1 week
+
+build_c3_release_artifact:
+  stage: release
+  tags:
+    - windows
+  only:
+    - master
+    - InternalMaster
+  script:
+    - Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    - "$vsinstallPath = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath"
+    - "$env:VS_PATH=Join-Path $vsInstallPath 'Common7\\Tools\\Launch-VsDevShell.ps1'"
+    - "& \"$env:VS_PATH\""
+    - echo "Restoring solution"
+    - msbuild Src/C3.sln /t:restore /p:Configuration=Release
+    - echo "Building MSVC x86"
+    - "msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Building MSVC x64"
+    - "msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Publishing WebService"
+    - dotnet publish -p:Platform=any -c Release Src/WebController/Backend -o Bin/WebController
+    - echo "Preparing Build Output Structure"
+    - mkdir Build
+    - mkdir Build\Bin
+    - copy StartWebController.cmd Build\StartWebController.cmd
+    - copy RestartWebController.cmd Build\RestartWebController.cmd
+    - copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+    - Move-Item Bin\WebController Build\WebController
+    - Move-Item Bin\* Build\Bin
+    - Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+    - echo "Compressing Build Output"
+    - "powershell Compress-Archive -Path Build\\* -DestinationPath \"C3-$env:CI_COMMIT_TAG-Release.zip\""
+
+  artifacts:
+    when: always
+    paths:
+        - C3-${CI_COMMIT_TAG}-Release.zip
+    expire_in: never
+    
+release_c3:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: build_c3_release_artifact
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "Creating release for $CI_COMMIT_TAG"
+  release:
+    name: "Release $CI_COMMIT_TAG"
+    tag_name: "$CI_COMMIT_TAG"
+    description: "Automated release for $CI_COMMIT_TAG"
+    assets:
+      links:
+        - name: "C3 Release Artifact"
+          url: "${CI_PROJECT_URL}/-/jobs/${CI_PIPELINE_ID}/artifacts/file/dist/C3-${CI_COMMIT_TAG}-Release.zip"
