@@ -103,7 +103,7 @@ release_c3:
       links:
         - name: "C3 Release Artifact"
           # Stable link to the artifact produced by the build job for this tag:
-          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/C3-$CI_COMMIT_TAG-Release.zip?job=build_c3_release_artifact"
+          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/C3-$CI_COMMIT_TAG-Release.zip"
           # (optional) nice pretty URL path shown in release page
           filepath: "/downloads/C3-$CI_COMMIT_TAG-Release.zip"
           link_type: "package"
