@@ -81,13 +81,17 @@ build_c3_release_artifact:
     
 release_c3:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  tags:
+    - windows
   needs:
     - job: build_c3_release_artifact
       artifacts: true
   rules:
     - if: $CI_COMMIT_TAG
   script:
+    - echo "Getting glab CLI"
+    - winget install glab.glab --silent --accept-package-agreements --accept-source-agreements
     - echo "Creating release for $CI_COMMIT_TAG"
   release:
     name: "Release $CI_COMMIT_TAG"
