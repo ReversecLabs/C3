@@ -10,8 +10,6 @@ build_c3_msvc:
   tags:
     - windows
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-    - if: '$CI_COMMIT_BRANCH == "InternalMaster"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
   script:
@@ -45,12 +43,11 @@ build_c3_msvc:
     expire_in: 1 week
 
 build_c3_release_artifact:
-  stage: release
+  stage: build
   tags:
     - windows
-  only:
-    - master
-    - InternalMaster
+  rules:
+      - if: $CI_COMMIT_TAG
   script:
     - Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
     - "$vsinstallPath = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath"
