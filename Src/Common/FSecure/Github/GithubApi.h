@@ -21,7 +21,7 @@ namespace FSecure
 		};
 
 		/// Constructor for the Github Api class.
-		GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent);
+		GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent, std::string const& proxyOverride);
 
 		/// Retrieve the Github Username and initialise for the instance
 		void SetUser();

@@ -5,9 +5,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Channels::WebexTeams::WebexTeams(ByteView arguments) {
 	auto [inboundDirectionName, outboundDirectionName] = arguments.Read<std::string, std::string>();
-	auto [apiEndpoint, clientId, clientSecret, refreshToken, userAgent] = arguments.Read<SecureString, SecureString, SecureString, SecureString, SecureString>();
+	auto [apiEndpoint, clientId, clientSecret, refreshToken, userAgent, proxyOverride] = arguments.Read<SecureString, SecureString, SecureString, SecureString, SecureString, SecureString>();
 	m_useAttachments = arguments.Read<boolean>();
-	m_webexApi = FSecure::WebexTeamsApi{ apiEndpoint, clientId, clientSecret, refreshToken, userAgent };
+	m_webexApi = FSecure::WebexTeamsApi{ apiEndpoint, clientId, clientSecret, refreshToken, userAgent, proxyOverride };
 
 	m_inboundDirectionRoomId = m_webexApi.GetOrCreateRoom(inboundDirectionName);
 	m_outboundDirectionRoomId = m_webexApi.GetOrCreateRoom(outboundDirectionName);
@@ -164,6 +164,12 @@ const char* FSecure::C3::Interfaces::Channels::WebexTeams::GetCapability()
 				"name": "Use attachments",
 				"description": "Controls whether we use attachments to increase communication speed. This has certain opsec considerations (see documentation).",
 				"defaultValue": true
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

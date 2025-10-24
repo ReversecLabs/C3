@@ -9,8 +9,8 @@ FSecure::C3::Interfaces::Channels::JiraIssue::JiraIssue(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [userAgent, host, project_key, issue_name, username, password] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string>();
-	m_jiraObj = FSecure::Jira{ userAgent, host, project_key, issue_name, username, password};
+	auto [userAgent, host, project_key, issue_name, username, password, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
+	m_jiraObj = FSecure::Jira{ userAgent, host, project_key, issue_name, username, password, proxyOverride };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,6 +153,12 @@ const char* FSecure::C3::Interfaces::Channels::JiraIssue::GetCapability()
 				"name": "Password / API Token",
 				"min": 1,
 				"description": "Jira User Password or API Token (for JIRA Cloud)"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

@@ -16,12 +16,9 @@ namespace
 	}
 }
 
-
-FSecure::GithubApi::GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent)
+FSecure::GithubApi::GithubApi(std::string const& token, std::string const& channelName, std::string const& userAgent, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 	std::string lowerChannelName = channelName;
 	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });

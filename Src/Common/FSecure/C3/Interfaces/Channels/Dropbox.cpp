@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [userAgent, DropboxToken, channelName] = arguments.Read<std::string, std::string, std::string>();
-	m_dropboxObj = FSecure::Dropbox{ userAgent, DropboxToken, channelName };
+	auto [userAgent, DropboxToken, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string>();
+	m_dropboxObj = FSecure::Dropbox{ userAgent, DropboxToken, channelName, proxyOverride };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,9 +90,7 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 			{
 				"type": "string",
 				"name": "User-Agent Header",
-				"min": 1,
-				"defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
-				"description": "The User-Agent header to set"
+				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
 			},
 			{
 				"type": "string",
@@ -106,6 +104,12 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 				"min": 4,
 				"randomize": true,
 				"description": "Folder to create for channel"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

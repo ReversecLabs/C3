@@ -20,11 +20,9 @@ namespace
 	}
 }
 
-FSecure::GoogleDrive::GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName)
+FSecure::GoogleDrive::GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 	this->m_clientId = client_id;
 	this->m_clientSecret = client_secret;
 	this->m_refreshToken = refresh_token;
