@@ -1,0 +1,102 @@
+stages:
+  - build
+  - release
+
+variables:
+  DOTNET_VERSION: "3.1.x"
+
+build_c3_msvc:
+  stage: build
+  tags:
+    - windows
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+  script:
+    - Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    - "$vsinstallPath = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath"
+    - "$env:VS_PATH=Join-Path $vsInstallPath 'Common7\\Tools\\Launch-VsDevShell.ps1'"
+    - "& \"$env:VS_PATH\""
+    - echo "Restoring solution"
+    - msbuild Src/C3.sln /t:restore /p:Configuration=Release
+    - echo "Building MSVC x86"
+    - "msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Building MSVC x64"
+    - "msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Publishing WebService"
+    - dotnet publish -p:Platform=any -c Release Src/WebController/Backend -o Bin/WebController
+    - echo "Preparing Build Output Structure"
+    - mkdir Build
+    - mkdir Build\Bin
+    - copy StartWebController.cmd Build\StartWebController.cmd
+    - copy RestartWebController.cmd Build\RestartWebController.cmd
+    - copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+    - Move-Item Bin\WebController Build\WebController
+    - Move-Item Bin\* Build\Bin
+    - Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+    - echo "Compressing Build Output"
+    - "powershell Compress-Archive -Path Build\\* -DestinationPath \"C3-$($env:CI_COMMIT_SHA.Substring(0,8))-Release.zip\""
+  artifacts:
+    when: always
+    paths:
+        - C3-${CI_COMMIT_SHA:0:8}-Release.zip
+    expire_in: 1 week
+
+build_c3_release_artifact:
+  stage: build
+  tags:
+    - windows
+  rules:
+      - if: $CI_COMMIT_TAG
+  script:
+    - Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    - "$vsinstallPath = & \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -products * -property installationPath"
+    - "$env:VS_PATH=Join-Path $vsInstallPath 'Common7\\Tools\\Launch-VsDevShell.ps1'"
+    - "& \"$env:VS_PATH\""
+    - echo "Restoring solution"
+    - msbuild Src/C3.sln /t:restore /p:Configuration=Release
+    - echo "Building MSVC x86"
+    - "msbuild Src/C3.sln /p:Platform=x86 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Building MSVC x64"
+    - "msbuild Src/C3.sln /p:Platform=x64 /p:Configuration=Release '/t:GatewayConsoleExe;NodeRelayConsoleExe;NodeRelayDll;CebuLoader;ChannelLinter'"
+    - echo "Publishing WebService"
+    - dotnet publish -p:Platform=any -c Release Src/WebController/Backend -o Bin/WebController
+    - echo "Preparing Build Output Structure"
+    - mkdir Build
+    - mkdir Build\Bin
+    - copy StartWebController.cmd Build\StartWebController.cmd
+    - copy RestartWebController.cmd Build\RestartWebController.cmd
+    - copy Res\GatewayConfiguration.json Build\Bin\GatewayConfiguration.json
+    - Move-Item Bin\WebController Build\WebController
+    - Move-Item Bin\* Build\Bin
+    - Get-ChildItem -Path Build\Bin -Include *.exp,*.lib,*.map -Recurse | Remove-Item -Force
+    - echo "Compressing Build Output"
+    - "powershell Compress-Archive -Path Build\\* -DestinationPath \"C3-$env:CI_COMMIT_TAG-Release.zip\""
+
+  artifacts:
+    when: always
+    paths:
+        - C3-${CI_COMMIT_TAG}-Release.zip
+    expire_in: never
+    
+release_c3:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  tags:
+    - windows
+  needs:
+    - job: build_c3_release_artifact
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - Invoke-WebRequest -Uri 'https://gitlab.com/gitlab-org/cli/-/releases/v1.58.0/downloads/glab_1.58.0_windows_amd64.zip' -OutFile 'glab.zip'
+    - Expand-Archive -Path 'glab.zip' -DestinationPath 'glab'
+    - $env:PATH = "$PWD\\glab\\bin;$env:PATH"
+    - glab.exe --version
+    - $env:GLAB_CONFIG_DIR = "$PWD\glab-config"   # Use a folder inside the build workspace
+    - New-Item -ItemType Directory -Path $env:GLAB_CONFIG_DIR -Force
+    - glab.exe auth login --hostname $env:CI_SERVER_HOST --token $env:GLAB_TOKEN
+    - glab.exe auth status --hostname $env:CI_SERVER_HOST
+    - glab.exe release create $env:CI_COMMIT_TAG -n "Automated Release $env:CI_COMMIT_TAG"
+    - glab.exe release upload $env:CI_COMMIT_TAG "C3-$env:CI_COMMIT_TAG-Release.zip"
