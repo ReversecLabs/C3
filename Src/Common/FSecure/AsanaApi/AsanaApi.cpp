@@ -12,7 +12,7 @@ namespace {
 	}
 }
 
-FSecure::AsanaApi::AsanaApi(std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride) {
+FSecure::AsanaApi::AsanaApi(std::string const& userAgent, std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride) {
 	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 	this->m_Token = token;

@@ -19,7 +19,7 @@ namespace FSecure
 		/// @param accountEmail - email associated with the CloudFlare account
 		/// @param namespaceName - Namespace name under which all our key-values will be stored
 		
-		WorkerKV(std::string const& userAgent, std::string const& accountId, std::string const& token, std::string const& namespaceName);
+		WorkerKV(std::string const& userAgent, std::string const& accountId, std::string const& token, std::string const& namespaceName, std::string const& proxyOverride);
 
 		/// Default constructor.
 		WorkerKV() = default;

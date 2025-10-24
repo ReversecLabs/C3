@@ -7,7 +7,7 @@ FSecure::C3::Interfaces::Channels::Slack::Slack(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [userAgent, slackToken, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string>();
+	auto [userAgent, slackToken, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string>();
 	m_slackObj = FSecure::Slack{ userAgent, slackToken, channelName, proxyOverride };
 }
 

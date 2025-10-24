@@ -97,6 +97,9 @@ namespace FSecure
 		/// @return - the data within the file.
 		std::string GetFile(std::string const& url);
 
+		/// The user agent header
+		std::string m_UserAgent;
+
 	};
 
 }

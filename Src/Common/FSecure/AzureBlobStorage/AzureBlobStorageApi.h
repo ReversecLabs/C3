@@ -17,7 +17,7 @@ namespace FSecure
 		/// @param storageAccountName - the name of the Azure Storage Account
 		/// @param containerName - the name of the container within Azure Blob Storage
 		/// @param proxyString - the proxy to use
-		AzureBlobStorage(std::string const& sasToken, std::string const& storageAccountName, std::string const& containerName, std::string const& channelName);
+		AzureBlobStorage(std::string const& sasToken, std::string const& storageAccountName, std::string const& containerName, std::string const& channelName, std::string const& proxyOverride);
 
 		/// Default constructor.
 		AzureBlobStorage() = default;

@@ -8,9 +8,9 @@ FSecure::C3::Interfaces::Channels::Zoom::Zoom(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [userAgent, accountId, clientId, clientSecret,  email, vanityDomain, channelName] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
+	auto [userAgent, accountId, clientId, clientSecret,  email, vanityDomain, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
 
-	m_ZoomObj = FSecure::Zoom{ userAgent, accountId, clientId, clientSecret, email, vanityDomain, channelName};
+	m_ZoomObj = FSecure::Zoom{ userAgent, accountId, clientId, clientSecret, email, vanityDomain, channelName, proxyOverride};
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,6 +272,12 @@ const char* FSecure::C3::Interfaces::Channels::Zoom::GetCapability()
 				"min": 4,
 				"randomize": true,
 				"description": "Name of Zoom's channel used by api"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::AzureBlobStorage::AzureBlobStorage(ByteView a
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [sasToken, storageAccountName, containerName, channelName] = arguments.Read<std::string, std::string, std::string, std::string>();
-	m_AzureBlobStorageObj = FSecure::AzureBlobStorage{ sasToken, storageAccountName, containerName, channelName };
+	auto [sasToken, storageAccountName, containerName, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string, std::string>();
+	m_AzureBlobStorageObj = FSecure::AzureBlobStorage{ sasToken, storageAccountName, containerName, channelName, proxyOverride};
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +83,12 @@ const char* FSecure::C3::Interfaces::Channels::AzureBlobStorage::GetCapability()
 				"min": 4,
 				"randomize": true,
 				"description": "Folder to create for channel"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},
