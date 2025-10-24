@@ -8,8 +8,8 @@ FSecure::C3::Interfaces::Channels::Github::Github(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [GithubToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string>();
-	m_githubObj = FSecure::GithubApi{ GithubToken, channelName, userAgent };
+	auto [GithubToken, channelName, userAgent, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string>();
+	m_githubObj = FSecure::GithubApi{ GithubToken, channelName, userAgent, proxyOverride };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +128,12 @@ const char* FSecure::C3::Interfaces::Channels::Github::GetCapability()
 				"description": "The User-Agent header to set. The API requires a UA is set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning.",
 				"min": 1,
 				"defaultValue": "GitHub CLI v1.2.3"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

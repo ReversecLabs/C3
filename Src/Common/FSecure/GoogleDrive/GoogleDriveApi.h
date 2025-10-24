@@ -18,7 +18,7 @@ namespace FSecure
 		/// @param client_secret - Client secret
 		/// @param refresh_token - the Outh refresh token for producing new access tokens
 		/// @param proxyString - the proxy to use
-		GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName);
+		GoogleDrive(std::string const& userAgent, std::string const& client_id, std::string const& client_secret, std::string const& refresh_token, std::string const& channelName, std::string const& proxyOverride);
 
 		/// Default constructor.
 		GoogleDrive() = default;

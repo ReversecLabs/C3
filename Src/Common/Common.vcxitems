@@ -57,7 +57,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Pipe.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Proxy.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
@@ -157,7 +156,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\HostInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\InjectionBuffer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Pipe.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Proxy.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\PrecompiledHeader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.h" />

@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::Slack::Slack(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [slackToken, channelName] = arguments.Read<std::string, std::string>();
-	m_slackObj = FSecure::Slack{ slackToken, channelName };
+	auto [slackToken, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string>();
+	m_slackObj = FSecure::Slack{ slackToken, channelName, proxyOverride };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +117,12 @@ const char* FSecure::C3::Interfaces::Channels::Slack::GetCapability()
 				"min": 4,
 				"randomize": true,
 				"description": "Name of Slack's channel used by api"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},
