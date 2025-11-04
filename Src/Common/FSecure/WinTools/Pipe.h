@@ -17,7 +17,7 @@ namespace FSecure::WinTools
 		/// Sends data to pipe.
 		/// @param data buffer to send.
 		/// @throws std::runtime_error on any WinAPI errors occurring during writing to the named pipe.
-		ByteVector Read();
+		ByteVector Read(bool waitForRead);
 
 		bool PeakCov();
 

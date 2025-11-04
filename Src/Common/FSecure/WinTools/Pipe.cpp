@@ -211,10 +211,10 @@ FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read()
+FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read(bool waitForRead)
 {
 	// Ensure we have written to the pipe before we try to read
-	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
+	if (waitForRead && WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
 		return{};
 
 	// Read four bytes and find the length of the next chunk of data.

@@ -17,7 +17,9 @@ FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OhxC2Agent(ByteView arguments)
 
 	// Store a handle to the OhxC2Agent object for later use
 	m_OhxC2Agent = WinTools::InjectionBuffer(payload, useSyscalls);
-
+	DWORD threadId = GetThreadId(m_OhxC2Agent.GetThreadHandle());
+	pipeName = pipeName + std::to_string(threadId);
+	
 	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give OhxC2Agent thread time to start pipe.
 
 	// Connect to our OhxC2Agent named Pipe.
@@ -66,19 +68,13 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 		m_SendQueue.pop_front();
 		m_Pipe->Write(msg);
 	}
-	auto ret = m_Pipe->Read();
-
-	// Dont transfer NoOps over the C2
-	if (IsNoOp(ret))
-		return {};
-
-	return ret;
+	return m_Pipe->Read(false);
 }
 
 
 bool FSecure::C3::Interfaces::Peripherals::OhxC2Agent::IsNoOp(ByteView data)
 {
-	return data.size() == 1 && data[0] == 0u;
+	return data.size() == 56u; // May need to decrypt checkin messages with sessionKey from the sqliteDB so we can reduce comms noise
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,13 +86,6 @@ const char* FSecure::C3::Interfaces::Peripherals::OhxC2Agent::GetCapability()
 	{
 		"arguments":
 		[
-			{
-				"type": "string",
-				"name": "Pipe name",
-				"min": 4,
-				"randomize": true,
-				"description": "Name of the pipe OhxC2Agent uses for communication."
-			},
 			{
 				"type": "int16",
 				"min": 1,

