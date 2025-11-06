@@ -73,8 +73,8 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 
 		if (elapsed >= m_MaxUpdateDelay.count())
 		{
-			return ret;
 			m_LastCheckinSentTime = now;
+			return ret;
 		}
 		else
 		{
