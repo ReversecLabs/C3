@@ -113,19 +113,23 @@ void FSecure::C3::Core::DeviceBridge::StartUpdatingInSeparateThread()
 					{
 						std::this_thread::sleep_for(GetDevice()->GetUpdateDelay());
 						
-						if (m_SendQueue.empty())
-						{
-							OnReceive();
-							continue;
-						}
+						OnReceive();
 
-						ByteVector msg;
+						// Give the other end some time to respond to the receive if a fast comms mechanism.
+						std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+						// Previous bug occurred where we only received when sendqueue was empty
+						// But if sendqueue fills faster than the update delay then we never receive a message
+						if (!m_SendQueue.empty())
 						{
-							auto lock = std::lock_guard<std::mutex>{ m_ProtectWriteInConcurrentThreads };
-							msg = std::move(m_SendQueue.front());
-							m_SendQueue.pop_front();
+							ByteVector msg;
+							{
+								auto lock = std::lock_guard<std::mutex>{ m_ProtectWriteInConcurrentThreads };
+								msg = std::move(m_SendQueue.front());
+								m_SendQueue.pop_front();
+							}
+							OnSend(msg);
 						}
-						OnSend(msg);
 					}
 					catch (std::exception const& exception)
 					{
