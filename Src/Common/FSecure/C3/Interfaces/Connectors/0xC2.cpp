@@ -343,7 +343,15 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 		//Finally connect to the socket.
 		try
 		{
-			m_ListeningPostAddress = "127.0.0.1";
+			// Get the IP/hostname for the External connector from the supplied webhost URL
+			size_t protocolEnd = m_webHost.find("://");
+			size_t start = (protocolEnd != std::string::npos) ? protocolEnd + 3 : 0;
+			size_t colonPos = m_webHost.find(':', start);
+			if (colonPos == std::string::npos)
+				m_ListeningPostAddress = m_webHost.substr(start);  // No port, return full address
+			else
+				m_ListeningPostAddress = m_webHost.substr(start, colonPos - start);
+
 			auto connection = std::make_shared<Connection>(m_ListeningPostAddress, m_ListeningPostPort, std::static_pointer_cast<OhxC2>(shared_from_this()), binderId);
 			m_ConnectionMap.emplace(std::string{ binderId }, std::move(connection));
 		}
@@ -589,11 +597,11 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 						// Don't forward NoOps over C3
 						// TODO is this safe enough?
 						// Agent doesn't seem to care if it receives this or not.
-						//if (packet.size() != 60u)
-						//{
+						if (packet.size() != 60u)
+						{
 							// Send valid Commands over C3
 							bridge->PostCommandToBinder(m_Id, packet);
-						//}
+						}
 					}
 				}
 				catch (std::exception& e)
