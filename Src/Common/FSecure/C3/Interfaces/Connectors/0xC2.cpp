@@ -276,12 +276,12 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::OnCommandFromBinder(ByteView bi
 	if (it == m_ConnectionMap.end())
 		throw std::runtime_error{ OBF("Unknown connection") };
 
-	it->second->Send(command);
-
 	if (!(it->second->SecondThreadStarted()))
+	{
 		it->second->StartUpdatingInSeparateThread();
+	}
 
-
+	it->second->m_RecvQueue.emplace_back(command);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -520,25 +520,42 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::Send(ByteView data)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::Receive()
 {
-	DWORD chunkLength = 0, bytesRead;
-	if (SOCKET_ERROR == (bytesRead = recv(m_Socket, reinterpret_cast<char*>(&chunkLength), 4, 0)))
-		throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + ("."), WSAGetLastError());
+	fd_set readSet;
+	FD_ZERO(&readSet);
+	FD_SET(m_Socket, &readSet);
+
+	TIMEVAL timeout = { 0, 0 }; // Non-blocking check
+
+	if (select(0, &readSet, nullptr, nullptr, &timeout) <= 0)
+		return {}; // No data available
+
+	DWORD chunkLength = 0;
+	int bytesRead = recv(m_Socket, reinterpret_cast<char*>(&chunkLength), 4, 0);
+	if (bytesRead == SOCKET_ERROR)
+		throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + ".", WSAGetLastError());
 
 	if (!bytesRead || !chunkLength)
-		return {};																										//< The connection has been gracefully closed.
+		return {}; // Connection closed or empty message
 
-	// Read in the result.
-	ByteVector buffer;
-	buffer.resize(chunkLength);
-	for (DWORD bytesReadTotal = 0; bytesReadTotal < chunkLength; bytesReadTotal += bytesRead)
-		switch (bytesRead = recv(m_Socket, reinterpret_cast<char*>(&buffer[bytesReadTotal]), chunkLength - bytesReadTotal, 0))
-		{
-		case 0:
-			return {};																									//< The connection has been gracefully closed.
+	FSecure::ByteVector buffer(chunkLength);
+	DWORD bytesReadTotal = 0;
 
-		case static_cast<DWORD>(SOCKET_ERROR):
-			throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + OBF("."), WSAGetLastError());
-		}
+	while (bytesReadTotal < chunkLength)
+	{
+		FD_ZERO(&readSet);
+		FD_SET(m_Socket, &readSet);
+
+		if (select(0, &readSet, nullptr, nullptr, &timeout) <= 0)
+			break; // No more data available right now
+
+		int result = recv(m_Socket, reinterpret_cast<char*>(&buffer[bytesReadTotal]), chunkLength - bytesReadTotal, 0);
+		if (result == 0)
+			return {}; // Connection closed
+		if (result == SOCKET_ERROR)
+			throw FSecure::SocketsException(OBF("Error receiving from Socket : ") + std::to_string(WSAGetLastError()) + ".", WSAGetLastError());
+
+		bytesReadTotal += result;
+	}
 
 	return buffer;
 }
@@ -559,27 +576,24 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 				std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
 				try
 				{
+					if (!m_RecvQueue.empty())
+					{
+						auto msg = std::move(m_RecvQueue.front());
+						m_RecvQueue.pop_front();
+						Send(msg);
+					}
+
 					// Read packet and post it to Binder.
 					if (auto packet = Receive(); !packet.empty())
 					{
 						// Don't forward NoOps over C3
 						// TODO is this safe enough?
-						if (packet.size() == 60u)
-						{
-							if (!m_RecvQueue.empty())
-							{
-								// Just send one message at a time or Beacon gets slowed down from downloads/socks
-								auto msg = std::move(m_RecvQueue.front());
-								m_RecvQueue.pop_front();
-								Send(msg);
-							}				
-
-						}
-						else
-						{
+						// Agent doesn't seem to care if it receives this or not.
+						//if (packet.size() != 60u)
+						//{
 							// Send valid Commands over C3
 							bridge->PostCommandToBinder(m_Id, packet);
-						}
+						//}
 					}
 				}
 				catch (std::exception& e)

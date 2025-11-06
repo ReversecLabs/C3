@@ -48,15 +48,8 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Must contain object if constructor call was successful.
 		std::optional<WinTools::AlternatingPipe> m_Pipe;
 
-		/// Send queue from TeamServer
-		std::deque<ByteVector> m_SendQueue;
-
 		/// Used to exit
 		bool m_Close = false;
-
-		bool m_firstMessage = true;
-
-		int m_count = 0;
 
 		/// Used to get a handle to the OhxC2Agent thread
 		FSecure::WinTools::InjectionBuffer m_OhxC2Agent;
