@@ -51,6 +51,8 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Used to exit
 		bool m_Close = false;
 
+		std::chrono::steady_clock::time_point m_LastCheckinSentTime;
+
 		/// Used to get a handle to the OhxC2Agent thread
 		FSecure::WinTools::InjectionBuffer m_OhxC2Agent;
 	};
