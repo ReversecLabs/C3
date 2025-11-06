@@ -415,7 +415,7 @@ const char* FSecure::C3::Interfaces::Connectors::OhxC2::GetCapability()
 				"type": "string",
 				"name": "Username",
 				"min": 1,
-				"default": "extc3",
+				"defaultValue": "extc3",
 				"description": "Username to authenticate"
 			},
 			{
