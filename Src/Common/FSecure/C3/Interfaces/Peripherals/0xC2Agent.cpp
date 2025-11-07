@@ -64,23 +64,6 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 
 	auto ret = m_Pipe->Read(false);
 
-	auto now = std::chrono::steady_clock::now();
-
-	// Dont fill the send queue with checkin messages, prioritise data messages
-	if (ret.size() == 56u)
-	{
-		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastCheckinSentTime).count();
-
-		if (elapsed >= m_MaxUpdateDelay.count())
-		{
-			m_LastCheckinSentTime = now;
-			return ret;
-		}
-		else
-		{
-			return {};
-		}
-	}
 	return ret;
 }
 
