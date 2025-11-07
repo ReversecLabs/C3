@@ -1,5 +1,7 @@
 #include "StdAfx.h"
+
 #include "0xC2Agent.h"
+#include "Common/FSecure/Crypto/Base64.h"
 
 using namespace FSecure::Literals;
 
@@ -53,7 +55,14 @@ FSecure::C3::Interfaces::Peripherals::OhxC2Agent::~OhxC2Agent()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnCommandFromConnector(ByteView data)
 {
-	m_Pipe->Write(data);
+	if (data.size() == 1 && data[0] == 0u)
+	{
+		m_ReceiverDecrypting = true;
+	}
+	else
+	{
+		m_Pipe->Write(data);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,14 +72,21 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 		return {};
 
 	auto ret = m_Pipe->Read(false);
+	
+	if (ret.size() == 56u && m_ReceiverDecrypting)
+	{
+		// Stop sending messages after we are signalled that decryption is occuring.
+		return {};
+	}
 
+	auto encoded = cppcodec::base64_rfc4648::encode(ret);
 	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* FSecure::C3::Interfaces::Peripherals::OhxC2Agent::GetCapability()
 {
-	return R"(
+	return R"_(
 {
 	"create":
 	{
@@ -98,14 +114,17 @@ const char* FSecure::C3::Interfaces::Peripherals::OhxC2Agent::GetCapability()
 			}
 		]
 	},
-	"commands": []
+	"commands":
+	[
+	]
 }
-)";
+)_";
 }
 
 void FSecure::C3::Interfaces::Peripherals::OhxC2Agent::Close()
 {
 	FSecure::C3::Device::Close();
 	m_Close = true;
+	// Close thread? m_OhxC2Agent
 }
 

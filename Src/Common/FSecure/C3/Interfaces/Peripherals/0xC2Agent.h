@@ -37,11 +37,8 @@ namespace FSecure::C3::Interfaces::Peripherals
 		/// Calls superclass Close and prepares to exit without deadlocking
 		void Close() override;
 
-
 	private:
-		/// Check if data is no-op.
-		/// @return true if data is no-op, false otherwise.
-		static bool IsNoOp(ByteView data);
+		void SetSessionKey(ByteView command);
 
 		/// Object used to communicate with OhxC2Agent.
 		/// Optional is used to perform many trails of staging in constructor.
@@ -55,5 +52,9 @@ namespace FSecure::C3::Interfaces::Peripherals
 
 		/// Used to get a handle to the OhxC2Agent thread
 		FSecure::WinTools::InjectionBuffer m_OhxC2Agent;
+
+		/// The Connector has signalled that it has the session key and can decrypt and spoof checkin
+		/// messages.
+		bool m_ReceiverDecrypting = false;
 	};
 }

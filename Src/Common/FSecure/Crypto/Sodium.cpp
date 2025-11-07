@@ -246,3 +246,104 @@ FSecure::ByteVector FSecure::Crypto::Sodium::Decrypt(ByteView message, SessionRx
 
 	return decryptedMessage;
 }
+
+FSecure::ByteVector FSecure::Crypto::Sodium::ComputeHMAC(FSecure::ByteView key, FSecure::ByteView message)
+{
+	std::vector<uint8_t> paddedKey(crypto_auth_hmacsha256_KEYBYTES, 0);
+
+	// Pad or copy key to required length
+	if (key.size() == 16)
+		std::copy(key.begin(), key.end(), paddedKey.begin());
+	else if (key.size() == crypto_auth_hmacsha256_KEYBYTES)
+		std::copy(key.begin(), key.end(), paddedKey.begin());
+	else
+		throw std::invalid_argument(OBF("Invalid HMAC key size"));
+
+	crypto_auth_hmacsha256_state state;
+	crypto_auth_hmacsha256_init(&state, paddedKey.data(), crypto_auth_hmacsha256_KEYBYTES);
+	crypto_auth_hmacsha256_update(&state, message.data(), message.size());
+
+	FSecure::ByteVector hmac(crypto_auth_hmacsha256_BYTES);
+	crypto_auth_hmacsha256_final(&state, hmac.data());
+
+	return hmac;
+}
+
+bool FSecure::Crypto::Sodium::VerifyHMAC(FSecure::ByteView key, FSecure::ByteView message, FSecure::ByteView expected_hmac)
+{
+	auto computed_hmac = ComputeHMAC(key, message);
+
+	if (expected_hmac.size() != computed_hmac.size())
+		return false;
+
+	return sodium_memcmp(computed_hmac.data(), expected_hmac.data(), crypto_auth_hmacsha256_BYTES) == 0;
+}
+
+// Uses Windows libraries instead
+FSecure::ByteVector FSecure::Crypto::Sodium::AES_CTR_Process(FSecure::ByteView key, FSecure::ByteView iv, FSecure::ByteView input)
+{
+	if (key.size() != 16 && key.size() != 24 && key.size() != 32)
+		throw std::invalid_argument(OBF("Invalid AES key size"));
+
+	if (iv.size() != 16)
+		throw std::invalid_argument(OBF("CTR IV must be 16 bytes"));
+
+	BCRYPT_ALG_HANDLE hAlg = nullptr;
+	BCRYPT_KEY_HANDLE hKey = nullptr;
+	NTSTATUS status;
+
+	// Open AES algorithm provider
+	status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_AES_ALGORITHM, MS_PRIMITIVE_PROVIDER, 0);
+	if (status != 0)
+		throw std::runtime_error(OBF("Failed to open AES algorithm provider"));
+
+	// Set chaining mode to ECB
+	status = BCryptSetProperty(hAlg, BCRYPT_CHAINING_MODE,
+		(PUCHAR)BCRYPT_CHAIN_MODE_ECB,
+		(ULONG)(wcslen(BCRYPT_CHAIN_MODE_ECB) + 1) * sizeof(wchar_t),
+		0);
+	if (status != 0) {
+		BCryptCloseAlgorithmProvider(hAlg, 0);
+		throw std::runtime_error(OBF("Failed to set chaining mode to ECB"));
+	}
+
+	// Generate symmetric key
+	status = BCryptGenerateSymmetricKey(hAlg, &hKey, nullptr, 0,
+		const_cast<PUCHAR>(key.data()), (ULONG)key.size(), 0);
+	if (status != 0) {
+		BCryptCloseAlgorithmProvider(hAlg, 0);
+		throw std::runtime_error(OBF("Failed to generate symmetric key"));
+	}
+
+	const size_t blockSize = 16;
+	FSecure::ByteVector counter{ iv.begin(), iv.end() };
+	FSecure::ByteVector output(input.size());
+
+	for (size_t i = 0; i < input.size(); i += blockSize) {
+		BYTE encryptedCounter[blockSize] = { 0 };
+		ULONG resultSize = 0;
+
+		// Encrypt the counter block
+		status = BCryptEncrypt(hKey, counter.data(), (ULONG)blockSize, nullptr,
+			nullptr, 0, encryptedCounter, blockSize, &resultSize, 0);
+		if (status != 0) {
+			BCryptDestroyKey(hKey);
+			BCryptCloseAlgorithmProvider(hAlg, 0);
+			throw std::runtime_error(OBF("Failed to encrypt counter block"));
+		}
+
+		// XOR with input
+		for (size_t j = 0; j < blockSize && (i + j) < input.size(); ++j) {
+			output[i + j] = input[i + j] ^ encryptedCounter[j];
+		}
+
+		// Increment counter (big-endian)
+		for (int j = blockSize - 1; j >= 0; --j) {
+			if (++counter[j]) break;
+		}
+	}
+
+	BCryptDestroyKey(hKey);
+	BCryptCloseAlgorithmProvider(hAlg, 0);
+	return output;
+}
