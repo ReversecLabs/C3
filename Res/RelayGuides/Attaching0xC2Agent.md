@@ -13,5 +13,5 @@
 
 ## C3 Side
 
-1. Once loaded you can go back to the C3 interface and run the `TurnOnConnectorOhxC2` command on your chosen Gateway. Provide the listener names, 0xc2 password, UDVT64 (and 32 bit if required), and pipename that matches settings.h from the UDVT project.
+1. Once loaded you can go back to the C3 interface and run the `TurnOnConnectorOhxC2` command on your chosen Gateway. Provide the listener names, 0xc2 password, UDVT64 (and 32 bit if required), pipename that matches settings.h from the UDVT project, and the path to the 0xC3 Sqlite database (c2.db). 
 2. Now click on the Relay you want to bind your Cobalt Strike beacon to and select Command Center, Then select `AddPeripheralOhxC2` and then keep all the default settings and press Send Command.
