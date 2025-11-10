@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
 #ifdef C3_IS_GATEWAY
+
 #include "Common/FSecure/Sockets/SocketsException.h"
 #include "Common/json/json.hpp"
 #include "Common/CppRestSdk/include/cpprest/http_client.h"
@@ -8,6 +9,7 @@
 #include "Common/FSecure/Crypto/Sodium.h"
 #include "Common/FSecure/Crypto/AESCTR.h"
 #include "Common/sqlite/sqlite3.h"
+#include <fstream>
 
 
 using json = nlohmann::json;
@@ -239,6 +241,11 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 	json response;
 
 	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename, m_databasePath) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
+
+	std::ifstream file(m_databasePath);
+
+	if (!file.good())
+		throw std::exception(OBF("[0xC2] Error accessing SQLite DB"));
 
 	// if the last character is '/' remove it
 	if (this->m_webHost.back() == '/')
@@ -798,8 +805,10 @@ std::vector<FSecure::C3::Interfaces::Connectors::OhxC2::Connection::KeyEntry> FS
 	sqlite3* db = nullptr;
 	std::vector<KeyEntry> keys;
 
-	if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK)
+	if (sqlite3_open_v2(dbPath.c_str(), &db, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK)
 		throw std::runtime_error(OBF("Failed to open database"));
+
+	sqlite3_busy_timeout(db, 1000);
 
 	std::string query = OBF("SELECT sessionKey, agentID FROM Keys WHERE sessionKey IS NOT NULL AND sessionKey != '' ORDER BY keyID DESC LIMIT 10");
 	const char* myquery = query.c_str();
@@ -821,4 +830,4 @@ std::vector<FSecure::C3::Interfaces::Connectors::OhxC2::Connection::KeyEntry> FS
 	sqlite3_close(db);
 	return keys;
 }
-#endif// C3_IS_GATEWAY
+#endif //C3_IS_GATEWAY
