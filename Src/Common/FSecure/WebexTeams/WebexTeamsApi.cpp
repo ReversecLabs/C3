@@ -12,11 +12,9 @@ using namespace FSecure::WinHttp;
 
 std::atomic<std::chrono::steady_clock::time_point> FSecure::WebexTeamsApi::s_TimePoint = std::chrono::steady_clock::now();
 
-FSecure::WebexTeamsApi::WebexTeamsApi(SecureString apiEndpoint, SecureString clientId, SecureString clientSecret, SecureString refreshToken, SecureString userAgent)
+FSecure::WebexTeamsApi::WebexTeamsApi(SecureString apiEndpoint, SecureString clientId, SecureString clientSecret, SecureString refreshToken, SecureString userAgent, SecureString proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride.c_str());
 	this->m_ApiEndpoint = OBF("https://") + apiEndpoint;
 	this->m_RefreshToken = refreshToken;
 	this->m_ClientId = clientId;

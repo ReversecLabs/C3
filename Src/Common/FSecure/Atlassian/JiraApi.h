@@ -18,7 +18,7 @@ namespace FSecure
 		/// @param issue_name - Summary name for the issue to lookup/create
 		/// @param username - User for auth
 		/// @param password - This could be the plaintext password or an API token if using cloud (https://id.atlassian.com/manage/api-tokens)
-		Jira(std::string const& userAgent, std::string const& host, std::string const& project_key, std::string const& issue_name, std::string const& username, std::string const& password);
+		Jira(std::string const& userAgent, std::string const& host, std::string const& project_key, std::string const& issue_name, std::string const& username, std::string const& password, std::string const& proxyOverride);
 
 		/// Default constructor.
 		Jira() = default;

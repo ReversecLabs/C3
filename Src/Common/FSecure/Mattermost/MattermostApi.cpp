@@ -13,11 +13,10 @@
 using namespace FSecure::StringConversions;
 using namespace FSecure::WinHttp;
 
-FSecure::Mattermost::Mattermost(std::string serverUrl, std::string userName, std::string teamName, std::string accessToken, std::string channelName, std::string userAgent)
+FSecure::Mattermost::Mattermost(std::string serverUrl, std::string userName, std::string teamName, std::string accessToken, std::string channelName, std::string userAgent, std::string proxyOverride)
 	: m_ServerUrl(std::move(serverUrl)), m_UserName(std::move(userName)), m_TeamName(std::move(teamName)), m_AccessToken(std::move(accessToken)), m_OriginalChannelName(std::move(channelName)), m_UserAgent(std::move(userAgent))
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 	SetTeamID(FindTeamID(m_TeamName));
 	SetChannel(CreateChannel(Convert<Lowercase>(m_OriginalChannelName)));

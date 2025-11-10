@@ -19,11 +19,9 @@ namespace
 	}
 }
 
-FSecure::Slack::Slack(std::string const& userAgent, std::string const& token, std::string const& channelName)
+FSecure::Slack::Slack(std::string const& userAgent, std::string const& token, std::string const& channelName, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 	this->m_Token = token;
 	this->m_UserAgent = userAgent;
 	std::string lowerChannelName = channelName;

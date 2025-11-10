@@ -10,12 +10,12 @@ FSecure::C3::Interfaces::Channels::Mattermost::Mattermost(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string>();
+	auto [MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
 
 	if (!MattermostServerUrl.empty() && MattermostServerUrl.back() == '/')
 		MattermostServerUrl.pop_back();
 
-	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent };
+	m_MattermostObj = FSecure::Mattermost{ MattermostServerUrl, MattermostUserName, MattermostTeamName, MattermostAccessToken, channelName, userAgent, proxyOverride };
 }
 
 
@@ -201,6 +201,12 @@ const char* FSecure::C3::Interfaces::Channels::Mattermost::GetCapability()
 				"type": "string",
 				"name": "User-Agent Header",
 				"description": "The User-Agent header to set. Warning: adding user agent header of web browser, can cause site security provider to block access to api, and prevent channel from functioning."
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

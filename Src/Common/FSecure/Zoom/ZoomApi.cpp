@@ -36,11 +36,9 @@ namespace
 
 }
 
-FSecure::Zoom::Zoom(std::string const& userAgent, std::string const& account_id, std::string const& client_id, std::string const& client_secret, std::string const& email, std::string const& vanity_domain, std::string const& channelName)
+FSecure::Zoom::Zoom(std::string const& userAgent, std::string const& account_id, std::string const& client_id, std::string const& client_secret, std::string const& email, std::string const& vanity_domain, std::string const& channelName, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
-
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 	this->m_clientId = client_id;
 	this->m_clientSecret = client_secret;
 	this->m_accountId = account_id;

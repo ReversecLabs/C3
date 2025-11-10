@@ -22,7 +22,7 @@ namespace FSecure
 		/// Constructor for the Mattermost Api class.
 		/// @param serverUrl - the Mattermost server url with schema, without trailing slash, ex. https://my-mattermost.com
 		/// @param accessToken - the Mattermost Personal Access Token value
-		Mattermost(std::string serverUrl, std::string userName, std::string teamName, std::string accessToken, std::string  channelName, std::string userAgent);
+		Mattermost(std::string serverUrl, std::string userName, std::string teamName, std::string accessToken, std::string  channelName, std::string userAgent, std::string proxyOverride);
 
 		/// Default constructor.
 		Mattermost() = default;
