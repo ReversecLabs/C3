@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 
 #include "0xC2Agent.h"
-#include "Common/FSecure/Crypto/Base64.h"
 
 using namespace FSecure::Literals;
 
@@ -79,7 +78,6 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 		return {};
 	}
 
-	auto encoded = cppcodec::base64_rfc4648::encode(ret);
 	return ret;
 }
 
