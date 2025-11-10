@@ -22,6 +22,7 @@
 **
 **    
 */
+#ifdef C3_IS_GATEWAY
 #ifndef SQLITE_AMALGAMATION
 #define SQLITE_CORE 1
 #define SQLITE_AMALGAMATION 1
@@ -265874,3 +265875,4 @@ SQLITE_API int sqlite3_stmt_init(
 SQLITE_API const char *sqlite3_sourceid(void){ return SQLITE_SOURCE_ID; }
 #endif /* SQLITE_AMALGAMATION */
 /************************** End of sqlite3.c ******************************/
+#endif //C3_IS_GATEWAY
