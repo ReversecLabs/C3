@@ -170,7 +170,7 @@ std::map<std::string, std::string> FSecure::Jira::GetMessagesByDirection(std::st
 		// From our current result number, plus the max results we're getting back in each request
 		// have we reached the total number of results? If we're under the total let's shift our
 		// starting result and go again.
-		if ((startAt + response[OBF("maxResults")].get<int32_t>()) < response[OBF("total")].get<int32_t>())
+		if ((startAt + response[OBF("maxResults")].get<uint32_t>()) < response[OBF("total")].get<uint32_t>())
 			startAt += response.at(OBF("maxResults")).get<uint32_t>();
 		else
 			break;
@@ -221,7 +221,7 @@ std::vector<std::tuple<std::string, std::string, int>> FSecure::Jira::ReadCommen
 			}
 		}
 
-		if ((startAt + commentsBlock[OBF("maxResults")].get<int32_t>()) < commentsBlock[OBF("total")].get<int32_t>())
+		if ((startAt + commentsBlock[OBF("maxResults")].get<uint32_t>()) < commentsBlock[OBF("total")].get<uint32_t>())
 		{
 			startAt += commentsBlock.at(OBF("maxResults")).get<uint32_t>();
 			commentsBlock = json::parse(SendHttpRequest(Method::GET, url + OBF("&startAt=") + std::to_string(startAt)));
