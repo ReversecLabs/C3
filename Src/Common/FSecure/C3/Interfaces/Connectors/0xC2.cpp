@@ -6,8 +6,9 @@
 #include "Common/CppRestSdk/include/cpprest/http_client.h"
 #include "Common/FSecure/Crypto/Base64.h"
 #include "Common/FSecure/Crypto/Sodium.h"
+#include "Common/FSecure/Crypto/AESCTR.h"
 #include "Common/sqlite/sqlite3.h"
-#include <vector>
+
 
 using json = nlohmann::json;
 
@@ -724,7 +725,7 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::Connection::DecryptMessage(FSec
 		{
 			auto iv = messageView.SubString(0, 16);
 			auto ciphertext = messageView.SubString(16, messageView.size() - crypto_auth_hmacsha256_BYTES - 16);
-			auto plaintext = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, ciphertext);
+			auto plaintext = FSecure::Crypto::AES_CTR_Process(m_SessionKey, iv, ciphertext);
 
 			if (plaintext.size() == 8)
 			{
@@ -744,7 +745,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::Repa
 	m_MessageCounter++;
 	auto iv = cipherMessage.SubString(0, 16);
 	auto ciphertext = cipherMessage.SubString(16, cipherMessage.size() - crypto_auth_hmacsha256_BYTES - 16);
-	auto plaintext = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, ciphertext);
+	auto plaintext = FSecure::Crypto::AES_CTR_Process(m_SessionKey, iv, ciphertext);
 
 	// 01 00 00 00 01 00 00 00 83 f5 a8 20 7d c8 85 18 0a 00 00 00 00 01 00 00 00 5a a9 6c 51 b7 ee b2 d1 a3 69 9b e0 35 a9 56 51 8f ee d5 d1 e1 69 ef e0 10 54 57 b6 0d bb d1 15 3b 73 01 27 f8 4e 7d f4 ae c9 c4 25 5c 01 9c 12 71 b9 dd a0 f0 99 29 21 00 00 00 00
 	// ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  agent id messageCnt  null ? ? ? ?   data   (RC4?)
@@ -765,7 +766,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::Connection::Encr
 	// Generate a random IV
 	std::vector<uint8_t> randomBytes = FSecure::Utils::GenerateRandomData<std::vector<uint8_t>>(16);
 	FSecure::ByteView iv{ randomBytes.data(), randomBytes.size() };
-	auto encryptedPacket = FSecure::Crypto::Sodium::AES_CTR_Process(m_SessionKey, iv, packet);
+	auto encryptedPacket = FSecure::Crypto::AES_CTR_Process(m_SessionKey, iv, packet);
 	FSecure::ByteVector combined;
 	combined.insert(combined.end(), iv.begin(), iv.end());       // Append IV
 	combined.insert(combined.end(), encryptedPacket.begin(), encryptedPacket.end()); // Append ciphertext
@@ -800,10 +801,11 @@ std::vector<FSecure::C3::Interfaces::Connectors::OhxC2::Connection::KeyEntry> FS
 	if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK)
 		throw std::runtime_error(OBF("Failed to open database"));
 
-	const char* query = "SELECT sessionKey, agentID FROM Keys WHERE sessionKey IS NOT NULL AND sessionKey != '' ORDER BY keyID DESC LIMIT 10";
+	std::string query = OBF("SELECT sessionKey, agentID FROM Keys WHERE sessionKey IS NOT NULL AND sessionKey != '' ORDER BY keyID DESC LIMIT 10");
+	const char* myquery = query.c_str();
 	sqlite3_stmt* stmt = nullptr;
 
-	if (sqlite3_prepare_v2(db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+	if (sqlite3_prepare_v2(db, myquery, -1, &stmt, nullptr) != SQLITE_OK) {
 		sqlite3_close(db);
 		throw std::runtime_error(OBF("Failed to prepare query"));
 	}
