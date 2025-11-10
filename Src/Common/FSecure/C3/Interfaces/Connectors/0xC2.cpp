@@ -11,7 +11,6 @@
 #include "Common/sqlite/sqlite3.h"
 #include <fstream>
 
-
 using json = nlohmann::json;
 
 namespace FSecure::C3::Interfaces::Connectors
@@ -632,6 +631,8 @@ void FSecure::C3::Interfaces::Connectors::OhxC2::Connection::StartUpdatingInSepa
 								// Attempt to Decrypt Message
 								if (DecryptMessage(msg))
 								{
+									std::cout << OBF("[0xC2] Decrypted agent comms successfully.");
+									//FSecure::C3::LogMessage({ OBF("[0xC2] Decrypted agent comms successfully."), LogMessage::Severity::Information });
 									//Send nullbyte to signal we dont need more checkins:
 									bridge->PostCommandToBinder(m_Id, "\0"_bv);
 									// Skip the counter forwards to prevent any replay clash.
