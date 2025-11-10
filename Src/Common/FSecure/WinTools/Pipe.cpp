@@ -274,6 +274,8 @@ size_t FSecure::WinTools::AlternatingPipe::Write(ByteView data)
 	if (!WriteFile(m_Pipe.get(), &data.front(), chunkLength, &bytesWritten, nullptr))
 		throw std::runtime_error{ OBF("Couldn't write to Pipe: ") + std::to_string(GetLastError()) + OBF(".") };
 
+	FlushFileBuffers(m_Pipe.get());
+
 	// Let Read() know that the pipe is ready to be read.
 	SetEvent(m_Event.get());
 
