@@ -7,7 +7,7 @@
 
 ## UDVT
 
-1. Compile the UDVT C3 project https://git.reversec/C3/0xC2-C3, add in any additional UDVT to this file.
+1. Compile the UDVT C3 project https://git.reversec.com/C3/0xc2-c3, add in any additional UDVT to this file.
 2. Use extract.py to extract the UDVT base64 string.
 3. Note the pipename in settings.h or change as appropriate.
 
