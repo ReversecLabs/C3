@@ -70,10 +70,22 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveF
 	if (m_Close)
 		return {};
 
-	auto ret = m_Pipe->Read(false);
+	auto ret = m_Pipe->Read(false, true);
 	
 	if (ret.size() == 56u && m_ReceiverDecrypting)
 	{
+		// If a low sleep time the named pipe may get full of checkins so we need
+		// to drain the named pipe until we get to some real data.
+		while (true)
+		{
+			ret = m_Pipe->Read(false, true);
+			if (ret.size() == 0)
+				return {};
+			else if (ret.size() == 56u)
+				continue;
+			else
+				return ret;			
+		}
 		// Stop sending messages after we are signalled that decryption is occuring.
 		return {};
 	}

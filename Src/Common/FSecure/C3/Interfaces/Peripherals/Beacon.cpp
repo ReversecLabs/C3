@@ -70,7 +70,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Beacon::OnReceiveFromP
 	auto msg = std::move(m_SendQueue.front());
 	m_SendQueue.pop_front();
 	m_Pipe->Write(msg);
-	auto ret = m_Pipe->Read(true);
+	auto ret = m_Pipe->Read(true, false);
 
 	// Dont transfer NoOps over the C2
 	if (IsNoOp(ret))
