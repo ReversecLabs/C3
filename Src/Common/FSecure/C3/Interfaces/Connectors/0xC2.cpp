@@ -232,25 +232,8 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::UpdateListenerId()
 	return retVal;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
+std::string FSecure::C3::Interfaces::Connectors::OhxC2::Login()
 {
-	json postData;
-	json response;
-
-	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename, m_databasePath) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
-
-	std::ifstream file(m_databasePath);
-
-	if (!file.good())
-		throw std::exception(OBF("[0xC2] Error accessing SQLite DB"));
-
-	// if the last character is '/' remove it
-	if (this->m_webHost.back() == '/')
-		this->m_webHost.pop_back();
-
-
 	/***Authenticate to Web API ***/
 	std::string url = this->m_webHost + OBF("/v1/token");
 
@@ -279,7 +262,28 @@ FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
 	else
 		throw std::exception((OBF("[0xC2] Error authenticating to web app, HTTP resp: ") + std::to_string(resp.status_code())).c_str());
 
-	this->m_token = response[OBF("access_token")].get<std::string>();
+	return response[OBF("access_token")].get<std::string>();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FSecure::C3::Interfaces::Connectors::OhxC2::OhxC2(ByteView arguments)
+{
+	json postData;
+	json response;
+
+	std::tie(m_externalListenerName, m_listenerName, m_webHost, m_username, m_password, m_udvt64, m_udvt32, m_pipename, m_databasePath) = arguments.Read<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string>();
+
+	std::ifstream file(m_databasePath);
+
+	if (!file.good())
+		throw std::exception(OBF("[0xC2] Error accessing SQLite DB"));
+
+	// if the last character is '/' remove it
+	if (this->m_webHost.back() == '/')
+		this->m_webHost.pop_back();
+
+	m_token = Login();
 
 	// TODO: If the listener doesn't already exist create it?
 	if (UpdateListenerId())
@@ -333,6 +337,9 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 	if (binderId.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
 
+	if (m_token == NULL)
+		m_token = Login();
+
 	std::string authHeader = OBF("Bearer ") + this->m_token;
 	ByteVector payload;
 
@@ -363,6 +370,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 
 		if (resp.status_code() != web::http::status_codes::OK)
 		{
+			m_token = NULL;
 			throw std::runtime_error(OBF("[0xC2] Non-200 HTTP code returned generating payload: ") + std::to_string(resp.status_code()));
 		}
 
