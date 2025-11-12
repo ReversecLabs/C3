@@ -114,6 +114,9 @@ namespace FSecure::C3::Interfaces::Connectors
 			bool m_SecondThreadStarted = false;
 		};
 
+		/// Logs into 0xC2 and returns Bearer token
+		std::string Login();
+
 		/// Retrieves 0xC2Agent payload from 0xC2 using the API.
 		/// @param binderId address of beacon in network.
 		/// @param isX64 whether to use 64 or x86 arch
@@ -237,6 +240,9 @@ std::string FSecure::C3::Interfaces::Connectors::OhxC2::Login()
 	/***Authenticate to Web API ***/
 	std::string url = this->m_webHost + OBF("/v1/token");
 
+	json response;
+	json postData;
+
 	postData[OBF("username")] = this->m_username;
 	postData[OBF("secret")] = this->m_password;
 
@@ -337,7 +343,7 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 	if (binderId.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
 
-	if (m_token == NULL)
+	if (m_token.empty())
 		m_token = Login();
 
 	std::string authHeader = OBF("Bearer ") + this->m_token;
@@ -370,7 +376,9 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 
 		if (resp.status_code() != web::http::status_codes::OK)
 		{
-			m_token = NULL;
+			// If token is empty we should reauth if we retry.
+			// Would be better if we automatically retried though...
+			m_token = "";
 			throw std::runtime_error(OBF("[0xC2] Non-200 HTTP code returned generating payload: ") + std::to_string(resp.status_code()));
 		}
 
