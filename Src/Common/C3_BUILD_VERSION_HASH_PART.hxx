@@ -1,2 +1,2 @@
 #include "StdAfx.h" 
-#define C3_BUILD_VERSION "C3-1.5.1-InternalMaster" 
+#define C3_BUILD_VERSION "C3-1.5.2-InternalMaster" 

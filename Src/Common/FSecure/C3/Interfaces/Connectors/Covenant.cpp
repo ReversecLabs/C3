@@ -1,4 +1,6 @@
 #include "StdAfx.h"
+
+#ifdef C3_IS_GATEWAY
 #include "Common/FSecure/Sockets/SocketsException.h"
 #include "Common/json/json.hpp"
 #include "Common/CppRestSdk/include/cpprest/http_client.h"
@@ -664,4 +666,4 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::Covenant::PeripheralCre
 	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, delay, jitter, maxConnectionAttempts, isX64));
 }
 
-
+#endif// C3_IS_GATEWAY

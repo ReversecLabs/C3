@@ -211,11 +211,27 @@ FSecure::ByteVector FSecure::WinTools::AlternatingPipe::ReadCov()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read()
+FSecure::ByteVector FSecure::WinTools::AlternatingPipe::Read(bool waitForRead, bool peekData)
 {
 	// Ensure we have written to the pipe before we try to read
-	if (WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
+	if (waitForRead && WaitForSingleObject(m_Event.get(), 0) != WAIT_OBJECT_0)
 		return{};
+
+	if (peekData)
+	{
+		DWORD bytesAvailable = 0;
+		BOOL result = PeekNamedPipe(
+			m_Pipe.get(),     // handle to pipe
+			NULL,             // pointer to buffer (not used here)
+			0,                // size of buffer
+			NULL,             // number of bytes read (not used here)
+			&bytesAvailable,  // number of bytes available
+			NULL              // number of bytes left in message (not used here)
+		);
+
+		if (!result || bytesAvailable < 4)
+			return {};
+	}
 
 	// Read four bytes and find the length of the next chunk of data.
 	DWORD chunkLength = 0, bytesReadCurrent = 0;
@@ -273,6 +289,8 @@ size_t FSecure::WinTools::AlternatingPipe::Write(ByteView data)
 	// Write the chunk.
 	if (!WriteFile(m_Pipe.get(), &data.front(), chunkLength, &bytesWritten, nullptr))
 		throw std::runtime_error{ OBF("Couldn't write to Pipe: ") + std::to_string(GetLastError()) + OBF(".") };
+
+	FlushFileBuffers(m_Pipe.get());
 
 	// Let Read() know that the pipe is ready to be read.
 	SetEvent(m_Event.get());

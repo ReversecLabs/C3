@@ -1,4 +1,6 @@
 #include "StdAfx.h"
+
+#ifdef C3_IS_GATEWAY
 #include "Common/FSecure/Sockets/SocketsException.h"
 
 namespace FSecure::C3::Interfaces::Connectors
@@ -426,3 +428,4 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::TeamServer::PeripheralC
 
 	return ByteVector{}.Write(pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, GeneratePayload(connectionId, pipeName, isX64,1u));
 }
+#endif// C3_IS_GATEWAY

