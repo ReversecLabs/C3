@@ -340,14 +340,9 @@ bool FSecure::C3::Interfaces::Connectors::OhxC2::DeinitializeSockets()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(ByteView binderId, bool arch64)
 {
+	ByteVector payload = {};
 	if (binderId.empty())
 		throw std::runtime_error{ OBF("Wrong parameters, cannot create payload") };
-
-	if (m_token.empty())
-		m_token = Login();
-
-	std::string authHeader = OBF("Bearer ") + this->m_token;
-	ByteVector payload;
 
 	web::http::client::http_client_config config;
 	config.set_validate_certificates(false);
@@ -366,23 +361,47 @@ FSecure::ByteVector FSecure::C3::Interfaces::Connectors::OhxC2::GeneratePayload(
 
 	try
 	{
-		request = web::http::http_request(web::http::methods::POST);
-		request.headers().set_content_type(utility::conversions::to_string_t("application/json"));
-		request.set_body(utility::conversions::to_string_t(postData.dump()));
-
-		request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
-		pplx::task<web::http::http_response> task = webClient.request(request);
-		web::http::http_response resp = task.get();
-
-		if (resp.status_code() != web::http::status_codes::OK)
+		int attempt = 0;
+		int maxAttempts = 2;
+		web::http::http_response resp;
+		while (attempt < maxAttempts)
 		{
-			// If token is empty we should reauth if we retry.
-			// Would be better if we automatically retried though...
-			m_token = "";
-			throw std::runtime_error(OBF("[0xC2] Non-200 HTTP code returned generating payload: ") + std::to_string(resp.status_code()));
+			++attempt;
+
+			if (m_token.empty()) {
+				m_token = Login();
+				if (m_token.empty()) {
+					throw std::runtime_error("[0xc2] Login() returned empty token.");
+				}
+			}
+
+			request = web::http::http_request(web::http::methods::POST);
+			request.headers().set_content_type(utility::conversions::to_string_t("application/json"));
+			request.set_body(utility::conversions::to_string_t(postData.dump()));
+
+			std::string authHeader = OBF("Bearer ") + m_token;
+			request.headers().add(OBF(L"Authorization"), utility::conversions::to_string_t(authHeader));
+			pplx::task<web::http::http_response> task = webClient.request(request);
+			resp = task.get();
+
+			if (resp.status_code() == web::http::status_codes::Unauthorized)
+			{
+				// Retry with new auth token
+				m_token = "";
+				continue;
+			}
+			else if (resp.status_code() == web::http::status_codes::OK)
+			{
+				break;
+			}
+			else {
+				// If token is empty we should reauth if we retry.
+				// Would be better if we automatically retried though...
+				throw std::runtime_error(OBF("[0xC2] Non-200 HTTP code returned generating payload: ") + std::to_string(resp.status_code()));
+			}
 		}
 
-		auto payload = resp.extract_vector().get();
+		payload = resp.extract_vector().get();
 
 		//Finally connect to the socket.
 		try
