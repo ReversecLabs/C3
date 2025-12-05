@@ -6,6 +6,8 @@
 #include "Common/FSecure/WinHttp/Constants.h"
 #include "Common/FSecure/Crypto/String.h"
 
+
+
 namespace FSecure::C3::Interfaces::Channels
 {
 	/// Abstract of using Office365 API
@@ -18,6 +20,7 @@ namespace FSecure::C3::Interfaces::Channels
 		Office365(ByteView arguments)
 			: m_InboundDirectionName{ arguments.Read<std::string>() }
 			, m_OutboundDirectionName{ arguments.Read<std::string>() }
+			, m_UserAgent{ arguments.Read<std::string>() }
 			, m_Username{ arguments.Read<SecureString>() }
 			, m_Password{ arguments.Read<SecureString>() }
 			, m_ClientKey{ arguments.Read<SecureString>() }
@@ -36,12 +39,18 @@ namespace FSecure::C3::Interfaces::Channels
 		static const char* GetCapability();
 
 	protected:
+		std::wstring ToWideString(std::string const& str)
+		{
+			return Convert<Utf16>(str);
+		}
 		/// Remove one item from server.
 		/// @param id of task.
 		void RemoveItem(std::string const& id)
 		{
 			auto webClient = HttpClient{ Convert<Utf16>(Derived::ItemEndpoint.Decrypt()  + SecureString{id}), m_ProxyConfig };
 			auto request = CreateAuthRequest(Method::DEL);
+
+			request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 			auto resp = webClient.Request(request);
 
 			if (resp.GetStatusCode() > 205)
@@ -76,11 +85,12 @@ namespace FSecure::C3::Interfaces::Channels
 				requestBody += m_Password.Decrypt();
 				requestBody += OBF("&client_id=");
 				requestBody += m_ClientKey.Decrypt();
-
 				request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
+				request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
+				
 				auto resp = webClient.Request(request);
 				EvaluateResponse(resp, false);
-
+				
 				auto data = json::parse(resp.GetData());
 				m_Token = data[OBF("access_token")].get<std::string>();
 			}
@@ -144,6 +154,7 @@ namespace FSecure::C3::Interfaces::Channels
 		{
 			auto webClient = HttpClient{ Convert<Utf16>(Derived::ListEndpoint.Decrypt() + SecureString{ filter }), m_ProxyConfig };
 			auto request = CreateAuthRequest();
+			request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 			auto resp = webClient.Request(request);
 			EvaluateResponse(resp);
 
@@ -152,6 +163,10 @@ namespace FSecure::C3::Interfaces::Channels
 
 		/// In/Out names on the server.
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
+
+
+		/// UserAgent value
+		std::string m_UserAgent;
 
 		/// Username, password, client key and token for authentication.
 		Crypto::String m_Username, m_Password, m_ClientKey, m_Token;
@@ -162,6 +177,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// Used to delay every channel instance in case of server rate limit.
 		/// Set using information from 429 Too Many Requests header.
 		static std::atomic<std::chrono::steady_clock::time_point> s_TimePoint;
+
 	};
 }
 
@@ -195,6 +211,13 @@ const char* FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability
 					"description": "Used to distinguish packets from the channel"
 				}
 			],
+			{
+				"type": "string",
+				"name": "User-Agent Header",
+				"min": 1,
+				"defaultValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+				"description": "The User-Agent header to set"
+			},
 			{
 				"type": "string",
 				"name": "username",
@@ -233,3 +256,4 @@ const char* FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability
 }
 )_";
 }
+

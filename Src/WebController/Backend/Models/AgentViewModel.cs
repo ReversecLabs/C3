@@ -21,6 +21,7 @@ namespace FSecure.C3.WebController.Models
         public string Error { get; set; }
         public bool IsActive { get; set; }
         public int Timestamp { get; set; }
+        public int InitialTimestamp { get; set; }
 
         public bool ShouldSerializeError() => Error != null;
 
@@ -40,6 +41,7 @@ namespace FSecure.C3.WebController.Models
             Error = a.Error;
             IsActive = a.IsActive;
             Timestamp = a.Timestamp;
+            InitialTimestamp = a.InitialTimestamp;
         }
     }
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#define C3_IS_GATEWAY																									//< Indicates this project compiles to a GateRelay.
-
 // Standard library includes.
 #include <iostream>																										//< For std::cout, std::cerr.
 

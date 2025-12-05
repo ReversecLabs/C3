@@ -246,3 +246,35 @@ FSecure::ByteVector FSecure::Crypto::Sodium::Decrypt(ByteView message, SessionRx
 
 	return decryptedMessage;
 }
+
+FSecure::ByteVector FSecure::Crypto::Sodium::ComputeHMAC(FSecure::ByteView key, FSecure::ByteView message)
+{
+	std::vector<uint8_t> paddedKey(crypto_auth_hmacsha256_KEYBYTES, 0);
+
+	// Pad or copy key to required length
+	if (key.size() == 16)
+		std::copy(key.begin(), key.end(), paddedKey.begin());
+	else if (key.size() == crypto_auth_hmacsha256_KEYBYTES)
+		std::copy(key.begin(), key.end(), paddedKey.begin());
+	else
+		throw std::invalid_argument(OBF("Invalid HMAC key size"));
+
+	crypto_auth_hmacsha256_state state;
+	crypto_auth_hmacsha256_init(&state, paddedKey.data(), crypto_auth_hmacsha256_KEYBYTES);
+	crypto_auth_hmacsha256_update(&state, message.data(), message.size());
+
+	FSecure::ByteVector hmac(crypto_auth_hmacsha256_BYTES);
+	crypto_auth_hmacsha256_final(&state, hmac.data());
+
+	return hmac;
+}
+
+bool FSecure::Crypto::Sodium::VerifyHMAC(FSecure::ByteView key, FSecure::ByteView message, FSecure::ByteView expected_hmac)
+{
+	auto computed_hmac = ComputeHMAC(key, message);
+
+	if (expected_hmac.size() != computed_hmac.size())
+		return false;
+
+	return sodium_memcmp(computed_hmac.data(), expected_hmac.data(), crypto_auth_hmacsha256_BYTES) == 0;
+}

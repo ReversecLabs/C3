@@ -18,7 +18,7 @@ namespace FSecure
 		/// Constructor for the Asana Api class.
 		/// @param token - the personal authentication token generated in Asana
 		/// @param projectId - ID of the project to post tasks into
-		AsanaApi(std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride);
+		AsanaApi(std::string const& userAgent, std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride);
 
 		/// Create an Asana task
 		/// @param taskName - Name of the new task
@@ -98,5 +98,8 @@ namespace FSecure
 
 		/// Holds the Section ID for the outbound channel (auto-created or retrieved in constructor)
 		std::string m_SectionIdOutbound;
+
+		/// User agent header
+		std::string m_UserAgent;
 	};
 }

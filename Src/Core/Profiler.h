@@ -227,7 +227,7 @@ namespace FSecure::C3::Core
 			/// @param buildId Build identifier.
 			/// @param encryptionKey asymmetric public key used to encrypt all outgoing transmission.
 			/// @param isBanned flag indicating whether Agent should be added to the black-list.
-			Relay(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, int32_t lastSeen);
+			Relay(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, int32_t lastSeen, int32_t firstSeen);
 
 			/// Destructor
 			virtual ~Relay() = default;
@@ -286,6 +286,7 @@ namespace FSecure::C3::Core
 			DeviceId::UnderlyingIntegerType m_LastDeviceId = 0;															///< This value gets increased with every creation of an Device.
 
 			int32_t m_LastSeen; // fixed size instead of 32 or 64 bits time_t
+			int32_t m_FirstSeen;
 		};
 
 		/// Virtual image of NodeRelay.
@@ -296,9 +297,10 @@ namespace FSecure::C3::Core
 			/// @param buildId Build identifier.
 			/// @param encryptionKey asymmetric public key used to encrypt all outgoing transmission.
 			/// @param isBanned flag indicating whether Agent should be added to the black-list.
+			/// @param firstSeen timestamp when agent was first seen
 			/// @param lastSeen timestamp when agent was last seen (responded)
 			/// @param hostInfo agent's host information
-			Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, bool isX64, HostInfo hostInfo);
+			Agent(std::weak_ptr<Profiler> owner, AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t firstSeen, int32_t lastSeen, bool isX64, HostInfo hostInfo);
 
 			/// Destructor
 			virtual ~Agent() = default;
@@ -372,9 +374,10 @@ namespace FSecure::C3::Core
 			/// @param buildId - new agents' build Id
 			/// @param encryptionKey - new agent's public encryption key
 			/// @param isBanned - is agent banned
+			/// @param firstSeen - when agent was first seen
 			/// @param lastSeen - when agent was last seen
 			/// @param hostInfo - new agnet's host information
-			Agent* ReAddAgent(AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t lastSeen, HostInfo hostInfo);
+			Agent* ReAddAgent(AgentId agentId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, bool isBanned, int32_t firstSeen, int32_t lastSeen, HostInfo hostInfo);
 
 			/// Reprofile: Add remote agent (agent not neigbouring with gateway)
 			/// @param agentId - new agent Id
@@ -384,7 +387,7 @@ namespace FSecure::C3::Core
 			/// @param childGrcHash - new agent's
 			/// @param lastSeen - when agent was last seen
 			/// @param hostInfo - new agnet's host information
-			Agent* ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t lastSeen, HostInfo hostInfo);
+			Agent* ReAddRemoteAgent(RouteId childRouteId, BuildId buildId, FSecure::Crypto::PublicKey encryptionKey, RouteId ridOfConectionPlace, HashT childGrcHash, int32_t firstSeen, int32_t lastSeen, HostInfo hostInfo);
 
 			/// Find an agent directly connected to relay through given channel
 			/// @param relay - relay whose neighbour to find
@@ -491,7 +494,8 @@ namespace FSecure::C3::Core
 			/// @param iidOfDeviceToDetach - peripheral's device id
 			void ReDeletePeripheral(DeviceId iidOfDeviceToDetach);
 
-			/// Update last-seen timestamps on route to given agent
+			/// Update last-seen 
+			/// s on route to given agent
 			/// @param agentId - the last agent on the route (origin on the message)
 			/// @param timestamp - current timestamp
 			void UpdateRouteTimestamps(AgentId agentId, int32_t timestamp);

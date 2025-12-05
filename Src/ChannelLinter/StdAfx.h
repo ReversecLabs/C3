@@ -1,8 +1,5 @@
 #pragma once
 
-/// Compile C3 channel tester as Gateway (Include interface metadata)
-#define C3_IS_GATEWAY
-
 // Standard library includes.
 #include <iostream>
 #include <optional>

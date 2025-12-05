@@ -157,5 +157,8 @@ namespace FSecure::Crypto
 		/// @return converted public signature key.
 		/// @throws std::runtime_error.
 		PublicSignature ExtractPublic(PrivateSignature const& signature);
+
+		FSecure::ByteVector ComputeHMAC(FSecure::ByteView key, FSecure::ByteView message);
+		bool VerifyHMAC(ByteView session_key, ByteView message, ByteView expected_hmac);
 	}
 }

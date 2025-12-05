@@ -12,12 +12,12 @@ namespace {
 	}
 }
 
-FSecure::AsanaApi::AsanaApi(std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride) {
+FSecure::AsanaApi::AsanaApi(std::string const& userAgent, std::string const& token, std::string const& projectId, std::string const& inboundDirectionName, std::string const& outboundDirectionName, std::string const& proxyOverride) {
 	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 	this->m_Token = token;
 	this->m_ProjectId = projectId;
-
+	this->m_UserAgent = userAgent;
 	this->m_SectionIdInbound = GetOrCreateSectionIdByName(inboundDirectionName);
 	this->m_SectionIdOutbound = GetOrCreateSectionIdByName(outboundDirectionName);
 }
@@ -169,6 +169,8 @@ FSecure::ByteVector FSecure::AsanaApi::SendHttpRequest(std::string const& host, 
 			request.SetHeader(Header::Authorization, OBF(L"Bearer ") + ToWideString(this->m_Token));
 		}
 
+		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
+
 		auto resp = webClient.Request(request);
 
 		if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created) {
@@ -190,3 +192,4 @@ json FSecure::AsanaApi::SendJsonRequest(std::string const& url, json const& data
 	}
 
 }
+

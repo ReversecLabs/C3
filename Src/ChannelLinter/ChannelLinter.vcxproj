@@ -152,6 +152,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
     <Import Project="..\Common\Common.vcxitems" Label="Shared" />
@@ -270,7 +271,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -286,13 +287,16 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winhttp.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <MASM>
+      <UseSafeExceptionHandlers>true</UseSafeExceptionHandlers>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ClangDebug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -314,7 +318,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -330,13 +334,14 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winhttp.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <MASM />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ClangDebug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -360,7 +365,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_IS_GATEWAY;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -381,6 +386,9 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winhttp.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <MASM>
+      <UseSafeExceptionHandlers>true</UseSafeExceptionHandlers>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ClangRelease|Win32'">
     <ClCompile>
@@ -389,7 +397,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -418,7 +426,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_RWDI;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_RWDI;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -447,7 +455,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_RWDI;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_RWDI;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -476,7 +484,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_IS_GATEWAY;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -497,6 +505,9 @@
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>winhttp.lib;Shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <MASM>
+      <UseSafeExceptionHandlers>true</UseSafeExceptionHandlers>
+    </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ClangRelease|x64'">
     <ClCompile>
@@ -505,7 +516,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -534,7 +545,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_RWDI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_RWDI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -563,7 +574,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_RWDI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>C3_BIN_DIR=R"($(OutDir))";C3_SOLUTION_DIR=R"($(SolutionDir))";C3_IS_GATEWAY;C3_RWDI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -619,5 +630,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

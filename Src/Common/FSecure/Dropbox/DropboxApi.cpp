@@ -72,7 +72,6 @@ void FSecure::Dropbox::UploadFile(std::string const& path)
 
 	ByteVector packet = ByteVector{ std::istreambuf_iterator<char>{readFile}, {} };
 	readFile.close();
-
 	std::string ts = std::to_string(FSecure::Utils::TimeSinceEpoch());
 	std::string fn = filepathForUpload.filename().string();  // retain same file name and file extension for convenience.
 	std::string filename = OBF("upload-") + FSecure::Utils::GenerateRandomString(10) + OBF("-") + ts + OBF("-") + fn;
@@ -138,7 +137,6 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 		if (cursor.empty())
 		{
 			std::string url = OBF("https://api.dropboxapi.com/2/files/search_v2");
-
 			json search_options;
 			search_options[OBF("path")] = OBF("/") + this->m_Channel;
 			search_options[OBF("filename_only")] = true;
@@ -151,7 +149,6 @@ std::map<std::string, std::string> FSecure::Dropbox::GetMessagesByDirection(std:
 		else
 		{
 			std::string url = OBF("https://api.dropboxapi.com/2/files/search/continue_v2");
-
 			json j;
 			j[OBF("cursor")] = cursor;
 

@@ -14,6 +14,12 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\AzureServiceBusApi\AzureServiceBusApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureServiceBus.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\EwsTask.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\NamedPipe.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.cpp" />
@@ -26,18 +32,25 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Dropbox.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\TCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\UncShareFile.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\MSSQL.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\0xC2.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\MockServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\Covenant.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Connectors\TeamServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\0xC2Agent.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Mock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Beacon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\Grunt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\Interface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Internals\InterfaceFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Compression.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\CppTools\Encryption.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\AESCTR.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\Sodium.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.cpp" />
@@ -57,9 +70,64 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Pipe.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\Services.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\WinTools\StructuredExceptionHandling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)sqlite\sqlite3.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRelease|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangDebug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRelease|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRelease|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangDebug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRelease|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangDebug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)tinyAES\aes.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRelease|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRelease|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangDebug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureBlobStorage\AzureBlobStorageApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureBlobStorage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\Indexes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\Inline.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ADVobfuscator\MetaRandom.h" />
@@ -68,9 +136,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base32_default_crockford.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppCodec\base64_default_rfc4648.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CppRestSdk\include\cpprest\http_client.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AzureServiceBusApi\AzureServiceBusApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\AzureServiceBus.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\EwsTask.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\NamedPipe.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Discord.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Atlassian\JiraApi.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\GoogleDrive.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\JiraIssue.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\LDAP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\AsanaApi\AsanaApi.h" />
@@ -78,15 +150,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Github.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Mattermost.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Print.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\CloudFlareWorkerKV.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Peripherals\0xC2Agent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CloudFlare\WorkerKVApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Zoom.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteArray.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteVector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\ByteView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\ByteConverter\Utils.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\CppTools\StringConversions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\AESCTR.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\GoogleDrive\GoogleDriveApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Github\GithubApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Discord\DiscordApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Mattermost\MattermostApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Sql\Sql.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Crypto\String.h" />
@@ -104,7 +181,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\HttpRequest.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\Uri.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinHttp\WebProxy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\DirectSyscalls.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\WindowsVersion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\Zoom\ZoomApi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)json\json.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)libSodium\include\sodium.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\Slack.h" />
@@ -157,7 +236,38 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\UniqueHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\WinTools\XError.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FSecure\C3\Interfaces\Channels\WebexTeams.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)sqlite\sqlite3.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRelease|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangDebug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRelease|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebInfo|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangDebug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ClangRwdi|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)tinyAES\aes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tinyAES\aes.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zconf.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)zlib\include\zlib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="$(MSBuildThisFileDirectory)FSecure\WinTools\syscalls.asm" />
   </ItemGroup>
 </Project>

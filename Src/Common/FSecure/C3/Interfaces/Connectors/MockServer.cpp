@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 
+#ifdef C3_IS_GATEWAY
 #ifdef _DEBUG
 
 namespace FSecure::C3::Interfaces::Connectors
@@ -204,3 +205,4 @@ const char* FSecure::C3::Interfaces::Connectors::MockServer::GetCapability()
 )";
 }
 #endif // _DEBUG
+#endif// C3_IS_GATEWAY

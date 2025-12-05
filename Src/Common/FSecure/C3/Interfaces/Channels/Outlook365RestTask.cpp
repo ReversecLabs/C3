@@ -46,6 +46,7 @@ size_t FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnSendToChannel(By
 
 		auto body = fileData.dump();
 		request.SetData(ContentType::ApplicationJson, { body.begin(), body.end() });
+		request.SetHeader(Header::UserAgent, ToWideString(this->m_UserAgent));
 		EvaluateResponse(webClient.Request(request));
 
 		return chunkSize;
@@ -101,3 +102,4 @@ FSecure::ByteVector FSecure::C3::Interfaces::Channels::Outlook365RestTask::OnRun
 		return AbstractChannel::OnRunCommand(commandCopy);
 	}
 }
+
