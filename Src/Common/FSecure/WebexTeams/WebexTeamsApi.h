@@ -21,7 +21,7 @@ namespace FSecure
 		/// @param clientId - The Client ID of the OAuth application created in Webex Teams
 		/// @param clientSecret - The Client Secret of the OAuth application created in Webex Teams
 		/// @param userAgent - The User-Agent header to include in HTTP requests
-		WebexTeamsApi(SecureString apiEndpoint, SecureString clientId, SecureString clientSecret, SecureString refreshToken, SecureString userAgent);
+		WebexTeamsApi(SecureString apiEndpoint, SecureString clientId, SecureString clientSecret, SecureString refreshToken, SecureString userAgent, SecureString proxyOverride);
 
 		/// Default constructor.
 		WebexTeamsApi() = default;

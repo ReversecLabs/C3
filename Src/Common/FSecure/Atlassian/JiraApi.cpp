@@ -21,10 +21,9 @@ namespace
 	}
 }
 
-FSecure::Jira::Jira(std::string const& userAgent, std::string const& host, std::string const& project_key, std::string const& issue_name, std::string const& username, std::string const& password)
+FSecure::Jira::Jira(std::string const& userAgent, std::string const& host, std::string const& project_key, std::string const& issue_name, std::string const& username, std::string const& password, std::string const& proxyOverride)
 {
-	if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-		this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
+	this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 	this->m_host = host;
 	while (!m_host.empty() && m_host.back() == '/') m_host.pop_back();

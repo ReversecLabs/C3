@@ -22,11 +22,11 @@ namespace FSecure::C3::Interfaces::Channels
 			, m_Password{ arguments.Read<SecureString>() }
 			, m_ClientKey{ arguments.Read<SecureString>() }
 		{
+			auto proxyOverride = arguments.Read<std::string>();
 			FSecure::Utils::DisallowChars({ m_InboundDirectionName, m_OutboundDirectionName }, OBF(R"(;/?:@&=+$,)"));
 
 			// Obtain proxy information and store it in the HTTP configuration.
-			if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
-				this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
+			this->m_ProxyConfig = WebProxy::GetProxyConfigurationOverride(proxyOverride);
 
 			RefreshAccessToken();
 		}
@@ -212,6 +212,12 @@ const char* FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability
 				"name": "Client Key/ID",
 				"min": 1,
 				"description": "The GUID of the registered application."
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},

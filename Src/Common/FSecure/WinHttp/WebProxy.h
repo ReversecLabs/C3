@@ -46,6 +46,50 @@ namespace FSecure::WinHttp
 		/// <returns>A reference to this proxy's URI.</returns>
 		const Uri& Address() const { return m_Address; }
 
+		static std::wstring GetProxyConfiguration()
+		{
+			wchar_t* pValue = nullptr;
+			size_t len = 0;
+			auto err = _wdupenv_s(&pValue, &len, OBF(L"http_proxy"));
+			std::unique_ptr<wchar_t, void(*)(wchar_t*)> holder(pValue, [](wchar_t* p) { free(p); });
+			return (!err && pValue && len) ? std::wstring{ pValue, len - 1 } : std::wstring{};
+		}
+
+		static FSecure::WinHttp::WebProxy GetProxyConfigurationOverride(std::string const& proxyOverride)
+		{
+			try
+			{
+				if (!proxyOverride.empty())
+				{
+					if (proxyOverride == OBF("DIRECT"))
+					{
+						return FSecure::WinHttp::WebProxy(FSecure::WinHttp::WebProxy::Mode::Disabled);
+					}
+					else if (proxyOverride == OBF("auto"))
+					{
+						return FSecure::WinHttp::WebProxy(FSecure::WinHttp::WebProxy::Mode::UseAutoDiscovery);
+					}
+					else
+					{
+						std::wstring wideProxy = std::wstring(proxyOverride.begin(), proxyOverride.end());
+						return FSecure::WinHttp::WebProxy(FSecure::WinHttp::Uri(wideProxy));
+					}
+				}
+				else if (auto winProxy = GetProxyConfiguration(); !winProxy.empty())
+				{
+					return (winProxy == OBF(L"auto")) ? FSecure::WinHttp::WebProxy(FSecure::WinHttp::WebProxy::Mode::UseAutoDiscovery) : FSecure::WinHttp::WebProxy(winProxy);
+				}
+			}
+			catch (std::runtime_error const&)
+			{
+				// Fallback to Default on error
+				return FSecure::WinHttp::WebProxy(FSecure::WinHttp::WebProxy::Mode::UseDefault);
+			}
+
+			// Default fallback
+			return FSecure::WinHttp::WebProxy(FSecure::WinHttp::WebProxy::Mode::UseDefault);
+		}
+
 		/* No proxy authentication support RN
 		/// <summary>
 		/// Gets the credentials used for authentication with this proxy.

@@ -7,8 +7,8 @@ FSecure::C3::Interfaces::Channels::Dropbox::Dropbox(ByteView arguments)
 	: m_inboundDirectionName{ arguments.Read<std::string>() }
 	, m_outboundDirectionName{ arguments.Read<std::string>() }
 {
-	auto [userAgent, DropboxToken, channelName] = arguments.Read<std::string, std::string, std::string>();
-	m_dropboxObj = FSecure::Dropbox{ userAgent, DropboxToken, channelName };
+	auto [userAgent, DropboxToken, channelName, proxyOverride] = arguments.Read<std::string, std::string, std::string, std::string>();
+	m_dropboxObj = FSecure::Dropbox{ userAgent, DropboxToken, channelName, proxyOverride };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +104,12 @@ const char* FSecure::C3::Interfaces::Channels::Dropbox::GetCapability()
 				"min": 4,
 				"randomize": true,
 				"description": "Folder to create for channel"
+			},
+			{
+				"type": "string",
+				"name": "Proxy Override",
+				"description": "The web proxy to use to override system configuration, or DIRECT for no-proxy, or auto for WPAD AutoConfig. Syntax should be http://username:password@hostname. Credentials not implemented yet.",
+				"defaultValue": ""
 			}
 		]
 	},
