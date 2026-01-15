@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 #include <chrono>
+#include <iostream>
 
 #ifndef OBF
 #	define OBF(x) x
@@ -270,5 +271,12 @@ namespace FSecure::Utils
 	{
 		for (auto word : words)
 			DisallowChars(word, forbiddenChars);
+	}
+
+	/// Print a debug message to stdout.
+	inline void DebugPrint(std::string msg) {
+#ifdef _DEBUG
+		std::cout << OBF("[DEBUG] ") << msg << std::endl;
+#endif
 	}
 }

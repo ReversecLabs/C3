@@ -20,7 +20,8 @@ namespace FSecure::C3::Interfaces::Channels
 			, m_OutboundDirectionName{ arguments.Read<std::string>() }
 			, m_Username{ arguments.Read<SecureString>() }
 			, m_Password{ arguments.Read<SecureString>() }
-			, m_ClientKey{ arguments.Read<SecureString>() }
+			, m_ClientId{ arguments.Read<SecureString>() }
+			, m_UserAgent{ arguments.Read<SecureString>() }
 		{
 			FSecure::Utils::DisallowChars({ m_InboundDirectionName, m_OutboundDirectionName }, OBF(R"(;/?:@&=+$,)"));
 
@@ -28,7 +29,15 @@ namespace FSecure::C3::Interfaces::Channels
 			if (auto winProxy = WinTools::GetProxyConfiguration(); !winProxy.empty())
 				this->m_ProxyConfig = (winProxy == OBF(L"auto")) ? WebProxy(WebProxy::Mode::UseAutoDiscovery) : WebProxy(winProxy);
 
-			RefreshAccessToken();
+			FSecure::Utils::DebugPrint(OBF("Using m_InboundDirectionName: ") + m_InboundDirectionName);
+			FSecure::Utils::DebugPrint(OBF("Using m_OutboundDirectionName: ") + m_OutboundDirectionName);
+			FSecure::Utils::DebugPrint(OBF("Using m_Username: ") + Convert<Utf8>(m_Username.Decrypt()));
+			FSecure::Utils::DebugPrint(OBF("Using m_Password: ") + Convert<Utf8>(m_Password.Decrypt()));
+			FSecure::Utils::DebugPrint(OBF("Using m_ClientId: ") + Convert<Utf8>(m_ClientId.Decrypt()));
+			FSecure::Utils::DebugPrint(OBF("Using m_UserAgent: ") + Convert<Utf8>(m_UserAgent.Decrypt()));
+
+			// Initial requesting of the tokens
+			RefreshTokensUsingUsernamePassword();
 		}
 
 		/// Get channel capability.
@@ -40,7 +49,7 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @param id of task.
 		void RemoveItem(std::string const& id)
 		{
-			auto webClient = HttpClient{ Convert<Utf16>(Derived::ItemEndpoint.Decrypt()  + SecureString{id}), m_ProxyConfig };
+			auto webClient = HttpClient{ Convert<Utf16>(Derived::ItemEndpoint.Decrypt() + SecureString{id}), m_ProxyConfig };
 			auto request = CreateAuthRequest(Method::DEL);
 			auto resp = webClient.Request(request);
 
@@ -56,37 +65,89 @@ namespace FSecure::C3::Interfaces::Channels
 				RemoveItem(element.at(OBF("id")));
 		}
 
-		/// Requests a new access token using the refresh token
-		/// @throws std::exception if token cannot be refreshed.
-		void RefreshAccessToken()
+		/// Save access & refresh tokens from JSON response
+		void SaveTokens(FSecure::json data) {
+			int32_t timeToNextRefresh = data[OBF("expires_in")].get<int32_t>();
+			m_AccessTokenExpiryTime = FSecure::Utils::TimeSinceEpoch() + timeToNextRefresh; // Set the new expiry time for this access token
+			m_AccessToken = data[OBF("access_token")].get<std::string>();
+			m_RefreshToken = data[OBF("refresh_token")].get<std::string>();
+			FSecure::Utils::DebugPrint(OBF("Refresh token refreshed."));
+			FSecure::Utils::DebugPrint(OBF("Access token refreshed; new refresh in ") + std::to_string(timeToNextRefresh) + OBF(" seconds."));
+		}
+
+		/// Requests new refresh & tokens using username+password.
+		/// @throws std::exception if tokens cannot be refreshed.
+		void RefreshTokensUsingUsernamePassword()
 		{
-			try
-			{
-				//Token endpoint
+			FSecure::Utils::DebugPrint(OBF("Refreshing tokens using username/password"));
+			try {
 				auto webClient = HttpClient{ Convert<Utf16>(Derived::TokenEndpoint.Decrypt()), m_ProxyConfig };
 
 				auto request = HttpRequest{ Method::POST };
+				request.SetHeader(Header::UserAgent, Convert<Utf16>(m_UserAgent.Decrypt()));
 				auto requestBody = SecureString{};
 				requestBody += OBF("grant_type=password");
 				requestBody += OBF("&scope=");
 				requestBody += Derived::Scope.Decrypt();
 				requestBody += OBF("&username=");
-				requestBody += m_Username.Decrypt();
+				requestBody += Uri::EncodeData(ByteView(m_Username.Decrypt()));
 				requestBody += OBF("&password=");
-				requestBody += m_Password.Decrypt();
+				requestBody += Uri::EncodeData(ByteView(m_Password.Decrypt()));
 				requestBody += OBF("&client_id=");
-				requestBody += m_ClientKey.Decrypt();
+				requestBody += m_ClientId.Decrypt();
 
 				request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
 				auto resp = webClient.Request(request);
-				EvaluateResponse(resp, false);
 
-				auto data = json::parse(resp.GetData());
-				m_Token = data[OBF("access_token")].get<std::string>();
+				if (resp.GetStatusCode() == StatusCode::OK) {
+					SaveTokens(json::parse(resp.GetData()));
+				}
+				else 
+				{
+					throw std::runtime_error{ OBF("Non 200 response: ") + std::to_string(resp.GetStatusCode()) + OBF("\r\n") + ((std::string) resp.GetData()) };
+				}
 			}
-			catch (std::exception & exception)
+			catch (std::exception& exception)
 			{
-				throw std::runtime_error{ OBF_STR("Cannot refresh token: ") + exception.what() };
+				throw std::runtime_error{ OBF_STR("Cannot refresh tokens using username/password: ") + exception.what() };
+			}
+		}
+
+		/// Requests new tokens using the refresh token
+		/// @throws std::exception if tokens cannot be refreshed.
+		void RefreshTokensUsingRefreshToken()
+		{
+			FSecure::Utils::DebugPrint(OBF("Refreshing tokens using refresh token"));
+			try
+			{
+				auto webClient = HttpClient{ Convert<Utf16>(Derived::TokenEndpoint.Decrypt()), m_ProxyConfig };
+
+				auto request = HttpRequest{ Method::POST };
+				request.SetHeader(Header::UserAgent, Convert<Utf16>(m_UserAgent.Decrypt()));
+				auto requestBody = SecureString{};
+				requestBody += OBF("grant_type=refresh_token");
+				requestBody += OBF("&scope=");
+				requestBody += Uri::EncodeData(ByteView(Derived::Scope.Decrypt()));
+				requestBody += OBF("&client_id=");
+				requestBody += Uri::EncodeData(ByteView(m_ClientId.Decrypt()));
+				requestBody += OBF("&refresh_token=");
+				requestBody += Uri::EncodeData(ByteView(m_RefreshToken.Decrypt()));
+
+				request.SetData(ContentType::ApplicationXWwwFormUrlencoded, { requestBody.begin(), requestBody.end() });
+				auto resp = webClient.Request(request);
+
+				if (resp.GetStatusCode() != StatusCode::Unauthorized) {
+					EvaluateResponse(resp, false);
+					SaveTokens(json::parse(resp.GetData()));
+				}
+				else {
+					FSecure::Utils::DebugPrint(OBF("Refreshing tokens using refresh token failed; trying username+password"));
+					RefreshTokensUsingUsernamePassword();
+				}
+			}
+			catch (std::exception& exception)
+			{
+				throw std::runtime_error{ OBF_STR("Cannot refresh access token: ") + exception.what() };
 			}
 		}
 
@@ -94,7 +155,6 @@ namespace FSecure::C3::Interfaces::Channels
 		/// @throws std::exception describing incorrect response if occurred.
 		void EvaluateResponse(WinHttp::HttpResponse const& resp, bool tryRefreshingToken = true)
 		{
-
 			if (resp.GetStatusCode() == StatusCode::OK || resp.GetStatusCode() == StatusCode::Created)
 				return;
 
@@ -103,28 +163,33 @@ namespace FSecure::C3::Interfaces::Channels
 				auto retryAfterHeader = resp.GetHeader(Header::RetryAfter);
 				auto delay = !retryAfterHeader.empty() ? stoul(retryAfterHeader) : FSecure::Utils::GenerateRandomValue(10, 20);
 				s_TimePoint = std::chrono::steady_clock::now() + std::chrono::seconds{ delay };
-				throw std::runtime_error{ OBF("Too many requests") };
+				throw std::runtime_error{ OBF("HTTP 429 - Too many requests") };
 			}
 
 			if (resp.GetStatusCode() == StatusCode::Unauthorized)
 			{
 				if (tryRefreshingToken)
-					RefreshAccessToken();
-				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") };
+					RefreshTokensUsingRefreshToken();
+				throw std::runtime_error{ OBF("HTTP 401 - Token being refreshed") }; // Throwing an exception will retry the operation
 			}
 
 			if (resp.GetStatusCode() == StatusCode::BadRequest)
-				throw std::runtime_error{ OBF("Bad Request") };
+				throw std::runtime_error{ OBF("HTTP 400 - Bad Request\r\n") + ((std::string) resp.GetData()) };
 
-			throw std::runtime_error{ OBF("Non 200 http response.") + std::to_string(resp.GetStatusCode()) };
+			throw std::runtime_error{ OBF("Non 200 response:") + std::to_string(resp.GetStatusCode()) };
 		}
 
 		/// Create request using internally stored token.
 		/// @param method, request type.
 		WinHttp::HttpRequest CreateAuthRequest(WinHttp::Method method = WinHttp::Method::GET)
 		{
+			if (m_AccessTokenExpiryTime <= FSecure::Utils::TimeSinceEpoch()) {
+				// Access token has expired, let's request a new one
+				FSecure::Utils::DebugPrint(OBF("Access token expired, refreshing!"));
+				RefreshTokensUsingRefreshToken();
+			}
 			auto request = HttpRequest{ method };
-			request.SetHeader(Header::Authorization, Convert<Utf16>(OBF_SEC("Bearer ") + m_Token.Decrypt()));
+			request.SetHeader(Header::Authorization, Convert<Utf16>(OBF_SEC("Bearer ") + m_AccessToken.Decrypt()));
 			return request;
 		}
 
@@ -150,11 +215,14 @@ namespace FSecure::C3::Interfaces::Channels
 			return json::parse(resp.GetData());
 		}
 
+		/// Timestamp when the access token expires, and we should retrieve a new token before making any request
+		int32_t m_AccessTokenExpiryTime;
+
 		/// In/Out names on the server.
 		std::string m_InboundDirectionName, m_OutboundDirectionName;
 
-		/// Username, password, client key and token for authentication.
-		Crypto::String m_Username, m_Password, m_ClientKey, m_Token;
+		/// Username, password, client id, user-agent header and tokens for authentication.
+		Crypto::String m_Username, m_Password, m_ClientId, m_UserAgent, m_AccessToken, m_RefreshToken;
 
 		/// Store any relevant proxy info
 		WinHttp::WebProxy m_ProxyConfig;
@@ -209,9 +277,15 @@ const char* FSecure::C3::Interfaces::Channels::Office365<Derived>::GetCapability
 			},
 			{
 				"type": "string",
-				"name": "Client Key/ID",
+				"name": "Client ID",
 				"min": 1,
 				"description": "The GUID of the registered application."
+			},
+			{
+				"type": "string",
+				"name": "User Agent",
+				"min": 1,
+				"description": "The User-Agent header to use when making HTTP requests"
 			}
 		]
 	},
